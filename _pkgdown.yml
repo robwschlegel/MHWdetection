@@ -1,0 +1,41 @@
+url: https://robwschlegel.github.io/MHWdetection/index.html
+
+navbar:
+  structure:
+    left:
+    - home
+    - intro
+    - reference
+    - articles
+    - tutorials
+    - news
+    right: github
+  components:
+    home:
+      icon: fa-home fa-lg
+      href: index.html
+    reference:
+      text: "Functions"
+      href: reference/index.html
+    articles:
+      text: "Vignettes"
+      menu:
+      - text: "Alternative climatologies and baselines"
+        href: articles/Climatologies_and_baselines.html
+      - text: "Short climatologies"
+        href: articles/Short_climatologies.html
+      - text: "Python vs. R - default outputs"
+        href: articles/r_vs_python.html
+      - text: "Python vs. R - default arguments"
+        href: articles/r_vs_python_arguments.html
+      - text: "Python vs. R - Additional functions"
+        href: articles/r_vs_python_additional.html
+    news:
+      text: Changelog
+      href: news/index.html
+
+reference:
+- title: All functions
+  desc: ~
+  contents: '`placeholder`'
+

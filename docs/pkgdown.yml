@@ -1,0 +1,13 @@
+pandoc: 1.19.2.1
+pkgdown: 1.0.0
+pkgdown_sha: ~
+articles:
+  Climatologies_and_baselines: Climatologies_and_baselines.html
+  Short_climatologies: Short_climatologies.html
+  r_vs_python: r_vs_python.html
+  r_vs_python_additional: r_vs_python_additional.html
+  r_vs_python_arguments: r_vs_python_arguments.html
+urls:
+  reference: https://robwschlegel.github.io/MHWdetection/index.html/reference
+  article: https://robwschlegel.github.io/MHWdetection/index.html/articles
+
