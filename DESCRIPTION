@@ -1,0 +1,17 @@
+Package: MHWdetection
+Version: 0.0.1
+Title: Detecting marine heatwaves
+Description: This package serves as a tidy repository for the code used in the paper 'Detecting marine heatwaves'.
+Authors@R: c(person("Robert W.", "Schlegel", role = c("aut", "cre", "ctb"),
+    email = "robwschlegel@gmail.com",
+    comment = c(ORCID = "0000-0002-0705-1287")),
+    person("Eric C. J.", "Oliver", role = "aut",
+    comment = c(ORCID = "0000-0002-4006-2826")),
+    person("Alistair J. Hobday"),
+    person("Albertus J.", "Smit", role = c("aut", "ctb"),
+    comment = c(ORCID = "0000-0002-3799-6126")))
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+ByteCompile: true
+RoxygenNote: 6.0.1
