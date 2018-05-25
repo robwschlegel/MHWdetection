@@ -1,0 +1,109 @@
+---
+title: "Detecting marine heatwaves"
+author: "Robert W. Schlegel, Eric C. J. Oliver, Alistair J. Hobday, Albertus J. Smit"
+date: "25 May 2018"
+output: word_document
+---
+
+# Abstract
+It is now known that marine heatwaves (MHWs) have been increasing in duration and intensity globally. It is therefore necessary that the detection of these events in all areas of the ocean be made possible. This includes but is not limited to areas with time series that are shorter than the proscribed 30 years, missing large amounts of random or consistent data, or have been collected with instrumentation from which the appropriate meta-data were not maintained. The best practices for how to deal with these issues have been investigated and outlined in detail here. Additionally, the use of alternative climatologies is investigated and the benefits of differing methods is discussed. This is all worked out within the framework of specific case studies, noting the pitfalls inherent in this field of research.
+
+
+# Introduction
+
+
+## Case studies
+
+
+## Pitfalls
+
+
+# Material and Methods
+
+
+## Study regions
+
+
+## Data
+
+
+### Remotely sensed data
+
+
+### Reanalysis data
+
+
+### _In situ_ data
+
+
+## Marine heatwaves (MHWs)
+
+
+## R vs Python
+
+
+## Limited time series
+
+
+### Short length
+
+
+### Random missing data
+
+
+### Predictable missing data
+
+
+## Alternative climatologies
+
+
+## Best practices
+After the investigation into the aforementioned topics has been completed, a series of best practices for dealing with these issues may be discussed.
+
+(RWS: Ideally these could also be retroactively worked into the languages to provide them as options in the code for users.)
+
+
+# Results
+
+
+## R vs Python
+A host of analyses were performed to ensure that the language used in the following sensitivity tests could be performed in either distribution of the MHW detection algorithm.
+This included comparisons of the [default](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python.html) outputs, how changing the [arguments](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_arguments.html) effected the default outputs, as well as a comparison of the other [functionality](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_additional.html) provided between the two languages. It was found that while some style differences exist between the added functionality of the languages, the core climatology outputs are identical to within < 0.001 per measurement. This established that results obtained with either language are comparable.
+
+
+## Limited time series
+
+
+### Short time series
+When time series shorter than the proscribed 30 years are not available, it is still possible to extract usable climatologies from them. The best [methods](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.htmlhttps://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to use are... 
+
+
+### Missing data
+
+
+### Predictable missing data
+
+
+## Alternative climatologies
+The investigation into the effect of [different methods](https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) for calculating climatologies showed that, given certain circumstances, the accuracy of the threshold climatologies could be improved.
+
+
+# Discussion
+
+## Best practices
+
+
+### Technical
+
+
+### Scientific
+
+
+## Case studies
+
+
+## Pitfalls
+
+
+# Conclusions
+
