@@ -19,7 +19,7 @@ knitr::opts_chunk$set(fig.width = 4, fig.align = 'center',
 
 ## Overview
 
-In this last comparison vignette between the two languages we will look at the other options that exist within the two languages. Slightly different approaches have been taken to provide the user with the ability to calculate block averages from the detection outputs as well as categorising the 'extremeness' of events. We will compare these different worflows/outputs below.
+In this last comparison vignette between the two languages we will look at the other options that exist within the two languages. Slightly different approaches have been taken to provide the user with the ability to calculate block averages from the detection outputs as well as categorising the 'extremeness' of events. We will compare these different workflows/outputs below.
 
 ```{r r-init}
 library(tidyverse)
@@ -100,7 +100,7 @@ cols_py <- colnames(block_py)[!(colnames(block_py) %in% colnames(block_r))]
 cols_py
 ```
 
-We may see from the comparison above that the R code outputs three columns that the Python code has no comparable columns for, `temp_mean`, `temp_min`, and `temp_max`. I don't know that this information is terribly useful considering it is a measuire of the temepratures over the year in question, and not of the events themselves. It is good to know, but perhaps not the purpose of this function, and a user would be expected to caluclate these values on their own. The fourth column that the R code outputs that the Python code lacks is `year`. We may see that the Python code creates `years_centre`, `years_end`, and `years_start`. The difference for this is that the Python version is set up to allow for block averages to be calculated for units of time other than single years, whereas the R version only outputs single annual means. I don't know that this needs to be expanded upon in the R code. I don't see this functions as terribly usful, to be honest. Surely if a user has gotten to this point, they can calculate block averages on their own to their own preferences. Lastly, R ommits the `intensity_max_max` and `duration` columns that Python includes. This would be simple to add into the R version, should the desire to do so exist.
+The one column that the R code outputs that the Python code lacks is `year`. We may see that the Python code creates `years_centre`, `years_end`, and `years_start`. The difference for this is that the Python version is set up to allow for block averages to be calculated for units of time other than single years, whereas the R version only outputs single annual means. I don't know that this needs to be expanded upon in the R code. I don't see this functions as terribly useful, to be honest. Surely if a user has gotten to this point, they can calculate block averages on their own to their own preferences.
 
 ### Comparison of outputs
 
@@ -110,11 +110,11 @@ Up next we look at how well the outputs correlate and sum up. As we saw in the p
 compare_event(block_r, block_py)
 ```
 
-As expected, the results correlate and sum up to nearly identical values. The mismatch being a product of rounding differences bewteen the languages. One surprise however is how different the `total_icum` values are. Looking into this more I see that it is an error in the R code for how these calculations were made. I will fix this issue when I add in the `intensity_max_max` and `duration` columns.
+As expected, the results correlate and sum up to nearly identical values. The mismatch being a product of rounding differences between the languages.
 
 ## Trend comparisons
 
-There is no comparable R functions that performs these claculations. One could be created if the desire exists.
+There is no comparable R functions that performs these calculations. One could be created if the desire exists.
 
 ```{python}
 mean, trend, dtrend = mhw.meanTrend(mhwBlock)
@@ -132,7 +132,7 @@ mean, trend, dtrend = mhw.meanTrend(mhwBlock)
 
 ## Category comparisons
 
-The final bit of extra functionality that musy be compared between the two languages is the newest addition for both. This is the calculation of categories for MHWs as seen in Hobday et al. (2018). THe two languages go about the calculation of these events in rather different ways. And produce different outputs. This is however intentional and so it must be decided if this is to be made more consistent, or be left as it is.
+The final bit of extra functionality that must be compared between the two languages is the newest addition for both. This is the calculation of categories for MHWs as seen in Hobday et al. (2018). The two languages go about the calculation of these events in rather different ways. And produce different outputs. This is however intentional and so it must be decided if this is to be made more consistent, or be left as it is.
 
 ```{r}
 # Load Python category results
@@ -150,11 +150,11 @@ I won't go about comparing the outputs of these functions the same as I have for
 
 ## Conclusion
 
-There is one error in the R code for the calculation of block events that I shall address. I shall add the missing columns to the R output as well. The other two questions that must be addressed are: 
+Two questions still beg an answer:
 
 1. Do we want to have a built in trend detecting function in the R code, _a la_ `meanTrend` in the Python package? I don't think so. We could write a vignette in the `heatwaveR` site showing users how to perform this calculation themselves, but I don't think it needs to be included as a function. It would be simple to do should the desire exist. 
-2. The output of the category information between the two languages is quite different. The Python code provides, as part of the base `detect` output, the days spent within each category, as well as the max categor reached. The R output rather provides the proportion of time spent in each category, as well as the max category. The R code has additional columns added in to better match Table 2 in Hobday et al. (2018). I think this is useful as a user would probably want a summary output of the category information. But I could be convinced that it is the days, rather than proportions, that should be provided without the additional columns as well.
+2. The output of the category information between the two languages is quite different. The Python code provides, as part of the base `detect` output, the days spent within each category, as well as the maximum category reached. The R output rather provides the proportion of time spent in each category, as well as the maximum category. The R code has additional columns added in to better match Table 2 in Hobday et al. (2018). I think this is useful as a user would probably want a summary output of the category information. But I could be convinced that it is the days, rather than proportions, that should be provided without the additional columns as well.
 
 That wraps up the comparisons of the languages. It can be said that where small rounding differences persist between the languages, the base outputs are comparable and the languages may be used interchangeably. The extra functionality also matches up, minus a couple of issues I will address. There are some difference, but these are stylistic and it is not clear that they should be changed/addressed.
 
-Therefore, after making those last couple of fixes, I will get started on looking at how to be go about consistently and reliably detecting thermal events in time series given a range of potnetial sub-optimal conditions.
+It is now time to get started on looking at how to be go about consistently and reliably detecting thermal events in time series given a range of potential sub-optimal conditions.

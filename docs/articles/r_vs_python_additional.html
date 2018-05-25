@@ -55,24 +55,32 @@
       <a href="../articles/Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
     </li>
     <li>
-      <a href="../articles/Short_climatologies.html">How to create climatologies from short time series</a>
+      <a href="../articles/Short_climatologies.html">Short climatologies</a>
     </li>
     <li>
-      <a href="../articles/r_vs_python.html">Default MHW outputs in R and Python</a>
+      <a href="../articles/r_vs_python.html">Python vs. R - default outputs</a>
     </li>
     <li>
-      <a href="../articles/r_vs_python_additional.html">Additional functionality for MHW outputs in R and Python</a>
+      <a href="../articles/r_vs_python_arguments.html">Python vs. R - default arguments</a>
     </li>
     <li>
-      <a href="../articles/r_vs_python_arguments.html">Arguments for MHW outputs in R and Python</a>
+      <a href="../articles/r_vs_python_additional.html">Python vs. R - additional functions</a>
     </li>
   </ul>
 </li>
 <li>
-  <a href="../news/index.html">Changelog</a>
+  <a href="../news/index.html">News</a>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/robwschlegel/MHWdetection">
+    <span class="fa fa-github fa-lg"></span>
+     
+    github
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -87,7 +95,7 @@
       <h1>Additional functionality for MHW outputs in R and Python</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-05-24</h4>
+            <h4 class="date">2018-05-25</h4>
       
       
       <div class="hidden name"><code>r_vs_python_additional.Rmd</code></div>
@@ -99,7 +107,7 @@
 <div id="overview" class="section level2">
 <h2 class="hasAnchor">
 <a href="#overview" class="anchor"></a>Overview</h2>
-<p>In this last comparison vignette between the two languages we will look at the other options that exist within the two languages. Slightly different approaches have been taken to provide the user with the ability to calculate block averages from the detection outputs as well as categorising the ‘extremeness’ of events. We will compare these different worflows/outputs below.</p>
+<p>In this last comparison vignette between the two languages we will look at the other options that exist within the two languages. Slightly different approaches have been taken to provide the user with the ability to calculate block averages from the detection outputs as well as categorising the ‘extremeness’ of events. We will compare these different workflows/outputs below.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
 <span class="kw">library</span>(ggpubr)
 <span class="kw">library</span>(heatwaveR)</code></pre></div>
@@ -154,12 +162,11 @@ block_py &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span cl
 <p>Initially we want to see how well the naming conventions for the columns hold up.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cols_r &lt;-<span class="st"> </span><span class="kw">colnames</span>(block_r)[<span class="op">!</span>(<span class="kw">colnames</span>(block_r) <span class="op">%in%</span><span class="st"> </span><span class="kw">colnames</span>(block_py))]
 cols_r</code></pre></div>
-<pre><code>## [1] "year"      "temp_mean" "temp_min"  "temp_max"</code></pre>
+<pre><code>## [1] "year"</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cols_py &lt;-<span class="st"> </span><span class="kw">colnames</span>(block_py)[<span class="op">!</span>(<span class="kw">colnames</span>(block_py) <span class="op">%in%</span><span class="st"> </span><span class="kw">colnames</span>(block_r))]
 cols_py</code></pre></div>
-<pre><code>## [1] "duration"          "intensity_max_max" "years_centre"     
-## [4] "years_end"         "years_start"</code></pre>
-<p>We may see from the comparison above that the R code outputs three columns that the Python code has no comparable columns for, <code>temp_mean</code>, <code>temp_min</code>, and <code>temp_max</code>. I don’t know that this information is terribly useful considering it is a measuire of the temepratures over the year in question, and not of the events themselves. It is good to know, but perhaps not the purpose of this function, and a user would be expected to caluclate these values on their own. The fourth column that the R code outputs that the Python code lacks is <code>year</code>. We may see that the Python code creates <code>years_centre</code>, <code>years_end</code>, and <code>years_start</code>. The difference for this is that the Python version is set up to allow for block averages to be calculated for units of time other than single years, whereas the R version only outputs single annual means. I don’t know that this needs to be expanded upon in the R code. I don’t see this functions as terribly usful, to be honest. Surely if a user has gotten to this point, they can calculate block averages on their own to their own preferences. Lastly, R ommits the <code>intensity_max_max</code> and <code>duration</code> columns that Python includes. This would be simple to add into the R version, should the desire to do so exist.</p>
+<pre><code>## [1] "years_centre" "years_end"    "years_start"</code></pre>
+<p>The one column that the R code outputs that the Python code lacks is <code>year</code>. We may see that the Python code creates <code>years_centre</code>, <code>years_end</code>, and <code>years_start</code>. The difference for this is that the Python version is set up to allow for block averages to be calculated for units of time other than single years, whereas the R version only outputs single annual means. I don’t know that this needs to be expanded upon in the R code. I don’t see this functions as terribly useful, to be honest. Surely if a user has gotten to this point, they can calculate block averages on their own to their own preferences.</p>
 </div>
 <div id="comparison-of-outputs" class="section level3">
 <h3 class="hasAnchor">
@@ -168,33 +175,32 @@ cols_py</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">compare_event</span>(block_r, block_py)</code></pre></div>
 <pre><code>##            r           sum                            var
 ## 1         NA            NA                           year
-## 2         NA            NA                      temp_mean
-## 3         NA            NA                       temp_min
-## 4         NA            NA                       temp_max
-## 5  1.0000000  0.000000e+00                          count
-## 6  0.9999991  3.184609e-03                 intensity_mean
-## 7  0.9999995  3.797761e-03                  intensity_max
-## 8  0.9992295  2.350205e-01                  intensity_var
-## 9  1.0000000  5.286055e-02           intensity_cumulative
-## 10 0.9999986  4.120563e-03       intensity_mean_relThresh
-## 11 0.9999996  4.575269e-03        intensity_max_relThresh
-## 12 0.9991691  2.341655e-01        intensity_var_relThresh
-## 13 0.9999999  1.092280e-01 intensity_cumulative_relThresh
-## 14 1.0000000  0.000000e+00             intensity_mean_abs
-## 15 0.9998088  3.368333e-01              intensity_max_abs
-## 16 0.9998059  2.489592e-01              intensity_var_abs
-## 17 1.0000000  0.000000e+00       intensity_cumulative_abs
-## 18 1.0000000 -3.203514e-05                     rate_onset
-## 19 0.9999997  2.186699e-04                   rate_decline
-## 20 0.9683879  0.000000e+00                     total_days
-## 21 0.5327867 -1.151521e+03                     total_icum</code></pre>
-<p>As expected, the results correlate and sum up to nearly identical values. The mismatch being a product of rounding differences bewteen the languages. One surprise however is how different the <code>total_icum</code> values are. Looking into this more I see that it is an error in the R code for how these calculations were made. I will fix this issue when I add in the <code>intensity_max_max</code> and <code>duration</code> columns.</p>
+## 2  1.0000000  0.000000e+00                          count
+## 3  1.0000000  0.000000e+00                       duration
+## 4  0.9999991  3.184609e-03                 intensity_mean
+## 5  0.9999995  3.797761e-03                  intensity_max
+## 6  0.9999997  6.187193e-03              intensity_max_max
+## 7  0.9992295  2.350205e-01                  intensity_var
+## 8  1.0000000  5.286055e-02           intensity_cumulative
+## 9  0.9999986  4.120563e-03       intensity_mean_relThresh
+## 10 0.9999996  4.575269e-03        intensity_max_relThresh
+## 11 0.9991691  2.341655e-01        intensity_var_relThresh
+## 12 0.9999999  1.092280e-01 intensity_cumulative_relThresh
+## 13 1.0000000  0.000000e+00             intensity_mean_abs
+## 14 0.9998088  3.368333e-01              intensity_max_abs
+## 15 0.9998059  2.489592e-01              intensity_var_abs
+## 16 1.0000000  0.000000e+00       intensity_cumulative_abs
+## 17 1.0000000 -3.203514e-05                     rate_onset
+## 18 0.9999997  2.186699e-04                   rate_decline
+## 19 0.9683879  0.000000e+00                     total_days
+## 20 0.9600661  1.573880e-01                     total_icum</code></pre>
+<p>As expected, the results correlate and sum up to nearly identical values. The mismatch being a product of rounding differences between the languages.</p>
 </div>
 </div>
 <div id="trend-comparisons" class="section level2">
 <h2 class="hasAnchor">
 <a href="#trend-comparisons" class="anchor"></a>Trend comparisons</h2>
-<p>There is no comparable R functions that performs these claculations. One could be created if the desire exists.</p>
+<p>There is no comparable R functions that performs these calculations. One could be created if the desire exists.</p>
 <div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">mean, trend, dtrend <span class="op">=</span> mhw.meanTrend(mhwBlock)
 <span class="co">#print(mean)</span>
 <span class="co">#print(trend)</span>
@@ -207,7 +213,7 @@ cols_py</code></pre></div>
 <div id="category-comparisons" class="section level2">
 <h2 class="hasAnchor">
 <a href="#category-comparisons" class="anchor"></a>Category comparisons</h2>
-<p>The final bit of extra functionality that musy be compared between the two languages is the newest addition for both. This is the calculation of categories for MHWs as seen in Hobday et al. (2018). THe two languages go about the calculation of these events in rather different ways. And produce different outputs. This is however intentional and so it must be decided if this is to be made more consistent, or be left as it is.</p>
+<p>The final bit of extra functionality that must be compared between the two languages is the newest addition for both. This is the calculation of categories for MHWs as seen in Hobday et al. (2018). The two languages go about the calculation of these events in rather different ways. And produce different outputs. This is however intentional and so it must be decided if this is to be made more consistent, or be left as it is.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load Python category results</span>
 category_py &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">"data/mhws_py.csv"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(date_peak, category, intensity_max, duration, 
@@ -251,13 +257,13 @@ category_r</code></pre></div>
 <div id="conclusion" class="section level2">
 <h2 class="hasAnchor">
 <a href="#conclusion" class="anchor"></a>Conclusion</h2>
-<p>There is one error in the R code for the calculation of block events that I shall address. I shall add the missing columns to the R output as well. The other two questions that must be addressed are:</p>
+<p>Two questions still beg an answer:</p>
 <ol style="list-style-type: decimal">
 <li>Do we want to have a built in trend detecting function in the R code, <em>a la</em> <code>meanTrend</code> in the Python package? I don’t think so. We could write a vignette in the <code>heatwaveR</code> site showing users how to perform this calculation themselves, but I don’t think it needs to be included as a function. It would be simple to do should the desire exist.</li>
-<li>The output of the category information between the two languages is quite different. The Python code provides, as part of the base <code>detect</code> output, the days spent within each category, as well as the max categor reached. The R output rather provides the proportion of time spent in each category, as well as the max category. The R code has additional columns added in to better match Table 2 in Hobday et al. (2018). I think this is useful as a user would probably want a summary output of the category information. But I could be convinced that it is the days, rather than proportions, that should be provided without the additional columns as well.</li>
+<li>The output of the category information between the two languages is quite different. The Python code provides, as part of the base <code>detect</code> output, the days spent within each category, as well as the maximum category reached. The R output rather provides the proportion of time spent in each category, as well as the maximum category. The R code has additional columns added in to better match Table 2 in Hobday et al. (2018). I think this is useful as a user would probably want a summary output of the category information. But I could be convinced that it is the days, rather than proportions, that should be provided without the additional columns as well.</li>
 </ol>
 <p>That wraps up the comparisons of the languages. It can be said that where small rounding differences persist between the languages, the base outputs are comparable and the languages may be used interchangeably. The extra functionality also matches up, minus a couple of issues I will address. There are some difference, but these are stylistic and it is not clear that they should be changed/addressed.</p>
-<p>Therefore, after making those last couple of fixes, I will get started on looking at how to be go about consistently and reliably detecting thermal events in time series given a range of potnetial sub-optimal conditions.</p>
+<p>It is now time to get started on looking at how to be go about consistently and reliably detecting thermal events in time series given a range of potential sub-optimal conditions.</p>
 </div>
   </div>
 

@@ -181,8 +181,8 @@ res_event_R <- res$event
 res_clim_R <- res$climatology
 
 # Set Python results
-res_event_Python <- read_csv("mhws_py.csv")
-res_clim_Python <- read_csv("clim_py.csv")
+res_event_Python <- read_csv("data/mhws_py.csv")
+res_clim_Python <- read_csv("data/clim_py.csv")
 ```
 
 With these default results loaded in the same format in the same language we can now start to look at how they stack up. For starters I am just doing some simple correlations.
@@ -217,7 +217,7 @@ res_event_num <- res_event_R %>%
 # Run the loop
 res_event_cor <- data.frame()
 for(i in 1:length(colnames(res_event_num))){
-  if(colnames(res_event_num)[i] %in% colnames(res_event_Python) & res_event_R[1,i] > 0){
+  if(colnames(res_event_num)[i] %in% colnames(res_event_Python)){
     x1 <- res_event_R[colnames(res_event_R) == colnames(res_event_num)[i]]
     x2 <- res_event_Python[colnames(res_event_Python) == colnames(res_event_num)[i]]
     x <- data.frame(r = cor(x1, x2), var = colnames(res_event_num)[i])
