@@ -3,10 +3,16 @@ pkgdown: 1.0.0
 pkgdown_sha: ~
 articles:
   Climatologies_and_baselines: Climatologies_and_baselines.html
+  MHWdetection: MHWdetection.html
   Short_climatologies: Short_climatologies.html
+  best_practices: best_practices.html
+  gridded_products: gridded_products.html
+  non_random_missing_data: non_random_missing_data.html
   r_vs_python: r_vs_python.html
   r_vs_python_additional: r_vs_python_additional.html
   r_vs_python_arguments: r_vs_python_arguments.html
+  random_missing_data: random_missing_data.html
+  time_series_duration: time_series_duration.html
 urls:
   reference: https://robwschlegel.github.io/MHWdetection/index.html/reference
   article: https://robwschlegel.github.io/MHWdetection/index.html/articles

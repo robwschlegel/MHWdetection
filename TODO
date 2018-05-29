@@ -1,0 +1,18 @@
+Start experimenting with short time series
+- Julian day take variance around the estimated means for the calculated climatologies
+- Experiment with the three different lengths
+- Then look at RMSE against the known 30 year climatology
+- Do this ofr all of the different arguments for the default climatology methodology
+
+- Then do all of these same steps for the Fourrier transformation
+
+Start experimenting with missing data
+- When do consecutive mising days start to have a serious effect
+
+Start experiementing on how short time series affect default detection
+- Do they dissapear?
+- How might they change?
+
+Eventually start getting gridded data
+- Compare pixels to see how detection differs between products
+- What parameters must be changed and why to optimise our confidence in detection between products

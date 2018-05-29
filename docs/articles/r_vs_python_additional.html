@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">MHWdetection</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
 
@@ -52,12 +52,6 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
-    </li>
-    <li>
-      <a href="../articles/Short_climatologies.html">Short climatologies</a>
-    </li>
-    <li>
       <a href="../articles/r_vs_python.html">Python vs. R - default outputs</a>
     </li>
     <li>
@@ -65,6 +59,27 @@
     </li>
     <li>
       <a href="../articles/r_vs_python_additional.html">Python vs. R - additional functions</a>
+    </li>
+    <li>
+      <a href="../articles/Short_climatologies.html">Short climatologies</a>
+    </li>
+    <li>
+      <a href="../articles/Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
+    </li>
+    <li>
+      <a href="../articles/time_series_duration.html">Effects of short time series</a>
+    </li>
+    <li>
+      <a href="../articles/random_missing_data.html">Effects of random missing data</a>
+    </li>
+    <li>
+      <a href="../articles/non_random_missing_data.html">Effects of non-random mising data</a>
+    </li>
+    <li>
+      <a href="../articles/gridded_products.html">Difference between gridded products</a>
+    </li>
+    <li>
+      <a href="../articles/best_practices.html">Best practices</a>
     </li>
   </ul>
 </li>
@@ -95,7 +110,7 @@
       <h1>Additional functionality for MHW outputs in R and Python</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-05-25</h4>
+            <h4 class="date">2018-05-29</h4>
       
       
       <div class="hidden name"><code>r_vs_python_additional.Rmd</code></div>
@@ -177,23 +192,23 @@ cols_py</code></pre></div>
 ## 1         NA            NA                           year
 ## 2  1.0000000  0.000000e+00                          count
 ## 3  1.0000000  0.000000e+00                       duration
-## 4  0.9999991  3.184609e-03                 intensity_mean
-## 5  0.9999995  3.797761e-03                  intensity_max
-## 6  0.9999997  6.187193e-03              intensity_max_max
-## 7  0.9992295  2.350205e-01                  intensity_var
-## 8  1.0000000  5.286055e-02           intensity_cumulative
-## 9  0.9999986  4.120563e-03       intensity_mean_relThresh
-## 10 0.9999996  4.575269e-03        intensity_max_relThresh
+## 4  0.9999991  3.213840e-03                 intensity_mean
+## 5  0.9999995  3.822194e-03                  intensity_max
+## 6  0.9999997  6.304469e-03              intensity_max_max
+## 7  0.9992296  2.350236e-01                  intensity_var
+## 8  1.0000000  5.376411e-02           intensity_cumulative
+## 9  0.9999986  4.120556e-03       intensity_mean_relThresh
+## 10 0.9999996  4.575263e-03        intensity_max_relThresh
 ## 11 0.9991691  2.341655e-01        intensity_var_relThresh
-## 12 0.9999999  1.092280e-01 intensity_cumulative_relThresh
+## 12 0.9999999  1.092277e-01 intensity_cumulative_relThresh
 ## 13 1.0000000  0.000000e+00             intensity_mean_abs
 ## 14 0.9998088  3.368333e-01              intensity_max_abs
 ## 15 0.9998059  2.489592e-01              intensity_var_abs
 ## 16 1.0000000  0.000000e+00       intensity_cumulative_abs
-## 17 1.0000000 -3.203514e-05                     rate_onset
-## 18 0.9999997  2.186699e-04                   rate_decline
+## 17 1.0000000 -3.197191e-05                     rate_onset
+## 18 0.9999997  2.187176e-04                   rate_decline
 ## 19 0.9683879  0.000000e+00                     total_days
-## 20 0.9600661  1.573880e-01                     total_icum</code></pre>
+## 20 0.9600666  1.615886e-01                     total_icum</code></pre>
 <p>As expected, the results correlate and sum up to nearly identical values. The mismatch being a product of rounding differences between the languages.</p>
 </div>
 </div>

@@ -13,7 +13,19 @@
     <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/Climatologies_and_baselines.html</loc>
   </url>
   <url>
+    <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/MHWdetection.html</loc>
+  </url>
+  <url>
     <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/Short_climatologies.html</loc>
+  </url>
+  <url>
+    <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/best_practices.html</loc>
+  </url>
+  <url>
+    <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/gridded_products.html</loc>
+  </url>
+  <url>
+    <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/non_random_missing_data.html</loc>
   </url>
   <url>
     <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/r_vs_python.html</loc>
@@ -23,5 +35,11 @@
   </url>
   <url>
     <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/r_vs_python_arguments.html</loc>
+  </url>
+  <url>
+    <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/random_missing_data.html</loc>
+  </url>
+  <url>
+    <loc>https://robwschlegel.github.io/MHWdetection/index.html/articles/time_series_duration.html</loc>
   </url>
 </urlset>

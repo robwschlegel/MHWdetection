@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">MHWdetection</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
 
@@ -52,12 +52,6 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
-    </li>
-    <li>
-      <a href="../articles/Short_climatologies.html">Short climatologies</a>
-    </li>
-    <li>
       <a href="../articles/r_vs_python.html">Python vs. R - default outputs</a>
     </li>
     <li>
@@ -65,6 +59,27 @@
     </li>
     <li>
       <a href="../articles/r_vs_python_additional.html">Python vs. R - additional functions</a>
+    </li>
+    <li>
+      <a href="../articles/Short_climatologies.html">Short climatologies</a>
+    </li>
+    <li>
+      <a href="../articles/Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
+    </li>
+    <li>
+      <a href="../articles/time_series_duration.html">Effects of short time series</a>
+    </li>
+    <li>
+      <a href="../articles/random_missing_data.html">Effects of random missing data</a>
+    </li>
+    <li>
+      <a href="../articles/non_random_missing_data.html">Effects of non-random mising data</a>
+    </li>
+    <li>
+      <a href="../articles/gridded_products.html">Difference between gridded products</a>
+    </li>
+    <li>
+      <a href="../articles/best_practices.html">Best practices</a>
     </li>
   </ul>
 </li>
@@ -95,7 +110,7 @@
       <h1>Arguments for MHW outputs in R and Python</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-05-25</h4>
+            <h4 class="date">2018-05-29</h4>
       
       
       <div class="hidden name"><code>r_vs_python_arguments.Rmd</code></div>
@@ -152,15 +167,15 @@ default_r &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdo
 <span class="kw">cor</span>(default_r<span class="op">$</span>climatology<span class="op">$</span>seas, default_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(default_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(default_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(default_r<span class="op">$</span>climatology<span class="op">$</span>thresh, default_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999996</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(default_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(default_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.563516</code></pre>
+<pre><code>## [1] -6.563502</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(default_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(default_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.157388</code></pre>
+<pre><code>## [1] 0.1615886</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(default_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(default_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.008520925</code></pre>
+<pre><code>## [1] 0.008638202</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare default events</span>
 default_event &lt;-<span class="st"> </span><span class="kw">compare_event</span>(default_r<span class="op">$</span>event, default_py_event)
 default_event</code></pre></div>
@@ -183,7 +198,7 @@ default_event</code></pre></div>
 ## 16 0.9997267              intensity_var_abs
 ## 17 1.0000000       intensity_cumulative_abs
 ## 18 1.0000000                     rate_onset
-## 19 1.0000000                   rate_decline</code></pre>
+## 19 0.9999999                   rate_decline</code></pre>
 </div>
 <div id="pctile-comparisons" class="section level2">
 <h2 class="hasAnchor">
@@ -229,41 +244,41 @@ pctile_99_py_clim &lt;-<span class="st"> </span><span class="kw">read_csv</span>
 <span class="kw">cor</span>(pctile_80_r<span class="op">$</span>climatology<span class="op">$</span>seas, pctile_80_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_80_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_80_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(pctile_80_r<span class="op">$</span>climatology<span class="op">$</span>thresh, pctile_80_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999982</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_80_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_80_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -13.86432</code></pre>
+<pre><code>## [1] -14.02525</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_80_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_80_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 2.430907</code></pre>
+<pre><code>## [1] 2.440135</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_80_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_80_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] -1.103187</code></pre>
+<pre><code>## [1] -1.102664</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 95</span>
 <span class="kw">cor</span>(pctile_95_r<span class="op">$</span>climatology<span class="op">$</span>seas, pctile_95_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_95_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_95_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(pctile_95_r<span class="op">$</span>climatology<span class="op">$</span>thresh, pctile_95_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_95_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_95_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] -3.382435</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_95_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_95_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.05814455</code></pre>
+<pre><code>## [1] 0.06078328</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_95_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_95_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.007503145</code></pre>
+<pre><code>## [1] 0.007673729</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 99</span>
 <span class="kw">cor</span>(pctile_99_r<span class="op">$</span>climatology<span class="op">$</span>seas, pctile_99_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_99_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_99_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(pctile_99_r<span class="op">$</span>climatology<span class="op">$</span>thresh, pctile_99_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999944</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_99_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_99_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 28.37769</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_99_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_99_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] -0.004070026</code></pre>
+<pre><code>## [1] -0.003483643</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(pctile_99_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(pctile_99_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] -0.0004070026</code></pre>
+<pre><code>## [1] -0.0003483643</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare events</span>
 <span class="co"># pctile_80_event &lt;- compare_event(pctile_80_r$event, pctile_80_py_event)</span>
 pctile_95_event &lt;-<span class="st"> </span><span class="kw">compare_event</span>(pctile_95_r<span class="op">$</span>event, pctile_95_py_event)
@@ -276,7 +291,7 @@ pctile_95_event</code></pre></div>
 ## 5  1.0000000                       duration
 ## 6  0.9999988                 intensity_mean
 ## 7  0.9999996                  intensity_max
-## 8  0.9988690                  intensity_var
+## 8  0.9988691                  intensity_var
 ## 9  1.0000000           intensity_cumulative
 ## 10 0.9999979       intensity_mean_relThresh
 ## 11 0.9999468        intensity_max_relThresh
@@ -348,15 +363,15 @@ default_r_old_clim &lt;-<span class="st"> </span>default_r_old<span class="op">$
 <span class="kw">cor</span>(default_r<span class="op">$</span>climatology<span class="op">$</span>seas, default_r_old_clim<span class="op">$</span>seas_clim_year)</code></pre></div>
 <pre><code>## [1] 1</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(default_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(default_r_old_clim<span class="op">$</span>seas_clim_year)</code></pre></div>
-<pre><code>## [1] 0</code></pre>
+<pre><code>## [1] -0.05852104</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(default_r<span class="op">$</span>climatology<span class="op">$</span>thresh, default_r_old_clim<span class="op">$</span>thresh_clim_year)</code></pre></div>
 <pre><code>## [1] 1</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(default_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(default_r_old_clim<span class="op">$</span>thresh_clim_year)</code></pre></div>
-<pre><code>## [1] 5.820766e-11</code></pre>
+<pre><code>## [1] 1.414987e-05</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(default_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(default_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.157388</code></pre>
+<pre><code>## [1] 0.1615886</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(default_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(default_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.008520925</code></pre>
+<pre><code>## [1] 0.008638202</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare default new and old R clims</span>
 default_event &lt;-<span class="st"> </span><span class="kw">compare_event</span>(default_r<span class="op">$</span>event, default_r_old_event)
 default_event</code></pre></div>
@@ -459,41 +474,41 @@ spw_51_py_clim &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<s
 <span class="kw">cor</span>(spw_no_r<span class="op">$</span>climatology<span class="op">$</span>seas, spw_no_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999992</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_no_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -2.061954</code></pre>
+<pre><code>## [1] -2.11781</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(spw_no_r<span class="op">$</span>climatology<span class="op">$</span>thresh, spw_no_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999965</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_no_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.499</code></pre>
+<pre><code>## [1] -6.498985</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_no_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.1080191</code></pre>
+<pre><code>## [1] 0.1114894</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_no_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.01519676</code></pre>
+<pre><code>## [1] 0.01536202</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 11 days</span>
 <span class="kw">cor</span>(spw_11_r<span class="op">$</span>climatology<span class="op">$</span>seas, spw_11_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999997</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_11_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_11_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.99972</code></pre>
+<pre><code>## [1] -2.055576</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(spw_11_r<span class="op">$</span>climatology<span class="op">$</span>thresh, spw_11_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_11_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_11_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.317182</code></pre>
+<pre><code>## [1] -6.317168</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_11_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_11_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.1191614</code></pre>
+<pre><code>## [1] 0.1227369</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_11_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_11_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.005962097</code></pre>
+<pre><code>## [1] 0.006142374</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 51 days</span>
 <span class="kw">cor</span>(spw_51_r<span class="op">$</span>climatology<span class="op">$</span>seas, spw_51_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_51_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_51_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.97723</code></pre>
+<pre><code>## [1] -2.036326</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(spw_51_r<span class="op">$</span>climatology<span class="op">$</span>thresh, spw_51_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999998</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_51_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_51_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.616647</code></pre>
+<pre><code>## [1] -6.616633</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_51_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_51_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.1498496</code></pre>
+<pre><code>## [1] 0.1545285</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_51_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_51_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.006400502</code></pre>
+<pre><code>## [1] 0.006523632</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare events</span>
 spw_no_event &lt;-<span class="st"> </span><span class="kw">compare_event</span>(spw_no_r<span class="op">$</span>event, spw_no_py_event)
 spw_no_event</code></pre></div>
@@ -504,8 +519,8 @@ spw_no_event</code></pre></div>
 ## 4  1.0000000                      index_end
 ## 5  1.0000000                       duration
 ## 6  0.9999980                 intensity_mean
-## 7  0.9999992                  intensity_max
-## 8  0.9993830                  intensity_var
+## 7  0.9999991                  intensity_max
+## 8  0.9993831                  intensity_var
 ## 9  0.9999999           intensity_cumulative
 ## 10 0.9999956       intensity_mean_relThresh
 ## 11 0.9997743        intensity_max_relThresh
@@ -516,7 +531,7 @@ spw_no_event</code></pre></div>
 ## 16 0.9995816              intensity_var_abs
 ## 17 1.0000000       intensity_cumulative_abs
 ## 18 0.9999992                     rate_onset
-## 19 0.9999995                   rate_decline</code></pre>
+## 19 0.9999994                   rate_decline</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">spw_11_event &lt;-<span class="st"> </span><span class="kw">compare_event</span>(spw_11_r<span class="op">$</span>event, spw_11_py_event)
 spw_11_event</code></pre></div>
 <pre><code>##            r                            var
@@ -569,18 +584,18 @@ spw_no_r_old_clim &lt;-<span class="st"> </span>spw_no_r_old<span class="op">$</
 
 <span class="co"># Compare new and old R code</span>
 <span class="kw">sum</span>(spw_no_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_r_old_clim<span class="op">$</span>seas_clim_year)</code></pre></div>
-<pre><code>## [1] 0</code></pre>
+<pre><code>## [1] -0.05585566</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_no_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_r_old_clim<span class="op">$</span>thresh_clim_year)</code></pre></div>
-<pre><code>## [1] 0</code></pre>
+<pre><code>## [1] 1.450436e-05</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare old &amp; new R against Python</span>
 <span class="kw">sum</span>(spw_no_py_clim<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_r_old_clim<span class="op">$</span>seas_clim_year)</code></pre></div>
 <pre><code>## [1] 2.061954</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_no_py_clim<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_r<span class="op">$</span>climatology<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] 2.061954</code></pre>
+<pre><code>## [1] 2.11781</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_no_py_clim<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_r_old_clim<span class="op">$</span>thresh_clim_year)</code></pre></div>
 <pre><code>## [1] 6.499</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(spw_no_py_clim<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(spw_no_r<span class="op">$</span>climatology<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] 6.499</code></pre>
+<pre><code>## [1] 6.498985</code></pre>
 </div>
 <div id="windowhalfwidth-comparisons" class="section level2">
 <h2 class="hasAnchor">
@@ -613,28 +628,28 @@ whw_7_py_clim &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<sp
 <span class="kw">cor</span>(whw_3_r<span class="op">$</span>climatology<span class="op">$</span>seas, whw_3_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_3_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_3_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.239599</code></pre>
+<pre><code>## [1] -1.29812</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(whw_3_r<span class="op">$</span>climatology<span class="op">$</span>thresh, whw_3_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_3_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_3_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -3.037484</code></pre>
+<pre><code>## [1] -3.037448</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_3_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_3_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.1001013</code></pre>
+<pre><code>## [1] 0.1043065</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_3_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_3_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.005394135</code></pre>
+<pre><code>## [1] 0.005511411</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 7 days</span>
 <span class="kw">cor</span>(whw_7_r<span class="op">$</span>climatology<span class="op">$</span>seas, whw_7_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999998</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_7_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_7_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -2.796456</code></pre>
+<pre><code>## [1] -2.854977</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(whw_7_r<span class="op">$</span>climatology<span class="op">$</span>thresh, whw_7_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.999998</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_7_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_7_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -13.58655</code></pre>
+<pre><code>## [1] -13.58653</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_7_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_7_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 8.298912</code></pre>
+<pre><code>## [1] 8.3034</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_7_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_7_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 1.901123</code></pre>
+<pre><code>## [1] 1.901295</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare events</span>
 whw_3_event &lt;-<span class="st"> </span><span class="kw">compare_event</span>(whw_3_r<span class="op">$</span>event, whw_3_py_event)
 whw_3_event</code></pre></div>
@@ -644,9 +659,9 @@ whw_3_event</code></pre></div>
 ## 3  1.0000000                     index_peak
 ## 4  1.0000000                      index_end
 ## 5  1.0000000                       duration
-## 6  0.9999996                 intensity_mean
+## 6  0.9999997                 intensity_mean
 ## 7  0.9999999                  intensity_max
-## 8  0.9996481                  intensity_var
+## 8  0.9996482                  intensity_var
 ## 9  1.0000000           intensity_cumulative
 ## 10 0.9999993       intensity_mean_relThresh
 ## 11 0.9999937        intensity_max_relThresh
@@ -671,13 +686,13 @@ whw_7_r_old &lt;-<span class="st"> </span>RmarineHeatWaves<span class="op">::</s
 
 <span class="co"># Compare new and old R code</span>
 <span class="kw">sum</span>(whw_7_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_7_r_old<span class="op">$</span>clim<span class="op">$</span>seas_clim_year)</code></pre></div>
-<pre><code>## [1] -2.910383e-11</code></pre>
+<pre><code>## [1] -0.05852104</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_7_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_7_r_old<span class="op">$</span>clim<span class="op">$</span>thresh_clim_year)</code></pre></div>
-<pre><code>## [1] 0</code></pre>
+<pre><code>## [1] 1.413544e-05</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_7_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_7_r_old<span class="op">$</span>event<span class="op">$</span>int_cum)</code></pre></div>
-<pre><code>## [1] 4.547474e-13</code></pre>
+<pre><code>## [1] 0.004487785</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(whw_7_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(whw_7_r_old<span class="op">$</span>event<span class="op">$</span>int_max)</code></pre></div>
-<pre><code>## [1] 2.842171e-14</code></pre>
+<pre><code>## [1] 0.0001720057</code></pre>
 <p>Everything matches up between old and new R for <code>windowHalfWidth = 7</code>.</p>
 </div>
 <div id="minduration-comparisons" class="section level2">
@@ -711,28 +726,28 @@ minD_7_py_clim &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<s
 <span class="kw">cor</span>(minD_3_r<span class="op">$</span>climatology<span class="op">$</span>seas, minD_3_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(minD_3_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(minD_3_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(minD_3_r<span class="op">$</span>climatology<span class="op">$</span>thresh, minD_3_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999996</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(minD_3_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(minD_3_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.563516</code></pre>
+<pre><code>## [1] -6.563502</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(minD_3_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(minD_3_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.1896852</code></pre>
+<pre><code>## [1] 0.1950053</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(minD_3_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(minD_3_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.01326261</code></pre>
+<pre><code>## [1] 0.01368907</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 7 days</span>
 <span class="kw">cor</span>(minD_7_r<span class="op">$</span>climatology<span class="op">$</span>seas, minD_7_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(minD_7_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(minD_7_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(minD_7_r<span class="op">$</span>climatology<span class="op">$</span>thresh, minD_7_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999996</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(minD_7_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(minD_7_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.563516</code></pre>
+<pre><code>## [1] -6.563502</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(minD_7_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(minD_7_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.1119377</code></pre>
+<pre><code>## [1] 0.1159891</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(minD_7_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(minD_7_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.007003591</code></pre>
+<pre><code>## [1] 0.007120868</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare events</span>
 minD_3_event &lt;-<span class="st"> </span><span class="kw">compare_event</span>(minD_3_r<span class="op">$</span>event, minD_3_py_event)
 minD_3_event</code></pre></div>
@@ -766,7 +781,7 @@ minD_7_event</code></pre></div>
 ## 5  1.0000000                       duration
 ## 6  0.9999992                 intensity_mean
 ## 7  0.9999997                  intensity_max
-## 8  0.9992868                  intensity_var
+## 8  0.9992869                  intensity_var
 ## 9  1.0000000           intensity_cumulative
 ## 10 0.9999965       intensity_mean_relThresh
 ## 11 0.9999769        intensity_max_relThresh
@@ -821,41 +836,41 @@ joinAG_5_py_clim &lt;-<span class="st"> </span><span class="kw">read_csv</span>(
 <span class="kw">cor</span>(joinAG_no_r<span class="op">$</span>climatology<span class="op">$</span>seas, joinAG_no_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_no_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_no_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(joinAG_no_r<span class="op">$</span>climatology<span class="op">$</span>thresh, joinAG_no_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999996</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_no_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_no_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.563516</code></pre>
+<pre><code>## [1] -6.563502</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_no_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_no_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.1503818</code></pre>
+<pre><code>## [1] 0.1545771</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_no_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_no_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.01419052</code></pre>
+<pre><code>## [1] 0.01432912</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1 day</span>
 <span class="kw">cor</span>(joinAG_1_r<span class="op">$</span>climatology<span class="op">$</span>seas, joinAG_1_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_1_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_1_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(joinAG_1_r<span class="op">$</span>climatology<span class="op">$</span>thresh, joinAG_1_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999996</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_1_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_1_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.563516</code></pre>
+<pre><code>## [1] -6.563502</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_1_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_1_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.1527155</code></pre>
+<pre><code>## [1] 0.1569108</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_1_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_1_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.01185678</code></pre>
+<pre><code>## [1] 0.01199538</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 7 days</span>
 <span class="kw">cor</span>(joinAG_5_r<span class="op">$</span>climatology<span class="op">$</span>seas, joinAG_5_py_clim<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_5_r<span class="op">$</span>climatology<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_5_py_clim<span class="op">$</span>seas)</code></pre></div>
-<pre><code>## [1] -1.98122</code></pre>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(joinAG_5_r<span class="op">$</span>climatology<span class="op">$</span>thresh, joinAG_5_py_clim<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999996</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_5_r<span class="op">$</span>climatology<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_5_py_clim<span class="op">$</span>thresh)</code></pre></div>
-<pre><code>## [1] -6.563516</code></pre>
+<pre><code>## [1] -6.563502</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_5_r<span class="op">$</span>event<span class="op">$</span>intensity_cumulative) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_5_py_event<span class="op">$</span>intensity_cumulative)</code></pre></div>
-<pre><code>## [1] 0.155353</code></pre>
+<pre><code>## [1] 0.1598468</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(joinAG_5_r<span class="op">$</span>event<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(joinAG_5_py_event<span class="op">$</span>intensity_max)</code></pre></div>
-<pre><code>## [1] 0.008520925</code></pre>
+<pre><code>## [1] 0.008638202</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Compare events</span>
 joinAG_no_event &lt;-<span class="st"> </span><span class="kw">compare_event</span>(joinAG_no_r<span class="op">$</span>event, joinAG_no_py_event)
 joinAG_no_event</code></pre></div>
@@ -865,9 +880,9 @@ joinAG_no_event</code></pre></div>
 ## 3  1.0000000                     index_peak
 ## 4  1.0000000                      index_end
 ## 5  1.0000000                       duration
-## 6  0.9999989                 intensity_mean
+## 6  0.9999990                 intensity_mean
 ## 7  0.9999997                  intensity_max
-## 8  0.9989915                  intensity_var
+## 8  0.9989917                  intensity_var
 ## 9  1.0000000           intensity_cumulative
 ## 10 0.9999972       intensity_mean_relThresh
 ## 11 0.9999993        intensity_max_relThresh
@@ -889,7 +904,7 @@ joinAG_1_event</code></pre></div>
 ## 5  1.0000000                       duration
 ## 6  0.9999991                 intensity_mean
 ## 7  0.9999997                  intensity_max
-## 8  0.9992941                  intensity_var
+## 8  0.9992942                  intensity_var
 ## 9  1.0000000           intensity_cumulative
 ## 10 0.9999971       intensity_mean_relThresh
 ## 11 0.9999832        intensity_max_relThresh
@@ -911,7 +926,7 @@ joinAG_5_event</code></pre></div>
 ## 5  1.0000000                       duration
 ## 6  0.9999990                 intensity_mean
 ## 7  0.9999997                  intensity_max
-## 8  0.9995553                  intensity_var
+## 8  0.9995554                  intensity_var
 ## 9  1.0000000           intensity_cumulative
 ## 10 0.9999960       intensity_mean_relThresh
 ## 11 0.9999993        intensity_max_relThresh

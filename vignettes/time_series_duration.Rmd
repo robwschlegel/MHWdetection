@@ -1,0 +1,45 @@
+---
+title: "Assessing the effect of time series duration"
+author: "Robert Schlegel"
+date: "`r Sys.Date()`"
+description: "This vignette goes into depth on the effects of time series duration for the detection of events."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: bibliography.bib
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 6, fig.align = 'center',
+                      warning = FALSE, message = FALSE, 
+                      tidy = FALSE)
+```
+
+## Overview
+
+The purpose of this vignette is to lay out, in detail, how one goes about testing a range of variables, and analysing the effects they have on the detection of MHWs. THis has a plurality of meanings, which will be discussed at more depth in the following sections.
+
+## Time series shortening
+
+```{r r-init}
+library(heatwaveR)
+```
+
+Systematically reducing time series length of the three reference time series—i.e., from 30-year to 20-year and 10-year.
+Bootstrapping (I have used 100 resamples, but this can be adjusted upwards if necessary).
+
+### Standard climatologies
+
+Measurement metrics:
+
+ * for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 bootstrapped samples;
+ * for each doy, calculate the RMSE of the boostrapped means relative to the true climatology (i.e. the one produced from the 30-year long time series);
+ * correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
+
+Also assess the effect of systematic varying windowHalfWidth and smoothPercentile and studying the outcomes for the three time series lengths.
+
+### Fourier transform climatologies
+
+Same as above

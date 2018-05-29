@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">MHWdetection</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
 
@@ -52,12 +52,6 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
-    </li>
-    <li>
-      <a href="../articles/Short_climatologies.html">Short climatologies</a>
-    </li>
-    <li>
       <a href="../articles/r_vs_python.html">Python vs. R - default outputs</a>
     </li>
     <li>
@@ -65,6 +59,27 @@
     </li>
     <li>
       <a href="../articles/r_vs_python_additional.html">Python vs. R - additional functions</a>
+    </li>
+    <li>
+      <a href="../articles/Short_climatologies.html">Short climatologies</a>
+    </li>
+    <li>
+      <a href="../articles/Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
+    </li>
+    <li>
+      <a href="../articles/time_series_duration.html">Effects of short time series</a>
+    </li>
+    <li>
+      <a href="../articles/random_missing_data.html">Effects of random missing data</a>
+    </li>
+    <li>
+      <a href="../articles/non_random_missing_data.html">Effects of non-random mising data</a>
+    </li>
+    <li>
+      <a href="../articles/gridded_products.html">Difference between gridded products</a>
+    </li>
+    <li>
+      <a href="../articles/best_practices.html">Best practices</a>
     </li>
   </ul>
 </li>
@@ -95,7 +110,7 @@
       <h1>Default MHW outputs in R and Python</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-05-25</h4>
+            <h4 class="date">2018-05-29</h4>
       
       
       <div class="hidden name"><code>r_vs_python.Rmd</code></div>
@@ -269,7 +284,7 @@ res_clim_Python &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_event_R<span class="op">$</span>rate_onset, res_event_Python<span class="op">$</span>rate_onset)</code></pre></div>
 <pre><code>## [1] 1</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_event_R<span class="op">$</span>rate_decline, res_event_Python<span class="op">$</span>rate_decline)</code></pre></div>
-<pre><code>## [1] 1</code></pre>
+<pre><code>## [1] 0.9999999</code></pre>
 <p>With that looking fine, we next run a for loop that will run a correlation on all rows with the same name.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Remove non-numeric columns</span>
 res_event_num &lt;-<span class="st"> </span>res_event_R <span class="op">%&gt;%</span><span class="st"> </span>
@@ -310,7 +325,7 @@ res_event_cor</code></pre></div>
 ## 16 0.9997267              intensity_var_abs
 ## 17 1.0000000       intensity_cumulative_abs
 ## 18 1.0000000                     rate_onset
-## 19 1.0000000                   rate_decline</code></pre>
+## 19 0.9999999                   rate_decline</code></pre>
 <p>With all of our overlapping columns compared, and our Pearson r values looking solid, let’s finish off this basic comparison by finding which columns are not shared between the different language outputs.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cols_R &lt;-<span class="st"> </span><span class="kw">colnames</span>(res_event_R)[<span class="op">!</span>(<span class="kw">colnames</span>(res_event_R) <span class="op">%in%</span><span class="st"> </span><span class="kw">colnames</span>(res_event_Python))]
 cols_R</code></pre></div>
@@ -333,7 +348,7 @@ cols_Py</code></pre></div>
 <a href="#r" class="anchor"></a>R</h3>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/detect_event">detect_event</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm</a></span>(<span class="dt">data =</span> sst_WA, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>))))</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.240   0.000   0.241</code></pre>
+##   0.572   0.012   0.585</code></pre>
 </div>
 <div id="python" class="section level3">
 <h3 class="hasAnchor">
@@ -343,7 +358,7 @@ t1 <span class="op">=</span> time.time()
 mhws, clim <span class="op">=</span> mhw.detect(t, sst)
 t2 <span class="op">=</span> time.time()
 <span class="bu">print</span>(t2<span class="op">-</span>t1)</code></pre></div>
-<pre><code>## 0.191089868546</code></pre>
+<pre><code>## 0.162385940552</code></pre>
 <p>The Python code appears to be just a bit faster at ~0.18 seconds to ~0.20 seconds for R. And it is calculating the event categories as well, which R is not. That is done in an additonal step with <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/category">category()</a></code>.</p>
 </div>
 </div>
