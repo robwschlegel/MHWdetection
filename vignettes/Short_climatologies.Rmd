@@ -25,7 +25,7 @@ library(lubridate) # for working with dates
 
 How does one create the best climatology? What if the time series is shorter than the recommended 30 years?
 
-Lets look at all the SACTN data that's longer than 30 years first. Can each site's annual signal be represented by a sine/cosine curve derived from a Fourier analysis? First I find all the sites within the South African Coastal Temperature Network that are approaimately 30 years or more in duration.
+Lets look at all the SACTN data that's longer than 30 years first. Can each site's annual signal be represented by a sine/cosine curve derived from a Fourier analysis? First I find all the sites within the South African Coastal Temperature Network that are approximately 30 years or more in duration.
 
 ```{r}
 load("~/SACTNraw/data/4_products/SACTN_daily_v4.2.RData")
@@ -52,7 +52,7 @@ daily <- daily.in %>%
   ungroup()
 ```
 
-I make a function that will fit a Fourier series with seven basis functions (3 sine, 3 cosine and the constant) to the data. This is the same approach I used to create the smooth climatology in "Climatologies and baseline" elsewhere on this site, and it is also the one favoured in the creation of the dialy Optimally Interpolated Sea Surface Temperature climatology [@Banzon2014]. Here it is wrapped in a function so I can easily apply it to each time series.
+I make a function that will fit a Fourier series with seven basis functions (3 sine, 3 cosine and the constant) to the data. This is the same approach I used to create the smooth climatology in "Climatologies and baseline" elsewhere on this site, and it is also the one favoured in the creation of the daily Optimally Interpolated Sea Surface Temperature climatology [@Banzon2014]. Here it is wrapped in a function so I can easily apply it to each time series.
 
 ```{r}
 fFun <- function(data) {
@@ -174,7 +174,7 @@ ggsave(plt3, file = "fig/WA_Fourier7.png", width = 12, height = 6, dpi = 120)
 
 ### heatwaveR's climatology functions
 
-The heatwaveR climatology tool creates the mean and 90th percentiles (threshold) for all the data within a sliding window with certain window width (by default 11 days centered on a day-of-year), and then this is followed by a running mean smoother for both the mean and the threshold. Using he approach I created for the Fourier series, lets do the same here.
+The heatwaveR climatology tool creates the mean and 90th percentiles (threshold) for all the data within a sliding window with certain window width (by default 11 days centred on a day-of-year), and then this is followed by a running mean smoother for both the mean and the threshold. Using he approach I created for the Fourier series, lets do the same here.
 
 ```{r}
 sstRepl2 <- function(sst) {

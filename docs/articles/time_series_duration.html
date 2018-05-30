@@ -110,7 +110,7 @@
       <h1>Assessing the effect of time series duration</h1>
                         <h4 class="author">Robert Schlegel</h4>
             
-            <h4 class="date">2018-05-29</h4>
+            <h4 class="date">2018-05-30</h4>
       
       
       <div class="hidden name"><code>time_series_duration.Rmd</code></div>
@@ -128,23 +128,41 @@
 <h2 class="hasAnchor">
 <a href="#time-series-shortening" class="anchor"></a>Time series shortening</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(heatwaveR)</code></pre></div>
-<p>Systematically reducing time series length of the three reference time series—i.e., from 30-year to 20-year and 10-year. Bootstrapping (I have used 100 resamples, but this can be adjusted upwards if necessary).</p>
-<div id="standard-climatologies" class="section level3">
-<h3 class="hasAnchor">
-<a href="#standard-climatologies" class="anchor"></a>Standard climatologies</h3>
-<p>Measurement metrics:</p>
+<p>Two different shortening methodologies are proposed here. The first would be to simply take the last n years in a given time series (e.g. 30, 20, 10) and then compare the detected events in the overlapping period of time. This method will help to address the question of how may longer time series affect the events detected. THis is an important consideration and one that needs to be investiagted to ascertain how large the effect actually is. The second technique proposed here is bootstrapping (AJS has used 100 resamples, as seen <a href="https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html" class="uri">https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html</a>, which can be increased if desired). The issue with bootstrapping the time series at the three different lengths is that it will prevent direct comparison of the results. Rather, bootstrapping the time series in this way is useful for the comparison of events in the same time series detected with differing climatologies produced via the aforementioned bootstrapping technique.</p>
+<p>And that is how this vignette will break down. The first very straightforward investigation will simply be to quantify how much the detected events change when historic data is neglected. The second, much longer investigation will then look into best practices on how to consistently detect events when time series are not of optimal length. As part of this the following measurement metrics will be quantified:</p>
 <ul>
 <li>for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 bootstrapped samples;</li>
 <li>for each doy, calculate the RMSE of the boostrapped means relative to the true climatology (i.e. the one produced from the 30-year long time series);</li>
 <li>correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.</li>
 </ul>
-<p>Also assess the effect of systematic varying windowHalfWidth and smoothPercentile and studying the outcomes for the three time series lengths.</p>
+<p>A third possible type of time series shortening to look into would be rather than bootstraping the shorter (e.g. 10 and 20 year) time series, to incrementally calculate climatologies by moving the 10 or 20 year window forward one year at a time. And then quantify how this particular choice of historic data affects event detection.</p>
+<p>Finally, this brings us to the direct consideration of the inherent decadal trend in the time series themselves. Ultimately, this tends to come out as the primary driver for much of the event detection changes over time <span class="citation">(<span class="citeproc-not-found" data-reference-id="Oliver2018"><strong>???</strong></span>)</span>. First prize for all of this research would be to develop an equation (model) that could look at a time series and determine for the user how best to calculate a climatology. It seems to me that an important ingredient must be the decadal (or annual) trend. So one would then need to take into account everything learned from the methodologies proposed above and investigate what relationship decadal trends have with whatever may be found. It would be somewhat poetic if this could be used as a variable for the better detection of events.</p>
+</div>
+<div id="simply-shorter" class="section level2">
+<h2 class="hasAnchor">
+<a href="#simply-shorter" class="anchor"></a>Simply shorter</h2>
+<p>In this section we will compare the detection of events when we simply nip off the earlier decades in the three pre-package time series in <strong><code>heatwaveR</code></strong>.</p>
+</div>
+<div id="bootstrapping" class="section level2">
+<h2 class="hasAnchor">
+<a href="#bootstrapping" class="anchor"></a>Bootstrapping</h2>
+<p>With the effect of shortening time series on the detection of events quantified, we will now look into how we may go about more confidentally creating a climatology that will consistently detect events as similarly as possible. In order to do so we will experiement with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (<a href="https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html" class="uri">https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html</a>) to see if that can’t be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.</p>
+<div id="standard-climatologies" class="section level3">
+<h3 class="hasAnchor">
+<a href="#standard-climatologies" class="anchor"></a>Standard climatologies</h3>
 </div>
 <div id="fourier-transform-climatologies" class="section level3">
 <h3 class="hasAnchor">
 <a href="#fourier-transform-climatologies" class="anchor"></a>Fourier transform climatologies</h3>
-<p>Same as above</p>
 </div>
+</div>
+<div id="incremental-shortening" class="section level2">
+<h2 class="hasAnchor">
+<a href="#incremental-shortening" class="anchor"></a>Incremental shortening</h2>
+</div>
+<div id="decadal-trends" class="section level2">
+<h2 class="hasAnchor">
+<a href="#decadal-trends" class="anchor"></a>Decadal trends</h2>
 </div>
   </div>
 
@@ -155,6 +173,10 @@
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#overview">Overview</a></li>
       <li><a href="#time-series-shortening">Time series shortening</a></li>
+      <li><a href="#simply-shorter">Simply shorter</a></li>
+      <li><a href="#bootstrapping">Bootstrapping</a></li>
+      <li><a href="#incremental-shortening">Incremental shortening</a></li>
+      <li><a href="#decadal-trends">Decadal trends</a></li>
       </ul>
 </div>
       </div>

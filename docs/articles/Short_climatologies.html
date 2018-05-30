@@ -110,7 +110,7 @@
       <h1>How to create climatologies from short time series</h1>
                         <h4 class="author">AJ Smit</h4>
             
-            <h4 class="date">2018-05-29</h4>
+            <h4 class="date">2018-05-30</h4>
       
       
       <div class="hidden name"><code>Short_climatologies.Rmd</code></div>
@@ -120,7 +120,7 @@
     
     
 <p>How does one create the best climatology? What if the time series is shorter than the recommended 30 years?</p>
-<p>Lets look at all the SACTN data that’s longer than 30 years first. Can each site’s annual signal be represented by a sine/cosine curve derived from a Fourier analysis? First I find all the sites within the South African Coastal Temperature Network that are approaimately 30 years or more in duration.</p>
+<p>Lets look at all the SACTN data that’s longer than 30 years first. Can each site’s annual signal be represented by a sine/cosine curve derived from a Fourier analysis? First I find all the sites within the South African Coastal Temperature Network that are approximately 30 years or more in duration.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"~/SACTNraw/data/4_products/SACTN_daily_v4.2.RData"</span>)
 daily.in &lt;-<span class="st"> </span>SACTN_daily_v4.<span class="dv">2</span>
 <span class="kw">rm</span>(SACTN_daily_v4.<span class="dv">2</span>)
@@ -139,7 +139,7 @@ long_sites &lt;-<span class="st"> </span>daily.in <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">group_by</span>(index, doy) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">summarise</span>(<span class="dt">temp =</span> <span class="kw">mean</span>(temp, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">ungroup</span>()</code></pre></div>
-<p>I make a function that will fit a Fourier series with seven basis functions (3 sine, 3 cosine and the constant) to the data. This is the same approach I used to create the smooth climatology in “Climatologies and baseline” elsewhere on this site, and it is also the one favoured in the creation of the dialy Optimally Interpolated Sea Surface Temperature climatology <span class="citation">(Banzon et al. 2014)</span>. Here it is wrapped in a function so I can easily apply it to each time series.</p>
+<p>I make a function that will fit a Fourier series with seven basis functions (3 sine, 3 cosine and the constant) to the data. This is the same approach I used to create the smooth climatology in “Climatologies and baseline” elsewhere on this site, and it is also the one favoured in the creation of the daily Optimally Interpolated Sea Surface Temperature climatology <span class="citation">(Banzon et al. 2014)</span>. Here it is wrapped in a function so I can easily apply it to each time series.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fFun &lt;-<span class="st"> </span><span class="cf">function</span>(data) {
   <span class="kw">require</span>(fda)
   b7 &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/fda/topics/create.fourier.basis">create.fourier.basis</a></span>(<span class="dt">rangeval =</span> <span class="kw">range</span>(data<span class="op">$</span>doy), <span class="dt">nbasis =</span> <span class="dv">7</span>)
@@ -240,7 +240,7 @@ sst.repl.smth &lt;-<span class="st"> </span>sst.repl.nest <span class="op">%&gt;
 <div id="heatwavers-climatology-functions" class="section level3">
 <h3 class="hasAnchor">
 <a href="#heatwavers-climatology-functions" class="anchor"></a>heatwaveR’s climatology functions</h3>
-<p>The heatwaveR climatology tool creates the mean and 90th percentiles (threshold) for all the data within a sliding window with certain window width (by default 11 days centered on a day-of-year), and then this is followed by a running mean smoother for both the mean and the threshold. Using he approach I created for the Fourier series, lets do the same here.</p>
+<p>The heatwaveR climatology tool creates the mean and 90th percentiles (threshold) for all the data within a sliding window with certain window width (by default 11 days centred on a day-of-year), and then this is followed by a running mean smoother for both the mean and the threshold. Using he approach I created for the Fourier series, lets do the same here.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sstRepl2 &lt;-<span class="st"> </span><span class="cf">function</span>(sst) {
   sst.sampled &lt;-<span class="st"> </span>sst <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">sample_10 =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/purrr/topics/map">map</a></span>(data, sample_n, <span class="dv">10</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>),
