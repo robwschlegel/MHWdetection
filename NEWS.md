@@ -1,3 +1,7 @@
+# MHWdetection 0.0.2  (2018-05-30)
+
+* Some musings added to the short duration vignette
+
 # MHWdetection 0.0.2  (2018-05-29)
 
 * Skeleton vignettes for the proposed research created
