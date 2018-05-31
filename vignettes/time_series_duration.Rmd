@@ -23,10 +23,6 @@ The purpose of this vignette is to lay out, in detail, how one goes about testin
 
 ## Time series shortening
 
-```{r r-init}
-library(heatwaveR)
-```
-
 Two different shortening methodologies are proposed here. The first would be to simply take the last n years in a given time series (e.g. 30, 20, 10) and then compare the detected events in the overlapping period of time. This method will help to address the question of how may longer time series affect the events detected. THis is an important consideration and one that needs to be investiagted to ascertain how large the effect actually is. The second technique proposed here is bootstrapping (AJS has used 100 resamples, as seen https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html, which can be increased if desired). The issue with bootstrapping the time series at the three different lengths is that it will prevent direct comparison of the results. Rather, bootstrapping the time series in this way is useful for the comparison of events in the same time series detected with differing climatologies produced via the aforementioned bootstrapping technique.
 
 And that is how this vignette will break down. The first very straightforward investigation will simply be to quantify how much the detected events change when historic data is neglected. The second, much longer investigation will then look into best practices on how to consistently detect events when time series are not of optimal length. As part of this the following measurement metrics will be quantified:
@@ -43,23 +39,144 @@ Finally, this brings us to the direct consideration of the inherent decadal tren
 
 In this section we will compare the detection of events when we simply nip off the earlier decades in the three pre-package time series in __`heatwaveR`__.
 
-```{r shorten}
-
+```{r r-init}
+library(tidyverse)
+library(heatwaveR)
+library(lubridate)
+library(broom)
+library(tidyr)
 ```
 
-```{r compare-func}
+In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time seriesa re actually 32 years long I am going to nip off those last two years. The [@WMO2016] reccomends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match this period, but shorter, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
 
+```{r shorten}
+# This is perhaps an overly verbose way of doing this
+# But I think it will ultimately be a bit easier to follow along
+# when the duration is in the object name
+
+# sst_NW_Atl
+sst_NW_Atl_30 <- ts2clm(sst_NW_Atl, climatologyPeriod = c("1982-01-01", "2011-12-31"))
+sst_NW_Atl_20 <- ts2clm(sst_NW_Atl, climatologyPeriod = c("1992-01-01", "2011-12-31"))
+sst_NW_Atl_10 <- ts2clm(sst_NW_Atl, climatologyPeriod = c("2002-01-01", "2011-12-31"))
+c(mean(sst_NW_Atl_30$seas), mean(sst_NW_Atl_20$seas), mean(sst_NW_Atl_10$seas))
+
+# sst_Med
+sst_Med_30 <- ts2clm(sst_Med, climatologyPeriod = c("1982-01-01", "2011-12-31"))
+sst_Med_20 <- ts2clm(sst_Med, climatologyPeriod = c("1992-01-01", "2011-12-31"))
+sst_Med_10 <- ts2clm(sst_Med, climatologyPeriod = c("2002-01-01", "2011-12-31"))
+c(mean(sst_Med_30$seas), mean(sst_Med_20$seas), mean(sst_Med_10$seas))
+
+# sst_WA
+sst_WA_30 <- ts2clm(sst_WA, climatologyPeriod = c("1982-01-01", "2011-12-31"))
+sst_WA_20 <- ts2clm(sst_WA, climatologyPeriod = c("1992-01-01", "2011-12-31"))
+sst_WA_10 <- ts2clm(sst_WA, climatologyPeriod = c("2002-01-01", "2011-12-31"))
+c(mean(sst_WA_30$seas), mean(sst_WA_20$seas), mean(sst_WA_10$seas))
+```
+
+QUickly take note of the fact that for all three time series, the mean seasonal climatology increases the shorter the period used was. This was to be expected due to the overall warming signal present throughout the worlds seas and oceans. We'll return to the impact of this phenomenon later.
+
+Now let's compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades.
+
+```{r compare-funcs}
+# A clomp of functions used below
+# Written out here for tidiness/convenience
+
+# Compare events from the last decade
+# Allowing for different climatologies as calculated above
+detect_event_last_dec <- function(df, dec){
+  res <- detect_event(df)$event %>% 
+    filter(date_start >= "2002-01-01", date_end <= "2011-12-31") %>% 
+    mutate(decades = as.factor(dec))
+  return(res)
+}
+
+# Run an ANOVA on each metric of the combined event results
+df <- sst_Med_events
+event_aov <- function(df){
+  aov_models <- df[ , -grep("decades", names(df))] %>%
+    map(~ aov(.x ~ df$decades))
+    mutate(res = map(.x, tidy))
+} 
+
+aov_models$
+
+test <- mtcars[ , -grep("cyl", names(mtcars))] %>% 
+ # group_by(cyl) %>% 
+ nest() %>% 
+ mutate(mod_obj = map(data, ~aov(mpg ~ mtcars$cyl, data = .x)),
+        summaries = map(mod_obj, broom::glance),
+        model_coef = map(mod_obj, broom::tidy)) 
+test$summaries
+
+
+event_output <- function(df){
+  df %>% 
+  group_by(decades) %>% 
+  summarise(int_cum_mean = mean(intensity_cumulative),
+            int_cum_sd = sd(intensity_cumulative))
+}
 ```
 
 ```{r compare-shorten}
+# Calculate events and filter only those from 2002 -- 2011
+# sst_NW_Atl
+sst_NW_Atl_10_events <- detect_event_last_dec(sst_NW_Atl_10, 1)
+sst_NW_Atl_20_events <- detect_event_last_dec(sst_NW_Atl_20, 2)
+sst_NW_Atl_30_events <- detect_event_last_dec(sst_NW_Atl_30, 3)
+# sst_Med
+sst_Med_10_events <- detect_event_last_dec(sst_Med_10, 1)
+sst_Med_20_events <- detect_event_last_dec(sst_Med_20, 2)
+sst_Med_30_events <- detect_event_last_dec(sst_Med_30, 3)
+# sst_WA
+sst_WA_10_events <- detect_event_last_dec(sst_WA_10, 1)
+sst_WA_20_events <- detect_event_last_dec(sst_WA_20, 2)
+sst_WA_30_events <- detect_event_last_dec(sst_WA_30, 3)
+
+# Combine results
+sst_NW_Atl_events <- rbind(sst_NW_Atl_10_events, sst_NW_Atl_20_events, sst_NW_Atl_30_events)
+sst_Med_events <- rbind(sst_Med_10_events, sst_Med_20_events, sst_Med_30_events)
+sst_WA_events <- rbind(sst_WA_10_events, sst_WA_20_events, sst_WA_30_events)
+
+# ANOVA
+summary(aov(intensity_cumulative ~ decades, data = sst_NW_Atl_events))
+summary(aov(intensity_cumulative ~ decades, data = sst_Med_events))
+summary(aov(intensity_cumulative ~ decades, data = sst_WA_events))
+kruskal.test(intensity_cumulative ~ decades, data = sst_WA_events)
 
 ```
+
+As cumulative intensity is the metric most likely to change through the use of different climatologies I've used it here for a quick ANOVA to look if there are significant differences between the events detected in the final decade. Whereas the results do differ, it is not significant for either of the three time series. The WA time series has that massive event in it, making those event results not normally distributed.
+
+Now that we know that the detected events do not differ significantly, we still want to know by what amounts they do differ. This information will then later be used during the bootstrapping to see if this gap can be reduced through the clever use of statistics.
+
+```{r}
+# sst_NW_Atl
+event_output(sst_NW_Atl_events)
+# sst_Med
+event_output(sst_Med_events)
+# sst_NW_Atl
+event_output(sst_WA_events)
+```
+
+The difference between the three different time series is intriguing. The `NW_Atl` events have less cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The `Med` data changed over time in a more predictable, linear fashion. Strangest was that the `WA` data change very little depending on the nmber of decades used for the climatology. This is most certainly due to that one huge event near the end.
+
+Could there be a relationship between normality and change due to decade of choice?
+
+With these benchmarks established, we will now move on to bootstrapping to see if the effect of a shorter time series on the detected climatology can be mitigated.
 
 ## Bootstrapping
 
 With the effect of shortening time series on the detection of events quantified, we will now look into how we may go about more confidentally creating a climatology that will consistently detect events as similarly as possible. In order to do so we will experiement with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) to see if that can't be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.
 
 ### Standard climatologies
+
+ * for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 bootstrapped samples;
+ * for each doy, calculate the RMSE of the boostrapped means relative to the true climatology (i.e. the one produced from the 30-year long time series);
+ * correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
+
+```{r}
+
+```
 
 
 ### Fourier transform climatologies
