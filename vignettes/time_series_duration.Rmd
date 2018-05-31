@@ -50,30 +50,27 @@ library(tidyr)
 In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time seriesa re actually 32 years long I am going to nip off those last two years. The [@WMO2016] reccomends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match this period, but shorter, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
 
 ```{r shorten}
-# This is perhaps an overly verbose way of doing this
-# But I think it will ultimately be a bit easier to follow along
-# when the duration is in the object name
+# First put all of the data together and create a site column
+sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
+  mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 12053))
 
-# sst_NW_Atl
-sst_NW_Atl_30 <- ts2clm(sst_NW_Atl, climatologyPeriod = c("1982-01-01", "2011-12-31"))
-sst_NW_Atl_20 <- ts2clm(sst_NW_Atl, climatologyPeriod = c("1992-01-01", "2011-12-31"))
-sst_NW_Atl_10 <- ts2clm(sst_NW_Atl, climatologyPeriod = c("2002-01-01", "2011-12-31"))
-c(mean(sst_NW_Atl_30$seas), mean(sst_NW_Atl_20$seas), mean(sst_NW_Atl_10$seas))
+# Then calculate the different clims
+sst_ALL_clim <- sst_ALL %>% 
+  nest(-site) %>% 
+  mutate(clim_10 = map(data, ts2clm, climatologyPeriod = c("2002-01-01", "2011-12-31")),
+         clim_20 = map(data, ts2clm, climatologyPeriod = c("1992-01-01", "2011-12-31")),
+         clim_30 = map(data, ts2clm, climatologyPeriod = c("1982-01-01", "2011-12-31"))) %>% 
+  select(-data) %>% 
+  gather(key = decades, value = output, -site) %>% 
+  unnest()
 
-# sst_Med
-sst_Med_30 <- ts2clm(sst_Med, climatologyPeriod = c("1982-01-01", "2011-12-31"))
-sst_Med_20 <- ts2clm(sst_Med, climatologyPeriod = c("1992-01-01", "2011-12-31"))
-sst_Med_10 <- ts2clm(sst_Med, climatologyPeriod = c("2002-01-01", "2011-12-31"))
-c(mean(sst_Med_30$seas), mean(sst_Med_20$seas), mean(sst_Med_10$seas))
-
-# sst_WA
-sst_WA_30 <- ts2clm(sst_WA, climatologyPeriod = c("1982-01-01", "2011-12-31"))
-sst_WA_20 <- ts2clm(sst_WA, climatologyPeriod = c("1992-01-01", "2011-12-31"))
-sst_WA_10 <- ts2clm(sst_WA, climatologyPeriod = c("2002-01-01", "2011-12-31"))
-c(mean(sst_WA_30$seas), mean(sst_WA_20$seas), mean(sst_WA_10$seas))
+# Quick peak at mean seas clims
+sst_ALL_clim %>% 
+  group_by(site, decades) %>% 
+  summarise(seas_mean = mean(seas))
 ```
 
-QUickly take note of the fact that for all three time series, the mean seasonal climatology increases the shorter the period used was. This was to be expected due to the overall warming signal present throughout the worlds seas and oceans. We'll return to the impact of this phenomenon later.
+QUickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds seas and oceans. We'll return to the impact of this phenomenon later.
 
 Now let's compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades.
 
@@ -91,14 +88,12 @@ detect_event_last_dec <- function(df, dec){
 }
 
 # Run an ANOVA on each metric of the combined event results
-df <- sst_Med_events
 event_aov <- function(df){
   aov_models <- df[ , -grep("decades", names(df))] %>%
     map(~ aov(.x ~ df$decades))
-    mutate(res = map(.x, tidy))
-} 
-
-aov_models$
+    # mutate(res = map(.x, tidy))
+  return(aov_models)
+}
 
 test <- mtcars[ , -grep("cyl", names(mtcars))] %>% 
  # group_by(cyl) %>% 
@@ -115,34 +110,86 @@ event_output <- function(df){
   summarise(int_cum_mean = mean(intensity_cumulative),
             int_cum_sd = sd(intensity_cumulative))
 }
+
+detect_event_event <- function(df){
+  res <- detect_event(df)$event
+  return(res)
+}
 ```
 
 ```{r compare-shorten}
 # Calculate events and filter only those from 2002 -- 2011
-# sst_NW_Atl
-sst_NW_Atl_10_events <- detect_event_last_dec(sst_NW_Atl_10, 1)
-sst_NW_Atl_20_events <- detect_event_last_dec(sst_NW_Atl_20, 2)
-sst_NW_Atl_30_events <- detect_event_last_dec(sst_NW_Atl_30, 3)
-# sst_Med
-sst_Med_10_events <- detect_event_last_dec(sst_Med_10, 1)
-sst_Med_20_events <- detect_event_last_dec(sst_Med_20, 2)
-sst_Med_30_events <- detect_event_last_dec(sst_Med_30, 3)
-# sst_WA
-sst_WA_10_events <- detect_event_last_dec(sst_WA_10, 1)
-sst_WA_20_events <- detect_event_last_dec(sst_WA_20, 2)
-sst_WA_30_events <- detect_event_last_dec(sst_WA_30, 3)
-
-# Combine results
-sst_NW_Atl_events <- rbind(sst_NW_Atl_10_events, sst_NW_Atl_20_events, sst_NW_Atl_30_events)
-sst_Med_events <- rbind(sst_Med_10_events, sst_Med_20_events, sst_Med_30_events)
-sst_WA_events <- rbind(sst_WA_10_events, sst_WA_20_events, sst_WA_30_events)
+sst_ALL_event <- sst_ALL_clim %>% 
+  group_by(site, decades) %>% 
+  nest() %>% 
+  mutate(res = map(data, detect_event_event)) %>% 
+  select(-data) %>% 
+  unnest(res) %>% 
+  filter(date_start >= "2002-01-01", date_end <= "2011-12-31")
 
 # ANOVA
-summary(aov(intensity_cumulative ~ decades, data = sst_NW_Atl_events))
-summary(aov(intensity_cumulative ~ decades, data = sst_Med_events))
-summary(aov(intensity_cumulative ~ decades, data = sst_WA_events))
-kruskal.test(intensity_cumulative ~ decades, data = sst_WA_events)
+sst_ALL_aov <- sst_ALL_event %>% 
+  # select(-c(date_start:date_end)) %>% 
+  # select(-site) %>% 
+  # gather(variable, value, -site, -decades) %>% 
+  # group_by(site) %>%
+  split(site) %>% 
+  # split(.$variable, .$site) %>%
+  # map(~ aov(variable ~ decades + site))
+  nest() %>%
+  mutate(res = map(data, event_aov)) %>% 
+  select(-data) %>% 
+  unnest() 
 
+# df <- sst_ALL_event
+# df <- sst_ALL_aov
+event_aov <- function(df){
+  aov_models <- df[ , -grep("decades", names(df))] %>%
+    map(~ aov(.x ~ df$decades)) %>% 
+    map(summary) %>%
+    map_dbl("Df")
+  return(aov_models)
+}
+
+sst_ALL_event %>%
+  split(.$site) %>%
+  map(~ aov(intensity_cumulative ~ decades, data = .)) %>%
+  map(tidy) %>%
+  map_dfr("p.value")
+
+sst_ALL_aov <- sst_ALL_event %>%
+  # group_by(site) %>% 
+  # mutate(site = factor(site),
+  #        decades = factor(decades)) %>%
+  # select(site:duration) %>%
+  select(intensity_mean:intensity_cumulative) %>%
+  # select(site, intensity_mean:intensity_cumulative) %>%
+  # nest(-site) %>%
+  # split(.$site) %>%
+  # map(~ aov(.x ~ decades, data = split(sst_ALL_event, sst_ALL_event$site))) %>%
+  map(~ aov(.x ~ decades, data = sst_ALL_event)) %>%
+  map_dfr(~ broom::tidy(.), .id = 'metric') %>%
+  mutate(p.value = round(p.value, 5)) %>% 
+  filter(term != "Residuals") %>% 
+  select(metric, p.value)
+sst_ALL_aov
+
+
+mtcars %>%
+  mutate(cyl = factor(cyl),
+         am = factor(am)) %>%
+  select(mpg, disp, hp) %>%
+  map(~ aov(.x ~ cyl * am, data = mtcars)) %>%
+  map_dfr(~ broom::tidy(.), .id = 'source') %>%
+  mutate(p.value = round(p.value, 5))
+
+
+df <- sst_ALL_event %>% 
+  # group_by(site) %>% 
+  do(tidy(aov(intensity_cumulative ~ decades, data = .))) %>% 
+  select(p.value) %>% 
+  na.omit()
+df
 ```
 
 As cumulative intensity is the metric most likely to change through the use of different climatologies I've used it here for a quick ANOVA to look if there are significant differences between the events detected in the final decade. Whereas the results do differ, it is not significant for either of the three time series. The WA time series has that massive event in it, making those event results not normally distributed.
