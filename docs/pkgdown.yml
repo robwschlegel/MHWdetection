@@ -3,7 +3,6 @@ pkgdown: 1.0.0
 pkgdown_sha: ~
 articles:
   Climatologies_and_baselines: Climatologies_and_baselines.html
-  MHWdetection: MHWdetection.html
   Short_climatologies: Short_climatologies.html
   best_practices: best_practices.html
   gridded_products: gridded_products.html

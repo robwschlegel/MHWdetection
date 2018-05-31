@@ -110,7 +110,7 @@
       <h1>Assessing the effect of time series duration</h1>
                         <h4 class="author">Robert Schlegel</h4>
             
-            <h4 class="date">2018-05-30</h4>
+            <h4 class="date">2018-05-31</h4>
       
       
       <div class="hidden name"><code>time_series_duration.Rmd</code></div>
@@ -122,34 +122,181 @@
 <div id="overview" class="section level2">
 <h2 class="hasAnchor">
 <a href="#overview" class="anchor"></a>Overview</h2>
-<p>The purpose of this vignette is to lay out, in detail, how one goes about testing a range of variables, and analysing the effects they have on the detection of MHWs. THis has a plurality of meanings, which will be discussed at more depth in the following sections.</p>
+<p>The purpose of this vignette is to lay out, in detail, how one goes about testing a range of variables, and analysing the effects they have on the detection of MHWs. This has a plurality of meanings, which will be discussed at more depth in the following sections.</p>
 </div>
 <div id="time-series-shortening" class="section level2">
 <h2 class="hasAnchor">
 <a href="#time-series-shortening" class="anchor"></a>Time series shortening</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(heatwaveR)</code></pre></div>
-<p>Two different shortening methodologies are proposed here. The first would be to simply take the last n years in a given time series (e.g. 30, 20, 10) and then compare the detected events in the overlapping period of time. This method will help to address the question of how may longer time series affect the events detected. THis is an important consideration and one that needs to be investiagted to ascertain how large the effect actually is. The second technique proposed here is bootstrapping (AJS has used 100 resamples, as seen <a href="https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html" class="uri">https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html</a>, which can be increased if desired). The issue with bootstrapping the time series at the three different lengths is that it will prevent direct comparison of the results. Rather, bootstrapping the time series in this way is useful for the comparison of events in the same time series detected with differing climatologies produced via the aforementioned bootstrapping technique.</p>
+<p>Two different shortening methodologies are proposed here. The first would be to simply take the last n years in a given time series (e.g. 30, 20, 10) and then compare the detected events in the overlapping period of time. This method will help to address the question of how may longer time series affect the events detected. This is an important consideration and one that needs to be investigated to ascertain how large the effect actually is. The second technique proposed here is bootstrapping (AJS has used 100 resamples, as seen <a href="https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html" class="uri">https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html</a>, which can be increased if desired). The issue with bootstrapping the time series at the three different lengths is that it will prevent direct comparison of the results. Rather, bootstrapping the time series in this way is useful for the comparison of events in the same time series detected with differing climatologies produced via the aforementioned bootstrapping technique.</p>
 <p>And that is how this vignette will break down. The first very straightforward investigation will simply be to quantify how much the detected events change when historic data is neglected. The second, much longer investigation will then look into best practices on how to consistently detect events when time series are not of optimal length. As part of this the following measurement metrics will be quantified:</p>
 <ul>
 <li>for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 bootstrapped samples;</li>
-<li>for each doy, calculate the RMSE of the boostrapped means relative to the true climatology (i.e. the one produced from the 30-year long time series);</li>
+<li>for each doy, calculate the RMSE of the bootstrapped means relative to the true climatology (i.e. the one produced from the 30-year long time series);</li>
 <li>correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.</li>
 </ul>
-<p>A third possible type of time series shortening to look into would be rather than bootstraping the shorter (e.g. 10 and 20 year) time series, to incrementally calculate climatologies by moving the 10 or 20 year window forward one year at a time. And then quantify how this particular choice of historic data affects event detection.</p>
+<p>A third possible type of time series shortening to look into would be rather than bootstrapping the shorter (e.g. 10 and 20 year) time series, to incrementally calculate climatologies by moving the 10 or 20 year window forward one year at a time. And then quantify how this particular choice of historic data affects event detection.</p>
 <p>Finally, this brings us to the direct consideration of the inherent decadal trend in the time series themselves. Ultimately, this tends to come out as the primary driver for much of the event detection changes over time <span class="citation">(<span class="citeproc-not-found" data-reference-id="Oliver2018"><strong>???</strong></span>)</span>. First prize for all of this research would be to develop an equation (model) that could look at a time series and determine for the user how best to calculate a climatology. It seems to me that an important ingredient must be the decadal (or annual) trend. So one would then need to take into account everything learned from the methodologies proposed above and investigate what relationship decadal trends have with whatever may be found. It would be somewhat poetic if this could be used as a variable for the better detection of events.</p>
 </div>
 <div id="simply-shorter" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simply-shorter" class="anchor"></a>Simply shorter</h2>
 <p>In this section we will compare the detection of events when we simply nip off the earlier decades in the three pre-package time series in <strong><code>heatwaveR</code></strong>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(heatwaveR)
+<span class="kw">library</span>(lubridate)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(tidyr)</code></pre></div>
+<p>In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 32 years long I am going to nip off those last two years. The <span class="citation">(<span class="citeproc-not-found" data-reference-id="WMO2016"><strong>???</strong></span>)</span> recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 – 2011. To match this period, but shorter, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># First put all of the data together and create a site column</span>
+sst_ALL &lt;-<span class="st"> </span><span class="kw">rbind</span>(sst_Med, sst_NW_Atl, sst_WA) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">"Med"</span>, <span class="st">"NW_Atl"</span>, <span class="st">"WA"</span>), <span class="dt">each =</span> <span class="dv">12053</span>))
+
+<span class="co"># Then calculate the different clims</span>
+sst_ALL_clim &lt;-<span class="st"> </span>sst_ALL <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/nest">nest</a></span>(<span class="op">-</span>site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">clim_10 =</span> <span class="kw">map</span>(data, ts2clm, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"2002-01-01"</span>, <span class="st">"2011-12-31"</span>)),
+         <span class="dt">clim_20 =</span> <span class="kw">map</span>(data, ts2clm, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1992-01-01"</span>, <span class="st">"2011-12-31"</span>)),
+         <span class="dt">clim_30 =</span> <span class="kw">map</span>(data, ts2clm, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2011-12-31"</span>))) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/gather">gather</a></span>(<span class="dt">key =</span> decades, <span class="dt">value =</span> output, <span class="op">-</span>site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/unnest">unnest</a></span>()
+
+<span class="co"># Quick peak at mean seas clims</span>
+sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, decades) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">seas_mean =</span> <span class="kw">mean</span>(seas))</code></pre></div>
+<pre><code>## # A tibble: 9 x 3
+## # Groups:   site [?]
+##   site   decades seas_mean
+##   &lt;chr&gt;  &lt;chr&gt;       &lt;dbl&gt;
+## 1 Med    clim_10     18.1 
+## 2 Med    clim_20     17.8 
+## 3 Med    clim_30     17.7 
+## 4 NW_Atl clim_10      8.68
+## 5 NW_Atl clim_20      8.57
+## 6 NW_Atl clim_30      8.58
+## 7 WA     clim_10     21.6 
+## 8 WA     clim_20     21.6 
+## 9 WA     clim_30     21.5</code></pre>
+<p>Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds seas and oceans. We’ll return to the impact of this phenomenon later.</p>
+<p>Now let’s compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># A clomp of functions used below</span>
+<span class="co"># Written out here for tidiness/convenience</span>
+
+<span class="co"># Calculate only events</span>
+detect_event_event &lt;-<span class="st"> </span><span class="cf">function</span>(df){
+  res &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/detect_event">detect_event</a></span>(df)<span class="op">$</span>event
+  <span class="kw">return</span>(res)
+  }
+
+<span class="co"># Run an ANOVA on each metric of the combined event results</span>
+event_aov &lt;-<span class="st"> </span><span class="cf">function</span>(df){
+  aov_models &lt;-<span class="st"> </span>df[ , <span class="op">-</span><span class="kw">grep</span>(<span class="st">"decades"</span>, <span class="kw">names</span>(df))] <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="co"># select(-event_no) %&gt;% </span>
+<span class="st">    </span><span class="kw">map</span>(<span class="op">~</span><span class="st"> </span><span class="kw">aov</span>(.x <span class="op">~</span><span class="st"> </span>df<span class="op">$</span>decades)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">map_dfr</span>(<span class="op">~</span><span class="st"> </span>broom<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/broom/topics/tidy">tidy</a></span>(.), <span class="dt">.id =</span> <span class="st">'metric'</span>) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">p.value =</span> <span class="kw">round</span>(p.value, <span class="dv">5</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">filter</span>(term <span class="op">!=</span><span class="st"> "Residuals"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">select</span>(metric, p.value)
+  <span class="kw">return</span>(aov_models)
+  }
+
+<span class="co"># A particular summary output</span>
+event_output &lt;-<span class="st"> </span><span class="cf">function</span>(df){
+  res &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">group_by</span>(decades) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">select</span>(<span class="op">-</span>event_no) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">summarise_all</span>(<span class="kw">c</span>(<span class="st">"mean"</span>, <span class="st">"sd"</span>))
+  <span class="kw">return</span>(res)
+  }</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate events and filter only those from 2002 -- 2011</span>
+sst_ALL_event &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, decades) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/nest">nest</a></span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, detect_event_event)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/unnest">unnest</a></span>(res) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(date_start <span class="op">&gt;=</span><span class="st"> "2002-01-01"</span>, date_end <span class="op">&lt;=</span><span class="st"> "2011-12-31"</span>)
+
+<span class="co"># ANOVA</span>
+sst_ALL_aov &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/nest">nest</a></span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/unnest">unnest</a></span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/spread">spread</a></span>(<span class="dt">key =</span> metric, <span class="dt">value =</span> p.value) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="kw">names</span>(<span class="kw">select</span>(sst_ALL_event, <span class="op">-</span>decades, <span class="op">-</span>event_no)))
+sst_ALL_aov</code></pre></div>
+<pre><code>## # A tibble: 3 x 22
+##   site   index_start index_peak index_end duration date_start date_peak
+##   &lt;chr&gt;        &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+## 1 Med          0.923      0.926     0.929   0.0776      0.923     0.926
+## 2 NW_Atl       0.933      0.933     0.935   0.382       0.933     0.933
+## 3 WA           0.509      0.512     0.515   0.977       0.509     0.512
+## # ... with 15 more variables: date_end &lt;dbl&gt;, intensity_mean &lt;dbl&gt;,
+## #   intensity_max &lt;dbl&gt;, intensity_var &lt;dbl&gt;, intensity_cumulative &lt;dbl&gt;,
+## #   intensity_mean_relThresh &lt;dbl&gt;, intensity_max_relThresh &lt;dbl&gt;,
+## #   intensity_var_relThresh &lt;dbl&gt;, intensity_cumulative_relThresh &lt;dbl&gt;,
+## #   intensity_mean_abs &lt;dbl&gt;, intensity_max_abs &lt;dbl&gt;,
+## #   intensity_var_abs &lt;dbl&gt;, intensity_cumulative_abs &lt;dbl&gt;,
+## #   rate_onset &lt;dbl&gt;, rate_decline &lt;dbl&gt;</code></pre>
+<p>Whereas the results for the different metrics do differ, they are not significantly different for any of the three time series.</p>
+<p>Now that we know that the detected events do not differ significantly, we still want to know by what amounts they do differ. This information will then later be used during the bootstrapping to see if this gap can be reduced through the clever use of statistics.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_out &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/nest">nest</a></span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_output)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tidyr/topics/unnest">unnest</a></span>()
+sst_ALL_out</code></pre></div>
+<pre><code>## # A tibble: 9 x 44
+##   site   decades index_start_mean index_peak_mean index_end_mean
+##   &lt;chr&gt;  &lt;chr&gt;              &lt;dbl&gt;           &lt;dbl&gt;          &lt;dbl&gt;
+## 1 Med    clim_10            9439.           9445.          9448.
+## 2 Med    clim_20            9401.           9407.          9411 
+## 3 Med    clim_30            9342.           9349.          9355.
+## 4 NW_Atl clim_10            9768.           9771.          9775.
+## 5 NW_Atl clim_20            9656.           9660           9665.
+## 6 NW_Atl clim_30            9729.           9732.          9737.
+## 7 WA     clim_10           10172.          10180.         10186.
+## 8 WA     clim_20           10026.          10034.         10042.
+## 9 WA     clim_30            9919.           9926.          9934.
+## # ... with 39 more variables: duration_mean &lt;dbl&gt;, date_start_mean &lt;date&gt;,
+## #   date_peak_mean &lt;date&gt;, date_end_mean &lt;date&gt;,
+## #   intensity_mean_mean &lt;dbl&gt;, intensity_max_mean &lt;dbl&gt;,
+## #   intensity_var_mean &lt;dbl&gt;, intensity_cumulative_mean &lt;dbl&gt;,
+## #   intensity_mean_relThresh_mean &lt;dbl&gt;,
+## #   intensity_max_relThresh_mean &lt;dbl&gt;,
+## #   intensity_var_relThresh_mean &lt;dbl&gt;,
+## #   intensity_cumulative_relThresh_mean &lt;dbl&gt;,
+## #   intensity_mean_abs_mean &lt;dbl&gt;, intensity_max_abs_mean &lt;dbl&gt;,
+## #   intensity_var_abs_mean &lt;dbl&gt;, intensity_cumulative_abs_mean &lt;dbl&gt;,
+## #   rate_onset_mean &lt;dbl&gt;, rate_decline_mean &lt;dbl&gt;, index_start_sd &lt;dbl&gt;,
+## #   index_peak_sd &lt;dbl&gt;, index_end_sd &lt;dbl&gt;, duration_sd &lt;dbl&gt;,
+## #   date_start_sd &lt;date&gt;, date_peak_sd &lt;date&gt;, date_end_sd &lt;date&gt;,
+## #   intensity_mean_sd &lt;dbl&gt;, intensity_max_sd &lt;dbl&gt;,
+## #   intensity_var_sd &lt;dbl&gt;, intensity_cumulative_sd &lt;dbl&gt;,
+## #   intensity_mean_relThresh_sd &lt;dbl&gt;, intensity_max_relThresh_sd &lt;dbl&gt;,
+## #   intensity_var_relThresh_sd &lt;dbl&gt;,
+## #   intensity_cumulative_relThresh_sd &lt;dbl&gt;, intensity_mean_abs_sd &lt;dbl&gt;,
+## #   intensity_max_abs_sd &lt;dbl&gt;, intensity_var_abs_sd &lt;dbl&gt;,
+## #   intensity_cumulative_abs_sd &lt;dbl&gt;, rate_onset_sd &lt;dbl&gt;,
+## #   rate_decline_sd &lt;dbl&gt;</code></pre>
+<p>The difference between the three different time series is intriguing. The <code>NW_Atl</code> events have less cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The <code>Med</code> data changed over time in a more predictable, linear fashion. Strangest was that the <code>WA</code> data change very little depending on the number of decades used for the climatology, and that the trend displayed by the other two time series is reversed for some of the metrics in the WA time series. This is most certainly due to that one huge event near the end.</p>
+<p>Could there be a relationship between normality and change due to decade of choice?</p>
+<p>With these benchmarks established, we will now move on to bootstrapping to see if the effect of a shorter time series on the detected climatology can be mitigated.</p>
 </div>
 <div id="bootstrapping" class="section level2">
 <h2 class="hasAnchor">
 <a href="#bootstrapping" class="anchor"></a>Bootstrapping</h2>
-<p>With the effect of shortening time series on the detection of events quantified, we will now look into how we may go about more confidentally creating a climatology that will consistently detect events as similarly as possible. In order to do so we will experiement with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (<a href="https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html" class="uri">https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html</a>) to see if that can’t be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.</p>
+<p>With the effect of shortening time series on the detection of events quantified, we will now look into how we may go about more confidently creating a climatology that will consistently detect events as similarly as possible. In order to do so we will experiment with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (<a href="https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html" class="uri">https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html</a>) to see if that can’t be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.</p>
 <div id="standard-climatologies" class="section level3">
 <h3 class="hasAnchor">
 <a href="#standard-climatologies" class="anchor"></a>Standard climatologies</h3>
+<ul>
+<li>for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 bootstrapped samples;</li>
+<li>for each doy, calculate the RMSE of the bootstrapped means relative to the true climatology (i.e. the one produced from the 30-year long time series);</li>
+<li>correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.</li>
+</ul>
 </div>
 <div id="fourier-transform-climatologies" class="section level3">
 <h3 class="hasAnchor">
