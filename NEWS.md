@@ -1,3 +1,7 @@
+# MHWdetection 0.0.2  (2018-06-01)
+
+* Second section of duration vignette nearly finished
+
 # MHWdetection 0.0.2  (2018-05-31)
 
 * Completed the first section of the duration vignette

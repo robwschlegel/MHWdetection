@@ -97,7 +97,7 @@ ggsave(plt1, file = "fig/SACTN_Fourier7.png", width = 12, height = 9, dpi = 120)
 
 ### Fourier series
 
-There are instances when we might need to create climatologies when we don't have access to time series of 30 years or longer. To look at this problem, I created a quick bootstrap analysis to see what the effect of time series length is on the resultant climatology. In this instance I used a Fourier analysis (see Banzon et al., 2014) to calculate six modes within an annual cycle, and used these to reconstruct a smooth climatology. This technique is quite forgiving of SST seasonalities that depart from typical sinusoidal profiles, such as which we find along upwelling areas (I have tested this on our coastal seawater temperatures).
+There are instances when we might need to create climatologies when we don't have access to time series of 30 years or longer. To look at this problem, I created a quick resampling analysis to see what the effect of time series length is on the resultant climatology. In this instance I used a Fourier analysis (see Banzon et al., 2014) to calculate six modes within an annual cycle, and used these to reconstruct a smooth climatology. This technique is quite forgiving of SST seasonalities that depart from typical sinusoidal profiles, such as which we find along upwelling areas (I have tested this on our coastal seawater temperatures).
 
 I used the Western Australian data that's packaged with the python and R marine heat wave scripts. Later I'll test this more widely on other time series. The WA time series is 32 years long. I treat all temperatures over the duration of the time series as a pool of data, separately for each day-of-year (doy); i.e. doy 1 has 32 temperatures, doy 2 also has 32 temperatures, etc. I assume that the temperature on doy 1 of 1982 is independent of that on doy 1 in every other year (etc.), so the sample of doy 1 temperatures is therefore independent and identically distributed (i.i.d.). I further assume that there's no autocorrelation from day-to-day (definitely erroneous, but I don't think it matters here).
 
@@ -107,7 +107,7 @@ In total I now have 300 annual cycles: 100 of them representing a 10-year long t
 
 The attached plots show the outcome. The three panels represent 10, 20 and 30 year long time series. In Figure 2, each of the 100 daily time series is plotted as a line graph. In Figure 3, the red crosses show, for each doy, each of the 100 mean temperatures that I obtained. The black lines are of course the smooth climatologies--there is also 100 of these lines on each of the three panels. 
 
-So, using bootstrapping and a Fourier analysis we can get away with using shorter time series. I can see later what happens if I shrink even further the time series down to only five years long. I will also test how well the python and R heatwave scripts' internal climatology functions (windowHalfWidth and smoothPercentile) are able to produce reliable climatologies from short time series.
+So, using bresampling and a Fourier analysis we can get away with using shorter time series. I can see later what happens if I shrink even further the time series down to only five years long. I will also test how well the python and R heatwave scripts' internal climatology functions (windowHalfWidth and smoothPercentile) are able to produce reliable climatologies from short time series.
 
 ```{r}
 library(heatwaveR)
@@ -149,7 +149,7 @@ plt2 <- ggplot(data = sst.repl, aes(x = doy, y = temp)) +
 ggsave(plt2, file = "fig/WA_100_simul.png", width = 12, height = 6, dpi = 120)
 ```
 
-![**Figure 2.** Bootstrapped reconstructions of daily climatologies based on mean SSTs derived from time series fo 10, 20 and 30 years long. Each of 100 realisations are plotted as individual black traces on the three panels.](fig/WA_100_simul.png){width=100%}
+![**Figure 2.** Resampled reconstructions of daily climatologies based on mean SSTs derived from time series fo 10, 20 and 30 years long. Each of 100 realisations are plotted as individual black traces on the three panels.](fig/WA_100_simul.png){width=100%}
 
 ```{r}
 sst.repl.nest <- sst.repl %>% 
@@ -170,7 +170,7 @@ plt3 <- ggplot(data = sst.repl.smth, aes(x = doy, y = smoothed)) +
 ggsave(plt3, file = "fig/WA_Fourier7.png", width = 12, height = 6, dpi = 120)
 ```
 
-![**Figure 3.** Bootstrapped reconstructions of daily climatologies based on mean SSTs derived from time series of 10, 20 and 30 years long. Red lines are the smoothed climatologies obtained from a Fourier analysis.](fig/WA_Fourier7.png){width=100%}
+![**Figure 3.** Resampled reconstructions of daily climatologies based on mean SSTs derived from time series of 10, 20 and 30 years long. Red lines are the smoothed climatologies obtained from a Fourier analysis.](fig/WA_Fourier7.png){width=100%}
 
 ### heatwaveR's climatology functions
 
@@ -242,4 +242,4 @@ plt4 <- sst.repl2.smth %>%
 ggsave(plt4, file = "fig/rand_mat_smoothed_2.png", width = 12, height = 6, dpi = 120)
 ```
 
-![**Figure 4.** Bootstrapped daily climatologies based on 10, 20 and 30 years long SST time series that were randomly assembled from the original 32-year long Western Australian SST data set included with the heatwaveR package. The lines are the smoothed climatologies obtained from applying the default heatwaveR climatology algorithm that includes a mean computed from all data withing a sliding 11-day wide window, centered on the doy, followed by a 31-day wide moving averages smoother.](fig/rand_mat_smoothed_2.png){width=100%}
+![**Figure 4.** Resampled daily climatologies based on 10, 20 and 30 years long SST time series that were randomly assembled from the original 32-year long Western Australian SST data set included with the heatwaveR package. The lines are the smoothed climatologies obtained from applying the default heatwaveR climatology algorithm that includes a mean computed from all data withing a sliding 11-day wide window, centered on the doy, followed by a 31-day wide moving averages smoother.](fig/rand_mat_smoothed_2.png){width=100%}

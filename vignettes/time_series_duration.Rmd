@@ -41,10 +41,10 @@ In this section we will compare the detection of events when we simply nip off t
 
 ```{r r-init}
 library(tidyverse)
-library(heatwaveR)
-library(lubridate)
 library(broom)
-library(tidyr)
+library(heatwaveR)
+library(lubridate) # This is intentionally activated after data.table
+library(fasttime)
 ```
 
 In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 32 years long I am going to nip off those last two years. The [@WMO2016] recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match this period, but shorter, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
@@ -140,32 +140,191 @@ sst_ALL_out <- sst_ALL_event %>%
 sst_ALL_out
 ```
 
+```{r event-bar}
+# Create long data.frames for plotting
+# Mean values
+sst_ALL_out_mean_long <- sst_ALL_out %>% 
+  select(site:rate_decline_mean, -c(date_start_mean:date_end_mean))
+colnames(sst_ALL_out_mean_long) <- gsub("_mean", "", names(sst_ALL_out_mean_long))
+sst_ALL_out_mean_long <- sst_ALL_out_mean_long %>% 
+  gather(variable, value, -site, -decades)
+# SD values
+sst_ALL_out_sd_long <- sst_ALL_out %>% 
+  select(site, decades, index_start_sd:rate_decline_sd, -c(date_start_sd:date_end_sd))
+colnames(sst_ALL_out_sd_long) <- gsub("_sd", "", names(sst_ALL_out_sd_long))
+sst_ALL_out_sd_long <- sst_ALL_out_sd_long %>% 
+  gather(variable, value, -site, -decades)
+# Steek'm
+sst_ALL_out_mean_long$value_sd <- sst_ALL_out_sd_long$value
+
+# Visuals... man
+ggplot(sst_ALL_out_mean_long, aes(x = site, y = value)) +
+  geom_bar(aes(fill = decades), stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin = value - value_sd, ymax = value + value_sd), 
+                stat = "identity", position = "dodge", width = 0.2) +
+  facet_wrap(~variable, scales = "free_y")
+```
+
+```{r event-box}
+# Long data.frame for plotting
+sst_ALL_event_long <- sst_ALL_event %>% 
+  select(-event_no, -c(date_start:date_end)) %>% # Dates don't play nice with numeric values
+  gather(variable, value, -site, -decades)
+
+# Visualisations
+ggplot(sst_ALL_event_long, aes(x = site, y = value)) +
+  geom_boxplot(aes(fill = decades), position = "dodge", notch = TRUE) +
+  facet_wrap(~variable, scales = "free_y")
+```
+
 The difference between the three different time series is intriguing. The `NW_Atl` events have less cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The `Med` data changed over time in a more predictable, linear fashion. Strangest was that the `WA` data change very little depending on the number of decades used for the climatology, and that the trend displayed by the other two time series is reversed for some of the metrics in the WA time series. This is most certainly due to that one huge event near the end.
 
 Could there be a relationship between normality and change due to decade of choice?
 
 With these benchmarks established, we will now move on to bootstrapping to see if the effect of a shorter time series on the detected climatology can be mitigated.
 
-## Bootstrapping
+## Resampling
 
-With the effect of shortening time series on the detection of events quantified, we will now look into how we may go about more confidently creating a climatology that will consistently detect events as similarly as possible. In order to do so we will experiment with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) to see if that can't be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.
+With the effect of shortening time series on the detection of events quantified, we will now perform [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to simulate one hundred 10, 20, and 30 year time series in order to quantify how much more variance one may expect from shorter time series. This will be measured through the following statistics:
 
-### Standard climatologies
-
- * for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 bootstrapped samples;
- * for each doy, calculate the RMSE of the bootstrapped means relative to the true climatology (i.e. the one produced from the 30-year long time series);
+ * for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 resamplings;
+ * for each doy, calculate the RMSE of the resampled means relative to the true climatology (i.e. the one produced from the 30-year long time series);
  * correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
+
+The secondary goal of this step in this section of the methodology is to also identify how much more accurate this resampling may be able to make the climatologies generated from shorter time series as a technique for addressing this potential short-coming (yes, that was a pun).
+
+```{r resample-func}
+sst_repl <- function(sst) {
+  sst.sampled <- sst %>% 
+    mutate(sample_10 = map(data, sample_n, 10, replace = TRUE),
+           sample_20 = map(data, sample_n, 20, replace = TRUE),
+           sample_30 = map(data, sample_n, 30, replace = TRUE))
+  return(sst.sampled)
+}
+
+parse_date_sst <- function(data, rep_col, len) {
+  parsed <- data %>% 
+    mutate(id = rep_col,
+           y = year(t),
+           m = month(t),
+           d = day(t)) %>% 
+    group_by(site, rep, doy) %>% 
+    mutate(y = seq(2012-len, by = 1, len = len)) %>% 
+    mutate(t = as.Date(fastPOSIXct(paste(y, m, d, sep = "-")))) %>%
+    select(-y, -m, -d) %>% 
+    na.omit() # because of complications due to leap years
+  return(parsed)
+}
+```
+
+```{r resample-clims, eval = FALSE}
+sst_ALL_doy <- sst_ALL %>%
+  mutate(doy = yday(as.Date(t))) %>%
+  nest(-site, -doy)
+
+sst_ALL_repl <- purrr::rerun(100, sst_repl(sst_ALL_doy)) %>%
+  map_df(as.data.frame, .id = "rep")
+
+sample_10 <- sst_ALL_repl %>%
+  unnest(sample_10) %>%
+  parse_date_sst("sample_10", len = 10) %>%
+  group_by(site, id, rep) %>%
+  nest() %>%
+  mutate(smoothed = map(data, function(x) ts2clm(x, climatologyPeriod = c("2002-01-01", "2011-12-31")))) %>%
+  unnest(smoothed)
+
+sample_20 <- sst_ALL_repl %>%
+  unnest(sample_20) %>%
+  parse_date_sst("sample_20", len = 20) %>%
+  group_by(site, id, rep) %>%
+  nest() %>%
+  mutate(smoothed = map(data, function(x) ts2clm(x, climatologyPeriod = c("1992-01-01", "2011-12-31")))) %>%
+  unnest(smoothed)
+
+sample_30 <- sst_ALL_repl %>%
+  unnest(sample_30) %>%
+  parse_date_sst("sample_30", len = 30) %>%
+  group_by(site, id, rep) %>%
+  nest() %>%
+  mutate(smoothed = map(data, function(x) ts2clm(x, climatologyPeriod = c("1982-01-01", "2011-12-31")))) %>%
+  unnest(smoothed)
+
+sst_ALL_smooth <- bind_rows(sample_10, sample_20, sample_30)
+save(sst_ALL_smooth, file = "data/sst_ALL_smooth.Rdata")
+```
+
+```{r resample-clims-load}
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_smooth.Rdata")
+```
+
+
+```{r resample-stats-sd, fig.cap="Line plot showing the standard deviation (sd) of each day of the year (doy) for the three different sites. The line colours denote the number of samples used for each doy. All re-samples were run 100 times, thus n = 100 for each sd of each doy for each id."}
+# for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 resamplings;
+sst_ALL_sd <- sst_ALL_smooth %>% 
+  group_by(site, id, doy) %>% 
+  summarise(seas_sd = sd(seas),
+            thresh_sd = sd(thresh),
+            var_sd = sd(var)) %>% 
+  gather(variable, value, -site, -id, -doy)
+
+ggplot(sst_ALL_sd, aes(x = doy, y = value)) +
+  geom_line(aes(colour = id)) +
+  facet_grid(variable ~ site)
+```
+
+Hmmm.... Interesting how the seasonal and threshold signals of increased summer variance comes through so nicely in the `Med` data the fewer samples are taken. The other two time series produce somewhat strange signals. We can see that the 30 year, and to a lesser extent 20 year, re-sampled time series are much smoother than the 10 year re-sample. The `WA` data are either very strange, or very exposed to particularly intense events.
+
+```{r}
+sst_ALL_sd %>% 
+  group_by(site, variable, id) %>% 
+  summarise(sd_mean = mean(value))
+```
+
+A quick glimpse at the overall mean of the SD values for each site and re-sample period shows how similar they are. Actually, there is not a linear relationship between increased re-sample size and decreased variance. That being said, an increased re-sample size does appear to produce a more stable variance profile. Meaning that even though the mean SD for the 10 year re-resamples are very similar to the 20 and 30 year re-samples, to an extent this is because the variance is more variable, ultimately flattening itself out somewhat. This may be seen in the figure above how the slight peaks come out for the 10 year samples both above and below the other lines based on larger samples. Afain, this appears almost negligible.
+
+```{r  resample-stats-RMSE, fig.cap="Line graph, as above, but now showing theRMSE for each doy for the three different climatology durations."}
+# Base 30 year clims
+sst_ALL_clim_base <- sst_ALL_clim %>% 
+  filter(decades == "clim_30") %>% 
+  select(site:doy, seas:var, -decades) %>% 
+  unique()
+
+# For each doy, calculate the RMSE of the resampled means relative to the true climatology (i.e. the one produced from the 30-year long time series);
+sst_ALL_error <- sst_ALL_smooth %>% 
+  select(site:doy, seas:var) %>% 
+  unique() %>% 
+  left_join(sst_ALL_clim_base, by = c("site", "doy")) %>% 
+  mutate(seas.er = seas.x - seas.y,
+         thresh.er = thresh.x - thresh.y,
+         var.er = var.x - var.y)
+
+sst_ALL_RMSE <- sst_ALL_error %>% 
+  group_by(site, id, doy) %>% 
+  summarise(seas_RMSE = sqrt(mean(seas.er^2)),
+            thresh_RMSE = sqrt(mean(thresh.er^2)),
+            var_RMSE = sqrt(mean(var.er^2))) %>% 
+  gather(variable, value, -site, -id, -doy)
+
+ggplot(sst_ALL_RMSE, aes(x = doy, y = value)) +
+  geom_line(aes(colour = id)) +
+  facet_grid(variable ~ site)
+```
+
+```{r resample-stats-events}
+# correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
+
+```
+
+## Arguments
+
+With the amount of variance that may be accounted for through resampling known, we will now look into how we may go about more confidently creating a climatology that will consistently detect events as similarly as possible by experimenting with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) to see if that can't be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.
 
 ```{r}
 
 ```
 
+## Fourier transform climatologies
 
-### Fourier transform climatologies
-
-
-## Incremental shortening
-
-
-## Decadal trends
-
+Lastly we will now go about reproducing all of the checks made above, but based on a climatology derived from a FOurier transformation, and not the default methodology.
