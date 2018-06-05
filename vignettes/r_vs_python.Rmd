@@ -252,17 +252,26 @@ The final thing we want to look at in this vignette is the speed differences in 
 ### R
 
 ```{r}
-system.time(detect_event(ts2clm(data = sst_WA, climatologyPeriod = c("1982-01-01", "2014-12-31"))))
+library(microbenchmark)
+# The old R code
+library(RmarineHeatWaves)
+microbenchmark(detect(make_whole(data = sst_WA), climatology_start = "1982-01-01", climatology_end = "2014-12-31"), times = 10)
+# The new R code
+microbenchmark(detect_event(ts2clm(data = sst_WA, climatologyPeriod = c("1982-01-01", "2014-12-31"), robust = FALSE)), times = 10)
 ```
 
 ### Python
 
 ```{python}
 import time
-t1 = time.time()
-mhws, clim = mhw.detect(t, sst)
-t2 = time.time()
-print(t2-t1)
+total = 0
+for i in range(10):
+    start = time.clock()
+    mhws, clim = mhw.detect(t, sst)
+    end = time.clock()
+    total += end-start
+bench_py = total/10
+print(bench_py)
 ```
 
-The Python code appears to be just a bit faster at ~0.18 seconds to ~0.20 seconds for R. And it is calculating the event categories as well, which R is not. That is done in an additonal step with `category()`.
+The Python code appears to be about twoce as fast at ~0.18 seconds to ~0.32 seconds for R. And the Python code is also calculating the event categories, which R is not. That is done in an additonal step with `category()`. The R code is however allowing for a wider range of options for climaotlogies.
