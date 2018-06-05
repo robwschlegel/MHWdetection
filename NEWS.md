@@ -1,3 +1,7 @@
+# MHWdetection 0.0.2  (2018-06-05)
+
+* Smoothed out issues preventing site from being built
+
 # MHWdetection 0.0.2  (2018-06-01)
 
 * Second section of duration vignette nearly finished
