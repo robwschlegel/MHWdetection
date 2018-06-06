@@ -432,9 +432,19 @@ ggplot(sst_ALL_aov_CI, aes(x = site)) +
 
 Though I was not able to run the boxplot, because my computer kept falling over, the CI plot above demonstrates that the difference detected in the first round of experiments (when the real 10, 20, and 30 year baselines were used to generate a single clim each) holds up when we re-sample the clim generation 100 times. The centre around which the CI spread may be found remains very similar between the two experiments, with the distance between the upper and lower limits shrinking drammatically. THis shows us that re-sampling may be a good way of increasing our confidence in the results. But I'm not terribly convince of where to go with that from here...
 
+## Bootstrapping
+
+* Take distributions of each Julian doy
+* Do so for the 10, 20, and 30 year real periods
+* Bootstrap those distributions and create clims from there
+
+After doing this, then write up the report and send it out for everyone's input on what tod owith the different arguments.
+
 ## Arguments
 
 With the amount of variance that may be accounted for through re-sampling known, we will now look into how we may go about more confidently creating a climatology that will consistently detect events as similarly as possible by experimenting with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) to see if that can't be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.
+
+Seeing as how 20 and 30 year periods produce very similar results, we will be focussing primarily on what may be done about the 10 year period to make it more similar to the 30 year period. I don't think it is necessary to do so for the 20 year period.
 
 ```{r}
 
