@@ -1,3 +1,7 @@
+# MHWdetection 0.0.2  (2018-06-06)
+
+* More work on duration section
+
 # MHWdetection 0.0.2  (2018-06-05)
 
 * Smoothed out issues preventing site from being built
