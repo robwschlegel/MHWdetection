@@ -497,11 +497,28 @@ sst_ALL_clim_multi <- sst_ALL_clim_period %>%
                          y = real, robust = FALSE, clmOnly = TRUE)) %>% 
   select(-data)
 
-sst_ALL_event_boot <- sst_ALL_clim_multi %>% 
+# Extract the boot mean clims and calculate events
+sst_ALL_clim_boot <- sst_ALL_clim_multi %>% 
   unnest(clim_boot) %>% 
   left_join(sst_ALL_clim_period, by = c("site", "decades", "doy")) %>% 
   select(site, decades, doy, t, temp, seas, thresh, var) %>% 
-  arrange(site, decades, t) %>% 
+  arrange(site, decades, t)
+sst_ALL_event_boot <- sst_ALL_clim_boot %>% 
+  group_by(site, decades) %>% 
+  nest() %>% 
+  mutate(res = map(data, detect_event_event)) %>% 
+  select(-data) %>%
+  unnest(res) %>%
+  filter(date_start >= "2002-01-01", date_end <= "2011-12-31") %>%
+  select(-c(index_start:index_end, date_start:date_end))
+
+# Extract the real mean clims and calculate events
+sst_ALL_clim_real <- sst_ALL_clim_multi %>% 
+  unnest(clim_real) %>% 
+  left_join(sst_ALL_clim_period, by = c("site", "decades", "doy")) %>% 
+  select(site, decades, doy, t, temp, seas, thresh, var) %>% 
+  arrange(site, decades, t)
+sst_ALL_event_real <- sst_ALL_clim_real %>% 
   group_by(site, decades) %>% 
   nest() %>% 
   mutate(res = map(data, detect_event_event)) %>% 
@@ -511,6 +528,23 @@ sst_ALL_event_boot <- sst_ALL_clim_multi %>%
   select(-c(index_start:index_end, date_start:date_end))
 ```
 
+The bootstrapping of the value used to create the climatologies produces a suspiciously larger number of events. Need to take a closer look.
+
+```{r}
+# Line graph showing different seas columns from different methods
+ggplot(sst_ALL_clim, aes(x = t, y = seas)) +
+  geom_line() +
+  geom_line(data = sst_ALL_clim_boot, colour = "red") +
+  geom_line(data = sst_ALL_clim_real, colour = "blue") +
+  facet_grid(site ~ decades, scales = "free_y")
+
+# Line graph showing different seas columns from different methods
+ggplot(sst_ALL_clim, aes(x = t, y = thresh)) +
+  geom_line() +
+  geom_line(data = sst_ALL_clim_boot, colour = "red") +
+  geom_line(data = sst_ALL_clim_real, colour = "blue") +
+  facet_grid(site ~ decades, scales = "free_y")
+```
 
 
 After doing this, then write up the report and send it out for everyone's input on what tod owith the different arguments.
