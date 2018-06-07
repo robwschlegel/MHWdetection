@@ -185,7 +185,7 @@ ggplot(sst_ALL_out_mean_long, aes(x = site, y = value, fill = decades)) +
   facet_wrap(~variable, scales = "free_y")
 ```
 
-```{r event-box, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods."}
+```{r event-box1, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods."}
 # Long data.frame for plotting
 sst_ALL_event_long <- sst_ALL_event %>% 
   select(-event_no) %>%
@@ -198,7 +198,7 @@ ggplot(sst_ALL_event_long, aes(x = site, y = value)) +
   facet_wrap(~variable, scales = "free_y")
 ```
 
-```{r event-CI-plot, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean."}
+```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean."}
 CI_plot_1 <- ggplot(sst_ALL_aov_CI, aes(x = site)) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5,
                 aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
@@ -400,7 +400,7 @@ sst_ALL_smooth_aov_CI <- sst_ALL_smooth_event %>%
 sst_ALL_smooth_aov_CI
 ```
 
-```{r event-box, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods re-sampled 100 times."}
+```{r event-box2, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods re-sampled 100 times."}
 # Long data.frame for plotting
 sst_ALL_smooth_event_long <- sst_ALL_smooth_event %>% 
   select(-event_no) %>%
@@ -414,7 +414,7 @@ sst_ALL_smooth_event_long <- sst_ALL_smooth_event %>%
 # NB: This visualisation is too beefy
 ```
 
-```{r event-CI-plot, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean based on the 100 times re-sampling of each clim period in red, and the single sample based on the real data in black."}
+```{r event-CI-plot2, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean based on the 100 times re-sampling of each clim period in red, and the single sample based on the real data in black."}
 # CI_plot_2 <- ggplot(sst_ALL_smooth_aov_CI, aes(x = site)) +
 #   geom_errorbar(position = position_dodge(0.9), width = 0.5,
 #                aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
