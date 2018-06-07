@@ -46,6 +46,7 @@ library(heatwaveR)
 library(lubridate) # This is intentionally activated after data.table
 library(fasttime)
 library(ggpubr)
+library(boot)
 ```
 
 In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 32 years long I am going to nip off those last two years. The [@WMO2016] recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match this period, but shorter, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
@@ -80,7 +81,9 @@ Now let's compare the results of the events detected in the final decade of each
 # Written out here for tidiness/convenience
 
 # Calculate only events
-detect_event_event <- function(df){
+detect_event_event <- function(df, y = temp){
+  ts_y <- eval(substitute(y), df)
+  df$temp <- ts_y
   res <- detect_event(df)$event
   return(res)
   }
@@ -430,19 +433,125 @@ ggplot(sst_ALL_aov_CI, aes(x = site)) +
   facet_wrap(~metric, scales = "free_y")
 ```
 
-Though I was not able to run the boxplot, because my computer kept falling over, the CI plot above demonstrates that the difference detected in the first round of experiments (when the real 10, 20, and 30 year baselines were used to generate a single clim each) holds up when we re-sample the clim generation 100 times. The centre around which the CI spread may be found remains very similar between the two experiments, with the distance between the upper and lower limits shrinking drammatically. THis shows us that re-sampling may be a good way of increasing our confidence in the results. But I'm not terribly convince of where to go with that from here...
+Though I was not able to run the boxplot, because my computer kept falling over, the CI plot above demonstrates that the difference detected in the first round of experiments (when the real 10, 20, and 30 year baselines were used to generate a single clim each) holds up when we re-sample the clim generation 100 times. The centre around which the CI spread may be found remains very similar between the two experiments, with the distance between the upper and lower limits shrinking drammatically with re-sampling. Through resampling we see that there is a difference between the 10 year clims and the 20 and 30 year clims. But that there is no difference between the 20 and 30 year clims. Next we will use bootstrapping to see if we can lessen this gap.
 
 ## Bootstrapping
+
+Bootstrapping differs from re-sampling in that we will be creating new data based on the known distribution of data we will be sampling from. These known distributions are to be the temperature values on each Julian day of the year. The steps to take for a basic bootstraping approach are thus:
 
 * Take distributions of each Julian doy
 * Do so for the 10, 20, and 30 year real periods
 * Bootstrap those distributions and create clims from there
 
+So without any further ado.
+
+```{r}
+# First create the base time series for bootstrapping
+sst_ALL_clim_10 <- sst_ALL_clim %>% 
+  filter(decades == "clim_10", t >= "2002-01-01", t <= "2011-12-31") %>% 
+  select(site:temp)
+sst_ALL_clim_20 <- sst_ALL_clim %>% 
+  filter(decades == "clim_20", t >= "1992-01-01", t <= "2011-12-31") %>% 
+  select(site:temp)
+sst_ALL_clim_30 <- sst_ALL_clim %>% 
+  filter(decades == "clim_30", t >= "1982-01-01", t <= "2011-12-31") %>% 
+  select(site:temp)
+sst_ALL_clim_period <- rbind(sst_ALL_clim_10, sst_ALL_clim_20, sst_ALL_clim_30)
+rm(sst_ALL_clim_10, sst_ALL_clim_20, sst_ALL_clim_30)
+
+# function to obtain a mean for each julian date
+mjd <- function(data, indices) {
+  d <- data[indices,] # allows boot to select sample
+  res <- mean(d$temp)
+  return(res)
+}
+
+# Function for running a bootstrap within a nest
+mjd_boot <- function(df){
+  res <- boot(data = df, statistic = mjd, R = 100)
+  res1 <- mean(res$t)
+  res2 <- res$t0
+  res3 <- data.frame(boot = res1, real = res2)
+  return(res3)
+}
+
+# Boot the values
+sst_ALL_clim_period_boot <- sst_ALL_clim_period %>% 
+  nest(-site, -decades, -doy) %>% 
+  mutate(temp_boot = map(data, mjd_boot)) %>%
+  unnest(temp_boot) %>% 
+  select(-data) %>% 
+  arrange(site, decades, doy) #%>% 
+  # mutate(t = rep(seq(as.Date("2016-01-01"), as.Date("2016-12-31"), by = "day"), 9))
+
+# Then join these values into the pre-existing data frames
+sst_ALL_clim_period <- sst_ALL_clim_period %>% 
+  left_join(sst_ALL_clim_period_boot, by = c("site", "decades", "doy"))
+
+# Create clims from the booted and real mean values per Julian day
+sst_ALL_clim_multi <- sst_ALL_clim_period %>% 
+  nest(-site, -decades) %>% 
+  mutate(clim_boot = map(data, ts2clm, climatologyPeriod = c("2002-01-01", "2011-12-31"), 
+                         y = boot, robust = FALSE, clmOnly = TRUE),
+         clim_real = map(data, ts2clm, climatologyPeriod = c("2002-01-01", "2011-12-31"), 
+                         y = real, robust = FALSE, clmOnly = TRUE)) %>% 
+  select(-data)
+
+# Extract the boot mean clims and calculate events
+sst_ALL_clim_boot <- sst_ALL_clim_multi %>% 
+  unnest(clim_boot) %>% 
+  left_join(sst_ALL_clim_period, by = c("site", "decades", "doy")) %>% 
+  select(site, decades, doy, t, temp, seas, thresh, var) %>% 
+  arrange(site, decades, t)
+sst_ALL_event_boot <- sst_ALL_clim_boot %>% 
+  group_by(site, decades) %>% 
+  nest() %>% 
+  mutate(res = map(data, detect_event_event)) %>% 
+  select(-data) %>%
+  unnest(res) %>%
+  filter(date_start >= "2002-01-01", date_end <= "2011-12-31") %>%
+  select(-c(index_start:index_end, date_start:date_end))
+
+# Extract the real mean clims and calculate events
+sst_ALL_clim_real <- sst_ALL_clim_multi %>% 
+  unnest(clim_real) %>% 
+  left_join(sst_ALL_clim_period, by = c("site", "decades", "doy")) %>% 
+  select(site, decades, doy, t, temp, seas, thresh, var) %>% 
+  arrange(site, decades, t)
+sst_ALL_event_real <- sst_ALL_clim_real %>% 
+  group_by(site, decades) %>% 
+  nest() %>% 
+  mutate(res = map(data, detect_event_event)) %>% 
+  select(-data) %>%
+  unnest(res) %>%
+  filter(date_start >= "2002-01-01", date_end <= "2011-12-31") %>%
+  select(-c(index_start:index_end, date_start:date_end))
+```
+
+The bootstrapping of the value used to create the climatologies produces a suspiciously larger number of events. Need to take a closer look.
+
+```{r}
+# Line graph showing different seas columns from different methods
+ggplot(sst_ALL_clim, aes(x = t, y = seas)) +
+  geom_line() +
+  geom_line(data = sst_ALL_clim_boot, colour = "red") +
+  geom_line(data = sst_ALL_clim_real, colour = "blue") +
+  facet_grid(site ~ decades, scales = "free_y")
+
+# Line graph showing different seas columns from different methods
+ggplot(sst_ALL_clim, aes(x = t, y = thresh)) +
+  geom_line() +
+  geom_line(data = sst_ALL_clim_boot, colour = "red") +
+  geom_line(data = sst_ALL_clim_real, colour = "blue") +
+  facet_grid(site ~ decades, scales = "free_y")
+```
+
+
 After doing this, then write up the report and send it out for everyone's input on what tod owith the different arguments.
 
 ## Arguments
 
-With the amount of variance that may be accounted for through re-sampling known, we will now look into how we may go about more confidently creating a climatology that will consistently detect events as similarly as possible by experimenting with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) to see if that can't be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.
+With the amount of variance that may be accounted for through re-sampling and bootstrapping known, we will now look into how we may go about more confidently creating a climatology that will consistently detect events as similarly as possible by experimenting with how the various arguments within the detection pipeline may affect our results, given the different lengths of time series employed. After this has been done we will look into using the Fourier transform climatology generating method (https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) to see if that can't be more effective. The efficacy of these techniques will be judged through a number of statistical measurements of variance and similarity.
 
 Seeing as how 20 and 30 year periods produce very similar results, we will be focussing primarily on what may be done about the 10 year period to make it more similar to the 30 year period. I don't think it is necessary to do so for the 20 year period.
 
