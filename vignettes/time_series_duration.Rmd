@@ -546,8 +546,16 @@ ggplot(sst_ALL_clim, aes(x = t, y = thresh)) +
   facet_grid(site ~ decades, scales = "free_y")
 ```
 
+So it looks like bootstrapping isn't going to work as the creation of mean values from the bootstrapped ones artificially lowers the 90th percentile threshold and prevents the accurate detection of events. The events detected in the bootstrapped data are more than double those detected in the real data. The next logical step would be to then not create means from the bootstrapped values, but rather to use bootstrapping to select values per `doy` and stitch those together into the time series that would be used to generate another set of clims. But that is no different from re-sampling. The only difference proposed here from what has already been done above is that the previous re-sampling drew on the full 33 years of data for the creation of the re-sampled 10, 20, and 30 year time series. I suppose one could do that again, except this time only draw from the diminished time periods. Meaning, first reduce the time series down to the 10, 20, or 30 year periods and then re-sample. But this would be nearly pointless as one would just be shuffling the years of data around and the climatology creation doesn't care what order the data are in. Meaning it would have no effect. I am confident enough about this that I don't think it needs to be tested. But then, how else may one improve a short time series? I'm thinking that it may work to just subtract the decadal signal from the threshold, but how would one know what that is without 30+ years of data? Perhaps one could find it from a longer SST product and then transpose that onto the shorter SST times series/product being used. But that seems like a lot could go wrong.
 
-After doing this, then write up the report and send it out for everyone's input on what tod owith the different arguments.
+## Categories
+
+In this section we want to look at how the categories in the different time periods compare. I'll start out with doing basic calculations and comparisons of the categories of events with the different time periods. And then based on how that looks, see if I can think of a way of quantifying the differences.
+
+```{r}
+
+```
+
 
 ## Arguments
 
