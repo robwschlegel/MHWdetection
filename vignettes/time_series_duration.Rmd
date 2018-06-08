@@ -12,9 +12,9 @@ bibliography: bibliography.bib
 ---
 
 ```{r global_options, include = FALSE}
-knitr::opts_chunk$set(fig.width = 6, fig.align = 'center',
+knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       warning = FALSE, message = FALSE, 
-                      tidy = FALSE)
+                      eval = TRUE, tidy = FALSE)
 ```
 
 ## Overview
@@ -49,7 +49,7 @@ library(ggpubr)
 library(boot)
 ```
 
-In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 32 years long I am going to nip off those last two years. The [@WMO2016] recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match this period, but shorter, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
+In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 32 years long I am going to nip off those last two years. The WMO recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match this period, but shorter, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
 
 ```{r shorten}
 # First put all of the data together and create a site column
@@ -570,3 +570,5 @@ Seeing as how 20 and 30 year periods produce very similar results, we will be fo
 ## Fourier transform climatologies
 
 Lastly we will now go about reproducing all of the checks made above, but based on a climatology derived from a FOurier transformation, and not the default methodology.
+
+## References
