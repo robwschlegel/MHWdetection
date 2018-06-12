@@ -1,3 +1,7 @@
+# MHWdetection 0.0.2  (2018-06-12)
+
+* Added significance tests for clims of different lengths for both single and re-sampled clims
+
 # MHWdetection 0.0.2  (2018-06-07)
 
 * More work on duration section

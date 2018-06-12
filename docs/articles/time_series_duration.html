@@ -110,7 +110,7 @@
       <h1>Assessing the effect of time series duration</h1>
                         <h4 class="author">Robert Schlegel</h4>
             
-            <h4 class="date">2018-06-08</h4>
+            <h4 class="date">2018-06-12</h4>
       
       
       <div class="hidden name"><code>time_series_duration.Rmd</code></div>
@@ -181,7 +181,6 @@ sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
 ## 8 WA     clim_20     21.6 
 ## 9 WA     clim_30     21.5</code></pre>
 <p>Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds seas and oceans. We’ll return to the impact of this phenomenon later.</p>
-<p>Now let’s compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># A clomp of functions used below</span>
 <span class="co"># Written out here for tidiness/convenience</span>
 
@@ -222,6 +221,29 @@ event_output &lt;-<span class="st"> </span><span class="cf">function</span>(df){
 <span class="st">    </span><span class="kw">summarise_all</span>(<span class="kw">c</span>(<span class="st">"mean"</span>, <span class="st">"sd"</span>))
   <span class="kw">return</span>(res)
   }</code></pre></div>
+<p>Given that there are perceptible differences in these mean values, let’s see if an ANOVA determines these differences to be significant.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_clim_aov &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>t, <span class="op">-</span><span class="st"> </span>temp, <span class="op">-</span>doy) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">decades =</span> <span class="kw">as.factor</span>(decades)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unique</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_p)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>() <span class="co">#%&gt;% </span>
+  <span class="co"># spread(key = metric, value = p.value) #%&gt;%</span>
+  <span class="co"># select(names(select(sst_ALL_event, -decades, -event_no)))</span>
+
+<span class="kw">ggplot</span>(sst_ALL_clim_aov, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> metric)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">4</span>))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/shorten-clim-aov-1.png" alt="Heatmap showing the ANOVA results for the comparisons of the different clims for the three different time periods. Only the variance in the climatologies are significantly different at p &lt; 0.05." width="768"><p class="caption">
+Heatmap showing the ANOVA results for the comparisons of the different clims for the three different time periods. Only the variance in the climatologies are significantly different at p &lt; 0.05.
+</p>
+</div>
+<p>Now let’s compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate events and filter only those from 2002 -- 2011</span>
 sst_ALL_event &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site, decades) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -435,6 +457,29 @@ sst_ALL_smooth &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(s
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This file is not uploaded to GitHub as it is too large</span>
 <span class="co"># One must first run the above code locally to generate and save the file</span>
 <span class="kw">load</span>(<span class="st">"data/sst_ALL_smooth.Rdata"</span>)</code></pre></div>
+<p>With 100 re-sampled climatologies and thresholds created, let’s take a moment to see if this much larger sample size differs significantly.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_smooth_aov &lt;-<span class="st"> </span>sst_ALL_smooth <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">decades =</span> id) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>rep, <span class="op">-</span>t, <span class="op">-</span><span class="st"> </span>temp, <span class="op">-</span>doy) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">decades =</span> <span class="kw">as.factor</span>(decades)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unique</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_p)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>() <span class="co">#%&gt;% </span>
+  <span class="co"># spread(key = metric, value = p.value) #%&gt;%</span>
+  <span class="co"># select(names(select(sst_ALL_event, -decades, -event_no)))</span>
+
+<span class="kw">ggplot</span>(sst_ALL_smooth_aov, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> metric)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">4</span>))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/re-sample-clim-aov-1.png" alt="Heatmap showing the p-values from ANOVA's for the three different clim periods." width="768"><p class="caption">
+Heatmap showing the p-values from ANOVA’s for the three different clim periods.
+</p>
+</div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-samplings;</span>
 sst_ALL_sd &lt;-<span class="st"> </span>sst_ALL_smooth <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site, id, doy) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -470,7 +515,7 @@ Line plot showing the standard deviation (sd) of each day of the year (doy) for 
 ##  9 Med    var_sd    sample_30  0.0235
 ## 10 NW_Atl seas_sd   sample_10  0.0621
 ## # ... with 17 more rows</code></pre>
-<p>A quick glimpse at the overall mean of the SD values for each site and re-sample period shows how similar they are. Actually, there is not a linear relationship between increased re-sample size and decreased variance. That being said, an increased re-sample size does appear to produce a more stable variance profile. Meaning that even though the mean SD for the 10 year re-samples are very similar to the 20 and 30 year re-samples, to an extent this is because the variance is more variable, ultimately flattening itself out somewhat. This may be seen in the figure above how the slight peaks come out for the 10 year samples both above and below the other lines based on larger samples. Afain, this appears almost negligible.</p>
+<p>A quick glimpse at the overall mean of the SD values for each site and re-sample period shows how similar they are. Actually, there is not a linear relationship between increased re-sample size and decreased variance. That being said, an increased re-sample size does appear to produce a more stable variance profile. Meaning that even though the mean SD for the 10 year re-samples are very similar to the 20 and 30 year re-samples, to an extent this is because the variance is more variable, ultimately flattening itself out somewhat. This may be seen in the figure above how the slight peaks come out for the 10 year samples both above and below the other lines based on larger samples. Again, this appears almost negligible.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Base 30 year clims</span>
 sst_ALL_clim_base &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(decades <span class="op">==</span><span class="st"> "clim_30"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -504,7 +549,7 @@ Line graph, as above, but now showing the RMSE for each doy for the three differ
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># It appears as though the actual time series constructed from re-sampling, </span>
 <span class="co"># while useful for creating climatologies, are totally deurmekaar </span>
 <span class="co"># and do not actually lend themselves to the detection of heatwaves</span>
-<span class="co"># Therefore it is necessary to replace the 'temp' values in the smoothes data with the real values</span>
+<span class="co"># Therefore it is necessary to replace the 'temp' values in the smoothed data with the real values</span>
 sst_ALL_smooth_real &lt;-<span class="st"> </span>sst_ALL_smooth <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>temp) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">left_join</span>(sst_ALL, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">"site"</span>, <span class="st">"t"</span>))</code></pre></div>
@@ -600,12 +645,12 @@ sst_ALL_smooth_event_long &lt;-<span class="st"> </span>sst_ALL_smooth_event <sp
 Confidence intervals of the different metrics for the three different clim periods from the population mean based on the 100 times re-sampling of each clim period in red, and the single sample based on the real data in black.
 </p>
 </div>
-<p>Though I was not able to run the boxplot, because my computer kept falling over, the CI plot above demonstrates that the difference detected in the first round of experiments (when the real 10, 20, and 30 year baselines were used to generate a single clim each) holds up when we re-sample the clim generation 100 times. The centre around which the CI spread may be found remains very similar between the two experiments, with the distance between the upper and lower limits shrinking drammatically with re-sampling. Through resampling we see that there is a difference between the 10 year clims and the 20 and 30 year clims. But that there is no difference between the 20 and 30 year clims. Next we will use bootstrapping to see if we can lessen this gap.</p>
+<p>Though I was not able to run the boxplot, because my computer kept falling over, the CI plot above demonstrates that the difference detected in the first round of experiments (when the real 10, 20, and 30 year baselines were used to generate a single clim each) holds up when we re-sample the clim generation 100 times. The centre around which the CI spread may be found remains very similar between the two experiments, with the distance between the upper and lower limits shrinking dramatically with re-sampling. Through re-sampling we see that there is a difference between the 10 year clims and the 20 and 30 year clims. But that there is no difference between the 20 and 30 year clims. Next we will use bootstrapping to see if we can lessen this gap.</p>
 </div>
 <div id="bootstrapping" class="section level2">
 <h2 class="hasAnchor">
 <a href="#bootstrapping" class="anchor"></a>Bootstrapping</h2>
-<p>Bootstrapping differs from re-sampling in that we will be creating new data based on the known distribution of data we will be sampling from. These known distributions are to be the temperature values on each Julian day of the year. The steps to take for a basic bootstraping approach are thus:</p>
+<p>Bootstrapping differs from re-sampling in that we will be creating new data based on the known distribution of data we will be sampling from. These known distributions are to be the temperature values on each Julian day of the year. The steps to take for a basic bootstrapping approach are thus:</p>
 <ul>
 <li>Take distributions of each Julian doy</li>
 <li>Do so for the 10, 20, and 30 year real periods</li>
@@ -713,6 +758,42 @@ sst_ALL_event_real &lt;-<span class="st"> </span>sst_ALL_clim_real <span class="
 <h2 class="hasAnchor">
 <a href="#categories" class="anchor"></a>Categories</h2>
 <p>In this section we want to look at how the categories in the different time periods compare. I’ll start out with doing basic calculations and comparisons of the categories of events with the different time periods. And then based on how that looks, see if I can think of a way of quantifying the differences.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate categories from events in one function for nesting</span>
+detect_event_category &lt;-<span class="st"> </span><span class="cf">function</span>(df, <span class="dt">y =</span> temp){
+  ts_y &lt;-<span class="st"> </span><span class="kw">eval</span>(<span class="kw">substitute</span>(y), df)
+  df<span class="op">$</span>temp &lt;-<span class="st"> </span>ts_y
+  res &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/category">category</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/detect_event">detect_event</a></span>(df))
+  res<span class="op">$</span>event_name &lt;-<span class="st"> </span><span class="kw">as.character</span>(res<span class="op">$</span>event_name)
+  <span class="kw">return</span>(res)
+  }</code></pre></div>
+<p>First up we compare the category results for the events with the one reduced clim as done before.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate categories and filter only those from 2002 -- 2011</span>
+sst_ALL_category &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, decades) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, detect_event_category)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>(res) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(peak_date <span class="op">&gt;=</span><span class="st"> "2002-01-01"</span>, peak_date <span class="op">&lt;=</span><span class="st"> "2011-12-31"</span>) <span class="co">#%&gt;% </span>
+  <span class="co"># select(-c(index_start:index_end, date_start:date_end))</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Indeed... but how to compare qualitative data?</span>
+<span class="co"># Let's start out by counting the occurrence of the categories</span>
+sst_ALL_category_count &lt;-<span class="st"> </span>sst_ALL_category <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, decades, category) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())
+sst_ALL_category_count<span class="op">$</span>category &lt;-<span class="st"> </span><span class="kw">factor</span>(sst_ALL_category_count<span class="op">$</span>category,
+                                             <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">"I Moderate"</span>, <span class="st">"II Strong"</span>,
+                                                        <span class="st">"III Severe"</span>, <span class="st">"IV Extreme"</span>))
+
+<span class="kw">ggplot</span>(sst_ALL_category_count, <span class="kw">aes</span>(<span class="dt">x =</span> decades, <span class="dt">y =</span> count, <span class="dt">fill =</span> decades)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">"identity"</span>, <span class="dt">position =</span> <span class="kw">position_dodge</span>()) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_grid</span>(category<span class="op">~</span>site)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/category-compare-1.png" alt="Simple bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle." width="768"><p class="caption">
+Simple bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more ‘smaller’ events are detected with a 10 year clim period, and more ‘larger’ events detected with the 30 year clim. The 20 year clim tends to rest in the middle.
+</p>
+</div>
+<p>Those are about the results I was expecting. Now let’s run this same code on our 100 re-samples we created earlier.</p>
 </div>
 <div id="arguments" class="section level2">
 <h2 class="hasAnchor">
@@ -723,7 +804,7 @@ sst_ALL_event_real &lt;-<span class="st"> </span>sst_ALL_clim_real <span class="
 <div id="fourier-transform-climatologies" class="section level2">
 <h2 class="hasAnchor">
 <a href="#fourier-transform-climatologies" class="anchor"></a>Fourier transform climatologies</h2>
-<p>Lastly we will now go about reproducing all of the checks made above, but based on a climatology derived from a FOurier transformation, and not the default methodology.</p>
+<p>Lastly we will now go about reproducing all of the checks made above, but based on a climatology derived from a Fourier transformation, and not the default methodology.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="hasAnchor">

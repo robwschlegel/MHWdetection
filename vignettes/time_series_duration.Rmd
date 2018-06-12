@@ -75,8 +75,6 @@ sst_ALL_clim %>%
 
 Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds seas and oceans. We'll return to the impact of this phenomenon later.
 
-Now let's compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades.
-
 ```{r compare-funcs}
 # A clomp of functions used below
 # Written out here for tidiness/convenience
@@ -119,6 +117,29 @@ event_output <- function(df){
   return(res)
   }
 ```
+
+Given that there are perceptible differences in these mean values, let's see if an ANOVA determines these differences to be significant.
+
+```{r shorten-clim-aov, fig.cap="Heatmap showing the ANOVA results for the comparisons of the different clims for the three different time periods. Only the variance in the climatologies are significantly different at p < 0.05."}
+sst_ALL_clim_aov <- sst_ALL_clim %>% 
+  select(-t, - temp, -doy) %>% 
+  mutate(decades = as.factor(decades)) %>% 
+  unique() %>% 
+  group_by(site) %>% 
+  nest() %>% 
+  mutate(res = map(data, event_aov_p)) %>% 
+  select(-data) %>% 
+  unnest() #%>% 
+  # spread(key = metric, value = p.value) #%>%
+  # select(names(select(sst_ALL_event, -decades, -event_no)))
+
+ggplot(sst_ALL_clim_aov, aes(x = site, y = metric)) +
+  geom_tile(aes(fill = p.value)) +
+  geom_text(aes(label = round(p.value, 4))) +
+  scale_fill_gradient2(midpoint = 0.1)
+```
+
+Now let's compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades.
 
 ```{r compare-shorten}
 # Calculate events and filter only those from 2002 -- 2011
@@ -294,6 +315,27 @@ save(sst_ALL_smooth, file = "data/sst_ALL_smooth.Rdata")
 load("data/sst_ALL_smooth.Rdata")
 ```
 
+With 100 re-sampled climatologies and thresholds created, let's take a moment to see if this much larger sample size differs significantly.
+
+```{r re-sample-clim-aov, fig.cap="Heatmap showing the p-values from ANOVA's for the three different clim periods."}
+sst_ALL_smooth_aov <- sst_ALL_smooth %>% 
+  rename(decades = id) %>% 
+  select(-rep, -t, - temp, -doy) %>% 
+  mutate(decades = as.factor(decades)) %>% 
+  unique() %>% 
+  group_by(site) %>% 
+  nest() %>% 
+  mutate(res = map(data, event_aov_p)) %>% 
+  select(-data) %>% 
+  unnest() #%>% 
+  # spread(key = metric, value = p.value) #%>%
+  # select(names(select(sst_ALL_event, -decades, -event_no)))
+
+ggplot(sst_ALL_smooth_aov, aes(x = site, y = metric)) +
+  geom_tile(aes(fill = p.value)) +
+  geom_text(aes(label = round(p.value, 4))) +
+  scale_fill_gradient2(midpoint = 0.1)
+```
 
 ```{r re-sample-stats-sd, fig.cap="Line plot showing the standard deviation (sd) of each day of the year (doy) for the three different sites. The line colours denote the number of samples used for each doy. All re-samples were run 100 times, thus n = 100 for each sd of each doy for each id."}
 # for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-samplings;
@@ -351,7 +393,7 @@ ggplot(sst_ALL_RMSE, aes(x = doy, y = value)) +
 # It appears as though the actual time series constructed from re-sampling, 
 # while useful for creating climatologies, are totally deurmekaar 
 # and do not actually lend themselves to the detection of heatwaves
-# Therefore it is necessary to replace the 'temp' values in the smoothes data with the real values
+# Therefore it is necessary to replace the 'temp' values in the smoothed data with the real values
 sst_ALL_smooth_real <- sst_ALL_smooth %>% 
   select(-temp) %>% 
   left_join(sst_ALL, by = c("site", "t"))
@@ -553,7 +595,50 @@ So it looks like bootstrapping isn't going to work as the creation of mean value
 
 In this section we want to look at how the categories in the different time periods compare. I'll start out with doing basic calculations and comparisons of the categories of events with the different time periods. And then based on how that looks, see if I can think of a way of quantifying the differences.
 
-```{r}
+```{r category-event-func}
+# Calculate categories from events in one function for nesting
+detect_event_category <- function(df, y = temp){
+  ts_y <- eval(substitute(y), df)
+  df$temp <- ts_y
+  res <- category(detect_event(df))
+  res$event_name <- as.character(res$event_name)
+  return(res)
+  }
+```
+
+
+First up we compare the category results for the events with the one reduced clim as done before.
+
+```{r category-calc}
+# Calculate categories and filter only those from 2002 -- 2011
+sst_ALL_category <- sst_ALL_clim %>% 
+  group_by(site, decades) %>% 
+  nest() %>% 
+  mutate(res = map(data, detect_event_category)) %>% 
+  select(-data) %>% 
+  unnest(res) %>% 
+  filter(peak_date >= "2002-01-01", peak_date <= "2011-12-31") #%>% 
+  # select(-c(index_start:index_end, date_start:date_end))
+```
+
+```{r category-compare, fig.cap="Simple bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
+# Indeed... but how to compare qualitative data?
+# Let's start out by counting the occurrence of the categories
+sst_ALL_category_count <- sst_ALL_category %>% 
+  group_by(site, decades, category) %>% 
+  summarise(count = n())
+sst_ALL_category_count$category <- factor(sst_ALL_category_count$category,
+                                             levels = c("I Moderate", "II Strong",
+                                                        "III Severe", "IV Extreme"))
+
+ggplot(sst_ALL_category_count, aes(x = decades, y = count, fill = decades)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  facet_grid(category~site)
+```
+
+Those are about the results I was expecting. Now let's run this same code on our 100 re-samples we created earlier.
+
+```{r category-compare-res-sample}
 
 ```
 
