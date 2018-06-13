@@ -28,7 +28,8 @@ How does one create the best climatology? What if the time series is shorter tha
 Lets look at all the SACTN data that's longer than 30 years first. Can each site's annual signal be represented by a sine/cosine curve derived from a Fourier analysis? First I find all the sites within the South African Coastal Temperature Network that are approximately 30 years or more in duration.
 
 ```{r}
-load("~/SACTNraw/data/4_products/SACTN_daily_v4.2.RData")
+# load("~/SACTNraw/data/4_products/SACTN_daily_v4.2.RData")
+load("/Volumes/GoogleDrive/My Drive/SACTN/SACTNraw/data/4_products/SACTN_daily_v4.2.RData")
 daily.in <- SACTN_daily_v4.2
 rm(SACTN_daily_v4.2)
 long_sites <- daily.in %>% 

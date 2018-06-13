@@ -223,6 +223,8 @@ ggplot(sst_ALL_event_long, aes(x = site, y = value)) +
   facet_wrap(~variable, scales = "free_y")
 ```
 
+The difference between the three different time series is intriguing. The `NW_Atl` events have a lower cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The `Med` data changed over time in a more predictable, linear fashion. Strangest was that the `WA` data changed very little depending on the number of decades used for the climatology, and that the trend displayed by the other two time series is reversed for some of the metrics. This is most certainly due to that one huge event near the end.
+
 ```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean."}
 CI_plot_1 <- ggplot(sst_ALL_aov_CI, aes(x = site)) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5,
@@ -230,8 +232,6 @@ CI_plot_1 <- ggplot(sst_ALL_aov_CI, aes(x = site)) +
   facet_wrap(~metric, scales = "free_y")
 CI_plot_1
 ```
-
-The difference between the three different time series is intriguing. The `NW_Atl` events have less cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The `Med` data changed over time in a more predictable, linear fashion. Strangest was that the `WA` data change very little depending on the number of decades used for the climatology, and that the trend displayed by the other two time series is reversed for some of the metrics in the WA time series. This is most certainly due to that one huge event near the end.
 
 When we look at the confidence intervals (CI) we see that the max and mean intensities calculated from the 10 year clim periods may be significantly different from those calculated at the 20 and 30 year period. But that the 20 and 30 year values are remarkably similar. This is a good indication that 10 years is too short, but that 20 years appears to be acceptable in place of the (still preferable) 30 year period.
 
