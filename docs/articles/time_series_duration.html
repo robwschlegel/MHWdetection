@@ -375,6 +375,7 @@ sst_ALL_event_long &lt;-<span class="st"> </span>sst_ALL_event <span class="op">
 Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods.
 </p>
 </div>
+<p>The difference between the three different time series is intriguing. The <code>NW_Atl</code> events have a lower cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The <code>Med</code> data changed over time in a more predictable, linear fashion. Strangest was that the <code>WA</code> data changed very little depending on the number of decades used for the climatology, and that the trend displayed by the other two time series is reversed for some of the metrics. This is most certainly due to that one huge event near the end.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">CI_plot_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">ggplot</span>(sst_ALL_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.5</span>,
                 <span class="kw">aes</span>(<span class="dt">ymin =</span> conf.low, <span class="dt">ymax =</span> conf.high, <span class="dt">linetype =</span> decades)) <span class="op">+</span>
@@ -385,7 +386,6 @@ CI_plot_<span class="dv">1</span></code></pre></div>
 Confidence intervals of the different metrics for the three different clim periods from the population mean.
 </p>
 </div>
-<p>The difference between the three different time series is intriguing. The <code>NW_Atl</code> events have less cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The <code>Med</code> data changed over time in a more predictable, linear fashion. Strangest was that the <code>WA</code> data change very little depending on the number of decades used for the climatology, and that the trend displayed by the other two time series is reversed for some of the metrics in the WA time series. This is most certainly due to that one huge event near the end.</p>
 <p>When we look at the confidence intervals (CI) we see that the max and mean intensities calculated from the 10 year clim periods may be significantly different from those calculated at the 20 and 30 year period. But that the 20 and 30 year values are remarkably similar. This is a good indication that 10 years is too short, but that 20 years appears to be acceptable in place of the (still preferable) 30 year period.</p>
 <p>(RWS: Could there be a relationship between normality and change due to decade of choice?)</p>
 <p>With these benchmarks established, we will now move on to re-sampling to see if the effect of a shorter time series on the detected climatology can be mitigated.</p>

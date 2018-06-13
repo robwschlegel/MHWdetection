@@ -110,7 +110,7 @@
       <h1>How to create climatologies from short time series</h1>
                         <h4 class="author">AJ Smit</h4>
             
-            <h4 class="date">2018-06-08</h4>
+            <h4 class="date">2018-06-13</h4>
       
       
       <div class="hidden name"><code>Short_climatologies.Rmd</code></div>
@@ -121,7 +121,8 @@
     
 <p>How does one create the best climatology? What if the time series is shorter than the recommended 30 years?</p>
 <p>Lets look at all the SACTN data that’s longer than 30 years first. Can each site’s annual signal be represented by a sine/cosine curve derived from a Fourier analysis? First I find all the sites within the South African Coastal Temperature Network that are approximately 30 years or more in duration.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"~/SACTNraw/data/4_products/SACTN_daily_v4.2.RData"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># load("~/SACTNraw/data/4_products/SACTN_daily_v4.2.RData")</span>
+<span class="kw">load</span>(<span class="st">"/Volumes/GoogleDrive/My Drive/SACTN/SACTNraw/data/4_products/SACTN_daily_v4.2.RData"</span>)
 daily.in &lt;-<span class="st"> </span>SACTN_daily_v4.<span class="dv">2</span>
 <span class="kw">rm</span>(SACTN_daily_v4.<span class="dv">2</span>)
 long_sites &lt;-<span class="st"> </span>daily.in <span class="op">%&gt;%</span><span class="st"> </span>
