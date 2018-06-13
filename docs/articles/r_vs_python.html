@@ -110,7 +110,7 @@
       <h1>Default MHW outputs in R and Python</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-06-08</h4>
+            <h4 class="date">2018-06-13</h4>
       
       
       <div class="hidden name"><code>r_vs_python.Rmd</code></div>
@@ -263,15 +263,19 @@ res_clim_R &lt;-<span class="st"> </span>res<span class="op">$</span>climatology
 <span class="co"># Set Python results</span>
 res_event_Python &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">"data/mhws_py.csv"</span>)
 res_clim_Python &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">"data/clim_py.csv"</span>)</code></pre></div>
-<p>With these default results loaded in the same format in the same language we can now start to look at how they stack up. For starters I am just doing some simple correlations.</p>
+<p>With these default results loaded in the same format in the same language we can now start to look at how they stack up. For starters I am just doing some simple sums and correlations.</p>
 <div id="climatologies" class="section level3">
 <h3 class="hasAnchor">
 <a href="#climatologies" class="anchor"></a>Climatologies</h3>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_clim_R<span class="op">$</span>seas, res_clim_Python<span class="op">$</span>seas)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_clim_R<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_clim_Python<span class="op">$</span>seas)</code></pre></div>
+<pre><code>## [1] -2.039741</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_clim_R<span class="op">$</span>thresh, res_clim_Python<span class="op">$</span>thresh)</code></pre></div>
 <pre><code>## [1] 0.9999996</code></pre>
-<p>That looks about right. Good to see things getting off to a good start. Now for the events.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_clim_R<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_clim_Python<span class="op">$</span>thresh)</code></pre></div>
+<pre><code>## [1] -6.563502</code></pre>
+<p>The seasonal and threshold climatologies correlate very well, but adding them up we see that the Python values are consistently higher. This is due to rounding differences between the languages. Now for the events.</p>
 </div>
 <div id="events" class="section level3">
 <h3 class="hasAnchor">
@@ -279,54 +283,63 @@ res_clim_Python &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<
 <p>First we peak at a few specific values of interest.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_event_R<span class="op">$</span>intensity_max, res_event_Python<span class="op">$</span>intensity_max)</code></pre></div>
 <pre><code>## [1] 0.9999997</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_event_R<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_event_Python<span class="op">$</span>intensity_max)</code></pre></div>
+<pre><code>## [1] 0.008638202</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_event_R<span class="op">$</span>intensity_var, res_event_Python<span class="op">$</span>intensity_var)</code></pre></div>
 <pre><code>## [1] 0.999608</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_event_R<span class="op">$</span>intensity_var) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_event_Python<span class="op">$</span>intensity_var)</code></pre></div>
+<pre><code>## [1] 0.7344747</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_event_R<span class="op">$</span>rate_onset, res_event_Python<span class="op">$</span>rate_onset)</code></pre></div>
 <pre><code>## [1] 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_event_R<span class="op">$</span>rate_onset) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_event_Python<span class="op">$</span>rate_onset)</code></pre></div>
+<pre><code>## [1] -0.0001461964</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_event_R<span class="op">$</span>rate_decline, res_event_Python<span class="op">$</span>rate_decline)</code></pre></div>
 <pre><code>## [1] 0.9999999</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_event_R<span class="op">$</span>rate_decline) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_event_Python<span class="op">$</span>rate_decline)</code></pre></div>
+<pre><code>## [1] 0.0002725762</code></pre>
 <p>With that looking fine, we next run a for loop that will run a correlation on all rows with the same name.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Remove non-numeric columns</span>
 res_event_num &lt;-<span class="st"> </span>res_event_R <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select_if</span>(is.numeric)
 
 <span class="co"># Run the loop</span>
-res_event_cor &lt;-<span class="st"> </span><span class="kw">data.frame</span>()
+res_event &lt;-<span class="st"> </span><span class="kw">data.frame</span>()
 <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">length</span>(<span class="kw">colnames</span>(res_event_num))){
   <span class="cf">if</span>(<span class="kw">colnames</span>(res_event_num)[i] <span class="op">%in%</span><span class="st"> </span><span class="kw">colnames</span>(res_event_Python)){
     x1 &lt;-<span class="st"> </span>res_event_R[<span class="kw">colnames</span>(res_event_R) <span class="op">==</span><span class="st"> </span><span class="kw">colnames</span>(res_event_num)[i]]
     x2 &lt;-<span class="st"> </span>res_event_Python[<span class="kw">colnames</span>(res_event_Python) <span class="op">==</span><span class="st"> </span><span class="kw">colnames</span>(res_event_num)[i]]
-    x &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">r =</span> <span class="kw">cor</span>(x1, x2), <span class="dt">var =</span> <span class="kw">colnames</span>(res_event_num)[i])
+    x &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">r =</span> <span class="kw">cor</span>(x1, x2, <span class="dt">use =</span> <span class="st">"complete.obs"</span>),
+                    <span class="dt">difference =</span> <span class="kw">round</span>(<span class="kw">sum</span>(x1, <span class="dt">na.rm =</span> T) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(x2, <span class="dt">na.rm =</span> T), <span class="dv">4</span>),
+                    <span class="dt">var =</span> <span class="kw">colnames</span>(res_event_num)[i])
     <span class="kw">colnames</span>(x)[<span class="dv">1</span>] &lt;-<span class="st"> "r"</span>
     <span class="kw">rownames</span>(x) &lt;-<span class="st"> </span><span class="ot">NULL</span>
-  } <span class="cf">else</span> {
-    x &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">r =</span> <span class="ot">NA</span>, <span class="dt">var =</span> <span class="kw">colnames</span>(res_event_num)[i])
-    <span class="co"># colnames(x) &lt;- colnames(res_event_R)[i]</span>
+    } <span class="cf">else</span> {
+      x &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">r =</span> <span class="ot">NA</span>, <span class="dt">difference =</span> <span class="ot">NA</span>, <span class="dt">var =</span> <span class="kw">colnames</span>(res_event_num)[i])
+      }
+  res_event &lt;-<span class="st"> </span><span class="kw">rbind</span>(res_event, x)
   }
-  res_event_cor &lt;-<span class="st"> </span><span class="kw">rbind</span>(res_event_cor, x)
-}
-res_event_cor</code></pre></div>
-<pre><code>##            r                            var
-## 1         NA                       event_no
-## 2  1.0000000                    index_start
-## 3  1.0000000                     index_peak
-## 4  1.0000000                      index_end
-## 5  1.0000000                       duration
-## 6  0.9999991                 intensity_mean
-## 7  0.9999997                  intensity_max
-## 8  0.9996080                  intensity_var
-## 9  1.0000000           intensity_cumulative
-## 10 0.9999971       intensity_mean_relThresh
-## 11 0.9999994        intensity_max_relThresh
-## 12 0.9995685        intensity_var_relThresh
-## 13 0.9999996 intensity_cumulative_relThresh
-## 14 1.0000000             intensity_mean_abs
-## 15 0.9990733              intensity_max_abs
-## 16 0.9997267              intensity_var_abs
-## 17 1.0000000       intensity_cumulative_abs
-## 18 1.0000000                     rate_onset
-## 19 0.9999999                   rate_decline</code></pre>
-<p>With all of our overlapping columns compared, and our Pearson r values looking solid, let’s finish off this basic comparison by finding which columns are not shared between the different language outputs.</p>
+res_event</code></pre></div>
+<pre><code>##            r difference                            var
+## 1         NA         NA                       event_no
+## 2  1.0000000    60.0000                    index_start
+## 3  1.0000000    60.0000                     index_peak
+## 4  1.0000000    60.0000                      index_end
+## 5  1.0000000     0.0000                       duration
+## 6  0.9999991     0.0086                 intensity_mean
+## 7  0.9999997     0.0086                  intensity_max
+## 8  0.9996080     0.7345                  intensity_var
+## 9  1.0000000     0.1616           intensity_cumulative
+## 10 0.9999971     0.0158       intensity_mean_relThresh
+## 11 0.9999994     0.0166        intensity_max_relThresh
+## 12 0.9995685     0.7374        intensity_var_relThresh
+## 13 0.9999996     0.4741 intensity_cumulative_relThresh
+## 14 1.0000000     0.0000             intensity_mean_abs
+## 15 0.9990733     1.6100              intensity_max_abs
+## 16 0.9997267     0.7667              intensity_var_abs
+## 17 1.0000000     0.0000       intensity_cumulative_abs
+## 18 1.0000000    -0.0001                     rate_onset
+## 19 0.9999999     0.0003                   rate_decline</code></pre>
+<p>With all of our overlapping columns compared, and our differences and Pearson r values looking solid, let’s finish off this basic comparison by finding which columns are not shared between the different language outputs. Also, please note that the apparently large differences between the <code>index_start</code>, <code>index_peak</code>, and <code>index_end</code> values are due to the different indexing methods of R and Python. R starts at 1 and Python at 0.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cols_R &lt;-<span class="st"> </span><span class="kw">colnames</span>(res_event_R)[<span class="op">!</span>(<span class="kw">colnames</span>(res_event_R) <span class="op">%in%</span><span class="st"> </span><span class="kw">colnames</span>(res_event_Python))]
 cols_R</code></pre></div>
 <pre><code>## [1] "event_no"</code></pre>
@@ -353,15 +366,15 @@ cols_Py</code></pre></div>
 <pre><code>## Unit: milliseconds
 ##                                                                                                      expr
 ##  detect(make_whole(data = sst_WA), climatology_start = "1982-01-01",      climatology_end = "2014-12-31")
-##       min      lq     mean   median      uq      max neval
-##  659.3281 690.462 886.6296 802.5284 878.328 1796.922    10</code></pre>
+##       min      lq     mean   median       uq      max neval
+##  636.8375 663.179 870.7856 776.1711 918.9431 1799.831    10</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The new R code</span>
 <span class="kw"><a href="http://www.rdocumentation.org/packages/microbenchmark/topics/microbenchmark">microbenchmark</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/detect_event">detect_event</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm</a></span>(<span class="dt">data =</span> sst_WA, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>), <span class="dt">robust =</span> <span class="ot">FALSE</span>)), <span class="dt">times =</span> <span class="dv">10</span>)</code></pre></div>
 <pre><code>## Unit: milliseconds
 ##                                                                                                         expr
 ##  detect_event(ts2clm(data = sst_WA, climatologyPeriod = c("1982-01-01",      "2014-12-31"), robust = FALSE))
 ##       min       lq     mean   median       uq      max neval
-##  226.8807 233.6195 304.1987 252.1277 401.5677 425.3443    10</code></pre>
+##  148.0215 150.1151 182.8006 151.6287 153.7502 311.6228    10</code></pre>
 </div>
 <div id="python" class="section level3">
 <h3 class="hasAnchor">
@@ -375,7 +388,7 @@ total <span class="op">=</span> <span class="dv">0</span>
     total <span class="op">+=</span> end<span class="op">-</span>start
 bench_py <span class="op">=</span> total<span class="op">/</span><span class="dv">10</span>
 <span class="bu">print</span>(bench_py)</code></pre></div>
-<pre><code>## 0.1736921</code></pre>
+<pre><code>## 0.1731839</code></pre>
 <p>The Python code appears to be about twoce as fast at ~0.18 seconds to ~0.32 seconds for R. And the Python code is also calculating the event categories, which R is not. That is done in an additonal step with <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/category">category()</a></code>. The R code is however allowing for a wider range of options for climaotlogies.</p>
 </div>
 </div>

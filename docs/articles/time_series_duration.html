@@ -110,7 +110,7 @@
       <h1>Assessing the effect of time series duration</h1>
                         <h4 class="author">Robert Schlegel</h4>
             
-            <h4 class="date">2018-06-12</h4>
+            <h4 class="date">2018-06-13</h4>
       
       
       <div class="hidden name"><code>time_series_duration.Rmd</code></div>
@@ -411,9 +411,9 @@ Confidence intervals of the different metrics for the three different clim perio
 parse_date_sst &lt;-<span class="st"> </span><span class="cf">function</span>(data, rep_col, len) {
   parsed &lt;-<span class="st"> </span>data <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">id =</span> rep_col,
-           <span class="dt">y =</span> <span class="kw"><a href="http://lubridate.tidyverse.org/reference/year.html">year</a></span>(t),
-           <span class="dt">m =</span> <span class="kw"><a href="http://lubridate.tidyverse.org/reference/month.html">month</a></span>(t),
-           <span class="dt">d =</span> <span class="kw"><a href="http://lubridate.tidyverse.org/reference/day.html">day</a></span>(t)) <span class="op">%&gt;%</span><span class="st"> </span>
+           <span class="dt">y =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/lubridate/topics/year">year</a></span>(t),
+           <span class="dt">m =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/lubridate/topics/month">month</a></span>(t),
+           <span class="dt">d =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/lubridate/topics/day">day</a></span>(t)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">group_by</span>(site, rep, doy) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="kw">seq</span>(<span class="dv">2012</span><span class="op">-</span>len, <span class="dt">by =</span> <span class="dv">1</span>, <span class="dt">len =</span> len)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">t =</span> <span class="kw">as.Date</span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/fasttime/topics/fastPOSIXct">fastPOSIXct</a></span>(<span class="kw">paste</span>(y, m, d, <span class="dt">sep =</span> <span class="st">"-"</span>)))) <span class="op">%&gt;%</span>
@@ -422,7 +422,7 @@ parse_date_sst &lt;-<span class="st"> </span><span class="cf">function</span>(da
   <span class="kw">return</span>(parsed)
 }</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_doy &lt;-<span class="st"> </span>sst_ALL <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">doy =</span> <span class="kw"><a href="http://lubridate.tidyverse.org/reference/day.html">yday</a></span>(<span class="kw">as.Date</span>(t))) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">doy =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/lubridate/topics/day">yday</a></span>(<span class="kw">as.Date</span>(t))) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site, <span class="op">-</span>doy)
 
 sst_ALL_repl &lt;-<span class="st"> </span>purrr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/purrr/topics/rerun">rerun</a></span>(<span class="dv">100</span>, <span class="kw">sst_repl</span>(sst_ALL_doy)) <span class="op">%&gt;%</span>
@@ -768,7 +768,7 @@ detect_event_category &lt;-<span class="st"> </span><span class="cf">function</s
   }</code></pre></div>
 <p>First up we compare the category results for the events with the one reduced clim as done before.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate categories and filter only those from 2002 -- 2011</span>
-sst_ALL_category &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
+sst_ALL_clim_category &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site, decades) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, detect_event_category)) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -778,22 +778,54 @@ sst_ALL_category &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&g
   <span class="co"># select(-c(index_start:index_end, date_start:date_end))</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Indeed... but how to compare qualitative data?</span>
 <span class="co"># Let's start out by counting the occurrence of the categories</span>
-sst_ALL_category_count &lt;-<span class="st"> </span>sst_ALL_category <span class="op">%&gt;%</span><span class="st"> </span>
+sst_ALL_clim_category_count &lt;-<span class="st"> </span>sst_ALL_clim_category <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site, decades, category) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())
-sst_ALL_category_count<span class="op">$</span>category &lt;-<span class="st"> </span><span class="kw">factor</span>(sst_ALL_category_count<span class="op">$</span>category,
-                                             <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">"I Moderate"</span>, <span class="st">"II Strong"</span>,
-                                                        <span class="st">"III Severe"</span>, <span class="st">"IV Extreme"</span>))
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">category =</span> <span class="kw">factor</span>(category,
+                           <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">"I Moderate"</span>, <span class="st">"II Strong"</span>,
+                                      <span class="st">"III Severe"</span>, <span class="st">"IV Extreme"</span>)))
 
-<span class="kw">ggplot</span>(sst_ALL_category_count, <span class="kw">aes</span>(<span class="dt">x =</span> decades, <span class="dt">y =</span> count, <span class="dt">fill =</span> decades)) <span class="op">+</span>
+<span class="kw">ggplot</span>(sst_ALL_clim_category_count, <span class="kw">aes</span>(<span class="dt">x =</span> decades, <span class="dt">y =</span> count, <span class="dt">fill =</span> decades)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">"identity"</span>, <span class="dt">position =</span> <span class="kw">position_dodge</span>()) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> count, <span class="dt">y =</span> count<span class="op">/</span><span class="dv">2</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(category<span class="op">~</span>site)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/category-compare-1.png" alt="Simple bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle." width="768"><p class="caption">
+<img src="time_series_duration_files/figure-html/clim-category-compare-1.png" alt="Simple bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle." width="768"><p class="caption">
 Simple bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more ‘smaller’ events are detected with a 10 year clim period, and more ‘larger’ events detected with the 30 year clim. The 20 year clim tends to rest in the middle.
 </p>
 </div>
 <p>Those are about the results I was expecting. Now let’s run this same code on our 100 re-samples we created earlier.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate categories and filter only those from 2002 -- 2011</span>
+sst_ALL_smooth_real_category &lt;-<span class="st"> </span>sst_ALL_smooth_real <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, id, rep) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, detect_event_category)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>(res) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(peak_date <span class="op">&gt;=</span><span class="st"> "2002-01-01"</span>, peak_date <span class="op">&lt;=</span><span class="st"> "2011-12-31"</span>) <span class="co">#%&gt;% </span>
+  <span class="co"># select(-c(index_start:index_end, date_start:date_end))</span>
+<span class="kw">save</span>(sst_ALL_smooth_real_category, <span class="dt">file =</span> <span class="st">"data/sst_ALL_smooth_real_category.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"data/sst_ALL_smooth_real_category.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Indeed... but how to compare qualitative data?</span>
+<span class="co"># Let's start out by counting the occurrence of the categories</span>
+sst_ALL_smooth_real_category_count &lt;-<span class="st"> </span>sst_ALL_smooth_real_category <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">decades =</span> id) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, decades, category) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">category =</span> <span class="kw">factor</span>(category,
+                           <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">"I Moderate"</span>, <span class="st">"II Strong"</span>,
+                                      <span class="st">"III Severe"</span>, <span class="st">"IV Extreme"</span>)))
+
+<span class="kw">ggplot</span>(sst_ALL_smooth_real_category_count, <span class="kw">aes</span>(<span class="dt">x =</span> decades, <span class="dt">y =</span> count, <span class="dt">fill =</span> decades)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">"identity"</span>, <span class="dt">position =</span> <span class="kw">position_dodge</span>()) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> count, <span class="dt">y =</span> count<span class="op">/</span><span class="dv">2</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_grid</span>(category<span class="op">~</span>site)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/re-sample-category-compare-1.png" alt="Simple bar plots showing the counts of the different categories of events from 100 re-samplings at the three different clim period lengths (10, 20, and 30 years). The faceted in a grid shows different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle." width="768"><p class="caption">
+Simple bar plots showing the counts of the different categories of events from 100 re-samplings at the three different clim period lengths (10, 20, and 30 years). The faceted in a grid shows different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more ‘smaller’ events are detected with a 10 year clim period, and more ‘larger’ events detected with the 30 year clim. The 20 year clim tends to rest in the middle.
+</p>
+</div>
+<p>Interestingly, when re-sampling for potential clims we actually see the detection of <em>more</em> larger category events with the 10 year periods than with either 20 or 30. As noted earlier, this re-sampling reoves the decadal trend from the data, which then affects the creation of the climatologies being used. With a shorter period being used to create the threshold, it appears that this allows for the detection of ‘larger’ events. Remember that the real temperature values are being used to detect these events, not the re-sampled temperature values that were used to calculate the climatologies. This was because the re-sampled temperatures were too jumbled to detect events with reliably.</p>
 </div>
 <div id="arguments" class="section level2">
 <h2 class="hasAnchor">

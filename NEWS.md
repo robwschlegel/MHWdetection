@@ -1,3 +1,7 @@
+# MHWdetection 0.0.2  (2018-06-13)
+
+* Finished up basic comparisons of categories for different clim periods
+
 # MHWdetection 0.0.2  (2018-06-12)
 
 * Added significance tests for clims of different lengths for both single and re-sampled clims

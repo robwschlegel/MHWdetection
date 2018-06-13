@@ -609,9 +609,9 @@ detect_event_category <- function(df, y = temp){
 
 First up we compare the category results for the events with the one reduced clim as done before.
 
-```{r category-calc}
+```{r clim-category-calc}
 # Calculate categories and filter only those from 2002 -- 2011
-sst_ALL_category <- sst_ALL_clim %>% 
+sst_ALL_clim_category <- sst_ALL_clim %>% 
   group_by(site, decades) %>% 
   nest() %>% 
   mutate(res = map(data, detect_event_category)) %>% 
@@ -621,27 +621,59 @@ sst_ALL_category <- sst_ALL_clim %>%
   # select(-c(index_start:index_end, date_start:date_end))
 ```
 
-```{r category-compare, fig.cap="Simple bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
+```{r clim-category-compare, fig.cap="Simple bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
 # Indeed... but how to compare qualitative data?
 # Let's start out by counting the occurrence of the categories
-sst_ALL_category_count <- sst_ALL_category %>% 
+sst_ALL_clim_category_count <- sst_ALL_clim_category %>% 
   group_by(site, decades, category) %>% 
-  summarise(count = n())
-sst_ALL_category_count$category <- factor(sst_ALL_category_count$category,
-                                             levels = c("I Moderate", "II Strong",
-                                                        "III Severe", "IV Extreme"))
+  summarise(count = n()) %>% 
+  mutate(category = factor(category,
+                           levels = c("I Moderate", "II Strong",
+                                      "III Severe", "IV Extreme")))
 
-ggplot(sst_ALL_category_count, aes(x = decades, y = count, fill = decades)) +
+ggplot(sst_ALL_clim_category_count, aes(x = decades, y = count, fill = decades)) +
   geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = count, y = count/2)) +
   facet_grid(category~site)
 ```
 
 Those are about the results I was expecting. Now let's run this same code on our 100 re-samples we created earlier.
 
-```{r category-compare-res-sample}
-
+```{r re-sample-category-calc, eval=FALSE}
+# Calculate categories and filter only those from 2002 -- 2011
+sst_ALL_smooth_real_category <- sst_ALL_smooth_real %>% 
+  group_by(site, id, rep) %>% 
+  nest() %>% 
+  mutate(res = map(data, detect_event_category)) %>% 
+  select(-data) %>% 
+  unnest(res) %>% 
+  filter(peak_date >= "2002-01-01", peak_date <= "2011-12-31") #%>% 
+  # select(-c(index_start:index_end, date_start:date_end))
+save(sst_ALL_smooth_real_category, file = "data/sst_ALL_smooth_real_category.Rdata")
 ```
 
+```{r re-sample-category-calc-load}
+load("data/sst_ALL_smooth_real_category.Rdata")
+```
+
+```{r re-sample-category-compare, fig.cap="Simple bar plots showing the counts of the different categories of events from 100 re-samplings at the three different clim period lengths (10, 20, and 30 years). The faceted in a grid shows different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
+# Indeed... but how to compare qualitative data?
+# Let's start out by counting the occurrence of the categories
+sst_ALL_smooth_real_category_count <- sst_ALL_smooth_real_category %>% 
+  rename(decades = id) %>% 
+  group_by(site, decades, category) %>% 
+  summarise(count = n()) %>% 
+  mutate(category = factor(category,
+                           levels = c("I Moderate", "II Strong",
+                                      "III Severe", "IV Extreme")))
+
+ggplot(sst_ALL_smooth_real_category_count, aes(x = decades, y = count, fill = decades)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = count, y = count/2)) +
+  facet_grid(category~site)
+```
+
+Interestingly, when re-sampling for potential clims we actually see the detection of *more* larger category events with the 10 year periods than with either 20 or 30. As noted earlier, this re-sampling reoves the decadal trend from the data, which then affects the creation of the climatologies being used. With a shorter period being used to create the threshold, it appears that this allows for the detection of 'larger' events. Remember that the real temperature values are being used to detect these events, not the re-sampled temperature values that were used to calculate the climatologies. This was because the re-sampled temperatures were too jumbled to detect events with reliably.
 
 ## Arguments
 

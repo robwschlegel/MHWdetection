@@ -15,6 +15,7 @@ bibliography: bibliography.bib
 knitr::opts_chunk$set(fig.width = 4, fig.align = 'center',
                       warning = FALSE, message = FALSE, 
                       tidy = FALSE)
+options(scipen=999)
 ```
 
 ## Overview
@@ -185,16 +186,18 @@ res_event_Python <- read_csv("data/mhws_py.csv")
 res_clim_Python <- read_csv("data/clim_py.csv")
 ```
 
-With these default results loaded in the same format in the same language we can now start to look at how they stack up. For starters I am just doing some simple correlations.
+With these default results loaded in the same format in the same language we can now start to look at how they stack up. For starters I am just doing some simple sums and correlations.
 
 ### Climatologies
 
 ```{r}
 cor(res_clim_R$seas, res_clim_Python$seas)
+sum(res_clim_R$seas) - sum(res_clim_Python$seas)
 cor(res_clim_R$thresh, res_clim_Python$thresh)
+sum(res_clim_R$thresh) - sum(res_clim_Python$thresh)
 ```
 
-That looks about right. Good to see things getting off to a good start. Now for the events.
+The seasonal and threshold climatologies correlate very well, but adding them up we see that the Python values are consistently higher. This is due to rounding differences between the languages. Now for the events.
 
 ### Events
 
@@ -202,9 +205,13 @@ First we peak at a few specific values of interest.
 
 ```{r}
 cor(res_event_R$intensity_max, res_event_Python$intensity_max)
+sum(res_event_R$intensity_max) - sum(res_event_Python$intensity_max)
 cor(res_event_R$intensity_var, res_event_Python$intensity_var)
+sum(res_event_R$intensity_var) - sum(res_event_Python$intensity_var)
 cor(res_event_R$rate_onset, res_event_Python$rate_onset)
+sum(res_event_R$rate_onset) - sum(res_event_Python$rate_onset)
 cor(res_event_R$rate_decline, res_event_Python$rate_decline)
+sum(res_event_R$rate_decline) - sum(res_event_Python$rate_decline)
 ```
 
 With that looking fine, we next run a for loop that will run a correlation on all rows with the same name.
@@ -215,24 +222,25 @@ res_event_num <- res_event_R %>%
   select_if(is.numeric)
 
 # Run the loop
-res_event_cor <- data.frame()
+res_event <- data.frame()
 for(i in 1:length(colnames(res_event_num))){
   if(colnames(res_event_num)[i] %in% colnames(res_event_Python)){
     x1 <- res_event_R[colnames(res_event_R) == colnames(res_event_num)[i]]
     x2 <- res_event_Python[colnames(res_event_Python) == colnames(res_event_num)[i]]
-    x <- data.frame(r = cor(x1, x2), var = colnames(res_event_num)[i])
+    x <- data.frame(r = cor(x1, x2, use = "complete.obs"),
+                    difference = round(sum(x1, na.rm = T) - sum(x2, na.rm = T), 4),
+                    var = colnames(res_event_num)[i])
     colnames(x)[1] <- "r"
     rownames(x) <- NULL
-  } else {
-    x <- data.frame(r = NA, var = colnames(res_event_num)[i])
-    # colnames(x) <- colnames(res_event_R)[i]
+    } else {
+      x <- data.frame(r = NA, difference = NA, var = colnames(res_event_num)[i])
+      }
+  res_event <- rbind(res_event, x)
   }
-  res_event_cor <- rbind(res_event_cor, x)
-}
-res_event_cor
+res_event
 ```
 
-With all of our overlapping columns compared, and our Pearson r values looking solid, let's finish off this basic comparison by finding which columns are not shared between the different language outputs.
+With all of our overlapping columns compared, and our differences and Pearson r values looking solid, let's finish off this basic comparison by finding which columns are not shared between the different language outputs. Also, please note that the apparently large differences between the `index_start`, `index_peak`, and `index_end` values are due to the different indexing methods of R and Python. R starts at 1 and Python at 0.
 
 ```{r}
 cols_R <- colnames(res_event_R)[!(colnames(res_event_R) %in% colnames(res_event_Python))]
