@@ -606,7 +606,6 @@ detect_event_category <- function(df, y = temp){
   }
 ```
 
-
 First up we compare the category results for the events with the one reduced clim as done before.
 
 ```{r clim-category-calc}
@@ -662,7 +661,7 @@ load("data/sst_ALL_smooth_real_category.Rdata")
 sst_ALL_smooth_real_category_count <- sst_ALL_smooth_real_category %>% 
   rename(decades = id) %>% 
   group_by(site, decades, category) %>% 
-  summarise(count = n()) %>% 
+  summarise(count = n()/100) %>% 
   mutate(category = factor(category,
                            levels = c("I Moderate", "II Strong",
                                       "III Severe", "IV Extreme")))
@@ -674,6 +673,18 @@ ggplot(sst_ALL_smooth_real_category_count, aes(x = decades, y = count, fill = de
 ```
 
 Interestingly, when re-sampling for potential clims we actually see the detection of *more* larger category events with the 10 year periods than with either 20 or 30. As noted earlier, this re-sampling reoves the decadal trend from the data, which then affects the creation of the climatologies being used. With a shorter period being used to create the threshold, it appears that this allows for the detection of 'larger' events. Remember that the real temperature values are being used to detect these events, not the re-sampled temperature values that were used to calculate the climatologies. This was because the re-sampled temperatures were too jumbled to detect events with reliably.
+
+### Comparing top events
+
+(AJS: I was thinking about the event categories. What we need to do is detect the top five events using the 30 yr climatology. Then, using the sections of time series that overlap with these events, use reduced time series, make climatologies, and see how those top five events compare in their event metrics to those detected using the shorter climatologies.
+Then we do the reverse. Detect events in the reduced time series, find the top five, and see what the matching ones in the full time series are like in comparison.
+So, compare specific events in addition to the way in which you have done it.
+Then do the same for median-sized events, and the smallest ones. Maybe even those at the 2nd and 5th quantiles.)
+
+```{r}
+
+```
+
 
 ## Arguments
 

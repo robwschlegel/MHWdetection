@@ -1,6 +1,6 @@
 Package: MHWdetection
 Version: 0.0.2
-Date: 2018-06-13
+Date: 2018-06-16
 Title: Detecting marine heatwaves
 Description: This package serves as a tidy repository for the code used in the paper 'Detecting marine heatwaves'.
 Authors@R: c(person("Robert W.", "Schlegel", role = c("aut", "cre", "ctb"),
