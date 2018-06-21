@@ -48,6 +48,7 @@ library(lubridate) # This is intentionally activated after data.table
 library(fasttime)
 library(ggpubr)
 library(boot)
+library(FNN)
 ```
 
 In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 32 years long I am going to nip off those last two years. The WMO recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match this period, but shorter, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
@@ -676,13 +677,135 @@ Interestingly, when re-sampling for potential clims we actually see the detectio
 
 ### Comparing top events
 
-(AJS: I was thinking about the event categories. What we need to do is detect the top five events using the 30 yr climatology. Then, using the sections of time series that overlap with these events, use reduced time series, make climatologies, and see how those top five events compare in their event metrics to those detected using the shorter climatologies.
-Then we do the reverse. Detect events in the reduced time series, find the top five, and see what the matching ones in the full time series are like in comparison.
-So, compare specific events in addition to the way in which you have done it.
-Then do the same for median-sized events, and the smallest ones. Maybe even those at the 2nd and 5th quantiles.)
+(AJS: I was thinking about the event categories. 
+What we need to do is detect the top five events using the 30 yr climatology. 
 
 ```{r}
+# Calculate all event categories, not just the last ten years as done above
+sst_ALL_clim_category_ALL <- sst_ALL_clim %>% 
+  group_by(site, decades) %>% 
+  nest() %>% 
+  mutate(res = map(data, detect_event_category)) %>% 
+  select(-data) %>% 
+  unnest(res)
 
+# The top 5 events froom 30 years
+sst_ALL_clim_category_30_top_5 <- sst_ALL_clim_category_ALL %>% 
+  filter(decades == "clim_30",
+         peak_date >= as.Date("1982-01-01"),
+         peak_date <= as.Date("2011-12-31")) %>% 
+  group_by(site) %>% 
+  arrange(-i_max) %>% 
+  slice(1:5)
+
+# The top 5 events froom 20 years
+sst_ALL_clim_category_20_top_5 <- sst_ALL_clim_category_ALL %>% 
+  filter(decades == "clim_20",
+         peak_date >= as.Date("1992-01-01"),
+         peak_date <= as.Date("2011-12-31")) %>% 
+  group_by(site) %>% 
+  arrange(-i_max) %>% 
+  slice(1:5)
+
+# The top 5 events froom 10 years
+sst_ALL_clim_category_10_top_5 <- sst_ALL_clim_category_ALL %>% 
+  filter(decades == "clim_10",
+         peak_date >= as.Date("2002-01-01"),
+         peak_date <= as.Date("2011-12-31")) %>% 
+  group_by(site) %>% 
+  arrange(-i_max) %>% 
+  slice(1:5)
+```
+
+Then, using the sections of time series that overlap with these events, use reduced time series, make climatologies, and see how those top five events compare in their event metrics to those detected using the shorter climatologies.
+
+```{r}
+# RWS: This is a bit of a schlep as it requires a much more nuanced take on how to go about comparing relavent lengths of clim periods. The method used throughout here, that of the most recent 10, 20, or 30 years for the clim period won't work here and I hesitate to create a new methodology this late in the section...
+# RWS: So for now I'm skipping forward to the next step as that will work with the current methodology.
+```
+
+Then we do the reverse. 
+Detect events in the reduced time series, find the top five, and see what the matching ones in the full time series are like in comparison.
+
+```{r}
+# Function for pulling out comparable events based on closest peak dates
+peak_date_index <- function(df){
+  sst_30 <- sst_ALL_clim_category_ALL %>% 
+    filter(decades == "clim_30")
+  peak_index <- as.data.frame(knnx.index(as.matrix(sst_30$peak_date), 
+                                         as.matrix(df$peak_date), k = 1))
+  res <- sst_30[as.matrix(peak_index),]
+}
+```
+
+```{r}
+# Find matching events based on nearest peak_date
+sst_ALL_clim_category_10_top_5_match <- peak_date_index(sst_ALL_clim_category_10_top_5)
+sst_ALL_clim_category_20_top_5_match <- peak_date_index(sst_ALL_clim_category_20_top_5)
+```
+
+```{r, fig.cap="Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. THis isn't terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events."}
+sst_ALL_clim_category_top_5_match <- rbind(data.frame(sst_ALL_clim_category_10_top_5_match, match = "clim_10"),
+                                           data.frame(sst_ALL_clim_category_20_top_5_match, match = "clim_20"),
+                                           data.frame(sst_ALL_clim_category_30_top_5, match = "clim_30")) %>% 
+  group_by(site, match, category) %>% 
+  summarise(count = n()) %>% 
+  mutate(category = factor(category,
+                           levels = c("I Moderate", "II Strong",
+                                      "III Severe", "IV Extreme")))
+
+ggplot(sst_ALL_clim_category_top_5_match, aes(x = match, y = count, fill = match)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = count, y = count/2)) +
+  facet_grid(category~site)
+```
+
+With the differences in the count of categories for the detected events in the given time series lengths shown above, we will now compare the categories of the matching events between the different climatologies used.
+
+```{r, fig.cap="Comparing the categories of the top 5 events detected with a 10 year climatology as oppossed to those detected with the standard 30 we see that the general pattern is that events are larger with the 30 year climatology period."}
+sst_ALL_clim_category_10_top_5_compare <- rbind(data.frame(sst_ALL_clim_category_10_top_5, match = "clim_10"),
+                                           data.frame(sst_ALL_clim_category_10_top_5_match, match = "clim_30")) %>% 
+  group_by(site, match, category) %>% 
+  summarise(count = n()) %>% 
+  mutate(category = factor(category,
+                           levels = c("I Moderate", "II Strong",
+                                      "III Severe", "IV Extreme")))
+
+ggplot(sst_ALL_clim_category_10_top_5_compare, aes(x = match, y = count, fill = match)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = count, y = count/2)) +
+  facet_grid(category~site)
+```
+
+```{r, fig.cap="Comparing the categories of the top 5 events detected with a 20 year climatology as oppossed to those detected with the standard 30 we see that the difference in the size of the categories detected with a 30 year climatology is less than when compared against a 10 year climatology."}
+sst_ALL_clim_category_20_top_5_compare <- rbind(data.frame(sst_ALL_clim_category_20_top_5, match = "clim_20"),
+                                           data.frame(sst_ALL_clim_category_20_top_5_match, match = "clim_30")) %>% 
+  group_by(site, match, category) %>% 
+  summarise(count = n()) %>% 
+  mutate(category = factor(category,
+                           levels = c("I Moderate", "II Strong",
+                                      "III Severe", "IV Extreme")))
+
+ggplot(sst_ALL_clim_category_20_top_5_compare, aes(x = match, y = count, fill = match)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_text(aes(label = count, y = count/2)) +
+  facet_grid(category~site)
+```
+
+So, compare specific events in addition to the way in which you have done it.
+Then do the same for median-sized events,
+```{r}
+# RWS: I'm putting htis on hold for now until I've editted the text here and in the skeleton.
+```
+
+and the smallest ones. 
+```{r}
+# RWS: Same for this chunk.
+```
+
+Maybe even those at the 2nd and 5th quantiles.)
+```{r}
+# RWS: Same for this chunk.
 ```
 
 

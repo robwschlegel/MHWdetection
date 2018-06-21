@@ -1,3 +1,7 @@
+# MHWdetection 0.0.2  (2018-06-121)
+
+* More in-depths category comparisons made
+
 # MHWdetection 0.0.2  (2018-06-16)
 
 * Some pre-emptive thoughts about more category comparisons
