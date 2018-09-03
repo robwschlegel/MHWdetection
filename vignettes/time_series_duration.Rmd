@@ -24,17 +24,25 @@ The purpose of this vignette is to lay out, in detail, how one goes about testin
 
 ## Time series shortening
 
-Two different shortening methodologies are proposed here. The first would be to simply take the last n years in a given time series (e.g. 30, 20, 10) and then compare the detected events in the overlapping period of time. This method will help to address the question of how may longer time series affect the events detected. This is an important consideration and one that needs to be investigated to ascertain how large the effect actually is. The second technique proposed here is re-sampling (AJS has used 100 re-samples, as seen https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html, which can be increased if desired). The issue with re-sampling the time series at the three different lengths is that it will prevent direct comparison of the results. Rather, re-sampling the time series in this way is useful for the comparison of events in the same time series detected with differing climatologies produced via the aforementioned re-sampling technique.
+Two different shortening methodologies are proposed here. The first would be to simply take the last n years in a given time series (e.g. 30, 20, 10) and then compare the detected events in the overlapping period of time.
+[ECJO]
+A key importance here will be if there is any long term trend in the data, let’s say long-term warming.  If so then even if 10 yrs produced an adequate climatology, going longer (20yrs, 30yrs) would produce events with larger intensities and longer means since the climatology would be calculated over an on-average cooler time period.
+[/ECJO]
+This method will help to address the question of how may longer time series affect the events detected. This is an important consideration and one that needs to be investigated to ascertain how large the effect actually is. The second technique proposed here is re-sampling (AJS has used 100 re-samples, as seen https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html, which can be increased if desired). The issue with re-sampling the time series at the three different lengths is that it will prevent direct comparison of the results. Rather, re-sampling the time series in this way is useful for the comparison of events in the same time series detected with differing climatologies produced via the aforementioned re-sampling technique.
 
 And that is how this vignette will break down. The first very straightforward investigation will simply be to quantify how much the detected events change when historic data is neglected. The second, much longer investigation will then look into best practices on how to consistently detect events when time series are not of optimal length. As part of this the following measurement metrics will be quantified:
 
- * for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-sampled samples;
- * for each doy, calculate the RMSE of the re-sampled means relative to the true climatology (i.e. the one produced from the 30-year long time series);
- * correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
+ - for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-sampled samples;
+ - for each doy, calculate the RMSE of the re-sampled means relative to the true climatology (i.e. the one produced from the 30-year long time series);
+ - correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
 
 A third possible type of time series shortening to look into would be rather than re-sampling the shorter (e.g. 10 and 20 year) time series, to incrementally calculate climatologies by moving the 10 or 20 year window forward one year at a time. And then quantify how this particular choice of historic data affects event detection.
 
 Finally, this brings us to the direct consideration of the inherent decadal trend in the time series themselves. Ultimately, this tends to come out as the primary driver for much of the event detection changes over time [@Oliver2018]. First prize for all of this research would be to develop an equation (model) that could look at a time series and determine for the user how best to calculate a climatology. It seems to me that an important ingredient must be the decadal (or annual) trend. So one would then need to take into account everything learned from the methodologies proposed above and investigate what relationship decadal trends have with whatever may be found. It would be somewhat poetic if this could be used as a variable for the better detection of events.
+[ECJO]
+I think an important point to discuss also is that some researchers may be interested in including the trend in their climatology calculation, so that MHWs do get larger/intenser over time reflecting the background warming.  While others may want to remove the trend so that they are purely interested in MHWs as variability about a slowly-varying background state.
+[/ECJO]
+
 
 ## Simply shorter
 
@@ -174,6 +182,9 @@ sst_ALL_aov_CI
 ```
 
 Whereas the results for the different metrics do differ, they are not significantly different for any of the three time series.
+[ECJO]
+I can’t interpret this from the above…  I’m not even sure what the above is.  Why is duration always <1, what are the units? This needs some explanation….*confused*
+[/ECJO]
 
 Now that we know that the detected events do not differ significantly, we still want to know by what amounts they do differ. This information will then later be used during the re-sampling to see if this gap can be reduced through the clever use of statistics.
 
@@ -210,6 +221,9 @@ ggplot(sst_ALL_out_mean_long, aes(x = site, y = value, fill = decades)) +
                 stat = "identity", position = position_dodge(0.9), width = 0.3) +
   facet_wrap(~variable, scales = "free_y")
 ```
+[ECJO]
+I think we should focus on the most used metrics i.e. duration and intensity (mean, max, cumulative)
+[/ECJO]
 
 ```{r event-box1, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods."}
 # Long data.frame for plotting
@@ -235,6 +249,11 @@ CI_plot_1
 ```
 
 When we look at the confidence intervals (CI) we see that the max and mean intensities calculated from the 10 year clim periods may be significantly different from those calculated at the 20 and 30 year period. But that the 20 and 30 year values are remarkably similar. This is a good indication that 10 years is too short, but that 20 years appears to be acceptable in place of the (still preferable) 30 year period.
+[ECJO]
+This is the important result and the one from which we will make a recommendation (i.e. “30 years (following WMO) is ideal but our results show you can get away with as low as N years”).  We should do a formal statistical significance test between the 10-yr/20-yr results and the 30-yr results.  You could compare the distributions using a 2-sample KS test to determine they are from the same distribution or not.
+
+This could be done systematically for time series lengths between 5 and 30 years, in 1 year increments, to get better resolution of the results.
+[/ECJO]
 
 (RWS: Could there be a relationship between normality and change due to decade of choice?)
 
