@@ -1,4 +1,8 @@
-# MHWdetection 0.0.2  (2018-06-121)
+# MHWdetection 0.0.2  (2018-09-03)
+
+* Added AJS and ECJO feedback into `MHWdetection.Rmd`
+
+# MHWdetection 0.0.2  (2018-06-21)
 
 * More in-depths category comparisons made
 
