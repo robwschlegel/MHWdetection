@@ -90,8 +90,14 @@ Maybe insert a table here that lists all of the data sets that might be potentia
 
 ### Remotely sensed data
 [AJS]
-This is the data that most people will use, I imagine. We can provide a list of the useful data sets that lend themselves to be used for detecting MHWs, together for why we think they are useful, and offering some solutions to overcoming some of their limitations.
+This [OISST] is the data that most people will use, I imagine. We can provide a list of the useful data sets that lend themselves to be used for detecting MHWs, together for why we think they are useful, and offering some solutions to overcoming some of their limitations.
+
+You are right, we do have satellite data that cover the whole globe, and the OISST data are the mostly widely used as it is >30 years in duration. But it is also at a fairly coarse resolution of 0.25 degrees lat/lon. The finer resolution AVHRR data (4km) also run from 1981, but it is dodgy here off the coast of SA, and probably also elsewhere. The various flavours of MODIS data are okay, but the time series only runs from the early 1990s. They are better near the coast, but not perfect. More recently people have started using the MUR and G1SST data, which at a resolution of 1 km resolve details in the coastal areas that I am interested in (yes, they have not really been widely validated...) and so look promising. Many of these newer data sets are close to around 10 years long. We also have a whole collection of in situ coastal (nearshore) water temperatures that are from 10-20 years long, but growing, and we would like to use them for MHW detection.
 [/AJS]
+
+[ECJO]
+We often say we have ">30 years of daily satellite SSTs" but really we have ">30 years of 1/4 degree statistically analysed daily SSTs from 1 satellite". As AJ mentions this is relatively coarse compared to some of the more recent satellites products and may not get very coastal signals which are key for ecological impacts.
+[/ECJO]
 
 
 ### Reanalysis data
@@ -115,6 +121,8 @@ Mentioning in situ is important as this data will be the kind that will provide 
 But we don’t want an exhaustive list of data products but rather the “types” of data products available and the pros/cons in the context of MHW analyses.
 
 In a sense it would be good to demonstrate our technique on in situ data however, if the data truly has missing values then we cannot “test” anything. Instead we’ll need to take a gapless time series and artificially induce missing data, then compare our MHW analyses on it against the results from having no missing data.
+
+And moving to in-situ data there are many relatively short records that are of value to examine (e.g. think of the IMAS FAC records around Tassie we used in the Tasman Sea MHW paper -- many of those were 5-10 years in length).
 [/ECJO]
 
 
@@ -153,21 +161,46 @@ Or do you actually perform an FFT on the temperature time series, isolate the fr
     - compare in special conditions where events may be expected, but are not present in the dOISST data due to constraints resulting from it not being of high enough resolution; e.g. in upwelling regions, embayments, etc.
 
 
-## Assessing the effect of random missing data
+## Assessing the effect of missing data
 [ECJO]
 Why the distinction [between random and non-random]?  I think what it’s going to come down to is how long the periods of missing data are, and how much of the time series as a whole is missing.  Regardless of if it’s random or not.
 
+Re: random vs. non-random missing data.  I see what you mean now... and both are valuable.  But I think the titles are misleading.  So how about
+
+"random missing data" -> "missing data", and we wrap "non-random missing data" into the same section/discussion.  We can handle regular seasonal gaps (e.g. sea ice cover) as one of several possible cases.  The other obvious case (at the other end of the spectrum) would be missing data that occurs in short enough periods that we can safely interpolate over the gaps (and we should recommend a time period....maybe <=5 days?). And then there is an intermediate case with some periods of missing data that spans longer than we are willing to interpolate over.  Which, according to the algorithm as it stands, will lead to MHWs starting/ending when they encounter missing value --- maybe not ideal?
+[/ECJO]
+
 
 ## Climatology estimation methods
+[AJS]
+Both the 11 basis function Fourier fit and the MHW climatology function capture the dip you speak about better, but there are trade-offs:
+
+1. The 7 basis function Fourier has very little variation over the entire year amongst the 100 simulations, but the dip during summer months is missed.
+2.  The 11 basis function Fourier gets some of the dip, but there is slightly more variation between the 100 simulations.
+3. The MHW function's climatology captures the profile as is deviates away from a sinusoidal patterns better, but there is a large amount of variation between the randomisations.
+
+For shorter time series, it might be better to use a more sinusoidal approximation of the climatology that captures the trend for the bulk of the year, but loses something around the deviations away from the perfect sine form. Alternatively, if those deviations are seen as important features that need to be accounted for, then using the MHW climatology is probably better, but at the expense of overall accuracy.
+[/AJS]
+
+[ECJO]
+I think presenting an analysis like this in the paper, either in full or in part, would be helpful.  (Regarding "in part": I like using the WA time series as a "standard case study example".)  Then we can provide an expert interpretation of the pros and cons of each method, as you do in your 3 points near the end of the email and the following paragraph, and the technical tools to perform each method (through the code itself). That then leaves the user with expert recommendations and can make their own informed choice, given what they know about their data and what they want to prioritise/consider in their own analysis.
+[/ECJO]
 
 
 ## Best practices
 [ECJO]
 This sounds like what the outcome of our study will be. So it should be placed later, in the discussion or conclusions, after we have demonstrated all the tests, etc..
+
+Another important question, that we may not be able to address in this work is if there is a way to make use of more coarsely resolved time series e.g. weekly, in the MHW framework.  Many time series that are coarser than daily exist out there!
 [/ECJO]
+
 After the investigation into the aforementioned topics has been completed, a series of best practices for dealing with these issues may be discussed.
 
 (RWS: Ideally these could also be retroactively worked into the R/Python code to provide them as options for users.)
+
+[RWS]
+The way the R code is currently set-up, anything besides 'daily' units will throw an error. It would not be difficult to correct for this though. A number of options exists. The problem then is that a time series will generally have about 1 MHW per year by virtue of the 90th percentile threshold being used. So if one uses monthly data it may be rather alarming to see that an area is experiencing month long MHWs every year. The quick answer that comes to mind is to then play around with the 'pctile' argument and see at what percentile threshold do different levels of super-daily data begin to match up with the 90th percentile on daily data. Meaning, when there really is a month long MHW detected in daily data at a 90th percentile threshold, what must a comparable threshold be so that monthly data only 'shows' a MHW at comparable times. That sounds very doable.
+[/RWS]
 
 
 # Results
