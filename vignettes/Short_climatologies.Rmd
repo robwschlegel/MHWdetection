@@ -108,7 +108,7 @@ In total I now have 300 annual cycles: 100 of them representing a 10-year long t
 
 The attached plots show the outcome. The three panels represent 10, 20 and 30 year long time series. In Figure 2, each of the 100 daily time series is plotted as a line graph. In Figure 3, the red crosses show, for each doy, each of the 100 mean temperatures that I obtained. The black lines are of course the smooth climatologies--there is also 100 of these lines on each of the three panels. 
 
-So, using bresampling and a Fourier analysis we can get away with using shorter time series. I can see later what happens if I shrink even further the time series down to only five years long. I will also test how well the python and R heatwave scripts' internal climatology functions (windowHalfWidth and smoothPercentile) are able to produce reliable climatologies from short time series.
+So, using resampling and a Fourier analysis we can get away with using shorter time series. I can see later what happens if I shrink even further the time series down to only five years long. I will also test how well the python and R heatwave scripts' internal climatology functions (windowHalfWidth and smoothPercentile) are able to produce reliable climatologies from short time series.
 
 ```{r}
 library(heatwaveR)
@@ -167,7 +167,7 @@ plt3 <- ggplot(data = sst.repl.smth, aes(x = doy, y = smoothed)) +
   geom_line(aes(group = rep), alpha = 0.3, size = 0.1) +
   facet_wrap(~ts.len, nrow = 3) +
   labs(x = "Julian day", y = "SST (°C)", title = "WA SST: daily climatology",
-       subtitle = "Fourier series: 7 basis functions") +
+       subtitle = "Fourier series: 7 basis functions")
 ggsave(plt3, file = "fig/WA_Fourier7.png", width = 12, height = 6, dpi = 120)
 ```
 
@@ -175,7 +175,7 @@ ggsave(plt3, file = "fig/WA_Fourier7.png", width = 12, height = 6, dpi = 120)
 
 ### heatwaveR's climatology functions
 
-The heatwaveR climatology tool creates the mean and 90th percentiles (threshold) for all the data within a sliding window with certain window width (by default 11 days centred on a day-of-year), and then this is followed by a running mean smoother for both the mean and the threshold. Using he approach I created for the Fourier series, lets do the same here.
+The heatwaveR climatology tool creates the mean and 90th percentiles (threshold) for all the data within a sliding window with certain window width (by default 11 days centred on a day-of-year), and then this is followed by a running mean smoother for both the mean and the threshold. Using the approach I created for the Fourier series, lets do the same here.
 
 ```{r}
 sstRepl2 <- function(sst) {

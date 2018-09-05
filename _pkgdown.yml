@@ -22,10 +22,8 @@ navbar:
       href: articles/Climatologies_and_baselines.html
     - text: "Effects of short time series"
       href: articles/time_series_duration.html
-    - text: "Effects of random missing data"
-      href: articles/random_missing_data.html
-    - text: "Effects of non-random mising data"
-      href: articles/non_random_missing_data.html
+    - text: "Effects of missing data"
+      href: articles/missing_data.html
     - text: "Difference between gridded products"
       href: articles/gridded_products.html
     - text: "Best practices"

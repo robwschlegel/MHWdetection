@@ -8,8 +8,8 @@
 <title>Additional functionality for MHW outputs in R and Python • MHWdetection</title>
 <!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script><script src="../pkgdown.js"></script><meta property="og:title" content="Additional functionality for MHW outputs in R and Python">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Additional functionality for MHW outputs in R and Python">
 <meta property="og:description" content="This vignette compares the code/work flow for altering the additional arguments found within the base Python and R detection function.">
 <meta name="twitter:card" content="summary">
 <!-- mathjax --><script src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!--[if lt IE 9]>
@@ -70,10 +70,7 @@
       <a href="../articles/time_series_duration.html">Effects of short time series</a>
     </li>
     <li>
-      <a href="../articles/random_missing_data.html">Effects of random missing data</a>
-    </li>
-    <li>
-      <a href="../articles/non_random_missing_data.html">Effects of non-random mising data</a>
+      <a href="../articles/missing_data.html">Effects of missing data</a>
     </li>
     <li>
       <a href="../articles/gridded_products.html">Difference between gridded products</a>
@@ -110,7 +107,7 @@
       <h1>Additional functionality for MHW outputs in R and Python</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-06-05</h4>
+            <h4 class="date">2018-09-05</h4>
       
       
       <div class="hidden name"><code>r_vs_python_additional.Rmd</code></div>
@@ -235,36 +232,36 @@ category_py &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span
          duration_moderate, duration_strong, duration_severe, duration_extreme)
 category_py</code></pre></div>
 <pre><code>## # A tibble: 60 x 8
-##    date_peak  category intensity_max duration duration_moderate
-##    &lt;date&gt;     &lt;chr&gt;            &lt;dbl&gt;    &lt;int&gt;             &lt;int&gt;
-##  1 1984-06-05 Moderate          1.98       12                12
-##  2 1984-06-19 Moderate          2.13        6                 6
-##  3 1984-07-10 Moderate          2.24       19                19
-##  4 1984-10-06 Moderate          1.29        5                 5
-##  5 1984-10-23 Moderate          1.83        7                 7
-##  6 1984-10-30 Moderate          1.50       20                17
-##  7 1985-07-17 Moderate          2.21        7                 7
-##  8 1987-10-04 Moderate          1.12        5                 5
-##  9 1988-06-11 Moderate          1.69        6                 6
-## 10 1988-06-28 Moderate          1.99        6                 6
+##    date_peak  category intensity_max duration duration_modera…
+##    &lt;date&gt;     &lt;chr&gt;            &lt;dbl&gt;    &lt;int&gt;            &lt;int&gt;
+##  1 1984-06-05 Moderate          1.98       12               12
+##  2 1984-06-19 Moderate          2.13        6                6
+##  3 1984-07-10 Moderate          2.24       19               19
+##  4 1984-10-06 Moderate          1.29        5                5
+##  5 1984-10-23 Moderate          1.83        7                7
+##  6 1984-10-30 Moderate          1.50       20               17
+##  7 1985-07-17 Moderate          2.21        7                7
+##  8 1987-10-04 Moderate          1.12        5                5
+##  9 1988-06-11 Moderate          1.69        6                6
+## 10 1988-06-28 Moderate          1.99        6                6
 ## # ... with 50 more rows, and 3 more variables: duration_strong &lt;int&gt;,
 ## #   duration_severe &lt;int&gt;, duration_extreme &lt;int&gt;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate categories in R</span>
 category_r &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/category">category</a></span>(default_r, <span class="dt">name =</span> <span class="st">"WA"</span>)
 category_r</code></pre></div>
 <pre><code>## # A tibble: 60 x 11
-##    event_no event_name peak_date  category   i_max duration p_moderate
-##       &lt;int&gt; &lt;fct&gt;      &lt;date&gt;     &lt;chr&gt;      &lt;dbl&gt;    &lt;int&gt;      &lt;dbl&gt;
-##  1        1 &lt;NA&gt;       1984-06-05 I Moderate  1.98       12        100
-##  2        2 &lt;NA&gt;       1984-06-19 I Moderate  2.13        6        100
-##  3        3 &lt;NA&gt;       1984-07-10 I Moderate  2.24       19        100
-##  4        4 &lt;NA&gt;       1984-10-06 I Moderate  1.29        5        100
-##  5        5 &lt;NA&gt;       1984-10-23 I Moderate  1.83        7        100
-##  6        7 &lt;NA&gt;       1985-07-17 I Moderate  2.21        7        100
-##  7        8 &lt;NA&gt;       1987-10-04 I Moderate  1.12        5        100
-##  8        9 &lt;NA&gt;       1988-06-11 I Moderate  1.69        6        100
-##  9       10 &lt;NA&gt;       1988-06-28 I Moderate  1.99        6        100
-## 10       11 &lt;NA&gt;       1988-10-25 I Moderate  1.55       11        100
+##    event_no event_name peak_date  category i_max duration p_moderate
+##       &lt;int&gt; &lt;fct&gt;      &lt;date&gt;     &lt;chr&gt;    &lt;dbl&gt;    &lt;int&gt;      &lt;dbl&gt;
+##  1        1 &lt;NA&gt;       1984-06-05 I Moder…  1.98       12        100
+##  2        2 &lt;NA&gt;       1984-06-19 I Moder…  2.13        6        100
+##  3        3 &lt;NA&gt;       1984-07-10 I Moder…  2.24       19        100
+##  4        4 &lt;NA&gt;       1984-10-06 I Moder…  1.29        5        100
+##  5        5 &lt;NA&gt;       1984-10-23 I Moder…  1.83        7        100
+##  6        7 &lt;NA&gt;       1985-07-17 I Moder…  2.21        7        100
+##  7        8 &lt;NA&gt;       1987-10-04 I Moder…  1.12        5        100
+##  8        9 &lt;NA&gt;       1988-06-11 I Moder…  1.69        6        100
+##  9       10 &lt;NA&gt;       1988-06-28 I Moder…  1.99        6        100
+## 10       11 &lt;NA&gt;       1988-10-25 I Moder…  1.55       11        100
 ## # ... with 50 more rows, and 4 more variables: p_strong &lt;dbl&gt;,
 ## #   p_severe &lt;dbl&gt;, p_extreme &lt;dbl&gt;, season &lt;chr&gt;</code></pre>
 <p>I won’t go about comparing the outputs of these functions the same as I have for the other functions because, as stated above, they show different information. The R output is specifically tailored to match the information style of Table 2 in Hobday et al. (2018). This is one final point on which a decision must be made about whether or not the extra functionality of the languages should be brought to be the exact same, or allowed to differ. I think it is fine the way it is now.</p>

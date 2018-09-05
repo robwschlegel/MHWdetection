@@ -1,3 +1,9 @@
+# MHWdetection 0.0.2  (2018-09-05)
+
+* Further editing to `time_series_duration.Rmd`
+* Began writing `missing_data.Rmd`
+* Rebuilt site to host changes
+
 # MHWdetection 0.0.2  (2018-09-03)
 
 * Added AJS and ECJO feedback into `MHWdetection.Rmd`

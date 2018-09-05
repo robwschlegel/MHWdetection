@@ -231,6 +231,7 @@ daily.dat <- res.11.T.full %>%
 
 # Let us remove the long-term non-linear trend from the WA anomaly data using a 
 # generalised additive model; first, define the GAM:
+library(mgcv)
 library(broom)
 mod.gam <- gam(temp ~ s(num, k = 20), data = daily.dat)
 daily.dat2 <- augment(mod.gam)

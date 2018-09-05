@@ -216,7 +216,7 @@ Digging deeper still, let's pull up the old `RmarineHeatWaves` code and run anot
 
 ```{r}
 ts <- RmarineHeatWaves::make_whole(sst_WA)
-default_r_old <- RmarineHeatWaves::detect(data = ts, climatology_start = 1982, climatology_end = 2014)
+default_r_old <- RmarineHeatWaves::detect(data = ts, climatology_start = "1982-01-01", climatology_end = "2014-12-31")
 default_r_old_event <- default_r_old$event
 default_r_old_clim <- default_r_old$clim
 
@@ -324,7 +324,7 @@ Surprisingly the smoothing window, regardless if it is applied or not, seems to 
 
 ```{r}
 ts <- RmarineHeatWaves::make_whole(sst_WA)
-spw_no_r_old <- RmarineHeatWaves::detect(data = ts, climatology_start = 1982, climatology_end = 2014, smooth_percentile = FALSE)
+spw_no_r_old <- RmarineHeatWaves::detect(data = ts, climatology_start = "1982-01-01", climatology_end = "2014-12-31", smooth_percentile = FALSE)
 spw_no_r_old_event <- spw_no_r_old$event
 spw_no_r_old_clim <- spw_no_r_old$clim
 
@@ -408,7 +408,7 @@ Let's look if there is a difference between the old and new R code.
 
 ```{r}
 ts <- RmarineHeatWaves::make_whole(sst_WA)
-whw_7_r_old <- RmarineHeatWaves::detect(data = ts, climatology_start = 1982, climatology_end = 2014, window_half_width = 7)
+whw_7_r_old <- RmarineHeatWaves::detect(data = ts, climatology_start = "1982-01-01", climatology_end = "2014-12-31", window_half_width = 7)
 
 # Compare new and old R code
 sum(whw_7_r$climatology$seas) - sum(whw_7_r_old$clim$seas_clim_year)
