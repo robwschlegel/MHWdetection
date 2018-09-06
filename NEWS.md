@@ -1,3 +1,8 @@
+# MHWdetection 0.0.2  (2018-09-06)
+
+* Finished preliminary random missing data results
+* Fixed CI issues with short time series vignette
+
 # MHWdetection 0.0.2  (2018-09-05)
 
 * Further editing to `time_series_duration.Rmd`

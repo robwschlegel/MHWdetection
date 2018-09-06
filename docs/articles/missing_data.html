@@ -107,7 +107,7 @@
       <h1>Assessing the effect of random missing data</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-09-05</h4>
+            <h4 class="date">2018-09-06</h4>
       
       
       <div class="hidden name"><code>missing_data.Rmd</code></div>
@@ -120,7 +120,7 @@
 <h2 class="hasAnchor">
 <a href="#overview" class="anchor"></a>Overview</h2>
 <p>The purpose of this vignette is to quantify the effects that missing data have on the detection of events. Specifically, the relationship between the percentage of missing data, as well as the consecutive number of missing days, on how much the seasonal climatology, the 90th percentile threshold, and the MHW metrics may differ from those detected against the same time series with no missing data.</p>
-<p>The missing data will be ‘created’ by striking out existing data from the three pre-packaged time series in the <code>__heatwaveR__</code> package, which themselves have no missing data. This will be done in two ways:</p>
+<p>The missing data will be ‘created’ by striking out existing data from the three pre-packaged time series in the <strong><code>heatwaveR</code></strong> package, which themselves have no missing data. This will be done in two ways:</p>
 <ul>
 <li>the first method will be to simply use a random selection algorithm to indiscriminately remove an increasing proportion of the data;</li>
 <li>the second method will be to systematically remove data from specific days/times of the year to simulate missing data that users may encounter in a real-world scenario
@@ -144,6 +144,18 @@
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># A clomp of functions used below</span>
 <span class="co"># Written out here for tidiness/convenience</span>
 
+
+<span class="co"># Function for knocking out data but maintaing the time series consistency</span>
+random_knockout &lt;-<span class="st"> </span><span class="cf">function</span>(df, prop){
+  res &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">sample_frac</span>(<span class="dt">size =</span> prop) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">arrange</span>(t) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/padr/topics/pad">pad</a></span>(<span class="dt">interval =</span> <span class="st">"day"</span>) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">full_join</span>(sst_cap, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">"t"</span>, <span class="st">"temp"</span>, <span class="st">"site"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">as.character</span>(<span class="dv">1</span><span class="op">-</span>prop))
+  <span class="kw">return</span>(res)
+}
+
 <span class="co"># Quantify consecutive missing days</span>
 con_miss &lt;-<span class="st"> </span><span class="cf">function</span>(df){
   ex1 &lt;-<span class="st"> </span><span class="kw">rle</span>(<span class="kw">is.na</span>(df<span class="op">$</span>temp))
@@ -159,16 +171,14 @@ con_miss &lt;-<span class="st"> </span><span class="cf">function</span>(df){
   <span class="kw">return</span>(res)
 }
 
-<span class="co"># Function for knocking out data but maintaing the time series consistency</span>
-random_knockout &lt;-<span class="st"> </span><span class="cf">function</span>(df, prop){
+<span class="co"># Function that knocks out pre-set amounts of data</span>
+<span class="co"># This is then allows for easier replication</span>
+<span class="co"># It expects the data passed to it to already be nested</span>
+knockout_repl &lt;-<span class="st"> </span><span class="cf">function</span>(df) {
   res &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="co"># group_by(site) %&gt;% </span>
-<span class="st">    </span><span class="kw">sample_frac</span>(<span class="dt">size =</span> prop) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="co"># arrange(site, t) %&gt;%</span>
-<span class="st">    </span><span class="kw">arrange</span>(t) <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/padr/topics/pad">pad</a></span>(<span class="dt">interval =</span> <span class="st">"day"</span>) <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">full_join</span>(sst_cap, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">"t"</span>, <span class="st">"temp"</span>, <span class="st">"site"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">as.character</span>(<span class="dv">1</span><span class="op">-</span>prop))
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">prop_10 =</span> <span class="kw">map</span>(data, random_knockout, <span class="dt">prop =</span> <span class="fl">0.9</span>),
+           <span class="dt">prop_25 =</span> <span class="kw">map</span>(data, random_knockout, <span class="dt">prop =</span> <span class="fl">0.75</span>),
+           <span class="dt">prop_50 =</span> <span class="kw">map</span>(data, random_knockout, <span class="dt">prop =</span> <span class="fl">0.5</span>))
   <span class="kw">return</span>(res)
 }
 
@@ -193,12 +203,26 @@ event_aov_p &lt;-<span class="st"> </span><span class="cf">function</span>(df){
 
 <span class="co"># Run an ANOVA on each metric of the combined event results and get CI</span>
 event_aov_CI &lt;-<span class="st"> </span><span class="cf">function</span>(df){
+  <span class="co"># Run ANOVAs</span>
   aov_models &lt;-<span class="st"> </span>df[ , <span class="op">-</span><span class="kw">grep</span>(<span class="st">"miss"</span>, <span class="kw">names</span>(df))] <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">map</span>(<span class="op">~</span><span class="st"> </span><span class="kw">aov</span>(.x <span class="op">~</span><span class="st"> </span>df<span class="op">$</span>miss)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">map_dfr</span>(<span class="op">~</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/broom/topics/confint_tidy">confint_tidy</a></span>(., <span class="dt">parm =</span> ), <span class="dt">.id =</span> <span class="st">'metric'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">"0"</span>, <span class="st">"0.1"</span>, <span class="st">"0.24"</span>, <span class="st">"0.50"</span>), <span class="kw">nrow</span>(.)<span class="op">/</span><span class="dv">4</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">map_dfr</span>(<span class="op">~</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/broom/topics/confint_tidy">confint_tidy</a></span>(.), <span class="dt">.id =</span> <span class="st">'metric'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">as.factor</span>(<span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">"0"</span>, <span class="st">"0.1"</span>, <span class="st">"0.25"</span>, <span class="st">"0.5"</span>), <span class="kw">nrow</span>(.)<span class="op">/</span><span class="dv">4</span>))) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">select</span>(metric, miss, <span class="kw">everything</span>())
-  <span class="kw">return</span>(aov_models)
+  <span class="co"># Calculate population means</span>
+  df_mean &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="co"># select(-rep) %&gt;%</span>
+<span class="st">    </span><span class="kw">group_by</span>(miss) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">summarise_all</span>(<span class="dt">.funs =</span> mean) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">gather</span>(<span class="dt">key =</span> metric, <span class="dt">value =</span> conf.mid, <span class="op">-</span>miss)
+  <span class="co"># Correct CI for first category</span>
+  res &lt;-<span class="st"> </span>aov_models <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">left_join</span>(df_mean, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">"metric"</span>, <span class="st">"miss"</span>)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">conf.low =</span> <span class="kw">if_else</span>(miss <span class="op">==</span><span class="st"> "0"</span>, conf.low <span class="op">-</span><span class="st"> </span>conf.mid, conf.low),
+           <span class="dt">conf.high =</span> <span class="kw">if_else</span>(miss <span class="op">==</span><span class="st"> "0"</span>, conf.high <span class="op">-</span><span class="st"> </span>conf.mid, conf.high)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">select</span>(<span class="op">-</span>conf.mid)
+  <span class="kw">return</span>(res)
+  <span class="co"># return(aov_models)</span>
   }
 
 <span class="co"># A particular summary output</span>
@@ -216,7 +240,7 @@ event_output &lt;-<span class="st"> </span><span class="cf">function</span>(df){
 <div id="knocking-out-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#knocking-out-data" class="anchor"></a>Knocking out data</h3>
-<p>First up we begin with the random removal of increasing proportions of the data. We are going to use the full 33 year time series for these missing data experiments.</p>
+<p>First up we begin with the random removal of increasing proportions of the data. We are going to use the full 33 year time series for these missing data experiments. For now we will randomly remove, 0%, 10%, 25%, and 50% of the data from each of the three times series. This is being repeated 100 times to allow for more reproducible results.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># First put all of the data together and create a site column</span>
 sst_ALL &lt;-<span class="st"> </span><span class="kw">rbind</span>(sst_Med, sst_NW_Atl, sst_WA) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">"Med"</span>, <span class="st">"NW_Atl"</span>, <span class="st">"WA"</span>), <span class="dt">each =</span> <span class="dv">12053</span>))
@@ -226,64 +250,79 @@ sst_ALL &lt;-<span class="st"> </span><span class="kw">rbind</span>(sst_Med, sst
 sst_cap &lt;-<span class="st"> </span>sst_ALL <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(t <span class="op">==</span><span class="st"> </span><span class="kw">as.Date</span>(<span class="st">"1982-01-01"</span>) <span class="op">|</span><span class="st"> </span>t <span class="op">==</span><span class="st"> </span><span class="kw">as.Date</span>(<span class="st">"2014-12-31"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">ungroup</span>()
-
-<span class="co"># Now let's create a few data.frames with increased proportions of missing data</span>
+<span class="st">  </span><span class="kw">ungroup</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Now let's create a few data.frames with increased proportions of missing data</span>
 sst_ALL_miss &lt;-<span class="st"> </span>sst_ALL <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site2 =</span> site) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site2) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prop_10 =</span> <span class="kw">map</span>(data, random_knockout, <span class="dt">prop =</span> <span class="fl">0.9</span>),
-         <span class="dt">prop_25 =</span> <span class="kw">map</span>(data, random_knockout, <span class="dt">prop =</span> <span class="fl">0.75</span>),
-         <span class="dt">prop_50 =</span> <span class="kw">map</span>(data, random_knockout, <span class="dt">prop =</span> <span class="fl">0.5</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> prop, <span class="dt">value =</span> output, <span class="op">-</span>site2) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site2)
+<span class="co"># For some reason purrr::rerun() does not like being in the middle of a pipe</span>
+sst_ALL_miss &lt;-<span class="st"> </span>purrr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/purrr/topics/rerun">rerun</a></span>(<span class="dv">100</span>, <span class="kw">knockout_repl</span>(sst_ALL_miss)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">map_df</span>(as.data.frame, <span class="dt">.id =</span> <span class="st">"rep"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> prop, <span class="dt">value =</span> output, <span class="op">-</span>rep, <span class="op">-</span>site2) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>site, <span class="op">-</span>prop) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">rename</span>(<span class="dt">site =</span> site2)</code></pre></div>
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">site =</span> site2) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(miss), <span class="st">"0"</span>, miss))
+<span class="kw">save</span>(sst_ALL_miss, <span class="dt">file =</span> <span class="st">"data/sst_ALL_miss.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This file is not uploaded to GitHub as it is too large</span>
+<span class="co"># One must first run the above code locally to generate and save the file</span>
+<span class="kw">load</span>(<span class="st">"data/sst_ALL_miss.Rdata"</span>)</code></pre></div>
 </div>
 <div id="consecutive-missing-days" class="section level3">
 <h3 class="hasAnchor">
 <a href="#consecutive-missing-days" class="anchor"></a>Consecutive missing days</h3>
 <p>With some data randomly removed, let’s see how consecutive these missing data are.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># And now the results</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate the consecutive missing days</span>
 sst_ALL_con &lt;-<span class="st"> </span>sst_ALL_miss <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(site, miss) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(miss <span class="op">!=</span><span class="st"> "0"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, miss, rep) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">data2 =</span> <span class="kw">map</span>(data, con_miss)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">unnest</span>()
+<span class="kw">save</span>(sst_ALL_con, <span class="dt">file =</span> <span class="st">"data/sst_ALL_con.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"data/sst_ALL_con.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Prep the con results for plotting</span>
+sst_ALL_con_plot &lt;-<span class="st"> </span>sst_ALL_con <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>rep) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(site, miss, duration) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">round</span>(<span class="kw">mean</span>(count)))
 
 <span class="co"># Visualise</span>
-<span class="kw">ggplot</span>(sst_ALL_con, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as.factor</span>(duration), <span class="dt">y =</span> count, <span class="dt">fill =</span> site)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">"identity"</span>) <span class="op">+</span>
+<span class="kw">ggplot</span>(sst_ALL_con_plot, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as.factor</span>(duration), <span class="dt">y =</span> count, <span class="dt">fill =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">"identity"</span>, <span class="dt">show.legend =</span> F) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(site<span class="op">~</span>miss, <span class="dt">scales =</span> <span class="st">"free_x"</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"consecutive missing days"</span>)</code></pre></div>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"consecutive missing days"</span>, <span class="dt">y =</span> <span class="st">"count (average)"</span>)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="missing_data_files/figure-html/con-miss-1.png" alt="Bar plots showing the count of consecutive missing days of data per time series at the three different missing proportions." width="768"><p class="caption">
-Bar plots showing the count of consecutive missing days of data per time series at the three different missing proportions.
+<img src="missing_data_files/figure-html/con-miss-heat-1.png" alt="Bar plots showing the average count of consecutive missing days of data per time series at the different missing proportions." width="768"><p class="caption">
+Bar plots showing the average count of consecutive missing days of data per time series at the different missing proportions.
 </p>
 </div>
-<p>It is reassuring to see that for the 10% and 25% missing data time series there are very few days of consecutive missing data greater than two. This is good because the default MHW detection algorithm setting is to interpolate over days with 2 or fewer missing values. It is therefore unlikely that 1 or 2 consecutive days of missing data will affect the resultant clims or MHWs.</p>
+<p>It is reassuring to see that for the 10% and 25% missing data time series there are few instances of consecutive days of missing data greater than two. This is good because the default MHW detection algorithm setting is to interpolate over days with two or fewer missing values. It is therefore unlikely that one or two consecutive days of missing data will affect the resultant clims or MHWs.</p>
 </div>
 <div id="seasonal-signal" class="section level3">
 <h3 class="hasAnchor">
 <a href="#seasonal-signal" class="anchor"></a>Seasonal signal</h3>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_clim &lt;-<span class="st"> </span>sst_ALL <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="st">"0"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">rbind</span>(., sst_ALL_miss) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(site, miss) <span class="op">%&gt;%</span><span class="st"> </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate the thresholds for all of the created time series</span>
+sst_ALL_clim &lt;-<span class="st"> </span>sst_ALL_miss <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, miss, rep) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">clim =</span> <span class="kw">map</span>(data, ts2clm, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>))) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="co"># gather(key = clim, value = output, -site) %&gt;% </span>
 <span class="st">  </span><span class="kw">unnest</span>()
-
-<span class="co"># Pull out only seas and thresh for eas of plotting</span>
+<span class="kw">save</span>(sst_ALL_clim, <span class="dt">file =</span> <span class="st">"data/sst_ALL_clim_miss.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This file is not uploaded to GitHub as it is too large</span>
+<span class="co"># One must first run the above code locally to generate and save the file</span>
+<span class="kw">load</span>(<span class="st">"data/sst_ALL_clim_miss.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Pull out only seas and thresh for ease of plotting</span>
 sst_ALL_clim_only &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(site<span class="op">:</span>doy, seas<span class="op">:</span>var) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">unique</span>()
-
-<span class="co"># visualise</span>
+<span class="kw">save</span>(sst_ALL_clim_only, <span class="dt">file =</span> <span class="st">"data/sst_ALL_clim_only_miss.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This file is not uploaded to GitHub as it is too large</span>
+<span class="co"># One must first run the above code locally to generate and save the file</span>
+<span class="kw">load</span>(<span class="st">"data/sst_ALL_clim_only_miss.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># visualise</span>
 <span class="kw">ggplot</span>(sst_ALL_clim_only, <span class="kw">aes</span>(<span class="dt">y =</span> seas, <span class="dt">x =</span> doy, <span class="dt">colour =</span> miss)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
@@ -293,7 +332,7 @@ sst_ALL_clim_only &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&
 The seasonal signals created from time series with increasingly large proportions of missing data.
 </p>
 </div>
-<p>As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data.</p>
+<p>As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediteranean (Med) and North West Atlantic times eries. The signal does appear to vary somewhat at the 50% missing data mark for the Western Australia (WA) time series.</p>
 </div>
 <div id="th-percentile-threshold" class="section level3">
 <h3 class="hasAnchor">
@@ -304,18 +343,22 @@ The seasonal signals created from time series with increasingly large proportion
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"calendar day of year"</span>, <span class="dt">y =</span> <span class="st">"temp (C)"</span>)</code></pre></div>
 <p><img src="missing_data_files/figure-html/clim-miss-thresh-1.png" width="768" style="display: block; margin: auto;"></p>
 <p>In the figure above we are able to see that the 90th percentile threshold is lower for the time series missing 50% of their data, but that 10% and 25% do not appear different. This is most pronounced for the Western Australia (WA) time series. This will likely have a significant impact on the size of the MHWs detected.</p>
-<p>Before we calculate the MHW metrics, let’s look at the output of an ANOVA comparing the seasonal and threshold values against one another across the different proportions of missing data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_clim_aov &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>t, <span class="op">-</span><span class="st"> </span>temp, <span class="op">-</span>doy) <span class="op">%&gt;%</span><span class="st"> </span>
+</div>
+<div id="threshold-statistics" class="section level3">
+<h3 class="hasAnchor">
+<a href="#threshold-statistics" class="anchor"></a>Threshold statistics</h3>
+<p>Before we calculate the MHW metrics, let’s look at the output of an ANOVA comparing the seasonal and threshold values against one another across the different proportions of missing data for each time series.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The ANOVA results</span>
+sst_ALL_clim_aov_p &lt;-<span class="st"> </span>sst_ALL_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>doy, <span class="op">-</span>rep) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">as.factor</span>(miss)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unique</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_p)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">unnest</span>() 
 
-<span class="kw">ggplot</span>(sst_ALL_clim_aov, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> metric)) <span class="op">+</span>
+<span class="kw">ggplot</span>(sst_ALL_clim_aov_p, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> metric)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
@@ -324,42 +367,80 @@ The seasonal signals created from time series with increasingly large proportion
 Heatmap showing the ANOVA results for the comparisons of the clim values for the four different proportions of missing data. Only the variance in the climatologies are significantly different at p &lt; 0.05.
 </p>
 </div>
-<p>If one were to compare this heatmap to those generated by reducing <a href="https://robwschlegel.github.io/MHWdetection/articles/time_series_duration.html">time series length</a>, one would see that the effect of shorter time series on discrepancy between the thresholds is much greater than for missing data.</p>
+<p>If one were to compare this heatmap to those generated by reducing <a href="https://robwschlegel.github.io/MHWdetection/articles/time_series_duration.html">time series length</a>, one would see that the effect of shorter time series on discrepancies between the seasonal signals is much greater than for missing data. The difference for the 90th percentile thresholds is however significant, and a more pronounced effect than for shorter time series.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The ANOVA confidence intervals</span>
+sst_ALL_clim_aov_CI &lt;-<span class="st"> </span>sst_ALL_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>doy, <span class="op">-</span>rep) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">as.factor</span>(miss)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_CI)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>()
+
+<span class="kw">ggplot</span>(sst_ALL_clim_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.5</span>,
+                <span class="kw">aes</span>(<span class="dt">ymin =</span> conf.low, <span class="dt">ymax =</span> conf.high, <span class="dt">linetype =</span> miss)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">scales =</span> <span class="st">"free_y"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/clim-miss-CI-plot-1.png" alt="Confidence intervals of the different metrics for the three different clim periods given varrying proportions of missing data." width="768"><p class="caption">
+Confidence intervals of the different metrics for the three different clim periods given varrying proportions of missing data.
+</p>
+</div>
+<p>Whereas <em>p</em>-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. In the figure above we see which missing proportions of data set the time eries furthest apart. For the seasonal signals (seas) we see that an increase in missing data does increase the uncertainty in the signal, but it does cause the temperatures in the signal to become warmer or colder. With the 90th percentile threshold (thresh) however, the time series missing 50% of their data have temperature thresholds significantly lower than time series with no missing data, and generally for the other missing data categories. When we look at the variance (var) panel we see why this may be. At 10% missing data the variance of the measured data does not diverge significantly from the complete data. At 25% it already has, and at 50% the difference is enormous. This appears to show that because the seasonal signal is a smooth composite of the available data the variance in the measurements does not have a large efect on it. The 90th percentile threshold is a different story. For the same reason that bootstrapping did not work for the selection of random days of data, large amounts of missing data likewise prevent the accurate creation of the threshold. That reason being that many of the large (outlier-like, but real) values are not included in the calculation, which by necessity requires large values to be useful.</p>
 </div>
 <div id="mhw-metrics" class="section level3">
 <h3 class="hasAnchor">
 <a href="#mhw-metrics" class="anchor"></a>MHW metrics</h3>
-<p>Now that we know that as much as 50% missing data from a time series does not produce significantly different thresholds, we now want to see what the downstream effects of these slight differences are on the MHW metrics.</p>
+<p>Now that we know that missing dara from a time series does produce significantly different 90th percentile thresholds, we now want to see what the downstream effects are on the MHW metrics.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate events</span>
 sst_ALL_event &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(site, miss) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site, miss, rep) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, detect_event_event)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>() <span class="co">#%&gt;% </span>
-  <span class="co"># filter(date_start &gt;= "2002-01-01", date_end &lt;= "2011-12-31") %&gt;% </span>
-  <span class="co"># select(-c(index_start:index_end, date_start:date_end))</span></code></pre></div>
+<span class="st">  </span><span class="kw">unnest</span>()
+<span class="kw">save</span>(sst_ALL_event, <span class="dt">file =</span> <span class="st">"data/sst_ALL_event_miss.Rdata"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"data/sst_ALL_event_miss.Rdata"</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># ANOVA p</span>
-sst_ALL_aov_p &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
+sst_ALL_event_aov_p &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(site, miss, duration, intensity_mean, intensity_max, intensity_cumulative) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_p)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>() <span class="co">#%&gt;% </span>
-  <span class="co"># spread(key = metric, value = p.value)</span>
+<span class="st">  </span><span class="kw">unnest</span>()
 
 <span class="co"># visualise</span>
-<span class="kw">ggplot</span>(sst_ALL_aov_p, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> metric)) <span class="op">+</span>
+<span class="kw">ggplot</span>(sst_ALL_event_aov_p, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> metric)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>, <span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="fl">0.5</span>))</code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="missing_data_files/figure-html/compare-shorten-p-1.png" alt="Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for the four different proportions of missing data. There are no significant differences." width="768"><p class="caption">
 Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for the four different proportions of missing data. There are no significant differences.
 </p>
 </div>
-<p>As we may see in the figure above, there are no significant differences between the main MHW metrics depending on how much data are missing from a time series. The metrics differ most in the North West Atlantic (NW_Atl) time series, but are not significant.</p>
+<p>As we may see in the figure above, all of the metrics differ significantly when various amounts of missing data are introduced into the time series. To see where these differences materialise we will visualise the confidence intervals.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The ANOVA confidence intervals</span>
+sst_ALL_event_aov_CI &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(site, miss, duration, intensity_mean, intensity_max, intensity_cumulative) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">as.factor</span>(miss)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_CI)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>()
+
+<span class="kw">ggplot</span>(sst_ALL_event_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.5</span>,
+                <span class="kw">aes</span>(<span class="dt">ymin =</span> conf.low, <span class="dt">ymax =</span> conf.high, <span class="dt">linetype =</span> miss)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">scales =</span> <span class="st">"free_y"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/event-miss-CI-plot-1.png" alt="Confidence intervals of the different metrics for the three different clim periods ." width="768"><p class="caption">
+Confidence intervals of the different metrics for the three different clim periods .
+</p>
+</div>
+<p>As with the climatology values, with the MHW metrics we see that the time series missing 50% of their data are significantly different from the control, as well as the 10% and 25% missing data groups. There is generally a decrease in the magnitude of the metrics reported as one increases the amounts of missing data, with the exception of the North West Atlantic (NW_Atl) time series, which tends to have larger values reported at 10% missing data. This is important to note as it means that one may not say with certainty that the more data are missing from a time series, the less intense the MHWs detected will be. But that is generally the case.</p>
 </div>
 </div>
 <div id="non-random-missing-data" class="section level2">
@@ -372,6 +453,10 @@ Heatmap showing the ANOVA results for the comparisons of the main four MHW metri
 <div id="missing-weekends" class="section level3">
 <h3 class="hasAnchor">
 <a href="#missing-weekends" class="anchor"></a>Missing weekends</h3>
+</div>
+<div id="missing-n-consecutive-days" class="section level3">
+<h3 class="hasAnchor">
+<a href="#missing-n-consecutive-days" class="anchor"></a>Missing <em>n</em> consecutive days</h3>
 </div>
 </div>
   </div>

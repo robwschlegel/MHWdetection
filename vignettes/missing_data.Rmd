@@ -21,7 +21,7 @@ knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
 
 The purpose of this vignette is to quantify the effects that missing data have on the detection of events. Specifically, the relationship between the percentage of missing data, as well as the consecutive number of missing days, on how much the seasonal climatology, the 90th percentile threshold, and the MHW metrics may differ from those detected against the same time series with no missing data.
 
-The missing data will be 'created' by striking out existing data from the three pre-packaged time series in the `__heatwaveR__` package, which themselves have no missing data. This will be done in two ways:
+The missing data will be 'created' by striking out existing data from the three pre-packaged time series in the __`heatwaveR`__ package, which themselves have no missing data. This will be done in two ways:
 
  - the first method will be to simply use a random selection algorithm to indiscriminately remove an increasing proportion of the data;
  - the second method will be to systematically remove data from specific days/times of the year to simulate missing data that users may encounter in a real-world scenario
@@ -47,6 +47,18 @@ library(padr)
 # A clomp of functions used below
 # Written out here for tidiness/convenience
 
+
+# Function for knocking out data but maintaing the time series consistency
+random_knockout <- function(df, prop){
+  res <- df %>% 
+    sample_frac(size = prop) %>% 
+    arrange(t) %>%
+    pad(interval = "day") %>%
+    full_join(sst_cap, by = c("t", "temp", "site")) %>% 
+    mutate(miss = as.character(1-prop))
+  return(res)
+}
+
 # Quantify consecutive missing days
 con_miss <- function(df){
   ex1 <- rle(is.na(df$temp))
@@ -62,16 +74,14 @@ con_miss <- function(df){
   return(res)
 }
 
-# Function for knocking out data but maintaing the time series consistency
-random_knockout <- function(df, prop){
+# Function that knocks out pre-set amounts of data
+# This is then allows for easier replication
+# It expects the data passed to it to already be nested
+knockout_repl <- function(df) {
   res <- df %>% 
-    # group_by(site) %>% 
-    sample_frac(size = prop) %>% 
-    # arrange(site, t) %>%
-    arrange(t) %>%
-    pad(interval = "day") %>%
-    full_join(sst_cap, by = c("t", "temp", "site")) %>% 
-    mutate(miss = as.character(1-prop))
+    mutate(prop_10 = map(data, random_knockout, prop = 0.9),
+           prop_25 = map(data, random_knockout, prop = 0.75),
+           prop_50 = map(data, random_knockout, prop = 0.5))
   return(res)
 }
 
@@ -96,12 +106,24 @@ event_aov_p <- function(df){
 
 # Run an ANOVA on each metric of the combined event results and get CI
 event_aov_CI <- function(df){
+  # Run ANOVAs
   aov_models <- df[ , -grep("miss", names(df))] %>%
     map(~ aov(.x ~ df$miss)) %>% 
-    map_dfr(~ confint_tidy(., parm = ), .id = 'metric') %>% 
-    mutate(miss = rep(c("0", "0.1", "0.24", "0.50"), nrow(.)/4)) %>% 
+    map_dfr(~ confint_tidy(.), .id = 'metric') %>% 
+    mutate(miss = as.factor(rep(c("0", "0.1", "0.25", "0.5"), nrow(.)/4))) %>% 
     select(metric, miss, everything())
-  return(aov_models)
+  # Calculate population means
+  df_mean <- df %>% 
+    group_by(miss) %>%
+    summarise_all(.funs = mean) %>%
+    gather(key = metric, value = conf.mid, -miss)
+  # Correct CI for first category
+  res <- aov_models %>%
+    left_join(df_mean, by = c("metric", "miss")) %>%
+    mutate(conf.low = if_else(miss == "0", conf.low - conf.mid, conf.low),
+           conf.high = if_else(miss == "0", conf.high - conf.mid, conf.high)) %>%
+    select(-conf.mid)
+  return(res)
   }
 
 # A particular summary output
@@ -118,7 +140,7 @@ event_output <- function(df){
 
 ### Knocking out data
 
-First up we begin with the random removal of increasing proportions of the data. We are going to use the full 33 year time series for these missing data experiments.
+First up we begin with the random removal of increasing proportions of the data. We are going to use the full 33 year time series for these missing data experiments. For now we will randomly remove, 0%, 10%, 25%, and 50% of the data from each of the three times series. This is being repeated 100 times to allow for more reproducible results.
 
 ```{r}
 # First put all of the data together and create a site column
@@ -131,63 +153,96 @@ sst_cap <- sst_ALL %>%
   group_by(site) %>% 
   filter(t == as.Date("1982-01-01") | t == as.Date("2014-12-31")) %>% 
   ungroup()
-
+```
+```{r,eval=FALSE}
 # Now let's create a few data.frames with increased proportions of missing data
 sst_ALL_miss <- sst_ALL %>% 
   mutate(site2 = site) %>% 
-  nest(-site2) %>% 
-  mutate(prop_10 = map(data, random_knockout, prop = 0.9),
-         prop_25 = map(data, random_knockout, prop = 0.75),
-         prop_50 = map(data, random_knockout, prop = 0.5)) %>% 
-  select(-data) %>% 
-  gather(key = prop, value = output, -site2) %>% 
+  nest(-site2)
+# For some reason purrr::rerun() does not like being in the middle of a pipe
+sst_ALL_miss <- purrr::rerun(100, knockout_repl(sst_ALL_miss)) %>%
+  map_df(as.data.frame, .id = "rep") %>% 
+  gather(key = prop, value = output, -rep, -site2) %>% 
   unnest() %>% 
   select(-site, -prop) %>% 
-  rename(site = site2)
+  rename(site = site2) %>% 
+  mutate(miss = ifelse(is.na(miss), "0", miss))
+save(sst_ALL_miss, file = "data/sst_ALL_miss.Rdata")
 ```
-
+```{r}
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_miss.Rdata")
+```
 
 ### Consecutive missing days
 
 With some data randomly removed, let's see how consecutive these missing data are.
 
-```{r con-miss, fig.cap="Bar plots showing the count of consecutive missing days of data per time series at the three different missing proportions."}
-# And now the results
+```{r, eval=FALSE}
+# Calculate the consecutive missing days
 sst_ALL_con <- sst_ALL_miss %>% 
-  group_by(site, miss) %>% 
+  filter(miss != "0") %>% 
+  group_by(site, miss, rep) %>% 
   nest() %>%
   mutate(data2 = map(data, con_miss)) %>% 
   select(-data) %>%
   unnest()
-
-# Visualise
-ggplot(sst_ALL_con, aes(x = as.factor(duration), y = count, fill = site)) +
-  geom_bar(stat = "identity") +
-  facet_grid(site~miss, scales = "free_x") +
-  labs(x = "consecutive missing days")
+save(sst_ALL_con, file = "data/sst_ALL_con.Rdata")
+```
+```{r}
+load("data/sst_ALL_con.Rdata")
 ```
 
-It is reassuring to see that for the 10% and 25% missing data time series there are very few days of consecutive missing data greater than two. This is good because the default MHW detection algorithm setting is to interpolate over days with 2 or fewer missing values. It is therefore unlikely that 1 or 2 consecutive days of missing data will affect the resultant clims or MHWs.
+```{r con-miss-heat, fig.cap="Bar plots showing the average count of consecutive missing days of data per time series at the different missing proportions."}
+# Prep the con results for plotting
+sst_ALL_con_plot <- sst_ALL_con %>% 
+  select(-rep) %>%
+  group_by(site, miss, duration) %>% 
+  summarise(count = round(mean(count)))
+
+# Visualise
+ggplot(sst_ALL_con_plot, aes(x = as.factor(duration), y = count, fill = site)) +
+  geom_bar(stat = "identity", show.legend = F) +
+  facet_grid(site~miss, scales = "free_x") +
+  labs(x = "consecutive missing days", y = "count (average)")
+```
+
+It is reassuring to see that for the 10% and 25% missing data time series there are few instances of consecutive days of missing data greater than two. This is good because the default MHW detection algorithm setting is to interpolate over days with two or fewer missing values. It is therefore unlikely that one or two consecutive days of missing data will affect the resultant clims or MHWs.
 
 
 ### Seasonal signal
 
-```{r clim_miss_seas, fig.cap="The seasonal signals created from time series with increasingly large proportions of missing data."}
-sst_ALL_clim <- sst_ALL %>% 
-  mutate(miss = "0") %>% 
-  rbind(., sst_ALL_miss) %>% 
-  group_by(site, miss) %>% 
+```{r, eval=FALSE}
+# Calculate the thresholds for all of the created time series
+sst_ALL_clim <- sst_ALL_miss %>% 
+  group_by(site, miss, rep) %>% 
   nest() %>% 
   mutate(clim = map(data, ts2clm, climatologyPeriod = c("1982-01-01", "2014-12-31"))) %>% 
   select(-data) %>% 
-  # gather(key = clim, value = output, -site) %>% 
   unnest()
+save(sst_ALL_clim, file = "data/sst_ALL_clim_miss.Rdata")
+```
+```{r}
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_clim_miss.Rdata")
+```
 
-# Pull out only seas and thresh for eas of plotting
+```{r clim_miss_only, eval=FALSE}
+# Pull out only seas and thresh for ease of plotting
 sst_ALL_clim_only <- sst_ALL_clim %>% 
   select(site:doy, seas:var) %>% 
   unique()
+save(sst_ALL_clim_only, file = "data/sst_ALL_clim_only_miss.Rdata")
+```
+```{r}
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_clim_only_miss.Rdata")
+```
 
+```{r clim_miss_seas, fig.cap="The seasonal signals created from time series with increasingly large proportions of missing data."}
 # visualise
 ggplot(sst_ALL_clim_only, aes(y = seas, x = doy, colour = miss)) +
   geom_line(alpha = 0.3) +
@@ -195,7 +250,7 @@ ggplot(sst_ALL_clim_only, aes(y = seas, x = doy, colour = miss)) +
   labs(x = "calendar day of year", y = "temp (C)")
 ```
 
-As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data.
+As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediteranean (Med) and North West Atlantic times eries. The signal does appear to vary somewhat at the 50% missing data mark for the Western Australia (WA) time series.
 
 
 ### 90th percentile threshold
@@ -209,63 +264,104 @@ ggplot(sst_ALL_clim_only, aes(y = thresh, x = doy, colour = miss)) +
 
 In the figure above we are able to see that the 90th percentile threshold is lower for the time series missing 50% of their data, but that 10% and 25% do not appear different. This is most pronounced for the Western Australia (WA) time series. This will likely have a significant impact on the size of the MHWs detected.
 
-Before we calculate the MHW metrics, let's look at the output of an ANOVA comparing the seasonal and threshold values against one another across the different proportions of missing data.
+### Threshold statistics
+
+Before we calculate the MHW metrics, let's look at the output of an ANOVA comparing the seasonal and threshold values against one another across the different proportions of missing data for each time series.
 
 ```{r clim-miss-AOV-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the clim values for the four different proportions of missing data. Only the variance in the climatologies are significantly different at p < 0.05."}
-sst_ALL_clim_aov <- sst_ALL_clim %>% 
-  select(-t, - temp, -doy) %>% 
+# The ANOVA results
+sst_ALL_clim_aov_p <- sst_ALL_clim_only %>% 
+  select(-doy, -rep) %>%
   mutate(miss = as.factor(miss)) %>% 
-  unique() %>% 
   group_by(site) %>% 
   nest() %>% 
   mutate(res = map(data, event_aov_p)) %>% 
   select(-data) %>% 
   unnest() 
 
-ggplot(sst_ALL_clim_aov, aes(x = site, y = metric)) +
+ggplot(sst_ALL_clim_aov_p, aes(x = site, y = metric)) +
   geom_tile(aes(fill = p.value)) +
   geom_text(aes(label = round(p.value, 2))) +
   scale_fill_gradient2(midpoint = 0.1)
 ```
 
-If one were to compare this heatmap to those generated by reducing [time series length](https://robwschlegel.github.io/MHWdetection/articles/time_series_duration.html), one would see that the effect of shorter time series on discrepancy between the thresholds is much greater than for missing data.
+If one were to compare this heatmap to those generated by reducing [time series length](https://robwschlegel.github.io/MHWdetection/articles/time_series_duration.html), one would see that the effect of shorter time series on discrepancies between the seasonal signals is much greater than for missing data. The difference for the 90th percentile thresholds is however significant, and a more pronounced effect than for shorter time series.
+
+```{r clim-miss-CI-plot, fig.cap="Confidence intervals of the different metrics for the three different clim periods given varrying proportions of missing data."}
+# The ANOVA confidence intervals
+sst_ALL_clim_aov_CI <- sst_ALL_clim_only %>% 
+  select(-doy, -rep) %>% 
+  mutate(miss = as.factor(miss)) %>% 
+  group_by(site) %>% 
+  nest() %>% 
+  mutate(res = map(data, event_aov_CI)) %>% 
+  select(-data) %>% 
+  unnest()
+
+ggplot(sst_ALL_clim_aov_CI, aes(x = site)) +
+  geom_errorbar(position = position_dodge(0.9), width = 0.5,
+                aes(ymin = conf.low, ymax = conf.high, linetype = miss)) +
+  facet_wrap(~metric, scales = "free_y")
+```
+
+Whereas _p_-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. In the figure above we see which missing proportions of data set the time eries furthest apart. For the seasonal signals (seas) we see that an increase in missing data does increase the uncertainty in the signal, but it does cause the temperatures in the signal to become warmer or colder. With the 90th percentile threshold (thresh) however, the time series missing 50% of their data have temperature thresholds significantly lower than time series with no missing data, and generally for the other missing data categories. When we look at the variance (var) panel we see why this may be. At 10% missing data the variance of the measured data does not diverge significantly from the complete data. At 25% it already has, and at 50% the difference is enormous. This appears to show that because the seasonal signal is a smooth composite of the available data the variance in the measurements does not have a large efect on it. The 90th percentile threshold is a different story. For the same reason that bootstrapping did not work for the selection of random days of data, large amounts of missing data likewise prevent the accurate creation of the threshold. That reason being that many of the large (outlier-like, but real) values are not included in the calculation, which by necessity requires large values to be useful.
 
 
 ### MHW metrics
 
-Now that we know that as much as 50% missing data from a time series does not produce significantly different thresholds, we now want to see what the downstream effects of these slight differences are on the MHW metrics. 
+Now that we know that missing dara from a time series does produce significantly different 90th percentile thresholds, we now want to see what the downstream effects are on the MHW metrics. 
 
-```{r compare-shorten}
+```{r compare-shorten, eval=FALSE}
 # Calculate events
 sst_ALL_event <- sst_ALL_clim %>% 
-  group_by(site, miss) %>% 
+  group_by(site, miss, rep) %>% 
   nest() %>% 
   mutate(res = map(data, detect_event_event)) %>% 
   select(-data) %>% 
-  unnest() #%>% 
-  # filter(date_start >= "2002-01-01", date_end <= "2011-12-31") %>% 
-  # select(-c(index_start:index_end, date_start:date_end))
+  unnest()
+save(sst_ALL_event, file = "data/sst_ALL_event_miss.Rdata")
+```
+```{r compare-shorten-load}
+load("data/sst_ALL_event_miss.Rdata")
 ```
 
 ```{r compare-shorten-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for the four different proportions of missing data. There are no significant differences."}
 # ANOVA p
-sst_ALL_aov_p <- sst_ALL_event %>% 
+sst_ALL_event_aov_p <- sst_ALL_event %>% 
   select(site, miss, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
   nest(-site) %>%
   mutate(res = map(data, event_aov_p)) %>% 
   select(-data) %>% 
-  unnest() #%>% 
-  # spread(key = metric, value = p.value)
+  unnest()
 
 # visualise
-ggplot(sst_ALL_aov_p, aes(x = site, y = metric)) +
+ggplot(sst_ALL_event_aov_p, aes(x = site, y = metric)) +
   geom_tile(aes(fill = p.value)) +
   geom_text(aes(label = round(p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1) +
+  scale_fill_gradient2(midpoint = 0.1, limits = c(0, 1)) +
   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
 ```
 
-As we may see in the figure above, there are no significant differences between the main MHW metrics depending on how much data are missing from a time series. The metrics differ most in the North West Atlantic (NW_Atl) time series, but are not significant.
+As we may see in the figure above, all of the metrics differ significantly when various amounts of missing data are introduced into the time series. To see where these differences materialise we will visualise the confidence intervals.
+
+```{r event-miss-CI-plot, fig.cap="Confidence intervals of the different metrics for the three different clim periods."}
+# The ANOVA confidence intervals
+sst_ALL_event_aov_CI <- sst_ALL_event %>% 
+  select(site, miss, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
+  mutate(miss = as.factor(miss)) %>% 
+  nest(-site) %>%
+  mutate(res = map(data, event_aov_CI)) %>% 
+  select(-data) %>% 
+  unnest()
+
+ggplot(sst_ALL_event_aov_CI, aes(x = site)) +
+  geom_errorbar(position = position_dodge(0.9), width = 0.5,
+                aes(ymin = conf.low, ymax = conf.high, linetype = miss)) +
+  facet_wrap(~metric, scales = "free_y")
+```
+
+As with the climatology values, with the MHW metrics we see that the time series missing 50% of their data are significantly different from the control, as well as the 10% and 25% missing data groups. There is generally a decrease in the magnitude of the metrics reported as one increases the amounts of missing data, with the exception of the North West Atlantic (NW_Atl) time series, which tends to have larger values reported at 10% missing data. This is important to note as it means that one may not say with certainty that the more data are missing from a time series, the less intense the MHWs detected will be. But that is generally the case.
+
 
 ## Non-random missing data
 
@@ -274,3 +370,5 @@ As we may see in the figure above, there are no significant differences between 
 
 ### Missing weekends
 
+
+### Missing _n_ consecutive days

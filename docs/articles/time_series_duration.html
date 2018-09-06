@@ -107,7 +107,7 @@
       <h1>Assessing the effect of time series duration</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-09-05</h4>
+            <h4 class="date">2018-09-06</h4>
       
       
       <div class="hidden name"><code>time_series_duration.Rmd</code></div>
@@ -302,12 +302,25 @@ event_aov_p &lt;-<span class="st"> </span><span class="cf">function</span>(df){
 
 <span class="co"># Run an ANOVA on each metric of the combined event results and get CI</span>
 event_aov_CI &lt;-<span class="st"> </span><span class="cf">function</span>(df){
+  label_levels &lt;-<span class="st"> </span><span class="kw">levels</span>(<span class="kw">as.factor</span>(df<span class="op">$</span>decades))
+  <span class="co"># Run ANOVAs</span>
   aov_models &lt;-<span class="st"> </span>df[ , <span class="op">-</span><span class="kw">grep</span>(<span class="st">"decades"</span>, <span class="kw">names</span>(df))] <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">map</span>(<span class="op">~</span><span class="st"> </span><span class="kw">aov</span>(.x <span class="op">~</span><span class="st"> </span>df<span class="op">$</span>decades)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">map_dfr</span>(<span class="op">~</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/broom/topics/confint_tidy">confint_tidy</a></span>(., <span class="dt">parm =</span> ), <span class="dt">.id =</span> <span class="st">'metric'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">decades =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">"clim_10"</span>, <span class="st">"clim_20"</span>, <span class="st">"clim_30"</span>), <span class="kw">nrow</span>(.)<span class="op">/</span><span class="dv">3</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">map_dfr</span>(<span class="op">~</span><span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/broom/topics/confint_tidy">confint_tidy</a></span>(.), <span class="dt">.id =</span> <span class="st">'metric'</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">decades =</span> <span class="kw">rep</span>(label_levels, <span class="kw">nrow</span>(.)<span class="op">/</span><span class="kw">length</span>(label_levels))) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">select</span>(metric, decades, <span class="kw">everything</span>())
-  <span class="kw">return</span>(aov_models)
+  <span class="co"># Calculate population means</span>
+  df_mean &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">group_by</span>(decades) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">summarise_all</span>(<span class="dt">.funs =</span> mean) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">gather</span>(<span class="dt">key =</span> metric, <span class="dt">value =</span> conf.mid, <span class="op">-</span>decades)
+  <span class="co"># Correct CI for first category</span>
+  res &lt;-<span class="st"> </span>aov_models <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">left_join</span>(df_mean, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">"metric"</span>, <span class="st">"decades"</span>)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">conf.low =</span> <span class="kw">if_else</span>(decades <span class="op">==</span><span class="st"> </span>label_levels[<span class="dv">1</span>], conf.low <span class="op">-</span><span class="st"> </span>conf.mid, conf.low),
+           <span class="dt">conf.high =</span> <span class="kw">if_else</span>(decades <span class="op">==</span><span class="st"> </span>label_levels[<span class="dv">1</span>], conf.high <span class="op">-</span><span class="st"> </span>conf.mid, conf.high)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">select</span>(<span class="op">-</span>conf.mid)
+  <span class="kw">return</span>(res)
   }
 
 <span class="co"># A particular summary output</span>
@@ -327,9 +340,7 @@ event_output &lt;-<span class="st"> </span><span class="cf">function</span>(df){
 <span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_p)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>() <span class="co">#%&gt;% </span>
-  <span class="co"># spread(key = metric, value = p.value) #%&gt;%</span>
-  <span class="co"># select(names(select(sst_ALL_event, -decades, -event_no)))</span>
+<span class="st">  </span><span class="kw">unnest</span>()
 
 <span class="kw">ggplot</span>(sst_ALL_clim_aov, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> metric)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
@@ -376,9 +387,7 @@ sst_ALL_aov_CI &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt
 <span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_CI)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(metric <span class="op">!=</span><span class="st"> "event_no"</span>)
-<span class="co"># sst_ALL_aov_CI</span></code></pre></div>
+<span class="st">  </span><span class="kw">unnest</span>()</code></pre></div>
 <p>Whereas the results for the different metrics do differ, they are not significantly different for any of the three time series for all three sites.</p>
 <p>Now that we know that the detected events do not differ significantly, we still want to know by what amounts they do differ. This information will then later be used during the re-sampling to see if this gap can be reduced through the clever use of statistics.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_out &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
@@ -457,7 +466,10 @@ Confidence intervals of the different metrics for the three different clim perio
 <li>correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.</li>
 </ul>
 <p>The secondary goal of this step in this section of the methodology is to also identify how much more accurate this re-sampling may be able to make the climatologies generated from shorter time series as a technique for addressing this potential short-coming (yes, that was a pun).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_repl &lt;-<span class="st"> </span><span class="cf">function</span>(sst) {
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">### Need to insert here a function that does what 'sample_n' does
+### But only selects from the appropriate range of dates
+
+sst_repl &lt;-<span class="st"> </span><span class="cf">function</span>(sst) {
   sst.sampled &lt;-<span class="st"> </span>sst <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">sample_10 =</span> <span class="kw">map</span>(data, sample_n, <span class="dv">10</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>),
            <span class="dt">sample_20 =</span> <span class="kw">map</span>(data, sample_n, <span class="dv">20</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>),
@@ -524,9 +536,7 @@ sst_ALL_smooth &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(s
 <span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_p)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>() <span class="co">#%&gt;% </span>
-  <span class="co"># spread(key = metric, value = p.value) #%&gt;%</span>
-  <span class="co"># select(names(select(sst_ALL_event, -decades, -event_no)))</span>
+<span class="st">  </span><span class="kw">unnest</span>()
 
 <span class="kw">ggplot</span>(sst_ALL_smooth_aov, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> metric)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
@@ -554,24 +564,9 @@ Line plot showing the standard deviation (sd) of each day of the year (doy) for 
 </p>
 </div>
 <p>Hmmm…. Interesting how the seasonal and threshold signals of increased summer variance comes through so nicely in the <code>Med</code> data the fewer samples are taken. The other two time series produce somewhat strange signals. We can see that the 30 year, and to a lesser extent 20 year, re-sampled time series are much smoother than the 10 year re-sample. The <code>WA</code> data are either very strange, or very exposed to particularly intense events.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_sd <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">group_by</span>(site, variable, id) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">sd_mean =</span> <span class="kw">mean</span>(value))</code></pre></div>
-<pre><code>## # A tibble: 27 x 4
-## # Groups:   site, variable [?]
-##    site   variable  id        sd_mean
-##    &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;       &lt;dbl&gt;
-##  1 Med    seas_sd   sample_10  0.0565
-##  2 Med    seas_sd   sample_20  0.0393
-##  3 Med    seas_sd   sample_30  0.0328
-##  4 Med    thresh_sd sample_10  0.0969
-##  5 Med    thresh_sd sample_20  0.0706
-##  6 Med    thresh_sd sample_30  0.0593
-##  7 Med    var_sd    sample_10  0.0397
-##  8 Med    var_sd    sample_20  0.0283
-##  9 Med    var_sd    sample_30  0.0235
-## 10 NW_Atl seas_sd   sample_10  0.0621
-## # ... with 17 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># sst_ALL_sd %&gt;% </span>
+<span class="co">#   group_by(site, variable, id) %&gt;% </span>
+<span class="co">#   summarise(sd_mean = mean(value))</span></code></pre></div>
 <p>A quick glimpse at the overall mean of the SD values for each site and re-sample period shows how similar they are. Actually, there is not a linear relationship between increased re-sample size and decreased variance. That being said, an increased re-sample size does appear to produce a more stable variance profile. Meaning that even though the mean SD for the 10 year re-samples are very similar to the 20 and 30 year re-samples, to an extent this is because the variance is more variable, ultimately flattening itself out somewhat. This may be seen in the figure above how the slight peaks come out for the 10 year samples both above and below the other lines based on larger samples. Again, this appears almost negligible.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Base 30 year clims</span>
 sst_ALL_clim_base &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
@@ -653,28 +648,12 @@ sst_ALL_smooth_aov_CI &lt;-<span class="st"> </span>sst_ALL_smooth_event <span c
 <span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_CI)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(metric <span class="op">!=</span><span class="st"> "event_no"</span>,
-         metric <span class="op">!=</span><span class="st"> "rep"</span>)
-<span class="co"># sst_ALL_smooth_aov_CI</span></code></pre></div>
+<span class="st">  </span><span class="kw">unnest</span>()</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Long data.frame for plotting</span>
 sst_ALL_smooth_event_long &lt;-<span class="st"> </span>sst_ALL_smooth_event <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>event_no) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">gather</span>(variable, value, <span class="op">-</span>site, <span class="op">-</span>decades)
-
-<span class="co"># Visualisations</span>
-  <span class="co"># Notches are unhelpful and noisey here</span>
-<span class="co"># ggplot(sst_ALL_smooth_event_long, aes(x = site, y = value)) +</span>
-<span class="co">#   geom_boxplot(aes(fill = decades), position = "dodge", notch = FALSE) +</span>
-<span class="co">#   facet_wrap(~variable, scales = "free_y")</span>
-<span class="co"># NB: This visualisation is too beefy</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># CI_plot_2 &lt;- ggplot(sst_ALL_smooth_aov_CI, aes(x = site)) +</span>
-<span class="co">#   geom_errorbar(position = position_dodge(0.9), width = 0.5,</span>
-<span class="co">#                aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +</span>
-<span class="co">#   facet_wrap(~metric, scales = "free_y")</span>
-<span class="co"># ggarrange(CI_plot_1, CI_plot_2, ncol = 1, nrow = 2)</span>
-
-<span class="kw">ggplot</span>(sst_ALL_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">gather</span>(variable, value, <span class="op">-</span>site, <span class="op">-</span>decades)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sst_ALL_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.5</span>, <span class="dt">colour =</span> <span class="st">"black"</span>,
                 <span class="kw">aes</span>(<span class="dt">ymin =</span> conf.low, <span class="dt">ymax =</span> conf.high, <span class="dt">linetype =</span> decades)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">data =</span> sst_ALL_smooth_aov_CI,
@@ -828,8 +807,8 @@ sst_ALL_clim_category_20_top_5_match &lt;-<span class="st"> </span><span class="
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> count, <span class="dt">y =</span> count<span class="op">/</span><span class="dv">2</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(category<span class="op">~</span>site)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/unnamed-chunk-8-1.png" alt="Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. THis isn't terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events." width="768"><p class="caption">
-Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. THis isn’t terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events.
+<img src="time_series_duration_files/figure-html/unnamed-chunk-8-1.png" alt="Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. This isn't terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events." width="768"><p class="caption">
+Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. This isn’t terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events.
 </p>
 </div>
 <p>With the differences in the count of categories for the detected events in the given time series lengths shown above, we will now compare the categories of the matching events between the different climatologies used.</p>

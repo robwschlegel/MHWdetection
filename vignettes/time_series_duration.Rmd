@@ -157,12 +157,25 @@ event_aov_p <- function(df){
 
 # Run an ANOVA on each metric of the combined event results and get CI
 event_aov_CI <- function(df){
+  label_levels <- levels(as.factor(df$decades))
+  # Run ANOVAs
   aov_models <- df[ , -grep("decades", names(df))] %>%
     map(~ aov(.x ~ df$decades)) %>% 
-    map_dfr(~ confint_tidy(., parm = ), .id = 'metric') %>% 
-    mutate(decades = rep(c("clim_10", "clim_20", "clim_30"), nrow(.)/3)) %>% 
+    map_dfr(~ confint_tidy(.), .id = 'metric') %>% 
+    mutate(decades = rep(label_levels, nrow(.)/length(label_levels))) %>% 
     select(metric, decades, everything())
-  return(aov_models)
+  # Calculate population means
+  df_mean <- df %>% 
+    group_by(decades) %>%
+    summarise_all(.funs = mean) %>%
+    gather(key = metric, value = conf.mid, -decades)
+  # Correct CI for first category
+  res <- aov_models %>%
+    left_join(df_mean, by = c("metric", "decades")) %>%
+    mutate(conf.low = if_else(decades == label_levels[1], conf.low - conf.mid, conf.low),
+           conf.high = if_else(decades == label_levels[1], conf.high - conf.mid, conf.high)) %>%
+    select(-conf.mid)
+  return(res)
   }
 
 # A particular summary output
@@ -186,9 +199,7 @@ sst_ALL_clim_aov <- sst_ALL_clim %>%
   nest() %>% 
   mutate(res = map(data, event_aov_p)) %>% 
   select(-data) %>% 
-  unnest() #%>% 
-  # spread(key = metric, value = p.value) #%>%
-  # select(names(select(sst_ALL_event, -decades, -event_no)))
+  unnest()
 
 ggplot(sst_ALL_clim_aov, aes(x = site, y = metric)) +
   geom_tile(aes(fill = p.value)) +
@@ -233,9 +244,7 @@ sst_ALL_aov_CI <- sst_ALL_event %>%
   nest(-site) %>%
   mutate(res = map(data, event_aov_CI)) %>% 
   select(-data) %>% 
-  unnest() %>% 
-  filter(metric != "event_no")
-# sst_ALL_aov_CI
+  unnest()
 ```
 
 Whereas the results for the different metrics do differ, they are not significantly different for any of the three time series for all three sites.
@@ -323,6 +332,9 @@ With the effect of shortening time series on the detection of events quantified,
 The secondary goal of this step in this section of the methodology is to also identify how much more accurate this re-sampling may be able to make the climatologies generated from shorter time series as a technique for addressing this potential short-coming (yes, that was a pun).
 
 ```{r re-sample-func}
+### Need to insert here a function that does what 'sample_n' does
+### But only selects from the appropriate range of dates
+
 sst_repl <- function(sst) {
   sst.sampled <- sst %>% 
     mutate(sample_10 = map(data, sample_n, 10, replace = TRUE),
@@ -400,9 +412,7 @@ sst_ALL_smooth_aov <- sst_ALL_smooth %>%
   nest() %>% 
   mutate(res = map(data, event_aov_p)) %>% 
   select(-data) %>% 
-  unnest() #%>% 
-  # spread(key = metric, value = p.value) #%>%
-  # select(names(select(sst_ALL_event, -decades, -event_no)))
+  unnest()
 
 ggplot(sst_ALL_smooth_aov, aes(x = site, y = metric)) +
   geom_tile(aes(fill = p.value)) +
@@ -427,9 +437,9 @@ ggplot(sst_ALL_sd, aes(x = doy, y = value)) +
 Hmmm.... Interesting how the seasonal and threshold signals of increased summer variance comes through so nicely in the `Med` data the fewer samples are taken. The other two time series produce somewhat strange signals. We can see that the 30 year, and to a lesser extent 20 year, re-sampled time series are much smoother than the 10 year re-sample. The `WA` data are either very strange, or very exposed to particularly intense events.
 
 ```{r}
-sst_ALL_sd %>% 
-  group_by(site, variable, id) %>% 
-  summarise(sd_mean = mean(value))
+# sst_ALL_sd %>% 
+#   group_by(site, variable, id) %>% 
+#   summarise(sd_mean = mean(value))
 ```
 
 A quick glimpse at the overall mean of the SD values for each site and re-sample period shows how similar they are. Actually, there is not a linear relationship between increased re-sample size and decreased variance. That being said, an increased re-sample size does appear to produce a more stable variance profile. Meaning that even though the mean SD for the 10 year re-samples are very similar to the 20 and 30 year re-samples, to an extent this is because the variance is more variable, ultimately flattening itself out somewhat. This may be seen in the figure above how the slight peaks come out for the 10 year samples both above and below the other lines based on larger samples. Again, this appears almost negligible.
@@ -523,10 +533,7 @@ sst_ALL_smooth_aov_CI <- sst_ALL_smooth_event %>%
   nest(-site) %>%
   mutate(res = map(data, event_aov_CI)) %>% 
   select(-data) %>% 
-  unnest() %>% 
-  filter(metric != "event_no",
-         metric != "rep")
-# sst_ALL_smooth_aov_CI
+  unnest()
 ```
 
 ```{r event-box2, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods re-sampled 100 times."}
@@ -534,22 +541,9 @@ sst_ALL_smooth_aov_CI <- sst_ALL_smooth_event %>%
 sst_ALL_smooth_event_long <- sst_ALL_smooth_event %>% 
   select(-event_no) %>%
   gather(variable, value, -site, -decades)
-
-# Visualisations
-  # Notches are unhelpful and noisey here
-# ggplot(sst_ALL_smooth_event_long, aes(x = site, y = value)) +
-#   geom_boxplot(aes(fill = decades), position = "dodge", notch = FALSE) +
-#   facet_wrap(~variable, scales = "free_y")
-# NB: This visualisation is too beefy
 ```
 
 ```{r event-CI-plot2, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean based on the 100 times re-sampling of each clim period in red, and the single sample based on the real data in black."}
-# CI_plot_2 <- ggplot(sst_ALL_smooth_aov_CI, aes(x = site)) +
-#   geom_errorbar(position = position_dodge(0.9), width = 0.5,
-#                aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
-#   facet_wrap(~metric, scales = "free_y")
-# ggarrange(CI_plot_1, CI_plot_2, ncol = 1, nrow = 2)
-
 ggplot(sst_ALL_aov_CI, aes(x = site)) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5, colour = "black",
                 aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
@@ -716,7 +710,7 @@ sst_ALL_clim_category_10_top_5_match <- peak_date_index(sst_ALL_clim_category_10
 sst_ALL_clim_category_20_top_5_match <- peak_date_index(sst_ALL_clim_category_20_top_5)
 ```
 
-```{r, fig.cap="Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. THis isn't terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events."}
+```{r, fig.cap="Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. This isn't terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events."}
 sst_ALL_clim_category_top_5_match <- rbind(data.frame(sst_ALL_clim_category_10_top_5_match, match = "clim_10"),
                                            data.frame(sst_ALL_clim_category_20_top_5_match, match = "clim_20"),
                                            data.frame(sst_ALL_clim_category_30_top_5, match = "clim_30")) %>% 

@@ -1,2 +1,7 @@
 sst_ALL_smooth.Rdata
 sst_ALL_smooth_event.Rdata
+sst_ALL_miss.Rdata
+sst_ALL_clim_miss.Rdata
+sst_ALL_clim_only_miss.Rdata
+sst_ALL_event_miss.Rdata
+
