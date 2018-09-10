@@ -6,7 +6,7 @@ output: word_document
 ---
 
 # Abstract
-It is now known that marine heatwaves (MHWs) have been increasing in duration and intensity globally. It is therefore necessary that the detection of these events in all areas of the ocean be made possible. This includes but is not limited to areas with time series that are shorter than the recommended minimum of 30 years for climatology estimation, or missing large amounts of data. The best practices for how to deal with these issues have been investigated and outlined in detail here. Additionally, several methods of climatology estimation were explored and the benefits of the different methods is discussed. This is all demonstrated using specific case studies of notable MHWs from the literature.
+It is now known that marine heatwaves (MHWs) have been increasing in duration and intensity globally for decades. There are however many ocean, sea, and coastal regions that have not been sampled continuously for 30 or more years, as is the standard recommendation for detecting MHWs. It was therefore necessary to quantify the size of the effect that short time series duration or missing data may have on the accurate detection of MHWs where optimal data are not available. It was found that time series as short as ten years did not produce MHWs of significantly different durations or intensities than either 20 or 30 year time series, nor was the accurate creation of seasonal signals or 90th percentile thresholds significantly affected, but it is still preferable to use time series at least 20 years in length. It was also found that MHWs detected in time series missing as much as 25% of their data did not differ significantly from those detected in complete time series. A greater amount of missing data than this however prevented the accurate creation of 90th percentile thresholds, which in turn prevented the accurate detection of MHWs. The best practices for how to improve the precision of MHW detection with sub-optimal time series has been itemised and is discussed in detail here using specific case studies of three notable MHWs from the literature.
 
 
 # Introduction
@@ -24,7 +24,7 @@ Paragraph 3
 Scope of this paper. Briefly outline the outstanding issues we aim address. Briefly mention time series length, climatology estimation method, missing values, sampling rate of data, etc....
 
 Paragraph 4
-In a 2-3 sentences state our contribution from this paper. Essentially it should be as providing a go-to reference for best practice when a researcher has questions as to how to perform a MHW study. Also stress that this can be performed using the available packages (Python, R) we point to (and describe hereing?) as well independently i.e. there should be no obstacle to someone getting the same results using their own implementation of these ideas (ideas being Hobday 2016, Hobday 2018 and this paper).
+In a 2-3 sentences state our contribution from this paper. Essentially it should be as providing a go-to reference for best practice when a researcher has questions as to how to perform a MHW study. Also stress that this can be performed using the available packages (Python, R) we point to (and describe herein?) as well independently i.e. there should be no obstacle to someone getting the same results using their own implementation of these ideas (ideas being Hobday 2016, Hobday 2018 and this paper).
 [/ECJO]
 
 [AJS]

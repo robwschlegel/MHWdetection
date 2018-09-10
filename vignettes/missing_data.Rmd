@@ -1,5 +1,5 @@
 ---
-title: "Assessing the effect of random missing data"
+title: "Assessing the effects of missing data"
 author: "Robert W Schlegel"
 date: "`r Sys.Date()`"
 description: "This vignette goes into depth on the effects of missing data on the detection of events."

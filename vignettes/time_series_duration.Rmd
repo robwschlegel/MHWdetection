@@ -1,8 +1,8 @@
 ---
-title: "Assessing the effect of time series duration"
+title: "Assessing the effects of time series duration"
 author: "Robert W Schlegel"
 date: "`r Sys.Date()`"
-description: "This vignette goes into depth on the effects of time series duration for the detection of events."
+description: "This vignette investigates the effects of time series duration on the accurate detection of MHWs."
 # output: word_document
 output: rmarkdown::html_vignette
 vignette: >
@@ -18,35 +18,27 @@ knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       eval = TRUE, tidy = FALSE)
 ```
 
-## Overview
-
-The purpose of this vignette is to lay out, in detail, how one goes about testing a range of variables, and analysing the effects they have on the detection of MHWs. This has a plurality of meanings, which will be discussed at more depth in the following sections.
 
 ## Time series shortening
 
-Two different shortening methodologies are proposed here. The first would be to simply take the last n years in a given time series (e.g. 30, 20, 10) and then compare the detected events in the overlapping period of time. This method will help to address the question of how the length of a time series may affect the creation of the climatology, and therefore the events detected. This is an important consideration and one that needs to be investigated to ascertain how large the effect actually is. 
+Two different shortening methodologies are proposed here. The first is to simply take the last n years in a given time series (e.g. 30, 20, 10) and compare the events detected in the overlapping period of time. This method will help to address the question of how the length of a time series may affect the creation of the seasonal signal and 90th percentile threshold (hereafter referred to as "the climatologies"), and therefore the events detected. This is an important consideration and one that needs to be investigated to ascertain how large the effect actually is. 
 
-The second technique proposed here is [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html). The issue with re-sampling the time series at the three different lengths is that it will prevent direct comparison of the resulting climatologies. Rather, re-sampling the time series in this way is useful for the comparison of events in the same time series detected with the differing climatologies.
-
-And that is how this vignette will break down. The first very straightforward investigation will simply be to quantify how much the climatologies and detected events change when historic data are neglected. The second stage of this investigation will look into best practices on how to consistently detect events when time series are not of optimal length. As part of this the following measurement metrics will be quantified:
+The second technique proposed here is [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html). The issue with re-sampling the time series at the three different lengths is that it will prevent direct comparison of the resulting climatologies. Rather, re-sampling the time series in this way is useful for the comparison of events in the same time series detected with the differing climatologies. In order to better compare the re-sample climatologies, the following measurement metrics will be quantified:
 
  - for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-samples;
  - for each doy, calculate the RMSE of the re-sampled means relative to the true climatology (i.e. the one produced from the real (not re-sampled) 30-year long time series);
  - correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
 
-Finally, this brings us to the direct consideration of the inherent decadal trend in the time series themselves. Ultimately, this tends to come out as the primary driver for much of the event detection changes over time [@Oliver2018]. To this end it would also be worthwhile to compare results for the different time series length with and without the long-term trends removed.
-[ECJO]
-A key importance here will be if there is any long term trend in the data, let’s say long-term warming.  If so then even if 10 years produced an adequate climatology, going longer (20years, 30years) would produce events with larger intensities and longer means since the climatology would be calculated over an on-average cooler time period.
+After looking at these effects, the next stage of this investigation will be to look into best practices on how to consistently detect events when time series are not of optimal length. 
 
-I think an important point to discuss also is that some researchers may be interested in including the trend in their climatology calculation, so that MHWs do get larger/intenser over time reflecting the background warming.  While others may want to remove the trend so that they are purely interested in MHWs as variability about a slowly-varying background state.
-[/ECJO]
+Finally, this brings us to the direct consideration of the inherent decadal trend in the time series themselves. Ultimately, this tends to come out as the primary driver for much of the event detection changes over time [@Oliver2018]. To this end it would also be worthwhile to compare results for the different time series length with and without the long-term trends removed.
 
 First prize for all of this research would be to develop an equation (model) that could look at a time series and determine for the user how best to calculate a climatology. It seems to me that an important ingredient must be the decadal (or annual) trend. So one would then need to take into account everything learned from the methodologies proposed above and investigate what relationship decadal trends have with whatever may be found.
 
 
 ## Simply shorter
 
-In this section we will compare the detection of events when we simply nip off the earlier decades in the three pre-packaged time series in __`heatwaveR`__.
+In this section we will compare the detection of events when we simply nip off the earlier decades (i.e. 80's and 90's) in the three pre-packaged time series in __`heatwaveR`__.
 
 ```{r r-init}
 library(tidyverse)
@@ -60,7 +52,7 @@ library(FNN)
 library(mgcv)
 ```
 
-In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 32 years long I am going to nip off those last two years. The WMO recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match the output of the shortened time series against this, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
+In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 33 years long I am going to nip off those last three years. The WMO recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 -- 2011. To match the output of the shortened time series against this, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.
 
 ```{r shorten}
 # First put all of the data together and create a site column
@@ -115,7 +107,6 @@ sst_ALL_DT <- sst_ALL_clim %>%
   unnest() %>% 
   rename(decades = decades2)
 ```
-
 ```{r shorten-table}
 # Quick peak at mean seas clims
 # This may work better as a figure...
@@ -124,13 +115,15 @@ short_table <- sst_ALL_clim %>%
   summarise(seas_mean = mean(seas)) %>% 
   left_join(sst_ALL_DT, by = c("site", "decades")) %>% 
   separate(decades, into = c("char", "years")) %>% 
-  select(-char)
+  select(-char) %>% 
+  mutate(years = as.numeric(years)) %>% 
+  arrange(site, -years)
 knitr::kable(short_table, col.names = c("site", "years", "mean seas. temp.", "dec. trend"), align = "c", 
-             caption = "Table showing the overall mean temperature for the seasonal climatologies detected at the three sites for the most recent 10, 20, or 30 years of data.", 
-             digits = 3)
+             caption = "Table showing the overall mean temperature for the seasonal climatologies detected at the three sites for the most recent 10, 20, or 30 years of data. Also shown are the decadal trends detected for the given 30, 20, or 10 year period. Note that the long-term heating trend in the Mediterranean (Med) appears to slow in the most recent decade. The other two sites show that the long-term heating trend only becomes more extreme the closer to present the data are.", 
+             digits = 2)
 ```
 
-Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds seas and oceans. We'll return to the impact of this phenomenon later.
+Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds seas and oceans. For the Mediterranean only this warming trend appears to slow near the end of the time series. We'll return to the impact of this phenomenon later.
 
 ```{r compare-funcs}
 # A clomp of functions used below
@@ -188,9 +181,11 @@ event_output <- function(df){
   }
 ```
 
-Given that there are perceptible differences in these mean values, let's see if an ANOVA determines these differences to be significant.
+### ANOVA for different decades
 
-```{r shorten-clim-aov, fig.cap="Heatmap showing the ANOVA results for the comparisons of the different clims for the three different time periods. Only the variance in the climatologies are significantly different at p < 0.05."}
+Given that there are perceptible differences in the mean seasonal trend values between the decades of data used, let's see if an ANOVA determines these differences to be significant.
+
+```{r shorten-clim-aov, fig.cap="Heatmap showing the ANOVA results for the comparisons of the different climatologies for the three different time periods for the three time series. Only the variance in the climatologies are significantly different at p < 0.05."}
 sst_ALL_clim_aov <- sst_ALL_clim %>% 
   select(-t, - temp, -doy) %>% 
   mutate(decades = as.factor(decades)) %>% 
@@ -207,7 +202,7 @@ ggplot(sst_ALL_clim_aov, aes(x = site, y = metric)) +
   scale_fill_gradient2(midpoint = 0.1)
 ```
 
-Now let's compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades. We will make these comparisons using an ANOVA, as above.
+Seeing that there are no significant differences between the climatologies for the different time periods, let's compare the results of the MHWs detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades. We will make these comparisons using an ANOVA, as above.
 
 ```{r compare-shorten}
 # Calculate events and filter only those from 2002 -- 2011
@@ -237,7 +232,13 @@ ggplot(sst_ALL_aov_p, aes(x = site, y = metric)) +
   scale_fill_gradient2(midpoint = 0.1) +
   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
 ```
-```{r compare-shorten-CI}
+
+Whereas the results for the metrics do show some differences, they are not significant. The results do appear most different for the Mediterranean site and this is likely because, unlike the other two sites, the Mediterranean was not heating up as quickly in the most recent decade. This then means that when we compare only the events in the most recent decade of data, the Mediterranean results are most different because the other two have their larger events in the most recent decade. This is most evident in the Western Australia time series as we see _p_-values >=0.98 for three of the metrics. Specifically this is because of the monstrous 2010/11 MHW that occurred there.
+
+
+### ANOVA confidence intervals
+
+```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for the three different clim periods."}
 # ANOVA CI
 sst_ALL_aov_CI <- sst_ALL_event %>% 
   select(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
@@ -245,48 +246,31 @@ sst_ALL_aov_CI <- sst_ALL_event %>%
   mutate(res = map(data, event_aov_CI)) %>% 
   select(-data) %>% 
   unnest()
+
+CI_plot_1 <- ggplot(sst_ALL_aov_CI, aes(x = site)) +
+  geom_errorbar(position = position_dodge(0.9), width = 0.5,
+                aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
+  facet_wrap(~metric, scales = "free_y")
+CI_plot_1
 ```
 
-Whereas the results for the different metrics do differ, they are not significantly different for any of the three time series for all three sites.
+When we look at the confidence intervals (CI) we see that all of the MHW metrics for all of the time periods overlap rather well. As expected, we also see that the duration/intensity of MHWs tend to increase the more decades of data are used to create the climatologies.
 
-Now that we know that the detected events do not differ significantly, we still want to know by what amounts they do differ. This information will then later be used during the re-sampling to see if this gap can be reduced through the clever use of statistics.
 
-```{r}
-sst_ALL_out <- sst_ALL_event %>% 
-  select(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
-  nest(-site) %>%
-  mutate(res = map(data, event_output)) %>% 
-  select(-data) %>% 
-  unnest()
-# sst_ALL_out
+### Kolmogorov-Smirnov tests
+
+Now knowing that the daily values that make up the climatologies do not differ, as seen with the ANOVA results, we also want to check if the distributions of the climatologies themselves differ. We will do this through a series of pair-wise two-sample KS tests.
+
+```{r KS-test}
+
 ```
 
-```{r event-bar, fig.cap="Bar plots of the mean values for each metric of the events detected using one of three different climatology periods. Error bars show the standard deviation of the mean values."}
-# Create long data.frames for plotting
-# Mean values
-sst_ALL_out_mean_long <- sst_ALL_out %>% 
-  select(site:intensity_cumulative_mean)
-colnames(sst_ALL_out_mean_long) <- gsub("_mean", "", names(sst_ALL_out_mean_long))
-sst_ALL_out_mean_long <- sst_ALL_out_mean_long %>% 
-  gather(variable, value, -site, -decades)
-# SD values
-sst_ALL_out_sd_long <- sst_ALL_out %>% 
-  select(site, decades, duration_sd:intensity_cumulative_sd)
-colnames(sst_ALL_out_sd_long) <- gsub("_sd", "", names(sst_ALL_out_sd_long))
-sst_ALL_out_sd_long <- sst_ALL_out_sd_long %>% 
-  gather(variable, value, -site, -decades)
-# Steek'm
-sst_ALL_out_mean_long$value_sd <- sst_ALL_out_sd_long$value
 
-# Visuals... man
-ggplot(sst_ALL_out_mean_long, aes(x = site, y = value, fill = decades)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
-  geom_errorbar(aes(ymin = value - value_sd, ymax = value + value_sd), 
-                stat = "identity", position = position_dodge(0.9), width = 0.3) +
-  facet_wrap(~variable, scales = "free_y")
-```
+### Median difference between decades
 
-```{r event-box1, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods."}
+Now that we know that the detected events do not differ significantly when different time-frames are used, we still want to know by what amounts they do differ. This information will then later be used during the re-sampling to see if this gap can be reduced through the clever use of statistics.
+
+```{r event-box1, fig.cap="Boxplots showing the spread of the metric values for the events detected in the most recent decade with the three different time periods."}
 # Long data.frame for plotting
 sst_ALL_event_long <- sst_ALL_event %>% 
   select(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
@@ -300,24 +284,7 @@ ggplot(sst_ALL_event_long, aes(x = site, y = value)) +
   facet_wrap(~variable, scales = "free_y")
 ```
 
-The difference between the three different time series is intriguing. The `NW_Atl` events have a lower cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The `Med` data changed over time in a more predictable, linear fashion. Strangest was that the `WA` data changed very little depending on the number of decades used for the climatology, and that the trend displayed by the other two time series is reversed for some of the metrics. This is most certainly due to that one huge event near the end.
-
-```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean."}
-CI_plot_1 <- ggplot(sst_ALL_aov_CI, aes(x = site)) +
-  geom_errorbar(position = position_dodge(0.9), width = 0.5,
-                aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
-  facet_wrap(~metric, scales = "free_y")
-CI_plot_1
-```
-
-When we look at the confidence intervals (CI) we see that the max and mean intensities calculated from the 10 year clim periods may be significantly different from those calculated at the 20 and 30 year period. But that the 20 and 30 year values are remarkably similar. This is a good indication that 10 years is too short, but that 20 years appears to be acceptable in place of the (still preferable) 30 year period.
-[ECJO]
-This is the important result and the one from which we will make a recommendation (i.e. “30 years (following WMO) is ideal but our results show you can get away with as low as N years”).  We should do a formal statistical significance test between the 10-yr/20-yr results and the 30-yr results.  You could compare the distributions using a 2-sample KS test to determine they are from the same distribution or not.
-
-This could be done systematically for time series lengths between 5 and 30 years, in 1 year increments, to get better resolution of the results.
-[/ECJO]
-
-(RWS: Could there be a relationship between normality and change due to decade of choice?)
+The Mediterraean (`Med`) data change over time in a more predictable, linear fashion. The Western Australia (`WA`) data changed very little depending on the number of decades used for the climatology, which is most certainly due to that one huge event near the end. The Northwest Atlantic (`NW_Atl`) results for the 10 and 20 year periods appear to generally be more similar than for the 30 year period.
 
 With these benchmarks established, we will now move on to re-sampling to see if the effect of a shorter time series on the detected climatology can be mitigated.
 
@@ -526,7 +493,23 @@ ggplot(sst_ALL_smooth_aov_p, aes(x = site, y = metric)) +
   scale_fill_gradient2(midpoint = 0.1) +
   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
 ```
-```{r}
+
+```{r event-box2, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods re-sampled 100 times."}
+# Long data.frame for plotting
+sst_ALL_smooth_event_long <- sst_ALL_smooth_event %>% 
+  select(-event_no) %>%
+  gather(variable, value, -site, -decades)
+
+## NB: This takes waaaayy yo long to visualise...
+# Visualisations
+  # Notches are unhelpful and noisey here
+# ggplot(sst_ALL_smooth_event_long, aes(x = site, y = value)) +
+#   geom_boxplot(aes(fill = decades), position = "dodge", notch = FALSE) +
+#   facet_wrap(~variable, scales = "free_y")
+##
+```
+
+```{r event-CI-plot2, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean based on the 100 times re-sampling of each clim period in red, and the single sample based on the real data in black."}
 # ANOVA CI
 sst_ALL_smooth_aov_CI <- sst_ALL_smooth_event %>% 
   select(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
@@ -534,20 +517,12 @@ sst_ALL_smooth_aov_CI <- sst_ALL_smooth_event %>%
   mutate(res = map(data, event_aov_CI)) %>% 
   select(-data) %>% 
   unnest()
-```
 
-```{r event-box2, fig.cap="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods re-sampled 100 times."}
-# Long data.frame for plotting
-sst_ALL_smooth_event_long <- sst_ALL_smooth_event %>% 
-  select(-event_no) %>%
-  gather(variable, value, -site, -decades)
-```
-
-```{r event-CI-plot2, fig.cap="Confidence intervals of the different metrics for the three different clim periods from the population mean based on the 100 times re-sampling of each clim period in red, and the single sample based on the real data in black."}
+# Plot
 ggplot(sst_ALL_aov_CI, aes(x = site)) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5, colour = "black",
                 aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
-  geom_errorbar(data = sst_ALL_smooth_aov_CI,
+  geom_errorbar(data = sst_ALL_smooth_aov_CI, show.legend = F,
                 position = position_dodge(0.9), width = 0.5, colour = "red",
                 aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
   facet_wrap(~metric, scales = "free_y")
