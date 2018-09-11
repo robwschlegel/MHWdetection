@@ -764,4 +764,9 @@ Seeing as how 20 and 30 year periods produce very similar results, we will be fo
 
 Lastly we will now go about reproducing all of the checks made above, but based on a climatology derived from a Fourier transformation, and not the default methodology.
 
+
+## Best practices
+
+### Options for addressing short time series
+
 ## References

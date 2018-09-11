@@ -363,6 +363,9 @@ ggplot(sst_ALL_event_aov_CI, aes(x = site)) +
 As with the climatology values, with the MHW metrics we see that the time series missing 50% of their data are significantly different from the control, as well as the 10% and 25% missing data groups. There is generally a decrease in the magnitude of the metrics reported as one increases the amounts of missing data, with the exception of the North West Atlantic (NW_Atl) time series, which tends to have larger values reported at 10% missing data. This is important to note as it means that one may not say with certainty that the more data are missing from a time series, the less intense the MHWs detected will be. But that is generally the case.
 
 
+### Categories
+
+
 ## Non-random missing data
 
 ### Ice-cover
@@ -372,3 +375,11 @@ As with the climatology values, with the MHW metrics we see that the time series
 
 
 ### Missing _n_ consecutive days
+
+
+## Best practices
+
+### Options for addressing many missing random data
+
+
+### Options for addressing many missing non-random data

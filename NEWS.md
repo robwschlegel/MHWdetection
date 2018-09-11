@@ -1,3 +1,7 @@
+# MHWdetection 0.0.2  (2018-09-11)
+
+* Minor additions
+
 # MHWdetection 0.0.2  (2018-09-10)
 
 * Further editing to `time_series_duration.Rmd`
