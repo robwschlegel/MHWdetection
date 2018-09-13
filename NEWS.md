@@ -1,6 +1,7 @@
 # MHWdetection 0.0.3  (2018-09-13)
 
 * Finished up initially proposed work on `missing_data.Rmd`
+* Rebuilt site to reflect upversion to v0.0.3
 
 # MHWdetection 0.0.2  (2018-09-11)
 

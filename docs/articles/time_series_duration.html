@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assessing the effect of time series duration • MHWdetection</title>
+<title>Assessing the effects of time series duration • MHWdetection</title>
 <!-- jquery --><script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><!-- Font Awesome icons --><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Assessing the effect of time series duration">
-<meta property="og:description" content="This vignette goes into depth on the effects of time series duration for the detection of events.">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Assessing the effects of time series duration">
+<meta property="og:description" content="This vignette investigates the effects of time series duration on the accurate detection of MHWs.">
 <meta name="twitter:card" content="summary">
 <!-- mathjax --><script src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">MHWdetection</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.3</span>
       </span>
     </div>
 
@@ -104,10 +104,10 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1>Assessing the effect of time series duration</h1>
+      <h1>Assessing the effects of time series duration</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-09-06</h4>
+            <h4 class="date">2018-09-13</h4>
       
       
       <div class="hidden name"><code>time_series_duration.Rmd</code></div>
@@ -116,30 +116,24 @@
 
     
     
-<div id="overview" class="section level2">
-<h2 class="hasAnchor">
-<a href="#overview" class="anchor"></a>Overview</h2>
-<p>The purpose of this vignette is to lay out, in detail, how one goes about testing a range of variables, and analysing the effects they have on the detection of MHWs. This has a plurality of meanings, which will be discussed at more depth in the following sections.</p>
-</div>
 <div id="time-series-shortening" class="section level2">
 <h2 class="hasAnchor">
 <a href="#time-series-shortening" class="anchor"></a>Time series shortening</h2>
-<p>Two different shortening methodologies are proposed here. The first would be to simply take the last n years in a given time series (e.g. 30, 20, 10) and then compare the detected events in the overlapping period of time. This method will help to address the question of how the length of a time series may affect the creation of the climatology, and therefore the events detected. This is an important consideration and one that needs to be investigated to ascertain how large the effect actually is.</p>
-<p>The second technique proposed here is <a href="https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html">re-sampling</a>. The issue with re-sampling the time series at the three different lengths is that it will prevent direct comparison of the resulting climatologies. Rather, re-sampling the time series in this way is useful for the comparison of events in the same time series detected with the differing climatologies.</p>
-<p>And that is how this vignette will break down. The first very straightforward investigation will simply be to quantify how much the climatologies and detected events change when historic data are neglected. The second stage of this investigation will look into best practices on how to consistently detect events when time series are not of optimal length. As part of this the following measurement metrics will be quantified:</p>
+<p>Two different shortening methodologies are proposed here. The first is to simply take the last n years in a given time series (e.g. 30, 20, 10) and compare the events detected in the overlapping period of time. This method will help to address the question of how the length of a time series may affect the creation of the seasonal signal and 90th percentile threshold (hereafter referred to as “the climatologies”), and therefore the events detected. This is an important consideration and one that needs to be investigated to ascertain how large the effect actually is.</p>
+<p>The second technique proposed here is <a href="https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html">re-sampling</a>. The issue with re-sampling the time series at the three different lengths is that it will prevent direct comparison of the resulting climatologies. Rather, re-sampling the time series in this way is useful for the comparison of events in the same time series detected with the differing climatologies. In order to better compare the re-sample climatologies, the following measurement metrics will be quantified:</p>
 <ul>
 <li>for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-samples;</li>
 <li>for each doy, calculate the RMSE of the re-sampled means relative to the true climatology (i.e. the one produced from the real (not re-sampled) 30-year long time series);</li>
 <li>correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.</li>
 </ul>
-<p>Finally, this brings us to the direct consideration of the inherent decadal trend in the time series themselves. Ultimately, this tends to come out as the primary driver for much of the event detection changes over time <span class="citation">(Oliver et al. 2018)</span>. To this end it would also be worthwhile to compare results for the different time series length with and without the long-term trends removed. [ECJO] A key importance here will be if there is any long term trend in the data, let’s say long-term warming. If so then even if 10 years produced an adequate climatology, going longer (20years, 30years) would produce events with larger intensities and longer means since the climatology would be calculated over an on-average cooler time period.</p>
-<p>I think an important point to discuss also is that some researchers may be interested in including the trend in their climatology calculation, so that MHWs do get larger/intenser over time reflecting the background warming. While others may want to remove the trend so that they are purely interested in MHWs as variability about a slowly-varying background state. [/ECJO]</p>
+<p>After looking at these effects, the next stage of this investigation will be to look into best practices on how to consistently detect events when time series are not of optimal length.</p>
+<p>Finally, this brings us to the direct consideration of the inherent decadal trend in the time series themselves. Ultimately, this tends to come out as the primary driver for much of the event detection changes over time <span class="citation">(Oliver et al. 2018)</span>. To this end it would also be worthwhile to compare results for the different time series length with and without the long-term trends removed.</p>
 <p>First prize for all of this research would be to develop an equation (model) that could look at a time series and determine for the user how best to calculate a climatology. It seems to me that an important ingredient must be the decadal (or annual) trend. So one would then need to take into account everything learned from the methodologies proposed above and investigate what relationship decadal trends have with whatever may be found.</p>
 </div>
 <div id="simply-shorter" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simply-shorter" class="anchor"></a>Simply shorter</h2>
-<p>In this section we will compare the detection of events when we simply nip off the earlier decades in the three pre-packaged time series in <strong><code>heatwaveR</code></strong>.</p>
+<p>In this section we will compare the detection of events when we simply nip off the earlier decades (i.e. 80’s and 90’s) in the three pre-packaged time series in <strong><code>heatwaveR</code></strong>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
 <span class="kw">library</span>(broom)
 <span class="kw">library</span>(heatwaveR)
@@ -149,7 +143,7 @@
 <span class="kw">library</span>(boot)
 <span class="kw">library</span>(FNN)
 <span class="kw">library</span>(mgcv)</code></pre></div>
-<p>In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 32 years long I am going to nip off those last two years. The WMO recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 – 2011. To match the output of the shortened time series against this, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.</p>
+<p>In order to control more tightly for the effect of shorter time series I am going to standardise the length of the 30 year time series as well. Because the built in time series are actually 33 years long I am going to nip off those last three years. The WMO recommends that climatologies be 30 years in length, starting on the first year of a decade (e.g. 1981). Unfortunately the OISST data from which the built-in time series have been drawn only start in 1982. For this reason we will set the 30 year climatology period as being from 1982 – 2011. To match the output of the shortened time series against this, 2011 will be taken as the last year for comparison and the data from 2012 onward will not be used.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># First put all of the data together and create a site column</span>
 sst_ALL &lt;-<span class="st"> </span><span class="kw">rbind</span>(sst_Med, sst_NW_Atl, sst_WA) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">"Med"</span>, <span class="st">"NW_Atl"</span>, <span class="st">"WA"</span>), <span class="dt">each =</span> <span class="dv">12053</span>))
@@ -208,12 +202,14 @@ short_table &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</
 <span class="st">  </span><span class="kw">summarise</span>(<span class="dt">seas_mean =</span> <span class="kw">mean</span>(seas)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">left_join</span>(sst_ALL_DT, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">"site"</span>, <span class="st">"decades"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">separate</span>(decades, <span class="dt">into =</span> <span class="kw">c</span>(<span class="st">"char"</span>, <span class="st">"years"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>char)
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>char) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">years =</span> <span class="kw">as.numeric</span>(years)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(site, <span class="op">-</span>years)
 knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>(short_table, <span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">"site"</span>, <span class="st">"years"</span>, <span class="st">"mean seas. temp."</span>, <span class="st">"dec. trend"</span>), <span class="dt">align =</span> <span class="st">"c"</span>, 
-             <span class="dt">caption =</span> <span class="st">"Table showing the overall mean temperature for the seasonal climatologies detected at the three sites for the most recent 10, 20, or 30 years of data."</span>, 
-             <span class="dt">digits =</span> <span class="dv">3</span>)</code></pre></div>
+             <span class="dt">caption =</span> <span class="st">"Table showing the overall mean temperature for the seasonal climatologies detected at the three sites for the most recent 10, 20, or 30 years of data. Also shown are the decadal trends detected for the given 30, 20, or 10 year period. Note that the long-term heating trend in the Mediterranean (Med) appears to slow in the most recent decade. The other two sites show that the long-term heating trend only becomes more extreme the closer to present the data are."</span>, 
+             <span class="dt">digits =</span> <span class="dv">2</span>)</code></pre></div>
 <table class="table">
-<caption>Table showing the overall mean temperature for the seasonal climatologies detected at the three sites for the most recent 10, 20, or 30 years of data.</caption>
+<caption>Table showing the overall mean temperature for the seasonal climatologies detected at the three sites for the most recent 10, 20, or 30 years of data. Also shown are the decadal trends detected for the given 30, 20, or 10 year period. Note that the long-term heating trend in the Mediterranean (Med) appears to slow in the most recent decade. The other two sites show that the long-term heating trend only becomes more extreme the closer to present the data are.</caption>
 <thead><tr class="header">
 <th align="center">site</th>
 <th align="center">years</th>
@@ -223,61 +219,61 @@ knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentati
 <tbody>
 <tr class="odd">
 <td align="center">Med</td>
-<td align="center">10</td>
-<td align="center">18.059</td>
-<td align="center">0.111</td>
+<td align="center">30</td>
+<td align="center">17.67</td>
+<td align="center">0.27</td>
 </tr>
 <tr class="even">
 <td align="center">Med</td>
 <td align="center">20</td>
-<td align="center">17.759</td>
-<td align="center">0.521</td>
+<td align="center">17.76</td>
+<td align="center">0.52</td>
 </tr>
 <tr class="odd">
 <td align="center">Med</td>
-<td align="center">30</td>
-<td align="center">17.666</td>
-<td align="center">0.268</td>
+<td align="center">10</td>
+<td align="center">18.06</td>
+<td align="center">0.11</td>
 </tr>
 <tr class="even">
 <td align="center">NW_Atl</td>
-<td align="center">10</td>
-<td align="center">8.684</td>
-<td align="center">1.233</td>
+<td align="center">30</td>
+<td align="center">8.58</td>
+<td align="center">0.21</td>
 </tr>
 <tr class="odd">
 <td align="center">NW_Atl</td>
 <td align="center">20</td>
-<td align="center">8.570</td>
-<td align="center">0.593</td>
+<td align="center">8.57</td>
+<td align="center">0.59</td>
 </tr>
 <tr class="even">
 <td align="center">NW_Atl</td>
-<td align="center">30</td>
-<td align="center">8.581</td>
-<td align="center">0.212</td>
+<td align="center">10</td>
+<td align="center">8.68</td>
+<td align="center">1.23</td>
 </tr>
 <tr class="odd">
 <td align="center">WA</td>
-<td align="center">10</td>
-<td align="center">21.634</td>
-<td align="center">1.503</td>
+<td align="center">30</td>
+<td align="center">21.54</td>
+<td align="center">0.16</td>
 </tr>
 <tr class="even">
 <td align="center">WA</td>
 <td align="center">20</td>
-<td align="center">21.610</td>
-<td align="center">0.203</td>
+<td align="center">21.61</td>
+<td align="center">0.20</td>
 </tr>
 <tr class="odd">
 <td align="center">WA</td>
-<td align="center">30</td>
-<td align="center">21.543</td>
-<td align="center">0.159</td>
+<td align="center">10</td>
+<td align="center">21.63</td>
+<td align="center">1.50</td>
 </tr>
 </tbody>
 </table>
-<p>Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds seas and oceans. We’ll return to the impact of this phenomenon later.</p>
+<p>Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds seas and oceans. For the Mediterranean only this warming trend appears to slow near the end of the time series. We’ll return to the impact of this phenomenon later.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># A clomp of functions used below</span>
 <span class="co"># Written out here for tidiness/convenience</span>
 
@@ -331,7 +327,10 @@ event_output &lt;-<span class="st"> </span><span class="cf">function</span>(df){
 <span class="st">    </span><span class="kw">summarise_all</span>(<span class="kw">c</span>(<span class="st">"mean"</span>, <span class="st">"sd"</span>))
   <span class="kw">return</span>(res)
   }</code></pre></div>
-<p>Given that there are perceptible differences in these mean values, let’s see if an ANOVA determines these differences to be significant.</p>
+<div id="anova-for-different-decades" class="section level3">
+<h3 class="hasAnchor">
+<a href="#anova-for-different-decades" class="anchor"></a>ANOVA for different decades</h3>
+<p>Given that there are perceptible differences in the mean seasonal trend values between the decades of data used, let’s see if an ANOVA determines these differences to be significant.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_clim_aov &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>t, <span class="op">-</span><span class="st"> </span>temp, <span class="op">-</span>doy) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">decades =</span> <span class="kw">as.factor</span>(decades)) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -347,11 +346,11 @@ event_output &lt;-<span class="st"> </span><span class="cf">function</span>(df){
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/shorten-clim-aov-1.png" alt="Heatmap showing the ANOVA results for the comparisons of the different clims for the three different time periods. Only the variance in the climatologies are significantly different at p &lt; 0.05." width="768"><p class="caption">
-Heatmap showing the ANOVA results for the comparisons of the different clims for the three different time periods. Only the variance in the climatologies are significantly different at p &lt; 0.05.
+<img src="time_series_duration_files/figure-html/shorten-clim-aov-1.png" alt="Heatmap showing the ANOVA results for the comparisons of the different climatologies for the three different time periods for the three time series. Only the variance in the climatologies are significantly different at p &lt; 0.05." width="768"><p class="caption">
+Heatmap showing the ANOVA results for the comparisons of the different climatologies for the three different time periods for the three time series. Only the variance in the climatologies are significantly different at p &lt; 0.05.
 </p>
 </div>
-<p>Now let’s compare the results of the events detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades. We will make these comparisons using an ANOVA, as above.</p>
+<p>Seeing that there are no significant differences between the climatologies for the different time periods, let’s compare the results of the MHWs detected in the final decade of each time series using the different climatologies calculated using 1, 2, or 3 decades. We will make these comparisons using an ANOVA, as above.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate events and filter only those from 2002 -- 2011</span>
 sst_ALL_event &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site, decades) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -381,49 +380,40 @@ sst_ALL_aov_p &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;
 Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for the three different time periods. There are no significant differences.
 </p>
 </div>
+<p>Whereas the results for the metrics do show some differences, they are not significant. The results do appear most different for the Mediterranean site and this is likely because, unlike the other two sites, the Mediterranean was not heating up as quickly in the most recent decade. This then means that when we compare only the events in the most recent decade of data, the Mediterranean results are most different because the other two have their larger events in the most recent decade. This is most evident in the Western Australia time series as we see <em>p</em>-values &gt;=0.98 for three of the metrics. Specifically this is because of the monstrous 2010/11 MHW that occurred there.</p>
+</div>
+<div id="anova-confidence-intervals" class="section level3">
+<h3 class="hasAnchor">
+<a href="#anova-confidence-intervals" class="anchor"></a>ANOVA confidence intervals</h3>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># ANOVA CI</span>
 sst_ALL_aov_CI &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_CI)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>()</code></pre></div>
-<p>Whereas the results for the different metrics do differ, they are not significantly different for any of the three time series for all three sites.</p>
-<p>Now that we know that the detected events do not differ significantly, we still want to know by what amounts they do differ. This information will then later be used during the re-sampling to see if this gap can be reduced through the clever use of statistics.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_out &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_output)) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">unnest</span>()
-<span class="co"># sst_ALL_out</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create long data.frames for plotting</span>
-<span class="co"># Mean values</span>
-sst_ALL_out_mean_long &lt;-<span class="st"> </span>sst_ALL_out <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(site<span class="op">:</span>intensity_cumulative_mean)
-<span class="kw">colnames</span>(sst_ALL_out_mean_long) &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">"_mean"</span>, <span class="st">""</span>, <span class="kw">names</span>(sst_ALL_out_mean_long))
-sst_ALL_out_mean_long &lt;-<span class="st"> </span>sst_ALL_out_mean_long <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">gather</span>(variable, value, <span class="op">-</span>site, <span class="op">-</span>decades)
-<span class="co"># SD values</span>
-sst_ALL_out_sd_long &lt;-<span class="st"> </span>sst_ALL_out <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(site, decades, duration_sd<span class="op">:</span>intensity_cumulative_sd)
-<span class="kw">colnames</span>(sst_ALL_out_sd_long) &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">"_sd"</span>, <span class="st">""</span>, <span class="kw">names</span>(sst_ALL_out_sd_long))
-sst_ALL_out_sd_long &lt;-<span class="st"> </span>sst_ALL_out_sd_long <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">gather</span>(variable, value, <span class="op">-</span>site, <span class="op">-</span>decades)
-<span class="co"># Steek'm</span>
-sst_ALL_out_mean_long<span class="op">$</span>value_sd &lt;-<span class="st"> </span>sst_ALL_out_sd_long<span class="op">$</span>value
 
-<span class="co"># Visuals... man</span>
-<span class="kw">ggplot</span>(sst_ALL_out_mean_long, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> value, <span class="dt">fill =</span> decades)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">"identity"</span>, <span class="dt">position =</span> <span class="kw">position_dodge</span>()) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> value <span class="op">-</span><span class="st"> </span>value_sd, <span class="dt">ymax =</span> value <span class="op">+</span><span class="st"> </span>value_sd), 
-                <span class="dt">stat =</span> <span class="st">"identity"</span>, <span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.3</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>variable, <span class="dt">scales =</span> <span class="st">"free_y"</span>)</code></pre></div>
+CI_plot_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">ggplot</span>(sst_ALL_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.5</span>,
+                <span class="kw">aes</span>(<span class="dt">ymin =</span> conf.low, <span class="dt">ymax =</span> conf.high, <span class="dt">linetype =</span> decades)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">scales =</span> <span class="st">"free_y"</span>)
+CI_plot_<span class="dv">1</span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/event-bar-1.png" alt="Bar plots of the mean values for each metric of the events detected using one of three different climatology periods. Error bars show the standard deviation of the mean values." width="768"><p class="caption">
-Bar plots of the mean values for each metric of the events detected using one of three different climatology periods. Error bars show the standard deviation of the mean values.
+<img src="time_series_duration_files/figure-html/event-CI-plot1-1.png" alt="Confidence intervals of the different metrics for the three different clim periods." width="768"><p class="caption">
+Confidence intervals of the different metrics for the three different clim periods.
 </p>
 </div>
+<p>When we look at the confidence intervals (CI) we see that all of the MHW metrics for all of the time periods overlap rather well. As expected, we also see that the duration/intensity of MHWs tend to increase the more decades of data are used to create the climatologies.</p>
+</div>
+<div id="kolmogorov-smirnov-tests" class="section level3">
+<h3 class="hasAnchor">
+<a href="#kolmogorov-smirnov-tests" class="anchor"></a>Kolmogorov-Smirnov tests</h3>
+<p>Now knowing that the daily values that make up the climatologies do not differ, as seen with the ANOVA results, we also want to check if the distributions of the climatologies themselves differ. We will do this through a series of pair-wise two-sample KS tests.</p>
+</div>
+<div id="median-difference-between-decades" class="section level3">
+<h3 class="hasAnchor">
+<a href="#median-difference-between-decades" class="anchor"></a>Median difference between decades</h3>
+<p>Now that we know that the detected events do not differ significantly when different time-frames are used, we still want to know by what amounts they do differ. This information will then later be used during the re-sampling to see if this gap can be reduced through the clever use of statistics.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Long data.frame for plotting</span>
 sst_ALL_event_long &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -436,25 +426,13 @@ sst_ALL_event_long &lt;-<span class="st"> </span>sst_ALL_event <span class="op">
 <span class="st">  </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> decades), <span class="dt">position =</span> <span class="st">"dodge"</span>, <span class="dt">notch =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>variable, <span class="dt">scales =</span> <span class="st">"free_y"</span>)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/event-box1-1.png" alt="Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods." width="768"><p class="caption">
-Boxplots showing the spread of the values for the metrics of the events detected with the three different clim periods.
+<img src="time_series_duration_files/figure-html/event-box1-1.png" alt="Boxplots showing the spread of the metric values for the events detected in the most recent decade with the three different time periods." width="768"><p class="caption">
+Boxplots showing the spread of the metric values for the events detected in the most recent decade with the three different time periods.
 </p>
 </div>
-<p>The difference between the three different time series is intriguing. The <code>NW_Atl</code> events have a lower cumulative intensity when one only uses the final decade for the climatology, but there is little difference between two and three decades. The <code>Med</code> data changed over time in a more predictable, linear fashion. Strangest was that the <code>WA</code> data changed very little depending on the number of decades used for the climatology, and that the trend displayed by the other two time series is reversed for some of the metrics. This is most certainly due to that one huge event near the end.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">CI_plot_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">ggplot</span>(sst_ALL_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.5</span>,
-                <span class="kw">aes</span>(<span class="dt">ymin =</span> conf.low, <span class="dt">ymax =</span> conf.high, <span class="dt">linetype =</span> decades)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">scales =</span> <span class="st">"free_y"</span>)
-CI_plot_<span class="dv">1</span></code></pre></div>
-<div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/event-CI-plot1-1.png" alt="Confidence intervals of the different metrics for the three different clim periods from the population mean." width="768"><p class="caption">
-Confidence intervals of the different metrics for the three different clim periods from the population mean.
-</p>
-</div>
-<p>When we look at the confidence intervals (CI) we see that the max and mean intensities calculated from the 10 year clim periods may be significantly different from those calculated at the 20 and 30 year period. But that the 20 and 30 year values are remarkably similar. This is a good indication that 10 years is too short, but that 20 years appears to be acceptable in place of the (still preferable) 30 year period. [ECJO] This is the important result and the one from which we will make a recommendation (i.e. “30 years (following WMO) is ideal but our results show you can get away with as low as N years”). We should do a formal statistical significance test between the 10-yr/20-yr results and the 30-yr results. You could compare the distributions using a 2-sample KS test to determine they are from the same distribution or not.</p>
-<p>This could be done systematically for time series lengths between 5 and 30 years, in 1 year increments, to get better resolution of the results. [/ECJO]</p>
-<p>(RWS: Could there be a relationship between normality and change due to decade of choice?)</p>
+<p>The Mediterraean (<code>Med</code>) data change over time in a more predictable, linear fashion. The Western Australia (<code>WA</code>) data changed very little depending on the number of decades used for the climatology, which is most certainly due to that one huge event near the end. The Northwest Atlantic (<code>NW_Atl</code>) results for the 10 and 20 year periods appear to generally be more similar than for the 30 year period.</p>
 <p>With these benchmarks established, we will now move on to re-sampling to see if the effect of a shorter time series on the detected climatology can be mitigated.</p>
+</div>
 </div>
 <div id="re-sampling" class="section level2">
 <h2 class="hasAnchor">
@@ -642,21 +620,31 @@ sst_ALL_smooth_aov_p &lt;-<span class="st"> </span>sst_ALL_smooth_event <span cl
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="fl">0.5</span>))</code></pre></div>
 <p><img src="time_series_duration_files/figure-html/re-sample-event-p-1.png" width="768" style="display: block; margin: auto;"></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Long data.frame for plotting</span>
+sst_ALL_smooth_event_long &lt;-<span class="st"> </span>sst_ALL_smooth_event <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>event_no) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">gather</span>(variable, value, <span class="op">-</span>site, <span class="op">-</span>decades)
+
+## NB: This takes waaaayy yo long to visualise...
+<span class="co"># Visualisations</span>
+  <span class="co"># Notches are unhelpful and noisey here</span>
+<span class="co"># ggplot(sst_ALL_smooth_event_long, aes(x = site, y = value)) +</span>
+<span class="co">#   geom_boxplot(aes(fill = decades), position = "dodge", notch = FALSE) +</span>
+<span class="co">#   facet_wrap(~variable, scales = "free_y")</span>
+##</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># ANOVA CI</span>
 sst_ALL_smooth_aov_CI &lt;-<span class="st"> </span>sst_ALL_smooth_event <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_aov_CI)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>()</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Long data.frame for plotting</span>
-sst_ALL_smooth_event_long &lt;-<span class="st"> </span>sst_ALL_smooth_event <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>event_no) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">gather</span>(variable, value, <span class="op">-</span>site, <span class="op">-</span>decades)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sst_ALL_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">unnest</span>()
+
+<span class="co"># Plot</span>
+<span class="kw">ggplot</span>(sst_ALL_aov_CI, <span class="kw">aes</span>(<span class="dt">x =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.5</span>, <span class="dt">colour =</span> <span class="st">"black"</span>,
                 <span class="kw">aes</span>(<span class="dt">ymin =</span> conf.low, <span class="dt">ymax =</span> conf.high, <span class="dt">linetype =</span> decades)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">data =</span> sst_ALL_smooth_aov_CI,
+<span class="st">  </span><span class="kw">geom_errorbar</span>(<span class="dt">data =</span> sst_ALL_smooth_aov_CI, <span class="dt">show.legend =</span> F,
                 <span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="fl">0.9</span>), <span class="dt">width =</span> <span class="fl">0.5</span>, <span class="dt">colour =</span> <span class="st">"red"</span>,
                 <span class="kw">aes</span>(<span class="dt">ymin =</span> conf.low, <span class="dt">ymax =</span> conf.high, <span class="dt">linetype =</span> decades)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">scales =</span> <span class="st">"free_y"</span>)</code></pre></div>
@@ -807,7 +795,7 @@ sst_ALL_clim_category_20_top_5_match &lt;-<span class="st"> </span><span class="
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> count, <span class="dt">y =</span> count<span class="op">/</span><span class="dv">2</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(category<span class="op">~</span>site)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/unnamed-chunk-8-1.png" alt="Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. This isn't terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events." width="768"><p class="caption">
+<img src="time_series_duration_files/figure-html/unnamed-chunk-6-1.png" alt="Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. This isn't terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events." width="768"><p class="caption">
 Bar plot showing the categories of events from the 30 year climatology calculations when they are determined by the top five events in the shorter time series. This isn’t terribly informative as it is effectively showing if larger events happened earlier on in the time series or not. It says little about how the climatology period itself affects the categories of events.
 </p>
 </div>
@@ -825,7 +813,7 @@ Bar plot showing the categories of events from the 30 year climatology calculati
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> count, <span class="dt">y =</span> count<span class="op">/</span><span class="dv">2</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(category<span class="op">~</span>site)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/unnamed-chunk-9-1.png" alt="Comparing the categories of the top 5 events detected with a 10 year climatology as oppossed to those detected with the standard 30 we see that the general pattern is that events are larger with the 30 year climatology period." width="768"><p class="caption">
+<img src="time_series_duration_files/figure-html/unnamed-chunk-7-1.png" alt="Comparing the categories of the top 5 events detected with a 10 year climatology as oppossed to those detected with the standard 30 we see that the general pattern is that events are larger with the 30 year climatology period." width="768"><p class="caption">
 Comparing the categories of the top 5 events detected with a 10 year climatology as oppossed to those detected with the standard 30 we see that the general pattern is that events are larger with the 30 year climatology period.
 </p>
 </div>
@@ -842,7 +830,7 @@ Comparing the categories of the top 5 events detected with a 10 year climatology
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> count, <span class="dt">y =</span> count<span class="op">/</span><span class="dv">2</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(category<span class="op">~</span>site)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="time_series_duration_files/figure-html/unnamed-chunk-10-1.png" alt="Comparing the categories of the top 5 events detected with a 20 year climatology as oppossed to those detected with the standard 30 we see that the difference in the size of the categories detected with a 30 year climatology is less than when compared against a 10 year climatology." width="768"><p class="caption">
+<img src="time_series_duration_files/figure-html/unnamed-chunk-8-1.png" alt="Comparing the categories of the top 5 events detected with a 20 year climatology as oppossed to those detected with the standard 30 we see that the difference in the size of the categories detected with a 30 year climatology is less than when compared against a 10 year climatology." width="768"><p class="caption">
 Comparing the categories of the top 5 events detected with a 20 year climatology as oppossed to those detected with the standard 30 we see that the difference in the size of the categories detected with a 30 year climatology is less than when compared against a 10 year climatology.
 </p>
 </div>
@@ -865,6 +853,14 @@ Comparing the categories of the top 5 events detected with a 20 year climatology
 <a href="#fourier-transform-climatologies" class="anchor"></a>Fourier transform climatologies</h2>
 <p>Lastly we will now go about reproducing all of the checks made above, but based on a climatology derived from a Fourier transformation, and not the default methodology.</p>
 </div>
+<div id="best-practices" class="section level2">
+<h2 class="hasAnchor">
+<a href="#best-practices" class="anchor"></a>Best practices</h2>
+<div id="options-for-addressing-short-time-series" class="section level3">
+<h3 class="hasAnchor">
+<a href="#options-for-addressing-short-time-series" class="anchor"></a>Options for addressing short time series</h3>
+</div>
+</div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="hasAnchor">
 <a href="#references" class="anchor"></a>References</h2>
@@ -881,13 +877,13 @@ Comparing the categories of the top 5 events detected with a 20 year climatology
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#overview">Overview</a></li>
-      <li><a href="#time-series-shortening">Time series shortening</a></li>
+<li><a href="#time-series-shortening">Time series shortening</a></li>
       <li><a href="#simply-shorter">Simply shorter</a></li>
       <li><a href="#re-sampling">Re-sampling</a></li>
       <li><a href="#categories">Categories</a></li>
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#fourier-transform-climatologies">Fourier transform climatologies</a></li>
+      <li><a href="#best-practices">Best practices</a></li>
       <li><a href="#references">References</a></li>
       </ul>
 </div>
