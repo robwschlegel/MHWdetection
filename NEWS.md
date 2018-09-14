@@ -1,3 +1,9 @@
+# MHWdetection 0.0.3  (2018-09-14)
+
+* Finished up new proposed work on `time_series_duration.Rmd`
+* Output word document version of `time_series_duration.Rmd` and `missing_data.Rmd`
+* Recompiled vignettes
+
 # MHWdetection 0.0.3  (2018-09-13)
 
 * Finished up initially proposed work on `missing_data.Rmd`

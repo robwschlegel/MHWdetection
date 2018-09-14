@@ -3,6 +3,7 @@ title: "Assessing the effects of missing data"
 author: "Robert W Schlegel"
 date: "`r Sys.Date()`"
 description: "This vignette goes into depth on the effects of missing data on the detection of events."
+# output: word_document
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
@@ -656,6 +657,9 @@ The figure above shows the results of t-tests for each metric between the comple
 
 
 ## Best practices
+
+(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulletted items for each different vignette would then all be added up in one central [best practices](https://robwschlegel.github.io/MHWdetection/articles/best_practices.html) vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distrubtions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)
+
 
 ### Options for addressing many missing random data
 
