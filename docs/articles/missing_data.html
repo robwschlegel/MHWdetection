@@ -107,7 +107,7 @@
       <h1>Assessing the effects of missing data</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-09-13</h4>
+            <h4 class="date">2018-09-14</h4>
       
       
       <div class="hidden name"><code>missing_data.Rmd</code></div>
@@ -331,7 +331,7 @@ sst_ALL_clim_only &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&
 The seasonal signals created from time series with increasingly large proportions of missing data.
 </p>
 </div>
-<p>As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediteranean (<code>Med</code>) and North West Atlantic (<code>NW_Atl</code>) times eries. The signal does appear to vary both above and below the real signal at the 50% missing data mark for the Western Australia (WA) time series.</p>
+<p>As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediterranean (<code>Med</code>) and North West Atlantic (<code>NW_Atl</code>) times series. The signal does appear to vary both above and below the real signal at the 50% missing data mark for the Western Australia (WA) time series.</p>
 </div>
 <div id="th-percentile-threshold" class="section level3">
 <h3 class="hasAnchor">
@@ -397,7 +397,7 @@ sst_ALL_clim_aov_CI &lt;-<span class="st"> </span>sst_ALL_clim_only <span class=
 Confidence intervals of the different metrics for the three different clim periods given varrying proportions of missing data.
 </p>
 </div>
-<p>Whereas <em>p</em>-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. In the figure above we see which missing proportions of data set the time eries furthest apart. For the seasonal signals (seas) we see that an increase in missing data does increase the uncertainty in the signal, but it does cause the temperatures in the signal to become warmer or colder. With the 90th percentile threshold (thresh) however, the time series missing 50% of their data have temperature thresholds significantly lower than time series with no missing data. The other missing data proportions also show generally lower thresholds, but they are not significantly so. When we look at the variance (var) panel we see why this may be. At 10% missing data the variance of the measured data does not diverge significantly from the complete data. At 25% it already has, and at 50% the difference is enormous. This appears to show that because the seasonal signal is a smooth composite of the available data the variance in the measurements does not have a large efect on it. The 90th percentile threshold is a different story. For the same reason that bootstrapping did not work for the selection of random years of data in the shorter time series experiments, large amounts of missing data likewise prevent the accurate creation of the 90th percentile thresholds in these experiments. The reason for this is that many of the large (outlier-like, but real) values are not included in the calculation of the 90th percentile, which by necessity requires large values to be calculated accurately.</p>
+<p>Whereas <em>p</em>-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. In the figure above we see which missing proportions of data set the time series furthest apart. For the seasonal signals (seas) we see that an increase in missing data does increase the uncertainty in the signal, but it does cause the temperatures in the signal to become warmer or colder. With the 90th percentile threshold (thresh) however, the time series missing 50% of their data have temperature thresholds significantly lower than time series with no missing data. The other missing data proportions also show generally lower thresholds, but they are not significantly so. When we look at the variance (var) panel we see why this may be. At 10% missing data the variance of the measured data does not diverge significantly from the complete data. At 25% it already has, and at 50% the difference is enormous. This appears to show that because the seasonal signal is a smooth composite of the available data the variance in the measurements does not have a large effect on it. The 90th percentile threshold is a different story. For the same reason that bootstrapping did not work for the selection of random years of data in the shorter time series experiments, large amounts of missing data likewise prevent the accurate creation of the 90th percentile thresholds in these experiments. The reason for this is that many of the large (outlier-like, but real) values are not included in the calculation of the 90th percentile, which by necessity requires large values to be calculated accurately.</p>
 </div>
 <div id="kolmogorov-smirnov" class="section level4">
 <h4 class="hasAnchor">
@@ -454,7 +454,7 @@ Histograms showing the <em>p</em>-value results from Kolmogorov-Smirnov tests co
 <div id="mhw-metrics" class="section level3">
 <h3 class="hasAnchor">
 <a href="#mhw-metrics" class="anchor"></a>MHW metrics</h3>
-<p>Now that we know that missing dara from a time series does produce significantly different 90th percentile thresholds, we want to see what the downstream effects are on the MHW metrics.</p>
+<p>Now that we know that missing data from a time series does produce significantly different 90th percentile thresholds, we want to see what the downstream effects are on the MHW metrics.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate events</span>
 sst_ALL_event &lt;-<span class="st"> </span>sst_ALL_clim <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site, miss, rep) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -527,7 +527,7 @@ Confidence intervals of the different metrics for the different proportions of m
 <div id="non-random-missing-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#non-random-missing-data" class="anchor"></a>Non-random missing data</h2>
-<p>There are two realisitic instances of consistent mising data in SST time series. The first is for polar data when satellites cannot collect data because the sea surface is covered in ice. Whereas this would obviously preclude any MHWs from occurring, the question here is how do long stretches of missing data affect the creation of the climatologies, and therefore the detection of MHWs. The other sort of consecutive missing data is for those <em>in situ</em> time series that are collected by hand by (liekly) a government employee that does not work on weekends. In the following two sub-sections we will knock-out data intentionally to simulate these two issues. Lastly, because we have seen above that consecutive missing days of data are problematic, win addition to looking at the effects of missing weekends (2 consecutive days), we wil also look at the effect of 3 and 4 consecutive missing days. I assume that four constant consecutive missing days will render the time series void, but three may be able to squeak by.</p>
+<p>There are two realistic instances of consistent missing data in SST time series. The first is for polar data when satellites cannot collect data because the sea surface is covered in ice. Whereas this would obviously preclude any MHWs from occurring, the question here is how do long stretches of missing data affect the creation of the climatologies, and therefore the detection of MHWs. The other sort of consecutive missing data is for those <em>in situ</em> time series that are collected by hand by (likely) a government employee that does not work on weekends. In the following two sub-sections we will knock-out data intentionally to simulate these two issues. Lastly, because we have seen above that consecutive missing days of data are problematic, win addition to looking at the effects of missing weekends (2 consecutive days), we will also look at the effect of 3 and 4 consecutive missing days. I assume that four constant consecutive missing days will render the time series void, but three may be able to squeak by.</p>
 <div id="ice-cover" class="section level3">
 <h3 class="hasAnchor">
 <a href="#ice-cover" class="anchor"></a>Ice-cover</h3>
@@ -562,7 +562,7 @@ sst_ALL_ice &lt;-<span class="st"> </span><span class="kw">rbind</span>(sst_WA_i
 The three time series with artificial ice cover in the winter months removed. The missing data may be seen as a faint grey line filling in the winter months.
 </p>
 </div>
-<p>In the figure above we see that removing the winter months for the Mediterranean and Northwest Atlantic time series produces relatively even missing gaps near the bottom of each easonal cycle. The Western Australia time series appears to have a much less regular seasonal signal and so the missing data periods vary somehwat more.</p>
+<p>In the figure above we see that removing the winter months for the Mediterranean and Northwest Atlantic time series produces relatively even missing gaps near the bottom of each seasonal cycle. The Western Australia time series appears to have a much less regular seasonal signal and so the missing data periods vary somewhat more.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate the thresholds for all of the created time series</span>
 sst_ALL_ice_clim &lt;-<span class="st"> </span>sst_ALL_ice <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -577,14 +577,14 @@ test &lt;-<span class="st"> </span>sst_ALL_ice <span class="op">%&gt;%</span><sp
 <span class="st">  </span><span class="kw">filter</span>(site <span class="op">==</span><span class="st"> "WA"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm</a></span>(<span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>))
 ## NB: This throws the same error</code></pre></div>
-<p>This is however as far as this experiment may go as the <strong><code>heatwaveR</code></strong> detection algorithm cannot cope with a time series where more than two consecutive DOY’s are missing from a time series.</p>
+<p>This is however as far as this experiment may go as the <strong><code>heatwaveR</code></strong> detection algorithm cannot cope with a time series where more than two consecutive doy’s are missing from a time series.</p>
 <p>This is an important finding as it means that any researchers that would like to use a time series with large consecutive missing spans of data may not currently do so. I assume this error would be produced by the python code as well, but I’ve not yet looked.</p>
 <p>This may be something we want to fix.</p>
 </div>
 <div id="missing-weekends" class="section level3">
 <h3 class="hasAnchor">
 <a href="#missing-weekends" class="anchor"></a>Missing weekends</h3>
-<p>The detection algorithm may not work with simulated ice cover, but it will work with missing weekends because there not be consecutive missing DOY’s from the times series</p>
+<p>The detection algorithm may not work with simulated ice cover, but it will work with missing weekends because there not be consecutive missing doy’s from the times series</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sst_ALL_2_day &lt;-<span class="st"> </span>sst_ALL <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">weekday =</span> <span class="kw">weekdays</span>(t),
          <span class="dt">temp =</span> <span class="kw">ifelse</span>(weekday <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">"Saturday"</span>, <span class="st">"Sunday"</span>), <span class="ot">NA</span>, temp)) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -617,11 +617,11 @@ sst_ALL_2_day_clim_only &lt;-<span class="st"> </span>sst_ALL_2_day_clim <span c
 <div id="climatology-statistics-1" class="section level4">
 <h4 class="hasAnchor">
 <a href="#climatology-statistics-1" class="anchor"></a>Climatology statistics</h4>
-<p>I’ll not visualise the calculated climatologies here against the control as I don’t expect them to appear much different. Raher I’ll jump straight into the statistical comparisons.</p>
+<p>I’ll not visualise the calculated climatologies here against the control as I don’t expect them to appear much different. Rather I’ll jump straight into the statistical comparisons.</p>
 <div id="t-test-p-values" class="section level5">
 <h5 class="hasAnchor">
 <a href="#t-test-p-values" class="anchor"></a>t-test <em>p</em>-values</h5>
-<p>Because we are only comparing the distribution of two sample sets of data (no missing data vs. missing weekends), we will rather se a t-test to make the comparisons.</p>
+<p>Because we are only comparing the distribution of two sample sets of data (no missing data vs. missing weekends), we will rather use a t-test to make the comparisons.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clim_ttest_p &lt;-<span class="st"> </span><span class="cf">function</span>(df){
   df_comp &lt;-<span class="st"> </span>sst_ALL_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">filter</span>(site <span class="op">==</span><span class="st"> </span>df<span class="op">$</span>site[<span class="dv">1</span>])
@@ -728,7 +728,7 @@ sst_ALL_2_day_event_ttest_p &lt;-<span class="st"> </span>sst_ALL_2_day_event <s
 Heatmap showing the t-test results (<em>p</em>-value) comparing MHW metrics for events detected in a complete time series versus one missing weekend days.
 </p>
 </div>
-<p>The figure above shows the results of t-tests for each metric between the complete time series and when the weekend temperature data have been removed. There is no appreciable impact on the detected duration and cu</p>
+<p>The figure above shows the results of t-tests for each metric between the complete time series and when the weekend temperature data have been removed. There is no appreciable impact on the detected duration/intensities.</p>
 </div>
 </div>
 <div id="missing-n-consecutive-days" class="section level3">
@@ -740,6 +740,7 @@ Heatmap showing the t-test results (<em>p</em>-value) comparing MHW metrics for 
 <div id="best-practices" class="section level2">
 <h2 class="hasAnchor">
 <a href="#best-practices" class="anchor"></a>Best practices</h2>
+<p>(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulletted items for each different vignette would then all be added up in one central <a href="https://robwschlegel.github.io/MHWdetection/articles/best_practices.html">best practices</a> vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distributions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)</p>
 <div id="options-for-addressing-many-missing-random-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#options-for-addressing-many-missing-random-data" class="anchor"></a>Options for addressing many missing random data</h3>

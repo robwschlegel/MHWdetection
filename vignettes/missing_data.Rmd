@@ -253,7 +253,7 @@ ggplot(sst_ALL_clim_only, aes(y = seas, x = doy, colour = miss)) +
   labs(x = "calendar day of year", y = "temp (C)")
 ```
 
-As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediteranean (`Med`) and North West Atlantic (`NW_Atl`) times eries. The signal does appear to vary both above and below the real signal at the 50% missing data mark for the Western Australia (WA) time series.
+As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediterranean (`Med`) and North West Atlantic (`NW_Atl`) times series. The signal does appear to vary both above and below the real signal at the 50% missing data mark for the Western Australia (WA) time series.
 
 
 ### 90th percentile threshold
@@ -313,7 +313,7 @@ ggplot(sst_ALL_clim_aov_CI, aes(x = site)) +
   facet_wrap(~metric, scales = "free_y")
 ```
 
-Whereas _p_-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. In the figure above we see which missing proportions of data set the time eries furthest apart. For the seasonal signals (seas) we see that an increase in missing data does increase the uncertainty in the signal, but it does cause the temperatures in the signal to become warmer or colder. With the 90th percentile threshold (thresh) however, the time series missing 50% of their data have temperature thresholds significantly lower than time series with no missing data. The other missing data proportions also show generally lower thresholds, but they are not significantly so. When we look at the variance (var) panel we see why this may be. At 10% missing data the variance of the measured data does not diverge significantly from the complete data. At 25% it already has, and at 50% the difference is enormous. This appears to show that because the seasonal signal is a smooth composite of the available data the variance in the measurements does not have a large efect on it. The 90th percentile threshold is a different story. For the same reason that bootstrapping did not work for the selection of random years of data in the shorter time series experiments, large amounts of missing data likewise prevent the accurate creation of the 90th percentile thresholds in these experiments. The reason for this is that many of the large (outlier-like, but real) values are not included in the calculation of the 90th percentile, which by necessity requires large values to be calculated accurately.
+Whereas _p_-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. In the figure above we see which missing proportions of data set the time series furthest apart. For the seasonal signals (seas) we see that an increase in missing data does increase the uncertainty in the signal, but it does cause the temperatures in the signal to become warmer or colder. With the 90th percentile threshold (thresh) however, the time series missing 50% of their data have temperature thresholds significantly lower than time series with no missing data. The other missing data proportions also show generally lower thresholds, but they are not significantly so. When we look at the variance (var) panel we see why this may be. At 10% missing data the variance of the measured data does not diverge significantly from the complete data. At 25% it already has, and at 50% the difference is enormous. This appears to show that because the seasonal signal is a smooth composite of the available data the variance in the measurements does not have a large effect on it. The 90th percentile threshold is a different story. For the same reason that bootstrapping did not work for the selection of random years of data in the shorter time series experiments, large amounts of missing data likewise prevent the accurate creation of the 90th percentile thresholds in these experiments. The reason for this is that many of the large (outlier-like, but real) values are not included in the calculation of the 90th percentile, which by necessity requires large values to be calculated accurately.
 
 
 #### Kolmogorov-Smirnov
@@ -368,7 +368,7 @@ It is perhaps a lack of autocorrelation in a time series, or the intra-annual va
 
 ### MHW metrics
 
-Now that we know that missing dara from a time series does produce significantly different 90th percentile thresholds, we want to see what the downstream effects are on the MHW metrics. 
+Now that we know that missing data from a time series does produce significantly different 90th percentile thresholds, we want to see what the downstream effects are on the MHW metrics. 
 
 ```{r compare-shorten, eval=FALSE}
 # Calculate events
@@ -442,7 +442,7 @@ Perhaps the increase in max intensity at 10% missing data for the Northwest Atla
 
 ## Non-random missing data
 
-There are two realisitic instances of consistent mising data in SST time series. The first is for polar data when satellites cannot collect data because the sea surface is covered in ice. Whereas this would obviously preclude any MHWs from occurring, the question here is how do long stretches of missing data affect the creation of the climatologies, and therefore the detection of MHWs. The other sort of consecutive missing data is for those _in situ_ time series that are collected by hand by (liekly) a government employee that does not work on weekends. In the following two sub-sections we will knock-out data intentionally to simulate these two issues. Lastly, because we have seen above that consecutive missing days of data are problematic, win addition to looking at the effects of missing weekends (2 consecutive days), we wil also look at the effect of 3 and 4 consecutive missing days. I assume that four constant consecutive missing days will render the time series void, but three may be able to squeak by.
+There are two realistic instances of consistent missing data in SST time series. The first is for polar data when satellites cannot collect data because the sea surface is covered in ice. Whereas this would obviously preclude any MHWs from occurring, the question here is how do long stretches of missing data affect the creation of the climatologies, and therefore the detection of MHWs. The other sort of consecutive missing data is for those _in situ_ time series that are collected by hand by (likely) a government employee that does not work on weekends. In the following two sub-sections we will knock-out data intentionally to simulate these two issues. Lastly, because we have seen above that consecutive missing days of data are problematic, win addition to looking at the effects of missing weekends (2 consecutive days), we will also look at the effect of 3 and 4 consecutive missing days. I assume that four constant consecutive missing days will render the time series void, but three may be able to squeak by.
 
 
 ### Ice-cover
@@ -477,7 +477,7 @@ ggplot(sst_ALL_ice, aes(x = t, y = temp)) +
   labs(x = "", y = "temp. (C)")
 ```
 
-In the figure above we see that removing the winter months for the Mediterranean and Northwest Atlantic time series produces relatively even missing gaps near the bottom of each easonal cycle. The Western Australia time series appears to have a much less regular seasonal signal and so the missing data periods vary somehwat more. 
+In the figure above we see that removing the winter months for the Mediterranean and Northwest Atlantic time series produces relatively even missing gaps near the bottom of each seasonal cycle. The Western Australia time series appears to have a much less regular seasonal signal and so the missing data periods vary somewhat more. 
 
 ```{r, error=TRUE, eval=FALSE}
 # Calculate the thresholds for all of the created time series
@@ -496,7 +496,7 @@ test <- sst_ALL_ice %>%
 ## NB: This throws the same error
 ```
 
-This is however as far as this experiment may go as the __`heatwaveR`__ detection algorithm cannot cope with a time series where more than two consecutive DOY's are missing from a time series. 
+This is however as far as this experiment may go as the __`heatwaveR`__ detection algorithm cannot cope with a time series where more than two consecutive doy's are missing from a time series. 
 
 This is an important finding as it means that any researchers that would like to use a time series with large consecutive missing spans of data may not currently do so. I assume this error would be produced by the python code as well, but I've not yet looked.
 
@@ -505,7 +505,7 @@ This may be something we want to fix.
 
 ### Missing weekends
 
-The detection algorithm may not work with simulated ice cover, but it will work with missing weekends because there not be consecutive missing DOY's from the times series
+The detection algorithm may not work with simulated ice cover, but it will work with missing weekends because there not be consecutive missing doy's from the times series
 
 ```{r 2-day-line, fig.cap="The three time series when weekend days have been removed. The complete time series is shown behind as a faint grey line."}
 sst_ALL_2_day <- sst_ALL %>% 
@@ -540,11 +540,11 @@ sst_ALL_2_day_clim_only <- sst_ALL_2_day_clim %>%
 
 #### Climatology statistics
 
-I'll not visualise the calculated climatologies here against the control as I don't expect them to appear much different. Raher I'll jump straight into the statistical comparisons.
+I'll not visualise the calculated climatologies here against the control as I don't expect them to appear much different. Rather I'll jump straight into the statistical comparisons.
 
 ##### t-test _p_-values
 
-Because we are only comparing the distribution of two sample sets of data (no missing data vs. missing weekends), we will rather se a t-test to make the comparisons.
+Because we are only comparing the distribution of two sample sets of data (no missing data vs. missing weekends), we will rather use a t-test to make the comparisons.
 
 ```{r 2-day-ttest-p, fig.cap="Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those missing weekend days."}
 
@@ -648,7 +648,7 @@ ggplot(sst_ALL_2_day_event_ttest_p, aes(x = site, y = stat)) +
   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
 ```
 
-The figure above shows the results of t-tests for each metric between the complete time series and when the weekend temperature data have been removed. There is no appreciable impact on the detected duration and cu
+The figure above shows the results of t-tests for each metric between the complete time series and when the weekend temperature data have been removed. There is no appreciable impact on the detected duration/intensities.
 
 
 ### Missing _n_ consecutive days
@@ -658,7 +658,7 @@ The figure above shows the results of t-tests for each metric between the comple
 
 ## Best practices
 
-(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulletted items for each different vignette would then all be added up in one central [best practices](https://robwschlegel.github.io/MHWdetection/articles/best_practices.html) vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distrubtions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)
+(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulletted items for each different vignette would then all be added up in one central [best practices](https://robwschlegel.github.io/MHWdetection/articles/best_practices.html) vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distributions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)
 
 
 ### Options for addressing many missing random data
