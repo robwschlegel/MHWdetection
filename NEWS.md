@@ -1,5 +1,11 @@
 # MHWdetection 0.0.3  (2018-09-14)
 
+* Added comparison to `r_vs_python.Rmd` for how the two languages handle
+  missing data to create climatologies and calculate events.
+* Completed the `Ice coverage` section in `missing_data.Rmd`
+
+# MHWdetection 0.0.3  (2018-09-14)
+
 * Finished up new proposed work on `time_series_duration.Rmd`
 * Output word document version of `time_series_duration.Rmd` and `missing_data.Rmd`
 * Recompiled vignettes

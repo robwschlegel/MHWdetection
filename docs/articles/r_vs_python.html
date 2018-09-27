@@ -107,7 +107,7 @@
       <h1>Default MHW outputs in R and Python</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-09-13</h4>
+            <h4 class="date">2018-09-27</h4>
       
       
       <div class="hidden name"><code>r_vs_python.Rmd</code></div>
@@ -131,7 +131,7 @@
 <div id="setup" class="section level4">
 <h4 class="hasAnchor">
 <a href="#setup" class="anchor"></a>Setup</h4>
-<p>The basic functionality for calculating marine heatwaves (MHWs) in R may be found in the <strong><code>heatwaveR</code></strong> package that may currently be downloaded and installed with the following lines of code. Note that if one has already installed these packages they do not need to be installed again. To run one of the lines in the following code chunk will require that the hashtag first be removed.</p>
+<p>The basic functionality for calculating marine heatwaves (MHWs) in R may be found in the <strong><code>heatwaveR</code></strong> package that may currently be downloaded and installed with the following lines of code. Note that if one has already installed these packages they do not need to be installed again. To run one of the lines in the following code chunk will require that the hash-tag first be removed.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages("devtools")</span>
 ## Development version from GitHub
 <span class="co"># devtools::install_github("robwschlegel/heatwaveR") </span>
@@ -145,7 +145,7 @@
 <div id="default-output" class="section level4">
 <h4 class="hasAnchor">
 <a href="#default-output" class="anchor"></a>Default output</h4>
-<p>With everything downloaded and ready for us to use we may now calculate some events. The <code>heatwaveR</code> package has three built in time series (<code>sst_WA</code>, <code>sst_Med</code>, <code>sst_NW_Atl</code>) that we may use to more easily demonstrate how the code works. The general pipeline in <code>R</code> for calculating events is first to create a climatology from a chosen time series using <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm()</a></code>, and then to feed that ooutput into <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/detect_event">detect_event()</a></code>, as seen below.</p>
+<p>With everything downloaded and ready for us to use we may now calculate some events. The <code>heatwaveR</code> package has three built in time series (<code>sst_WA</code>, <code>sst_Med</code>, <code>sst_NW_Atl</code>) that we may use to more easily demonstrate how the code works. The general pipeline in <code>R</code> for calculating events is first to create a climatology from a chosen time series using <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm()</a></code>, and then to feed that output into <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/detect_event">detect_event()</a></code>, as seen below.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># First we create a default climatology as outlined in Hobday et al. (2016)</span>
 ts_clim &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm</a></span>(<span class="dt">data =</span> sst_WA, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>))
 
@@ -181,7 +181,7 @@ res<span class="op">$</span>event[res<span class="op">$</span>event<span class="
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Note that the hashtag must be removed in order</span>
 <span class="co"># pip install git+git://github.com/ecjoliver/marineHeatWaves@master</span></code></pre></div>
 <p>Or simply download the <a href="https://github.com/ecjoliver/marineHeatWaves">GitHub repository</a> and follow the instructions there for downloading. Or if still lost, phone a friend!</p>
-<p>Before we begin the calculations we need to crerate a time series. I’ve chosen to take the <code>sst_WA</code> time series from the <strong><code>heatwaveR</code></strong> package to ensure consistency between the results. For ease of use I simply saved this object as a csv file on my computer and loaded it back in to Python.</p>
+<p>Before we begin the calculations we need to create a time series. I’ve chosen to take the <code>sst_WA</code> time series from the <strong><code>heatwaveR</code></strong> package to ensure consistency between the results. For ease of use I simply saved this object as a csv file on my computer and loaded it back in to Python.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ts &lt;-<span class="st"> </span>sst_WA
 <span class="co"># Write out only a vector of temperatures</span>
 <span class="kw">write.csv</span>(ts<span class="op">$</span>temp, <span class="st">"data/sst_WA.csv"</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</code></pre></div>
@@ -199,7 +199,7 @@ res<span class="op">$</span>event[res<span class="op">$</span>event<span class="
 <span class="co"># The date values</span>
 t <span class="op">=</span> np.arange(date(<span class="dv">1982</span>,<span class="dv">1</span>,<span class="dv">1</span>).toordinal(),date(<span class="dv">2014</span>,<span class="dv">12</span>,<span class="dv">31</span>).toordinal()<span class="op">+</span><span class="dv">1</span>)
 <span class="co"># The temperature values</span>
-sst <span class="op">=</span> np.loadtxt(<span class="bu">open</span>(<span class="st">"data/sst_WA.csv"</span>, <span class="st">"r"</span>), delimiter<span class="op">=</span><span class="st">','</span>, skiprows<span class="op">=</span><span class="dv">1</span>) <span class="co"># because a heading row needs to be skipped</span>
+sst <span class="op">=</span> np.loadtxt(<span class="st">"data/sst_WA.csv"</span>, delimiter<span class="op">=</span><span class="st">','</span>, skiprows<span class="op">=</span><span class="dv">1</span>) <span class="co"># because a heading row needs to be skipped</span>
 <span class="co"># The event metrics</span>
 mhws, clim <span class="op">=</span> mhw.detect(t, sst)
 <span class="co"># Save event results</span>
@@ -236,13 +236,8 @@ mhw &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocument
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># These numbers were taken from print(t) in the python code above</span>
 t &lt;-<span class="st"> </span><span class="kw">as.integer</span>(np<span class="op">$</span><span class="kw">array</span>(<span class="kw">seq</span>(<span class="dv">723546</span>, <span class="dv">735598</span>)))
 sst &lt;-<span class="st"> </span>np<span class="op">$</span><span class="kw">array</span>(sst_WA<span class="op">$</span>temp)
-res_python &lt;-<span class="st"> </span>mhw<span class="op">$</span><span class="kw">detect</span>(<span class="dt">t =</span> py<span class="op">$</span>t, <span class="dt">temp =</span> py<span class="op">$</span>sst) <span class="co"># There appears to be an Rcpp issue preventing this from handshaking...</span></code></pre></div>
-<pre><code>## Error in py_call_impl(callable, dots$args, dots$keywords): TypeError: integer argument expected, got float
-## 
-## Detailed traceback: 
-##   File "/home/rws/anaconda2/envs/py27/lib/python2.7/site-packages/marineHeatWaves.py", line 188, in detect
-##     year[i] = date.fromordinal(t[i]).year</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The reticulate package is still in development...</span></code></pre></div>
+res_python &lt;-<span class="st"> </span>mhw<span class="op">$</span><span class="kw">detect</span>(<span class="dt">t =</span> py<span class="op">$</span>t, <span class="dt">temp =</span> py<span class="op">$</span>sst) <span class="co"># There appears to be an Rcpp issue preventing this from handshaking...</span>
+<span class="co"># The reticulate package is still in development...</span></code></pre></div>
 </div>
 </div>
 </div>
@@ -277,7 +272,7 @@ res_clim_Python &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<
 <div id="events" class="section level3">
 <h3 class="hasAnchor">
 <a href="#events" class="anchor"></a>Events</h3>
-<p>First we peak at a few specific values of interest.</p>
+<p>First we peek at a few specific values of interest.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_event_R<span class="op">$</span>intensity_max, res_event_Python<span class="op">$</span>intensity_max)</code></pre></div>
 <pre><code>## [1] 0.9999997</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_event_R<span class="op">$</span>intensity_max) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_event_Python<span class="op">$</span>intensity_max)</code></pre></div>
@@ -345,8 +340,79 @@ cols_Py</code></pre></div>
 <pre><code>## [1] "category"          "duration_extreme"  "duration_moderate"
 ## [4] "duration_severe"   "duration_strong"   "n_events"         
 ## [7] "time_end"          "time_peak"         "time_start"</code></pre>
-<p>Wonderful! Most things match up nicely. The duration of categories of events is something added in R by another function <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/category">category()</a></code>, and will be left that way for now. The “time” columns in the Python output aren’t relavent as far as I can see in the present usage as these functions currently only take day values. THe different methods of labelling the events will be left as they are for now as well.</p>
+<p>Wonderful! Most things match up nicely. The duration of categories of events is something added in R by another function <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/category">category()</a></code>, and will be left that way for now. The “time” columns in the Python output aren’t relevant as far as I can see in the present usage as these functions currently only take day values. The different methods of labelling the events will be left as they are for now as well.</p>
 <p>It is also worth noting that the values for <code>index_start</code>, <code>index_peak</code>, and <code>index_end</code> are off by one between the two languages. This is due to the difference in indexing between the languages. Looking at the <code>date_start</code>, <code>date_peak</code>, and <code>date_end</code> values we see that they are the same.</p>
+</div>
+<div id="missing-data" class="section level3">
+<h3 class="hasAnchor">
+<a href="#missing-data" class="anchor"></a>Missing data</h3>
+<p>A bug was discovered in v0.3.3 of the R code with regards to the handling of missing data. Specifically, in the move to a C++ back-end, the R code stopped being able to handle missing data for the climatology calculations. This has since been corrected for is v0.3.4, but it is worthwhile to ensure that missing data are handled the same way.</p>
+<p>First we’ll create the dataframe with missing data:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(padr)
+<span class="kw">library</span>(lubridate)
+random_knockout &lt;-<span class="st"> </span><span class="cf">function</span>(df, prop){
+  res &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">sample_frac</span>(<span class="dt">size =</span> prop) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">arrange</span>(t) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/padr/topics/pad">pad</a></span>(<span class="dt">interval =</span> <span class="st">"day"</span>)
+  <span class="kw">return</span>(res)
+}
+
+<span class="co"># Remove 10% of the data randomly</span>
+sst_WA_miss_random &lt;-<span class="st"> </span><span class="kw">random_knockout</span>(sst_WA, <span class="fl">0.9</span>)
+<span class="kw">write.csv</span>(sst_WA_miss_random<span class="op">$</span>temp, <span class="dt">file =</span> <span class="st">"data/sst_WA_miss_random.csv"</span>, <span class="dt">row.names =</span> F, <span class="dt">na =</span> <span class="st">"NaN"</span>)
+
+<span class="co"># Remove simulated ice cover</span>
+sst_WA_miss_ice &lt;-<span class="st"> </span>sst_WA <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">month =</span> <span class="kw"><a href="http://lubridate.tidyverse.org/reference/month.html">month</a></span>(t, <span class="dt">label =</span> T),
+         <span class="dt">temp =</span> <span class="kw">ifelse</span>(month <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">"Jan"</span>, <span class="st">"Feb"</span>, <span class="st">"Mar"</span>), <span class="ot">NA</span>, temp)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>month)
+<span class="kw">write.csv</span>(sst_WA_miss_ice<span class="op">$</span>temp, <span class="dt">file =</span> <span class="st">"data/sst_WA_miss_ice.csv"</span>, <span class="dt">row.names =</span> F, <span class="dt">na =</span> <span class="st">"NaN"</span>)</code></pre></div>
+<p>With the missing data saved, we can now calculate and compare the climatologies that the two different languages will create.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># Required for data prep and export</span>
+<span class="im">import</span> numpy <span class="im">as</span> np
+<span class="im">from</span> datetime <span class="im">import</span> date
+<span class="im">import</span> pandas <span class="im">as</span> pd
+<span class="co"># The MHW functions</span>
+<span class="im">import</span> marineHeatWaves <span class="im">as</span> mhw
+<span class="co"># The date values</span>
+t <span class="op">=</span> np.arange(date(<span class="dv">1982</span>,<span class="dv">1</span>,<span class="dv">1</span>).toordinal(),date(<span class="dv">2014</span>,<span class="dv">12</span>,<span class="dv">31</span>).toordinal()<span class="op">+</span><span class="dv">1</span>)
+<span class="co"># The temperature values</span>
+sst_random <span class="op">=</span> np.loadtxt(<span class="st">"data/sst_WA_miss_random.csv"</span>, delimiter <span class="op">=</span> <span class="st">','</span>, skiprows <span class="op">=</span> <span class="dv">1</span>)
+sst_ice <span class="op">=</span> np.loadtxt(<span class="st">"data/sst_WA_miss_ice.csv"</span>, delimiter <span class="op">=</span> <span class="st">','</span>, skiprows <span class="op">=</span> <span class="dv">1</span>)
+<span class="co"># The event metrics</span>
+mhws_random, clim_random <span class="op">=</span> mhw.detect(t, sst_random)
+<span class="co"># It appears as though the Python code can't deal with ice coverage...</span>
+<span class="co">#mhws_ice, clim_ice = mhw.detect(t, sst_ice)</span>
+<span class="co"># Save climatology results</span>
+clim_random_df <span class="op">=</span> pd.DataFrame.from_dict(clim_random)
+clim_random_df.to_csv(<span class="st">'data/clim_py_random.csv'</span>, sep <span class="op">=</span> <span class="st">','</span>, index <span class="op">=</span> <span class="va">False</span>)
+<span class="co">#clim_ice_df = pd.DataFrame.from_dict(clim_ice)</span>
+<span class="co">#clim_ice_df.to_csv('data/clim_ice_py.csv', sep = ',', index = False)</span></code></pre></div>
+<p>With the Python climatologies calculated from the missing data, we will load the results and compare them to R.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load and prep missing data</span>
+sst_WA_miss_random &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">"data/sst_WA_miss_random.csv"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/select.html">rename</a></span>(<span class="dt">temp =</span> x) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">t =</span> <span class="kw">seq</span>(<span class="kw">as.Date</span>(<span class="st">"1982-01-01"</span>), <span class="kw">as.Date</span>(<span class="st">"2014-12-31"</span>), <span class="dt">by =</span> <span class="st">"day"</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(t, temp)
+sst_WA_miss_random<span class="op">$</span>temp[<span class="kw">is.nan</span>(sst_WA_miss_random<span class="op">$</span>temp)] &lt;-<span class="st"> </span><span class="ot">NA</span>
+
+<span class="co"># Load Python results</span>
+res_clim_random_Python &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">"data/clim_py_random.csv"</span>)
+
+<span class="co"># caluclate R climatologies</span>
+res_clim_random_R &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm</a></span>(sst_WA_miss_random, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>))
+
+<span class="co"># Compare</span>
+<span class="kw">cor</span>(res_clim_random_R<span class="op">$</span>seas, res_clim_random_Python<span class="op">$</span>seas)</code></pre></div>
+<pre><code>## [1] 0.9999606</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_clim_random_R<span class="op">$</span>seas) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_clim_random_Python<span class="op">$</span>seas)</code></pre></div>
+<pre><code>## [1] 0.8576406</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(res_clim_random_R<span class="op">$</span>thresh, res_clim_random_Python<span class="op">$</span>thresh)</code></pre></div>
+<pre><code>## [1] 0.9999314</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sum</span>(res_clim_random_R<span class="op">$</span>thresh) <span class="op">-</span><span class="st"> </span><span class="kw">sum</span>(res_clim_random_Python<span class="op">$</span>thresh)</code></pre></div>
+<pre><code>## [1] -12.79127</code></pre>
+<p>We may see from the results above that the values still correlate very strongly, if slightly less so than with no missing data. Whereas the seasonal signal was slightly higher when calculated by the Python code, now the R results are slightly higher. The threshold was higher with Python as well when no data were missing, and now it is even higher. This is a somewhat curious result, but the differences remain much too small to be of any real concern.</p>
 </div>
 </div>
 <div id="benchmarks" class="section level2">
@@ -360,18 +426,18 @@ cols_Py</code></pre></div>
 <span class="co"># The old R code</span>
 <span class="kw">library</span>(RmarineHeatWaves)
 <span class="kw"><a href="http://www.rdocumentation.org/packages/microbenchmark/topics/microbenchmark">microbenchmark</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/RmarineHeatWaves/topics/detect">detect</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/RmarineHeatWaves/topics/make_whole">make_whole</a></span>(<span class="dt">data =</span> sst_WA), <span class="dt">climatology_start =</span> <span class="st">"1982-01-01"</span>, <span class="dt">climatology_end =</span> <span class="st">"2014-12-31"</span>), <span class="dt">times =</span> <span class="dv">10</span>)</code></pre></div>
-<pre><code>## Unit: milliseconds
+<pre><code>## Unit: seconds
 ##                                                                                                      expr
 ##  detect(make_whole(data = sst_WA), climatology_start = "1982-01-01",      climatology_end = "2014-12-31")
 ##       min       lq     mean   median       uq      max neval
-##  686.1164 696.0085 902.2151 736.9583 900.0473 1987.231    10</code></pre>
+##  1.104783 1.228308 1.413493 1.244037 1.320187 2.754594    10</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The new R code</span>
 <span class="kw"><a href="http://www.rdocumentation.org/packages/microbenchmark/topics/microbenchmark">microbenchmark</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/detect_event">detect_event</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm</a></span>(<span class="dt">data =</span> sst_WA, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>), <span class="dt">robust =</span> <span class="ot">FALSE</span>)), <span class="dt">times =</span> <span class="dv">10</span>)</code></pre></div>
 <pre><code>## Unit: milliseconds
 ##                                                                                                         expr
 ##  detect_event(ts2clm(data = sst_WA, climatologyPeriod = c("1982-01-01",      "2014-12-31"), robust = FALSE))
 ##       min       lq     mean   median       uq      max neval
-##  155.3703 165.7893 209.1268 186.3281 196.1892 339.0276    10</code></pre>
+##  253.8926 263.5252 347.2275 280.0086 427.3952 716.7415    10</code></pre>
 </div>
 <div id="python" class="section level3">
 <h3 class="hasAnchor">
@@ -385,8 +451,8 @@ total <span class="op">=</span> <span class="dv">0</span>
     total <span class="op">+=</span> end<span class="op">-</span>start
 bench_py <span class="op">=</span> total<span class="op">/</span><span class="dv">10</span>
 <span class="bu">print</span>(bench_py)</code></pre></div>
-<pre><code>## 0.1865231</code></pre>
-<p>The Python code appears to be about twoce as fast at ~0.18 seconds to ~0.32 seconds for R. And the Python code is also calculating the event categories, which R is not. That is done in an additonal step with <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/category">category()</a></code>. The R code is however allowing for a wider range of options for climaotlogies.</p>
+<pre><code>## 0.3083285</code></pre>
+<p>The Python code appears to be about twice as fast at ~0.18 seconds to ~0.32 seconds for R. And the Python code is also calculating the event categories, which R is not. That is done in an additional step with <code><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/category">category()</a></code>. The R code is however allowing for a wider range of options for climatologies.</p>
 </div>
 </div>
   </div>

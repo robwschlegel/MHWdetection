@@ -30,7 +30,7 @@ First up, let's look at the two different ways in which one may calculate MHWs. 
 
 #### Setup
 
-The basic functionality for calculating marine heatwaves (MHWs) in R may be found in the __`heatwaveR`__ package that may currently be downloaded and installed with the following lines of code. Note that if one has already installed these packages they do not need to be installed again. To run one of the lines in the following code chunk will require that the hashtag first be removed.
+The basic functionality for calculating marine heatwaves (MHWs) in R may be found in the __`heatwaveR`__ package that may currently be downloaded and installed with the following lines of code. Note that if one has already installed these packages they do not need to be installed again. To run one of the lines in the following code chunk will require that the hash-tag first be removed.
 
 ```{r r-packages}
 # install.packages("devtools")
@@ -50,7 +50,7 @@ library(heatwaveR)
 
 #### Default output
 
-With everything downloaded and ready for us to use we may now calculate some events. The `heatwaveR` package has three built in time series (`sst_WA`, `sst_Med`, `sst_NW_Atl`) that we may use to more easily demonstrate how the code works. The general pipeline in `R` for calculating events is first to create a climatology from a chosen time series using `ts2clm()`, and then to feed that ooutput into `detect_event()`, as seen below.
+With everything downloaded and ready for us to use we may now calculate some events. The `heatwaveR` package has three built in time series (`sst_WA`, `sst_Med`, `sst_NW_Atl`) that we may use to more easily demonstrate how the code works. The general pipeline in `R` for calculating events is first to create a climatology from a chosen time series using `ts2clm()`, and then to feed that output into `detect_event()`, as seen below.
 
 ```{r r-default}
 # First we create a default climatology as outlined in Hobday et al. (2016)
@@ -89,7 +89,7 @@ To download and install the Python package for calculating MHWs one may run the 
 
 Or simply download the [GitHub repository](https://github.com/ecjoliver/marineHeatWaves) and follow the instructions there for downloading. Or if still lost, phone a friend!
 
-Before we begin the calculations we need to crerate a time series. I've chosen to take the `sst_WA` time series from the __`heatwaveR`__ package to ensure consistency between the results. For ease of use I simply saved this object as a csv file on my computer and loaded it back in to Python.
+Before we begin the calculations we need to create a time series. I've chosen to take the `sst_WA` time series from the __`heatwaveR`__ package to ensure consistency between the results. For ease of use I simply saved this object as a csv file on my computer and loaded it back in to Python.
 
 ```{r python-prep}
 ts <- sst_WA
@@ -115,7 +115,7 @@ import marineHeatWaves as mhw
 t = np.arange(date(1982,1,1).toordinal(),date(2014,12,31).toordinal()+1)
 
 # The temperature values
-sst = np.loadtxt(open("data/sst_WA.csv", "r"), delimiter=',', skiprows=1) # because a heading row needs to be skipped
+sst = np.loadtxt("data/sst_WA.csv", delimiter=',', skiprows=1) # because a heading row needs to be skipped
 
 # The event metrics
 mhws, clim = mhw.detect(t, sst)
@@ -145,7 +145,7 @@ use_condaenv("py27")
 
 Once we've told R which version/environment we would like to use for Python we may then load the necessary modules.
 
-```{r python-modules}
+```{r python-modules, eval=FALSE}
 np <- import("numpy")
 datetime <- import("datetime")
 mhw <- import("marineHeatWaves")
@@ -153,7 +153,7 @@ mhw <- import("marineHeatWaves")
 
 One may run python code in it's native form within R by passing it as a character vector to `py_run_string()`.
 
-```{r python-strings, error=TRUE}
+```{r python-strings, error=TRUE, eval=FALSE}
 py_run_string("x = 10")
 py_run_string("t = np.arange(date(1982,1,1).toordinal(),date(2014,12,31).toordinal()+1)")
 py_run_string("sst = np.loadtxt(open('data/sst_WA.csv', 'r'), delimiter=',', skiprows=1)")
@@ -161,7 +161,7 @@ py_run_string("sst = np.loadtxt(open('data/sst_WA.csv', 'r'), delimiter=',', ski
 
 #### Default calculations
 
-```{r python-code, error=TRUE}
+```{r python-code, error=TRUE, eval=FALSE}
 # These numbers were taken from print(t) in the python code above
 t <- as.integer(np$array(seq(723546, 735598)))
 sst <- np$array(sst_WA$temp)
@@ -201,7 +201,7 @@ The seasonal and threshold climatologies correlate very well, but adding them up
 
 ### Events
 
-First we peak at a few specific values of interest.
+First we peek at a few specific values of interest.
 
 ```{r}
 cor(res_event_R$intensity_max, res_event_Python$intensity_max)
@@ -249,9 +249,93 @@ cols_Py <- colnames(res_event_Python)[!(colnames(res_event_Python) %in% colnames
 cols_Py
 ```
 
-Wonderful! Most things match up nicely. The duration of categories of events is something added in R by another function `category()`, and will be left that way for now. The "time" columns in the Python output aren't relavent as far as I can see in the present usage as these functions currently only take day values. THe different methods of labelling the events will be left as they are for now as well.
+Wonderful! Most things match up nicely. The duration of categories of events is something added in R by another function `category()`, and will be left that way for now. The "time" columns in the Python output aren't relevant as far as I can see in the present usage as these functions currently only take day values. The different methods of labelling the events will be left as they are for now as well.
 
 It is also worth noting that the values for `index_start`, `index_peak`, and `index_end` are off by one between the two languages. This is due to the difference in indexing between the languages. Looking at the `date_start`, `date_peak`, and `date_end` values we see that they are the same.
+
+### Missing data
+
+A bug was discovered in v0.3.3 of the R code with regards to the handling of missing data. Specifically, in the move to a C++ back-end, the R code stopped being able to handle missing data for the climatology calculations. This has since been corrected for is v0.3.4, but it is worthwhile to ensure that missing data are handled the same way.
+
+First we'll create the dataframe with missing data:
+
+```{r missing-data, eval=FALSE}
+library(padr)
+library(lubridate)
+random_knockout <- function(df, prop){
+  res <- df %>% 
+    sample_frac(size = prop) %>% 
+    arrange(t) %>%
+    pad(interval = "day")
+  return(res)
+}
+
+# Remove 10% of the data randomly
+sst_WA_miss_random <- random_knockout(sst_WA, 0.9)
+write.csv(sst_WA_miss_random$temp, file = "data/sst_WA_miss_random.csv", row.names = F, na = "NaN")
+
+# Remove simulated ice cover
+sst_WA_miss_ice <- sst_WA %>% 
+  mutate(month = month(t, label = T),
+         temp = ifelse(month %in% c("Jan", "Feb", "Mar"), NA, temp)) %>% 
+  select(-month)
+write.csv(sst_WA_miss_ice$temp, file = "data/sst_WA_miss_ice.csv", row.names = F, na = "NaN")
+```
+
+With the missing data saved, we can now calculate and compare the climatologies that the two different languages will create.
+
+```{python}
+# Required for data prep and export
+import numpy as np
+from datetime import date
+import pandas as pd
+
+# The MHW functions
+import marineHeatWaves as mhw
+
+# The date values
+t = np.arange(date(1982,1,1).toordinal(),date(2014,12,31).toordinal()+1)
+
+# The temperature values
+sst_random = np.loadtxt("data/sst_WA_miss_random.csv", delimiter = ',', skiprows = 1)
+sst_ice = np.loadtxt("data/sst_WA_miss_ice.csv", delimiter = ',', skiprows = 1)
+
+# The event metrics
+mhws_random, clim_random = mhw.detect(t, sst_random)
+# It appears as though the Python code can't deal with ice coverage...
+#mhws_ice, clim_ice = mhw.detect(t, sst_ice)
+
+# Save climatology results
+clim_random_df = pd.DataFrame.from_dict(clim_random)
+clim_random_df.to_csv('data/clim_py_random.csv', sep = ',', index = False)
+#clim_ice_df = pd.DataFrame.from_dict(clim_ice)
+#clim_ice_df.to_csv('data/clim_ice_py.csv', sep = ',', index = False)
+```
+
+With the Python climatologies calculated from the missing data, we will load the results and compare them to R.
+
+```{r}
+# Load and prep missing data
+sst_WA_miss_random <- read_csv("data/sst_WA_miss_random.csv") %>% 
+  dplyr::rename(temp = x) %>% 
+  mutate(t = seq(as.Date("1982-01-01"), as.Date("2014-12-31"), by = "day")) %>% 
+  select(t, temp)
+sst_WA_miss_random$temp[is.nan(sst_WA_miss_random$temp)] <- NA
+
+# Load Python results
+res_clim_random_Python <- read_csv("data/clim_py_random.csv")
+
+# caluclate R climatologies
+res_clim_random_R <- ts2clm(sst_WA_miss_random, climatologyPeriod = c("1982-01-01", "2014-12-31"))
+
+# Compare
+cor(res_clim_random_R$seas, res_clim_random_Python$seas)
+sum(res_clim_random_R$seas) - sum(res_clim_random_Python$seas)
+cor(res_clim_random_R$thresh, res_clim_random_Python$thresh)
+sum(res_clim_random_R$thresh) - sum(res_clim_random_Python$thresh)
+```
+
+We may see from the results above that the values still correlate very strongly, if slightly less so than with no missing data. Whereas the seasonal signal was slightly higher when calculated by the Python code, now the R results are slightly higher. The threshold was higher with Python as well when no data were missing, and now it is even higher. This is a somewhat curious result, but the differences remain much too small to be of any real concern. 
 
 ## Benchmarks
 
@@ -282,4 +366,4 @@ bench_py = total/10
 print(bench_py)
 ```
 
-The Python code appears to be about twoce as fast at ~0.18 seconds to ~0.32 seconds for R. And the Python code is also calculating the event categories, which R is not. That is done in an additonal step with `category()`. The R code is however allowing for a wider range of options for climaotlogies.
+The Python code appears to be about twice as fast at ~0.18 seconds to ~0.32 seconds for R. And the Python code is also calculating the event categories, which R is not. That is done in an additional step with `category()`. The R code is however allowing for a wider range of options for climatologies.

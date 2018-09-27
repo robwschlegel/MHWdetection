@@ -325,11 +325,6 @@ sst_ALL_clim_only_0 <- sst_ALL_clim_only %>%
 
 # KS function
 # Takes one rep of missing data and compares it against the complete signal
-## testing...
-# df <- sst_ALL_clim_only %>% 
-#   filter(miss != "0") %>% 
-#   filter(site == "WA", rep == "23", miss == "0.25") %>% 
-#   select(-rep, -miss)
 clim_KS_p <- function(df){
   df_comp <- sst_ALL_clim_only_0 %>% 
     filter(site == df$site[1])
@@ -338,12 +333,11 @@ clim_KS_p <- function(df){
                     thresh = ks.test(df$thresh, df_comp$thresh)$p.value,
                     var = ks.test(df$var, df_comp$var)$p.value)
   return(res)
-  }
+}
 
 # The KS results
 sst_ALL_clim_KS_p <- sst_ALL_clim_only %>% 
   filter(miss != "0") %>% 
-  # select(-doy, -rep) %>%
   mutate(miss = as.factor(miss)) %>%
   mutate(site_i = site) %>% 
   group_by(site_i, miss, rep) %>% 
@@ -445,7 +439,7 @@ Perhaps the increase in max intensity at 10% missing data for the Northwest Atla
 There are two realistic instances of consistent missing data in SST time series. The first is for polar data when satellites cannot collect data because the sea surface is covered in ice. Whereas this would obviously preclude any MHWs from occurring, the question here is how do long stretches of missing data affect the creation of the climatologies, and therefore the detection of MHWs. The other sort of consecutive missing data is for those _in situ_ time series that are collected by hand by (likely) a government employee that does not work on weekends. In the following two sub-sections we will knock-out data intentionally to simulate these two issues. Lastly, because we have seen above that consecutive missing days of data are problematic, win addition to looking at the effects of missing weekends (2 consecutive days), we will also look at the effect of 3 and 4 consecutive missing days. I assume that four constant consecutive missing days will render the time series void, but three may be able to squeak by.
 
 
-### Ice-cover
+### Ice coverage
 
 To simulate ice cover we will remove the three winter months from each time series. Because two of the three time series are from the northern hemisphere, the times removed will not be the same for all time series.
 
@@ -479,7 +473,7 @@ ggplot(sst_ALL_ice, aes(x = t, y = temp)) +
 
 In the figure above we see that removing the winter months for the Mediterranean and Northwest Atlantic time series produces relatively even missing gaps near the bottom of each seasonal cycle. The Western Australia time series appears to have a much less regular seasonal signal and so the missing data periods vary somewhat more. 
 
-```{r, error=TRUE, eval=FALSE}
+```{r}
 # Calculate the thresholds for all of the created time series
 sst_ALL_ice_clim <- sst_ALL_ice %>% 
   group_by(site) %>% 
@@ -487,20 +481,167 @@ sst_ALL_ice_clim <- sst_ALL_ice %>%
   mutate(clim = map(data, ts2clm, climatologyPeriod = c("1982-01-01", "2014-12-31"))) %>% 
   select(-data) %>% 
   unnest()
-## NB: This throws an error
 
-# Looking at just one specific case
-test <- sst_ALL_ice %>% 
-  filter(site == "WA") %>% 
-  ts2clm(climatologyPeriod = c("1982-01-01", "2014-12-31"))
-## NB: This throws the same error
+# Pull out the clims only
+sst_ALL_ice_clim_only <- sst_ALL_ice_clim %>% 
+  select(-t, -temp) %>% 
+  unique() %>% 
+  arrange(site, doy)
 ```
 
-This is however as far as this experiment may go as the __`heatwaveR`__ detection algorithm cannot cope with a time series where more than two consecutive doy's are missing from a time series. 
 
-This is an important finding as it means that any researchers that would like to use a time series with large consecutive missing spans of data may not currently do so. I assume this error would be produced by the python code as well, but I've not yet looked.
+#### Climatology statistics
 
-This may be something we want to fix.
+Before we begin comparing the climatology statistics for 'ice coverage' vs. complete time series, let's see what the seasonal climatologies look like alongside each other.
+
+```{r ice-seas, fig.cap="Line graph showing the seasonal signal calculated from time series with a simulated 3 months of ice coverage. The seasonal signal based on the complete time series is shown in grey behind."}
+ggplot(sst_ALL_ice_clim_only, aes(x = doy, y = seas)) +
+  geom_line(data = sst_ALL_clim_only_0, alpha = 0.2) +
+  geom_line(aes(colour = site)) +
+  facet_wrap(~site, scales = "free_y", ncol = 1) +
+  labs(x = "", y = "temp. (C)")
+```
+
+We may see in the figure above that the calculated seasonal climatologies from the 'ice coverage' time series appear to be nearly identical to those from complete time series. 
+
+##### t-test _p_-values
+
+For the following tests we are only going to compare data between the complete and ice coverage time series for days in which data exist. Doing otherwise would unfairly bias the results.
+
+```{r ice-ttest-p, fig.cap="Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those with ice coverage."}
+clim_ttest_p_ice <- function(df){
+  df_na <- df %>% 
+    na.omit()
+  df_comp <- sst_ALL_clim_only_0 %>% 
+    filter(site == df$site[1],
+           doy %in% df_na$doy)
+  res <- data.frame(site = df$site[1],
+                    seas = t.test(df$seas, df_comp$seas)$p.value,
+                    thresh = t.test(df$thresh, df_comp$thresh)$p.value,
+                    var = t.test(df$var, df_comp$var)$p.value)
+  return(res)
+}
+
+# The t-test results
+sst_ALL_ice_clim_ttest_p <- sst_ALL_ice_clim_only %>% 
+  mutate(site_i = site) %>% 
+  group_by(site_i) %>% 
+  nest() %>% 
+  mutate(res = map(data, clim_ttest_p_ice)) %>% 
+  select(-data) %>% 
+  unnest() %>% 
+  select(site, seas:var) %>% 
+  gather(key = stat, value = p.value, -site)
+
+# visualise
+ggplot(sst_ALL_ice_clim_ttest_p, aes(x = site, y = stat)) +
+  geom_tile(aes(fill = p.value)) +
+  geom_text(aes(label = round(p.value, 2))) +
+  scale_fill_gradient2(midpoint = 0.1)
+```
+
+From the heatmap above we see that there is practically no difference in the climatologies calculated when there is ice coverage.
+
+##### Kolmogorov-Smirnov
+
+```{r ice-KS-clims, fig.cap="Heatmap showing the Kolmogorov-Smirnov _p_-values from comparing the climatology distributions for complete against ice coverage time series."}
+
+clim_KS_p_ice <- function(df){
+  df_na <- df %>% 
+    na.omit()
+  df_comp <- sst_ALL_clim_only_0 %>% 
+    filter(site == df$site[1],
+           doy %in% df_na$doy)
+  res <- data.frame(site = df$site[1],
+                    seas = ks.test(df$seas, df_comp$seas)$p.value,
+                    thresh = ks.test(df$thresh, df_comp$thresh)$p.value,
+                    var = ks.test(df$var, df_comp$var)$p.value)
+  return(res)
+}
+
+# The KS results
+sst_ALL_ice_clim_KS_p <- sst_ALL_ice_clim_only %>% 
+  mutate(site_i = site) %>% 
+  group_by(site_i) %>% 
+  nest() %>% 
+  mutate(res = map(data, clim_KS_p_ice)) %>% 
+  select(-data) %>% 
+  unnest() %>% 
+  select(site, seas:var) %>% 
+  gather(key = stat, value = p.value, -site)
+
+# visualise
+ggplot(sst_ALL_ice_clim_KS_p, aes(x = site, y = stat)) +
+  geom_tile(aes(fill = p.value)) +
+  geom_text(aes(label = round(p.value, 2))) +
+  scale_fill_gradient2(midpoint = 0.1)
+```
+
+Again we see that the overall shape of the climatologies is almost completely unaffected by ice coverage.
+
+
+#### MHW metrics
+
+I'm a little bit surprised at the results from the statistical climatology comparisons, but it makes sense if one thinks about it. Because the algorithm is not attempting to interpolate or otherwise fill any gaps, it does not actually change the data used for the climatology calculations. The result being that for the doy's when climatologies are calculated, the results are the same as though there were no ice coverage at all.
+
+The impact this may have on the MHWs (for the periods of the year where data are present) is something I am very much interested in seeing. I'm really not sure what the effect may be...
+
+```{r ice-event-ttest, fig.cap="Heatmap showing the t-test results (_p_-value) comparing MHW metrics for events detected in a complete time series vs. ice coverage. Events detected in the complete time series whose peak intensity dates occurred during the ice coverage months were removed before the comparions were made.S"}
+
+# Calculate events
+suppressWarnings(
+sst_ALL_ice_event <- sst_ALL_ice_clim %>% 
+  group_by(site) %>% 
+  nest() %>% 
+  mutate(res = map(data, detect_event_event)) %>% 
+  select(-data) %>% 
+  unnest()
+) # Must supress warnings caused by big gaps or the machine crashes
+
+# Function for calculating t-tests on specific event metrics
+event_ttest_p_ice <- function(df){
+    df_comp <- sst_ALL_event %>% 
+      filter(site == df$site[1], miss == "0", rep == "1") %>% 
+      mutate(month = month(date_peak, label = T))
+    if (df_comp$site[1] == "WA"){
+      df_comp <- df_comp %>% 
+        filter(!(month %in% c("Jul", "Aug", "Sep")))
+    } else {
+      df_comp <- df_comp %>% 
+        filter(!(month %in% c("Jan", "Feb", "Mar")))
+    }
+    res <- data.frame(site = df$site[1],
+                      duration = t.test(df$duration, df_comp$duration)$p.value,
+                      intensity_mean = t.test(df$intensity_mean, df_comp$intensity_mean)$p.value,
+                      intensity_max = t.test(df$intensity_max, df_comp$intensity_max)$p.value,
+                      intensity_cumulative = t.test(df$intensity_cumulative, 
+                                                    df_comp$intensity_cumulative)$p.value)
+  return(res)
+}
+
+# The t-test results
+sst_ALL_ice_event_ttest_p <- sst_ALL_ice_event %>%
+  mutate(site_i = site) %>% 
+  nest(-site_i) %>%
+  mutate(res = map(data, event_ttest_p_ice)) %>% 
+  select(-data) %>% 
+  unnest() %>% 
+  select(site:intensity_cumulative) %>% 
+  gather(key = stat, value = p.value, -site)
+
+# visualise
+ggplot(sst_ALL_ice_event_ttest_p, aes(x = site, y = stat)) +
+  geom_tile(aes(fill = p.value)) +
+  geom_text(aes(label = round(p.value, 2))) +
+  scale_fill_gradient2(midpoint = 0.1, limits = c(0, 1)) +
+  theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
+```
+
+The heatmap above shows how similar (_p_-values from t-tests) the MHW metrics are for events detected in complete vs. ice coverage time series. In order to allow the comparison to be more accurate, I removed MHWs from the complete time series whose peak intensity dates occurred during the ice coverage months. Were one to leave these events in, the _p_-values do decrease, with the max and mean intensities for events in the Mediterranean becoming significantly different from one another. 
+
+I don't think it is correct to compare the full events though, which is why I've rather chosen to remove events that occurred during ice coverage before comparing the results.
+
+I think these results show rather conclusively that long blocks of contiguous missing data in a time series (e.g. ice coverage) do not have an appreciable effect on the results of the climatologies or the resultant events detected. Of course, ice coverage will never be such a clean break. Rather, the random day or two of available data will encroach around the edges of the missing data, causing the MHW algorithm to need to interpolate across these smaller windows. That is an issue we will tackle in the section on missing _n_ consecutive days, should we choose to go that in depth.
 
 
 ### Missing weekends
@@ -542,21 +683,21 @@ sst_ALL_2_day_clim_only <- sst_ALL_2_day_clim %>%
 
 I'll not visualise the calculated climatologies here against the control as I don't expect them to appear much different. Rather I'll jump straight into the statistical comparisons.
 
+
 ##### t-test _p_-values
 
 Because we are only comparing the distribution of two sample sets of data (no missing data vs. missing weekends), we will rather use a t-test to make the comparisons.
 
 ```{r 2-day-ttest-p, fig.cap="Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those missing weekend days."}
-
 clim_ttest_p <- function(df){
-  df_comp <- sst_ALL_clim_only %>% 
+  df_comp <- sst_ALL_clim_only_0 %>% 
     filter(site == df$site[1])
   res <- data.frame(site = df$site[1],
                     seas = t.test(df$seas, df_comp$seas)$p.value,
                     thresh = t.test(df$thresh, df_comp$thresh)$p.value,
                     var = t.test(df$var, df_comp$var)$p.value)
   return(res)
-  }
+}
 
 # The t-test results
 sst_ALL_2_day_clim_ttest_p <- sst_ALL_2_day_clim_only %>% 
@@ -658,7 +799,7 @@ The figure above shows the results of t-tests for each metric between the comple
 
 ## Best practices
 
-(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulletted items for each different vignette would then all be added up in one central [best practices](https://robwschlegel.github.io/MHWdetection/articles/best_practices.html) vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distributions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)
+(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulleted items for each different vignette would then all be added up in one central [best practices](https://robwschlegel.github.io/MHWdetection/articles/best_practices.html) vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distributions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)
 
 
 ### Options for addressing many missing random data
@@ -666,4 +807,3 @@ The figure above shows the results of t-tests for each metric between the comple
 
 ### Options for addressing many missing non-random data
 
-#### Test (RWS)

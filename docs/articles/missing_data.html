@@ -107,7 +107,7 @@
       <h1>Assessing the effects of missing data</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2018-09-14</h4>
+            <h4 class="date">2018-09-27</h4>
       
       
       <div class="hidden name"><code>missing_data.Rmd</code></div>
@@ -408,11 +408,6 @@ sst_ALL_clim_only_<span class="dv">0</span> &lt;-<span class="st"> </span>sst_AL
 
 <span class="co"># KS function</span>
 <span class="co"># Takes one rep of missing data and compares it against the complete signal</span>
-## testing...
-<span class="co"># df &lt;- sst_ALL_clim_only %&gt;% </span>
-<span class="co">#   filter(miss != "0") %&gt;% </span>
-<span class="co">#   filter(site == "WA", rep == "23", miss == "0.25") %&gt;% </span>
-<span class="co">#   select(-rep, -miss)</span>
 clim_KS_p &lt;-<span class="st"> </span><span class="cf">function</span>(df){
   df_comp &lt;-<span class="st"> </span>sst_ALL_clim_only_<span class="dv">0</span> <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">filter</span>(site <span class="op">==</span><span class="st"> </span>df<span class="op">$</span>site[<span class="dv">1</span>])
@@ -421,12 +416,11 @@ clim_KS_p &lt;-<span class="st"> </span><span class="cf">function</span>(df){
                     <span class="dt">thresh =</span> <span class="kw">ks.test</span>(df<span class="op">$</span>thresh, df_comp<span class="op">$</span>thresh)<span class="op">$</span>p.value,
                     <span class="dt">var =</span> <span class="kw">ks.test</span>(df<span class="op">$</span>var, df_comp<span class="op">$</span>var)<span class="op">$</span>p.value)
   <span class="kw">return</span>(res)
-  }
+}
 
 <span class="co"># The KS results</span>
 sst_ALL_clim_KS_p &lt;-<span class="st"> </span>sst_ALL_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">filter</span>(miss <span class="op">!=</span><span class="st"> "0"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="co"># select(-doy, -rep) %&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">miss =</span> <span class="kw">as.factor</span>(miss)) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site_i =</span> site) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site_i, miss, rep) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -528,9 +522,9 @@ Confidence intervals of the different metrics for the different proportions of m
 <h2 class="hasAnchor">
 <a href="#non-random-missing-data" class="anchor"></a>Non-random missing data</h2>
 <p>There are two realistic instances of consistent missing data in SST time series. The first is for polar data when satellites cannot collect data because the sea surface is covered in ice. Whereas this would obviously preclude any MHWs from occurring, the question here is how do long stretches of missing data affect the creation of the climatologies, and therefore the detection of MHWs. The other sort of consecutive missing data is for those <em>in situ</em> time series that are collected by hand by (likely) a government employee that does not work on weekends. In the following two sub-sections we will knock-out data intentionally to simulate these two issues. Lastly, because we have seen above that consecutive missing days of data are problematic, win addition to looking at the effects of missing weekends (2 consecutive days), we will also look at the effect of 3 and 4 consecutive missing days. I assume that four constant consecutive missing days will render the time series void, but three may be able to squeak by.</p>
-<div id="ice-cover" class="section level3">
+<div id="ice-coverage" class="section level3">
 <h3 class="hasAnchor">
-<a href="#ice-cover" class="anchor"></a>Ice-cover</h3>
+<a href="#ice-coverage" class="anchor"></a>Ice coverage</h3>
 <p>To simulate ice cover we will remove the three winter months from each time series. Because two of the three time series are from the northern hemisphere, the times removed will not be the same for all time series.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Knock-out ice coverage</span>
 sst_WA_ice &lt;-<span class="st"> </span>sst_WA <span class="op">%&gt;%</span><span class="st"> </span>
@@ -570,16 +564,168 @@ sst_ALL_ice_clim &lt;-<span class="st"> </span>sst_ALL_ice <span class="op">%&gt
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">clim =</span> <span class="kw">map</span>(data, ts2clm, <span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>))) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">unnest</span>()
-## NB: This throws an error
 
-<span class="co"># Looking at just one specific case</span>
-test &lt;-<span class="st"> </span>sst_ALL_ice <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(site <span class="op">==</span><span class="st"> "WA"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/heatwaveR/topics/ts2clm">ts2clm</a></span>(<span class="dt">climatologyPeriod =</span> <span class="kw">c</span>(<span class="st">"1982-01-01"</span>, <span class="st">"2014-12-31"</span>))
-## NB: This throws the same error</code></pre></div>
-<p>This is however as far as this experiment may go as the <strong><code>heatwaveR</code></strong> detection algorithm cannot cope with a time series where more than two consecutive doy’s are missing from a time series.</p>
-<p>This is an important finding as it means that any researchers that would like to use a time series with large consecutive missing spans of data may not currently do so. I assume this error would be produced by the python code as well, but I’ve not yet looked.</p>
-<p>This may be something we want to fix.</p>
+<span class="co"># Pull out the clims only</span>
+sst_ALL_ice_clim_only &lt;-<span class="st"> </span>sst_ALL_ice_clim <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>t, <span class="op">-</span>temp) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unique</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">arrange</span>(site, doy)</code></pre></div>
+<div id="climatology-statistics-1" class="section level4">
+<h4 class="hasAnchor">
+<a href="#climatology-statistics-1" class="anchor"></a>Climatology statistics</h4>
+<p>Before we begin comparing the climatology statistics for ‘ice coverage’ vs. complete time series, let’s see what the seasonal climatologies look like alongside each other.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sst_ALL_ice_clim_only, <span class="kw">aes</span>(<span class="dt">x =</span> doy, <span class="dt">y =</span> seas)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> sst_ALL_clim_only_<span class="dv">0</span>, <span class="dt">alpha =</span> <span class="fl">0.2</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">scales =</span> <span class="st">"free_y"</span>, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">""</span>, <span class="dt">y =</span> <span class="st">"temp. (C)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/ice-seas-1.png" alt="Line graph showing the seasonal signal calculated from time series with a simulated 3 months of ice coverage. The seasonal signal based on the complete time series is shown in grey behind." width="768"><p class="caption">
+Line graph showing the seasonal signal calculated from time series with a simulated 3 months of ice coverage. The seasonal signal based on the complete time series is shown in grey behind.
+</p>
+</div>
+<p>We may see in the figure above that the calculated seasonal climatologies from the ‘ice coverage’ time series appear to be nearly identical to those from complete time series.</p>
+<div id="t-test-p-values" class="section level5">
+<h5 class="hasAnchor">
+<a href="#t-test-p-values" class="anchor"></a>t-test <em>p</em>-values</h5>
+<p>For the following tests we are only going to compare data between the complete and ice coverage time series for days in which data exist. Doing otherwise would unfairly bias the results.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clim_ttest_p_ice &lt;-<span class="st"> </span><span class="cf">function</span>(df){
+  df_na &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">na.omit</span>()
+  df_comp &lt;-<span class="st"> </span>sst_ALL_clim_only_<span class="dv">0</span> <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">filter</span>(site <span class="op">==</span><span class="st"> </span>df<span class="op">$</span>site[<span class="dv">1</span>],
+           doy <span class="op">%in%</span><span class="st"> </span>df_na<span class="op">$</span>doy)
+  res &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">site =</span> df<span class="op">$</span>site[<span class="dv">1</span>],
+                    <span class="dt">seas =</span> <span class="kw">t.test</span>(df<span class="op">$</span>seas, df_comp<span class="op">$</span>seas)<span class="op">$</span>p.value,
+                    <span class="dt">thresh =</span> <span class="kw">t.test</span>(df<span class="op">$</span>thresh, df_comp<span class="op">$</span>thresh)<span class="op">$</span>p.value,
+                    <span class="dt">var =</span> <span class="kw">t.test</span>(df<span class="op">$</span>var, df_comp<span class="op">$</span>var)<span class="op">$</span>p.value)
+  <span class="kw">return</span>(res)
+}
+
+<span class="co"># The t-test results</span>
+sst_ALL_ice_clim_ttest_p &lt;-<span class="st"> </span>sst_ALL_ice_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site_i =</span> site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site_i) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, clim_ttest_p_ice)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(site, seas<span class="op">:</span>var) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> stat, <span class="dt">value =</span> p.value, <span class="op">-</span>site)
+
+<span class="co"># visualise</span>
+<span class="kw">ggplot</span>(sst_ALL_ice_clim_ttest_p, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> stat)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/ice-ttest-p-1.png" alt="Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those with ice coverage." width="768"><p class="caption">
+Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those with ice coverage.
+</p>
+</div>
+<p>From the heatmap above we see that there is practically no difference in the climatologies calculated when there is ice coverage.</p>
+</div>
+<div id="kolmogorov-smirnov-1" class="section level5">
+<h5 class="hasAnchor">
+<a href="#kolmogorov-smirnov-1" class="anchor"></a>Kolmogorov-Smirnov</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clim_KS_p_ice &lt;-<span class="st"> </span><span class="cf">function</span>(df){
+  df_na &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">na.omit</span>()
+  df_comp &lt;-<span class="st"> </span>sst_ALL_clim_only_<span class="dv">0</span> <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">filter</span>(site <span class="op">==</span><span class="st"> </span>df<span class="op">$</span>site[<span class="dv">1</span>],
+           doy <span class="op">%in%</span><span class="st"> </span>df_na<span class="op">$</span>doy)
+  res &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">site =</span> df<span class="op">$</span>site[<span class="dv">1</span>],
+                    <span class="dt">seas =</span> <span class="kw">ks.test</span>(df<span class="op">$</span>seas, df_comp<span class="op">$</span>seas)<span class="op">$</span>p.value,
+                    <span class="dt">thresh =</span> <span class="kw">ks.test</span>(df<span class="op">$</span>thresh, df_comp<span class="op">$</span>thresh)<span class="op">$</span>p.value,
+                    <span class="dt">var =</span> <span class="kw">ks.test</span>(df<span class="op">$</span>var, df_comp<span class="op">$</span>var)<span class="op">$</span>p.value)
+  <span class="kw">return</span>(res)
+}
+
+<span class="co"># The KS results</span>
+sst_ALL_ice_clim_KS_p &lt;-<span class="st"> </span>sst_ALL_ice_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site_i =</span> site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site_i) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, clim_KS_p_ice)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(site, seas<span class="op">:</span>var) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> stat, <span class="dt">value =</span> p.value, <span class="op">-</span>site)
+
+<span class="co"># visualise</span>
+<span class="kw">ggplot</span>(sst_ALL_ice_clim_KS_p, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> stat)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/ice-KS-clims-1.png" alt="Heatmap showing the Kolmogorov-Smirnov _p_-values from comparing the climatology distributions for complete against ice coverage time series." width="768"><p class="caption">
+Heatmap showing the Kolmogorov-Smirnov <em>p</em>-values from comparing the climatology distributions for complete against ice coverage time series.
+</p>
+</div>
+<p>Again we see that the overall shape of the climatologies is almost completely unaffected by ice coverage.</p>
+</div>
+</div>
+<div id="mhw-metrics-1" class="section level4">
+<h4 class="hasAnchor">
+<a href="#mhw-metrics-1" class="anchor"></a>MHW metrics</h4>
+<p>I’m a little bit surprised at the results from the statistical climatology comparisons, but it makes sense if one thinks about it. Because the algorithm is not attempting to interpolate or otherwise fill any gaps, it does not actually change the data used for the climatology calculations. The result being that for the doy’s when climatologies are calculated, the results are the same as though there were no ice coverage at all.</p>
+<p>The impact this may have on the MHWs (for the periods of the year where data are present) is something I am very much interested in seeing. I’m really not sure what the effect may be…</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate events</span>
+<span class="kw">suppressWarnings</span>(
+sst_ALL_ice_event &lt;-<span class="st"> </span>sst_ALL_ice_clim <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, detect_event_event)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>()
+) <span class="co"># Must supress warnings caused by big gaps or the machine crashes</span>
+
+<span class="co"># Function for calculating t-tests on specific event metrics</span>
+event_ttest_p_ice &lt;-<span class="st"> </span><span class="cf">function</span>(df){
+    df_comp &lt;-<span class="st"> </span>sst_ALL_event <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">      </span><span class="kw">filter</span>(site <span class="op">==</span><span class="st"> </span>df<span class="op">$</span>site[<span class="dv">1</span>], miss <span class="op">==</span><span class="st"> "0"</span>, rep <span class="op">==</span><span class="st"> "1"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">      </span><span class="kw">mutate</span>(<span class="dt">month =</span> <span class="kw"><a href="http://lubridate.tidyverse.org/reference/month.html">month</a></span>(date_peak, <span class="dt">label =</span> T))
+    <span class="cf">if</span> (df_comp<span class="op">$</span>site[<span class="dv">1</span>] <span class="op">==</span><span class="st"> "WA"</span>){
+      df_comp &lt;-<span class="st"> </span>df_comp <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">        </span><span class="kw">filter</span>(<span class="op">!</span>(month <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">"Jul"</span>, <span class="st">"Aug"</span>, <span class="st">"Sep"</span>)))
+    } <span class="cf">else</span> {
+      df_comp &lt;-<span class="st"> </span>df_comp <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">        </span><span class="kw">filter</span>(<span class="op">!</span>(month <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">"Jan"</span>, <span class="st">"Feb"</span>, <span class="st">"Mar"</span>)))
+    }
+    res &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">site =</span> df<span class="op">$</span>site[<span class="dv">1</span>],
+                      <span class="dt">duration =</span> <span class="kw">t.test</span>(df<span class="op">$</span>duration, df_comp<span class="op">$</span>duration)<span class="op">$</span>p.value,
+                      <span class="dt">intensity_mean =</span> <span class="kw">t.test</span>(df<span class="op">$</span>intensity_mean, df_comp<span class="op">$</span>intensity_mean)<span class="op">$</span>p.value,
+                      <span class="dt">intensity_max =</span> <span class="kw">t.test</span>(df<span class="op">$</span>intensity_max, df_comp<span class="op">$</span>intensity_max)<span class="op">$</span>p.value,
+                      <span class="dt">intensity_cumulative =</span> <span class="kw">t.test</span>(df<span class="op">$</span>intensity_cumulative, 
+                                                    df_comp<span class="op">$</span>intensity_cumulative)<span class="op">$</span>p.value)
+  <span class="kw">return</span>(res)
+}
+
+<span class="co"># The t-test results</span>
+sst_ALL_ice_event_ttest_p &lt;-<span class="st"> </span>sst_ALL_ice_event <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site_i =</span> site) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>(<span class="op">-</span>site_i) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">res =</span> <span class="kw">map</span>(data, event_ttest_p_ice)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>data) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(site<span class="op">:</span>intensity_cumulative) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> stat, <span class="dt">value =</span> p.value, <span class="op">-</span>site)
+
+<span class="co"># visualise</span>
+<span class="kw">ggplot</span>(sst_ALL_ice_event_ttest_p, <span class="kw">aes</span>(<span class="dt">x =</span> site, <span class="dt">y =</span> stat)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>, <span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="fl">0.5</span>))</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/ice-event-ttest-1.png" alt="Heatmap showing the t-test results (_p_-value) comparing MHW metrics for events detected in a complete time series vs. ice coverage. Events detected in the complete time series whose peak intensity dates occurred during the ice coverage months were removed before the comparions were made.S" width="768"><p class="caption">
+Heatmap showing the t-test results (<em>p</em>-value) comparing MHW metrics for events detected in a complete time series vs. ice coverage. Events detected in the complete time series whose peak intensity dates occurred during the ice coverage months were removed before the comparions were made.S
+</p>
+</div>
+<p>The heatmap above shows how similar (<em>p</em>-values from t-tests) the MHW metrics are for events detected in complete vs. ice coverage time series. In order to allow the comparison to be more accurate, I removed MHWs from the complete time series whose peak intensity dates occurred during the ice coverage months. Were one to leave these events in, the <em>p</em>-values do decrease, with the max and mean intensities for events in the Mediterranean becoming significantly different from one another.</p>
+<p>I don’t think it is correct to compare the full events though, which is why I’ve rather chosen to remove events that occurred during ice coverage before comparing the results.</p>
+<p>I think these results show rather conclusively that long blocks of contiguous missing data in a time series (e.g. ice coverage) do not have an appreciable effect on the results of the climatologies or the resultant events detected. Of course, ice coverage will never be such a clean break. Rather, the random day or two of available data will encroach around the edges of the missing data, causing the MHW algorithm to need to interpolate across these smaller windows. That is an issue we will tackle in the section on missing <em>n</em> consecutive days, should we choose to go that in depth.</p>
+</div>
 </div>
 <div id="missing-weekends" class="section level3">
 <h3 class="hasAnchor">
@@ -614,23 +760,23 @@ sst_ALL_2_day_clim_only &lt;-<span class="st"> </span>sst_ALL_2_day_clim <span c
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>t, <span class="op">-</span>temp) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">unique</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">arrange</span>(site, doy)</code></pre></div>
-<div id="climatology-statistics-1" class="section level4">
+<div id="climatology-statistics-2" class="section level4">
 <h4 class="hasAnchor">
-<a href="#climatology-statistics-1" class="anchor"></a>Climatology statistics</h4>
+<a href="#climatology-statistics-2" class="anchor"></a>Climatology statistics</h4>
 <p>I’ll not visualise the calculated climatologies here against the control as I don’t expect them to appear much different. Rather I’ll jump straight into the statistical comparisons.</p>
-<div id="t-test-p-values" class="section level5">
+<div id="t-test-p-values-1" class="section level5">
 <h5 class="hasAnchor">
-<a href="#t-test-p-values" class="anchor"></a>t-test <em>p</em>-values</h5>
+<a href="#t-test-p-values-1" class="anchor"></a>t-test <em>p</em>-values</h5>
 <p>Because we are only comparing the distribution of two sample sets of data (no missing data vs. missing weekends), we will rather use a t-test to make the comparisons.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clim_ttest_p &lt;-<span class="st"> </span><span class="cf">function</span>(df){
-  df_comp &lt;-<span class="st"> </span>sst_ALL_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
+  df_comp &lt;-<span class="st"> </span>sst_ALL_clim_only_<span class="dv">0</span> <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">filter</span>(site <span class="op">==</span><span class="st"> </span>df<span class="op">$</span>site[<span class="dv">1</span>])
   res &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">site =</span> df<span class="op">$</span>site[<span class="dv">1</span>],
                     <span class="dt">seas =</span> <span class="kw">t.test</span>(df<span class="op">$</span>seas, df_comp<span class="op">$</span>seas)<span class="op">$</span>p.value,
                     <span class="dt">thresh =</span> <span class="kw">t.test</span>(df<span class="op">$</span>thresh, df_comp<span class="op">$</span>thresh)<span class="op">$</span>p.value,
                     <span class="dt">var =</span> <span class="kw">t.test</span>(df<span class="op">$</span>var, df_comp<span class="op">$</span>var)<span class="op">$</span>p.value)
   <span class="kw">return</span>(res)
-  }
+}
 
 <span class="co"># The t-test results</span>
 sst_ALL_2_day_clim_ttest_p &lt;-<span class="st"> </span>sst_ALL_2_day_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
@@ -656,9 +802,9 @@ Heatmap showing the t-test results for the comparisons of the clim values for co
 <p>As with most of the results so far, the variances between the control and the missing weekend time series are significantly different. In this case though for only two of the three time series. The seasonal signals and 90th percentile thresholds do not differ appreciably.</p>
 <p>As I’ve run a t-test here and not an ANOVA, I am not going to manually generate CI’s. Also, there are only two time series being compared here so CI’s aren’t as meaningful.</p>
 </div>
-<div id="kolmogorov-smirnov-1" class="section level5">
+<div id="kolmogorov-smirnov-2" class="section level5">
 <h5 class="hasAnchor">
-<a href="#kolmogorov-smirnov-1" class="anchor"></a>Kolmogorov-Smirnov</h5>
+<a href="#kolmogorov-smirnov-2" class="anchor"></a>Kolmogorov-Smirnov</h5>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The KS results</span>
 sst_ALL_2_day_clim_KS_p &lt;-<span class="st"> </span>sst_ALL_2_day_clim_only <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">site_i =</span> site) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -683,9 +829,9 @@ Heatmap showing the Kolmogorov-Smirnov <em>p</em>-values from comparing the clim
 <p>Consistently throughout we see that any minor changes to the time series have appreciable effects on the variance detected in the seasonal signal, but often not on the other climatology values.</p>
 </div>
 </div>
-<div id="mhw-metrics-1" class="section level4">
+<div id="mhw-metrics-2" class="section level4">
 <h4 class="hasAnchor">
-<a href="#mhw-metrics-1" class="anchor"></a>MHW metrics</h4>
+<a href="#mhw-metrics-2" class="anchor"></a>MHW metrics</h4>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate events</span>
 sst_ALL_2_day_event &lt;-<span class="st"> </span>sst_ALL_2_day_clim <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -740,7 +886,7 @@ Heatmap showing the t-test results (<em>p</em>-value) comparing MHW metrics for 
 <div id="best-practices" class="section level2">
 <h2 class="hasAnchor">
 <a href="#best-practices" class="anchor"></a>Best practices</h2>
-<p>(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulletted items for each different vignette would then all be added up in one central <a href="https://robwschlegel.github.io/MHWdetection/articles/best_practices.html">best practices</a> vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distributions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)</p>
+<p>(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulleted items for each different vignette would then all be added up in one central <a href="https://robwschlegel.github.io/MHWdetection/articles/best_practices.html">best practices</a> vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distributions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)</p>
 <div id="options-for-addressing-many-missing-random-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#options-for-addressing-many-missing-random-data" class="anchor"></a>Options for addressing many missing random data</h3>
