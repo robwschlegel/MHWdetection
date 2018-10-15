@@ -21,10 +21,12 @@ knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
 
 ## Overview
 
-It has been shown that the length (duration) of a time series may be one of the most important factors in determining the usefulness of those data for any number of applications [@Schlegel2016]. For the detection of MHWs it is recommended that one has at least 30 years of data in order to accurately detect the events therein. This is no longer an issue for most ocean surfaces as the high quality SST products, such as NOAA OISST, are now in exceedence of the 30 minimum. Besides issues relating to the coarseness of these older products, there are many other reasons why one would want to detect MHWs in non-remotely sensed products. _In situ_ measurements along the coast are one good example of this, another being the use of the newer higher resolution SST products, a third being the use of reanalysis products for the detection of events in 3D. Because of these legitimate reasons, and more, it is therefore necessary to quantify the effects that shorter time series duration (< 30 years) has on the accurate detection of events. Once any discrepancies have been accounted for, best practices must be developed to allow user to improve the precision of the detection of events in their shorter time series.
+It has been shown that the length (duration) of a time series may be one of the most important factors in determining the usefulness of those data for any number of applications [@Schlegel2016]. For the detection of MHWs it is recommended that one has at least 30 years of data in order to accurately detect the events therein. This is no longer an issue for most ocean surfaces as the high quality SST products, such as NOAA OISST, are now in exceedence of the 30-year minimum. Besides issues relating to the coarseness of these older products, there are many other reasons why one would want to detect MHWs in products with shorter records. _In situ_ measurements along the coast are one good example of this, another being the use of the newer higher resolution SST products, a third being the use of reanalysis products for the detection of events in 3D. It is therefore necessary to quantify the effects that shorter time series duration (< 30 years) has on the accurate detection of events. Once any discrepancies have been accounted for, best practices must be developed to allow user to improve the precision of the detection of events in their shorter time series.
 
 
 ## Time series shortening
+
+(ECJO)[Need a sentence or paragraph up front on why there even needs to be a minimum. i.e. describe how the estimation of the climatological mean and threshold is a statistical problem, and therefore sufficient sample size is key. That’s where the 30-year min comes from (WMO recommendation, re-iterated in Hobday et al. 2016).]
 
 Two different shortening methodologies are proposed here. The first is to simply take the last _n_ years in a given time series (e.g. 30, 20, 10) and compare the events detected in the overlapping period of time. This method will help to address the question of how the length of a time series may affect the creation of the seasonal signal and 90th percentile threshold (hereafter referred to as "the climatologies"), and therefore the events detected. This is an important consideration and one that needs to be investigated to ascertain how large the effect actually is. 
 
@@ -34,13 +36,15 @@ The issue with re-sampling the time series at the three different lengths is tha
 
 In order to better compare the re-sample climatologies, the following measurement metrics will be quantified:
 
- - for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-samples;
+ - for each day-of-year (doy) in the seasonal climatology and the 90th percentile threshold, calculate the SD of the 100 re-samples;
  - for each doy, calculate the RMSE of the re-sampled means relative to the true climatology (i.e. the one produced from the real (not re-sampled) 30-year long time series);
  - correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
 
 Another possible re-sampling technique would be to sample 100 times from a shorter time series (e.g. 10, 20 , or 30 years), rather than only sampling 10, 20, or 30 times from the full 34 year time series. The purpose for doing this is that sampling randomly over the 33 year period is not going to allow the effect of the decadal trend to be as pronounced.
 
 This brings us to the direct consideration of the inherent decadal trend in the time series themselves. Ultimately, this tends to come out as the primary driver for much of the event detection changes over time [@Oliver2018]. To this end it would also be worthwhile to compare results from the different time series lengths with and without the long-term trends removed. I am however hesitant to do so (and have not yet) because I would argue that MHWs detected in de-trended time series are not terribly useful. The oceans are generally warming, and to best understand those effects we need to accurately measure the intensity of the MHWs.
+(ECJO)[I think for the purposes of this paper  it’s best to remove the trend. So then we are focussed on the effect of the time series length itself and not the effect of the trend.]
+(RWS)[That sounds reasonable. I shall work that in. It may also be good to do both. To run the numbers on a detrended time series, and then slowly add in increasing trends and quantify that effect.]
 
 After looking at these effects, the next stage of this investigation will be to look into best practices on how to consistently detect events when time series are not of optimal length. 
 
@@ -129,12 +133,12 @@ short_table <- sst_ALL_clim %>%
   select(-char) %>% 
   mutate(years = as.numeric(years)) %>% 
   arrange(site, -years)
-knitr::kable(short_table, col.names = c("site", "years", "mean seas. temp.", "dec. trend"), align = "c", 
+knitr::kable(short_table, col.names = c("site", "years", "mean seas. (°C)", "trend (°C/dec)"), align = "c", 
              caption = "Table showing the overall mean temperature for the seasonal climatologies detected at the three sites for the 10, 20, or 30 year time periods. Also shown are the decadal trends detected for the given 30, 20, or 10 year period. Note that the long-term heating trend in the Mediterranean (Med) appears to slow in the most recent decade. The other two sites show that the long-term heating trend only becomes more intense the closer to present the data are. The mean seasonal signal is warmer for each progressive decade for all sites.", 
              digits = 2)
 ```
 
-Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds coasts, seas, and oceans. For the Mediterranean only this warming trend appears to slow near the end of the time series. We'll return to the impact of this phenomenon later.
+Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds coasts, seas, and oceans. For the Mediterranean only this warming trend appears to slow near the end of the time series.
 
 ```{r compare-funcs}
 # A clomp of functions used below
@@ -270,7 +274,10 @@ knitr::kable(sst_ALL_clim_KS_p,
 ```
 
 The table above shows that while the climatology values generated from different time series lengths are not significantly different when tested with an ANOVA, Kolmogorov-Smirnov tests on the shape of these distributions say otherwise. 20 and 30 year time series do not produce different climatology signals (distribution shapes), but 10 year time series do. This is an important finding as it would lead one to infer that MHW metrics from 10 year time series may be different from 20 and 30 year time series.
+(ECJO)[So this raises a couple questions.  Why 10,20,30?  What if we did this for the full range of 10,11,12…….28,29,30 and found the point at which there was a difference with the 30-year one?
 
+Also, we will be asked how representative these three time series are.  An alternative is to do some kind of global analysis but is that too big of a problem to get into?]
+(RWS)[This is definitely where this anlysis needs to go. It has presently been limited to scale due to my previous computing restraints... But now that those have been lifted I should scale this up to include every year and all pixels of the ocean.]
 
 ### MHW metrics
 
@@ -332,6 +339,10 @@ When we look at the confidence intervals (CI) we see that all of the MHW metrics
 
 
 #### Median difference between decades
+
+(ECJO)[The results of this analysis will be highly sensitive to the underlying trend in the data. In fact that is what will be driving the differences, on average.
+Therefore, this really has nothing to do with time series length, and probably shouldn’t form part of the paper.]
+(RWS)[Yes... This paper is suffering from an identity crisis and I need to think about how to resolve it.]
 
 Now that we know that the detected events do not differ significantly when different lengths are used, we still want to know by what amounts they do differ. This information will then later be used during the re-sampling to see if this gap can be reduced through the clever use of statistics.
 
@@ -526,6 +537,9 @@ We may see in the figure above that the distributions of the variance are signif
 
 #### doy SD
 
+(ECJO)[I have a hard time seeing what the doy std. dev. and RMSE are telling us. Is it information contributing to the question we are asking?  I don’t think so….]
+(RWS)[This was incorporated at the outset of the project, but I'm not certain it is still the focus of the paper. It may get cut when I re-think what is the central question we are trying to answer.]
+
 ```{r re-sample-stats-sd, fig.cap="Line plot showing the standard deviation (sd) of each day of the year (doy) for the three different sites (columns) and the different climatologies (rows). The line colours denote the number of samples used for each doy. All re-samples were run 100 times, thus n = 100 for each sd of each doy for each id."}
 # for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-samplings;
 sst_ALL_sd <- sst_ALL_smooth %>% 
@@ -657,7 +671,7 @@ ggplot(sst_ALL_aov_CI, aes(x = site)) +
   facet_wrap(~metric, scales = "free_y")
 ```
 
-The CI plot above demonstrates that the general increase in MHW metrics in longer time series detected in the first round of experiments (when the real 10, 20, and 30 year baselines were used to generate a single clim each) does not hold up when we re-sample the data 100 times. The centre around which the CI spread may be found remains similar between the two experiments, with the distance between the upper and lower limits shrinking dramatically with re-sampling. The reason that we do not see the trend of increasing MHW duration/intensity with the re-sampling is that re-sampling effectively removes the decadal trend from the data. It is for this reason that I recommended at the start of this document that a second type of re-sampling be performed that would better maintain the effect that the decadal trend has on the data.
+The CI plot above demonstrates that the general increase in MHW metrics in longer time series detected in the first round of experiments (when the real 10, 20, and 30 year baselines were used to generate a single clim each) does not hold up when we re-sample the data 100 times. The centre around which the CI spread shrinks dramatically with re-sampling, but we also see how the three different time periods converge around 0, whereas the samples from  the real data show the effect that the long-term trend has in the calculation of the metrics. The reason that we do not see the trend of increasing MHW duration/intensity with the re-sampling is that re-sampling effectively removes the decadal trend from the data. It is for this reason that I recommended at the start of this document that a second type of re-sampling be performed that would better maintain the effect that the decadal trend has on the data.
 
 Note that in an earlier version of this vignette bootstrapping was also tested. It has since been removed as it was shown to not be effective. This was because the bootstrapping of random values to create climatologies created much lower values than the real data because while the bootstrapping does sample the data randomly, it then takes those _n_ random samples and creates one mean value from them. This then makes artificially even values and so when one wants to calculate a 90th percentile threshold from this it is almost identical to the seasonal climatology.
 
@@ -752,7 +766,12 @@ When re-sampling we actually see the detection of *more* larger category events 
 ### Comparing top events
 
 (AJS: I was thinking about the event categories. What we need to do is detect the top five events using the 30 yr climatology. Then, using the sections of time series that overlap with these events, use reduced time series, make climatologies, and see how those top five events compare in their event metrics to those detected using the shorter climatologies. Then we do the reverse. Detect events in the reduced time series, find the top five, and see what the matching ones in the full time series are like in comparison. So, compare specific events in addition to the way in which you have done it. Then do the same for median-sized events, and the smallest ones. Maybe even those at the 2nd and 5th quantiles.)
+
 (RWS: Parts of this proposed methodology proved to be rather tricky given how the rest of the methodology has been framed thus far so I have not yet made all of the suggestion posed here. I have only compared the top five events, as proposed by AJS above.)
+
+(ECJO)[All of this section is really just pulling out the effect of the long-term trend.  It is not quantifying the uncertainty due to a short time series.]
+
+(RWS)[This again is the same problem running throughout. It would perhaps be best just to detrend everything...]
 
 ```{r}
 # Calculate all event categories, not just the last ten years as done above
@@ -875,6 +894,8 @@ The above figure shows a similar pattern to the previous one, except that the di
 
 (RWS: I've not yet started on this section as I'm not convinced it should be included in this paper.)
 
+(ECJO)[We clearly need to have a general conversation about this since I feel the opposite.]
+(RWS)[I see more now why this is necessary. Perhaps rather than a de-trended results section, the whole paper should focus on de-trended data.]
 
 ## Arguments
 
@@ -891,6 +912,9 @@ Lastly we will now go about reproducing all of the checks made above, but based 
 
 (RWS: I've not gotten to the Fourier transformations yet either. I'm also not convinced that this is going to be the way forward. I am thinking that it may be better to just increase the smoothing window width to produce a more sinusoidal climatology line. But I suppose that in order to know that it must be tested.)
 
+(ECJO)[One advantage of the Fourier transform method (or, I think equivalently harmonic regression) is that it is VERY fast.  Much faster than the method used in the MHW code.  I also think you can probably get away with shorter time series using this method than with the “standard MHW climatology” method]
+
+(RWS)[I suppose then that I will need to look into this.]
 
 ## Best practices
 

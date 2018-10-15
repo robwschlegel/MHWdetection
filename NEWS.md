@@ -1,5 +1,9 @@
 # MHWdetection 0.0.3  (2018-09-14)
 
+* Incorporated ECJO's most recent round of comments into the main two vignettes.
+
+# MHWdetection 0.0.3  (2018-09-14)
+
 * Added comparison to `r_vs_python.Rmd` for how the two languages handle
   missing data to create climatologies and calculate events.
 * Completed the `Ice coverage` section in `missing_data.Rmd`
