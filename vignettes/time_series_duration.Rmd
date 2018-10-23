@@ -26,7 +26,7 @@ It has been shown that the length (duration) of a time series may be one of the 
 
 ## Time series shortening
 
-A time series derives it's usefulness from it's length. This is because the greater the number of observations (larger sample size), the more confident one can be about the resultant statistics. This is particularly true for decadal scale measurements and is why the WMO recommends a minimum of 30 years of data before drawing any conclusions about decadal (long-term) trends observed in a time series. We however want to look not at decadal scale trends, but rather at how observed MHWs compare against one another when they have been detected using longer or shorter time series. In order to to quantify this effect we will use the minimum and maximum range of time series available to us. The maximum length will be 34 years, as this is the full extent of the NOAA OISST data. The minimum length we will use is 3 years, as it is not possible to calculate the climatology statistics with fewer years than this. Any time series under 5 -- 10 years in length will almost certainly create wildly inaccurate results, so we use these short time series more as a proof of their usability than to show that they may be a viable option. 
+A time series derives it's usefulness from it's length. This is because the greater the number of observations (larger sample size), the more confident one can be about the resultant statistics. This is particularly true for decadal scale measurements and is why the WMO recommends a minimum of 30 years of data before drawing any conclusions about decadal (long-term) trends observed in a time series. We however want to look not at decadal scale trends, but rather at how observed MHWs compare against one another when they have been detected using longer or shorter time series. In order to to quantify this effect we will use the minimum and maximum range of time series available to us. The maximum length will be 34 years, as this is the full extent of the NOAA OISST data available included in __`heatwaveR`__. The minimum length we will use is 3 years, as it is not possible to calculate the climatology statistics with fewer years than this. Any time series under 5 -- 10 years in length will almost certainly create wildly inaccurate results, so we use these short time series more as a proof of their usability than to show that they may be a viable option. 
 
 Before we can discuss shortening techniques, we must first consider the inherent decadal trend in the time series themselves. This is usually the primary driver for much of the event detection changes over time [@Oliver2018]. Therefore, if we truly want to understand the effect that a shortened time series may have on event detection, apart from the effect of the decadal trend, we must de-trend the time series first. It is however worthwhile to compare results from the different time series lengths with and without the long-term trends removed. In order to do make the detected MHWs from different time series comparable, we propose below the use of two different shortening methodologies. These methods will allow us to address the question of how the length of a time series may affect the creation of the seasonal signal and 90th percentile threshold (hereafter referred to as "the climatologies"), and therefore the events detected. 
 
@@ -61,43 +61,43 @@ library(ggpubr)
 library(boot)
 library(FNN)
 library(mgcv)
+library(doMC); doMC::registerDoMC(cores = 3)
 ```
 
-The WMO recommends that the period used to create a climatology be 30 years in length, starting on the first year of a decade (e.g. 1981), however; because we are going to be running these analyses on time series of many different lengths, it will be better to use all of the years present in each as the climatology period. For example, if a time series spans 1989 -- 2017, that will be the period used for calculating the climatologies. Likewise should the time series only span the years 2006 -- 2017.
+The WMO recommends that the period used to create a climatology be 30 years in length, starting on the first year of a decade (e.g. 1981), however; because we are going to be running these analyses on time series of many different lengths, it will be better to use all of the years present in each as the climatology period. For example, if a time series spans 1989 -- 2014, that will be the period used for calculating the climatologies. Likewise should the time series only span the years 2006 -- 2014.
 
+```{r prep-funcs}
+# Remove the trend from a time series
+detrend <- function(df){
+  resids <- broom::augment(lm(temp ~ t, df))
+  res <- df %>% 
+    mutate(temp = temp - resids$.fitted)
+  return(res)
+}
+# ggplot(sst_ALL_detrend, aes(x = t, y = temp)) +
+#   geom_point() +
+#   geom_smooth(method = "lm") +
+#   facet_wrap(~site, nrow = 3)
 
-```{r shorten}
-# First put all of the data together and create a site column
-sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
-  mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 12053))
+# Calculate one specific clim period
+ts2clm_sub <- function(year_index, df){
+  res <- ts2clm(df, climatologyPeriod = c(paste0(year_index,"-01-01"), "2014-12-31")) %>% 
+    filter(lubridate::year(t) >= year_index) %>% 
+    mutate(year_index = year_index)
+  return(res)
+}
 
-# Then calculate the different clims
-sst_ALL_clim <- sst_ALL %>% 
-  nest(-site) %>% 
-  mutate(clim_10 = map(data, ts2clm, climatologyPeriod = c("2002-01-01", "2011-12-31")),
-         clim_20 = map(data, ts2clm, climatologyPeriod = c("1992-01-01", "2011-12-31")),
-         clim_30 = map(data, ts2clm, climatologyPeriod = c("1982-01-01", "2011-12-31"))) %>% 
-  select(-data) %>% 
-  gather(key = decades, value = output, -site) %>% 
-  unnest()
+# Calculate the full range of clims in a time series
+ts2clm_ALL <- function(df){
+  seq_year <- seq(min(lubridate::year(df$t)), 
+                  max(lubridate::year(df$t))-2)
+  res <- plyr::ldply(seq_year, .fun = ts2clm_sub, .parallel = T, df = df)
+  return(res)
+}
 
-# Then calculate the different decadal trends
-# See Schlegel and Smit 2016 for GLS model explanation/validation
+# Calculate decadal trends
 decadal_trend <- function(df) {
-  if(df$decades[1] == "clim_10"){
-    df1 <- df %>% 
-      filter(t >= as.Date("2002-01-01"),
-             t <= as.Date("2011-12-31"))
-  } else if(df$decades[1] == "clim_20"){
-    df1 <- df %>% 
-      filter(t >= as.Date("1992-01-01"),
-             t <= as.Date("2011-12-31"))
-  } else if(df$decades[1] == "clim_30"){
-    df1 <- df %>% 
-      filter(t >= as.Date("1982-01-01"),
-             t <= as.Date("2011-12-31"))
-  }
-  df2 <- df1 %>% 
+  df2 <- df %>% 
     ungroup() %>%
     mutate(date = floor_date(t, "month")) %>% 
     group_by(date) %>% 
@@ -109,33 +109,52 @@ decadal_trend <- function(df) {
       method = "REML", data = df2, na.action = na.exclude))[2] * 120), 3)
   return(dt)
 }
+```
 
+```{r shorten}
+# First put all of the data together and create a site column
+sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
+  mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 12053))
+
+# Then create a de-trended version
+sst_ALL_detrend <- sst_ALL %>% 
+  group_by(site) %>% 
+  do(detrend(.)) %>% 
+  ungroup() %>% 
+  as.tibble(.)
+
+# Then calculate all of the clims
+## With trend left in
+sst_ALL_clim <- sst_ALL %>% 
+  nest(-site) %>% 
+  mutate(clim = map(data, ts2clm_ALL)) %>% 
+  select(-data) %>% 
+  unnest()
+## With de-trended data
+sst_ALL_detrend_clim <- sst_ALL_detrend %>% 
+  nest(-site) %>% 
+  mutate(clim = map(data, ts2clm_ALL)) %>% 
+  select(-data) %>% 
+  unnest()
+
+# Calculate the different decadal trends
+# See Schlegel and Smit 2016 for GLS model explanation/validation
 sst_ALL_DT <- sst_ALL_clim %>% 
-  mutate(decades2 = decades) %>% 
-  group_by(site, decades2) %>% 
-  nest() %>% 
+  # group_by(site) %>% 
+  nest(-site) %>% 
   mutate(DT = map(data, decadal_trend)) %>% 
   select(-data) %>% 
-  unnest() %>% 
-  rename(decades = decades2)
+  unnest() #%>% 
+  # rename(decades = decades2)
 ```
 ```{r shorten-table}
-# Quick peak at mean seas clims
-# This may work better as a figure...
-short_table <- sst_ALL_clim %>% 
-  group_by(site, decades) %>% 
-  summarise(seas_mean = mean(seas)) %>% 
-  left_join(sst_ALL_DT, by = c("site", "decades")) %>% 
-  separate(decades, into = c("char", "years")) %>% 
-  select(-char) %>% 
-  mutate(years = as.numeric(years)) %>% 
-  arrange(site, -years)
-knitr::kable(short_table, col.names = c("site", "years", "mean seas. (°C)", "trend (°C/dec)"), align = "c", 
-             caption = "Table showing the overall mean temperature for the seasonal climatologies detected at the three sites for the 10, 20, or 30 year time periods. Also shown are the decadal trends detected for the given 30, 20, or 10 year period. Note that the long-term heating trend in the Mediterranean (Med) appears to slow in the most recent decade. The other two sites show that the long-term heating trend only becomes more intense the closer to present the data are. The mean seasonal signal is warmer for each progressive decade for all sites.", 
-             digits = 2)
+# Quick peak at the decadal trends
+knitr::kable(sst_ALL_DT, col.names = c("site", "trend (°C/dec)"), align = "c", 
+             caption = "Table showing the decadal trends detected for the three default sites.", 
+             digits = 3)
 ```
 
-Quickly take note of the fact that for all three time series, the mean seasonal climatology becomes warmer the shorter (closer to the present) the period used is. This is to be expected due to the overall warming signal present throughout the worlds coasts, seas, and oceans. For the Mediterranean only this warming trend appears to slow near the end of the time series.
+We see in the table above that the three default time series currently being used all have decadal trends much higher than the global average of ~0.1°C.
 
 ```{r compare-funcs}
 # A clomp of functions used below
