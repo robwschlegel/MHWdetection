@@ -196,26 +196,41 @@ event_aov_tukey <- function(df){
   }
 
 # Run an ANOVA on each metric of the combined event results and get CI
+
+# df <- sst_ALL_both_event %>% 
+#   filter(lubridate::year(date_peak) >= 2012, 
+#          site == "WA",
+#          trend == "detrended") %>% 
+#   select(year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>% 
+  # select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>%   
+  # nest(-site, -trend)
+
 event_aov_CI <- function(df){
-  label_levels <- levels(as.factor(df$year_index))
+  label_levels <- unique(df$year_index)
   # Run ANOVAs
-  aov_models <- df[ , -grep("year_index", names(df))] %>%
-    map(~ aov(.x ~ df$year_index)) %>% 
-    map_dfr(~ confint_tidy(.), .id = 'metric') %>% 
-    mutate(year_index = rep(label_levels, nrow(.)/length(label_levels))) %>% 
-    select(metric, year_index, everything())
+  # aov_models <- df[ , -grep("year_index", names(df))] %>%
+  #   map(~ aov(.x ~ df$year_index)) %>% 
+  #   map_dfr(~ confint_tidy(.), .id = 'metric') %>% 
+  #   mutate(year_index = rep(label_levels, nrow(.)/length(label_levels))) %>% 
+  #   select(metric, year_index, everything())
+  df_conf <- gather(df, key = "metric", value = "value", -year_index) %>% 
+    group_by(year_index, metric) %>% 
+    summarise(error = qnorm(0.975)*sd(value)/sqrt(n()),
+              lower = mean(value) - error,
+              mid = mean(value),
+              upper = mean(value) + error)
   # Calculate population means
-  df_mean <- df %>% 
-    group_by(year_index) %>%
-    summarise_all(.funs = mean) %>%
-    gather(key = metric, value = conf.mid, -year_index)
+  # df_mid <- df %>% 
+  #   group_by(year_index) %>%
+  #   summarise_all(.funs = mean) %>%
+  #   gather(key = metric, value = conf.mid, -year_index)
   # Correct CI for first category
-  res <- aov_models %>%
-    left_join(df_mean, by = c("metric", "year_index")) %>%
-    mutate(conf.low = if_else(year_index == label_levels[1], conf.low - conf.mid, conf.low),
-           conf.high = if_else(year_index == label_levels[1], conf.high - conf.mid, conf.high)) %>%
-    select(-conf.mid)
-  return(res)
+  # res <- aov_models %>%
+  #   left_join(df_mean, by = c("metric", "year_index")) %>%
+  #   mutate(conf.low = if_else(year_index == label_levels[1], conf.low - conf.mid, conf.low),
+  #          conf.high = if_else(year_index == label_levels[1], conf.high - conf.mid, conf.high)) %>%
+  #   select(-conf.mid)
+  return(df_conf)
   }
 
 # A particular summary output
@@ -436,7 +451,7 @@ The results of the Tukey tests shown above demonstrate that, except for one comp
 
 ```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for each of the shortened time series. Each panel shows the results for one of four MHW metrics. The X axis shows which site the CI bars are representing, and the Y axis shows the spread of the confidence around the population mean of the MHW metric."}
 # ANOVA CI
-sst_ALL_both_event_aov_CI <- sst_ALL_both_event %>% 
+sst_ALL_both_event_CI <- sst_ALL_both_event %>% 
   filter(lubridate::year(date_peak) >= 2012) %>% 
   select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
   nest(-site, -trend) %>%
@@ -444,17 +459,18 @@ sst_ALL_both_event_aov_CI <- sst_ALL_both_event %>%
   select(-data) %>% 
   unnest()
 
-CI_plot_1 <- ggplot(sst_ALL_aov_CI, aes(x = site)) +
+CI_plot_1 <- ggplot(sst_ALL_both_event_CI, aes(x = year_index)) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5,
-                aes(ymin = conf.low, ymax = conf.high, linetype = decades)) +
-  facet_wrap(~metric, scales = "free_y")
+                aes(ymin = lower, ymax = upper)) +
+  geom_point(aes(y = mid), colour = "red", size = 0.5) +
+  facet_grid(metric+trend~site, scales = "free_y")
 CI_plot_1
 ```
 
-When we look at the confidence intervals (CI) we see that all of the MHW metrics for all of the time periods overlap rather well. As expected, we also see that the duration/intensity of MHWs tend to increase the more decades of data are used to create the climatologies. This is expected because we have only looked at the events from the last 10 years of data, which are generally going to be warmer because all three time series have a strong (> 0.1) decadal warming trend.
+When we look at the confidence intervals (CI) we see that all of the MHW metrics for all of the time periods overlap rather well, with the exception of the most recent few years in `WA`. We also see that the duration/intensity of MHWs tend to increase for the first few years of data being added on, but that this flattens out around ~ 7 -- 10 years. This effect is more pronounced in the time series that have not had their long-term trends removed.
 
 
-#### Median difference between decades
+#### Median differences
 
 (ECJO)[The results of this analysis will be highly sensitive to the underlying trend in the data. In fact that is what will be driving the differences, on average.
 Therefore, this really has nothing to do with time series length, and probably shouldn't form part of the paper.]
@@ -464,27 +480,26 @@ Now that we know that the detected events do not differ significantly when diffe
 
 ```{r event-box1, fig.cap="Boxplots showing the spread of the metric values for the events detected in the most recent decade with the three different time periods."}
 # Long data.frame for plotting
-sst_ALL_event_long <- sst_ALL_event %>% 
-  select(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
+sst_ALL_both_event_long <- sst_ALL_both_event %>% 
+  select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
   # select(-event_no) %>%
-  gather(variable, value, -site, -decades)
+  gather(variable, value, -site, -trend, - year_index)
 
 # Visualisations
-  # Notches are unhelpful and noisey here
-ggplot(sst_ALL_event_long, aes(x = site, y = value)) +
-  geom_boxplot(aes(fill = decades), position = "dodge", notch = FALSE) +
-  facet_wrap(~variable, scales = "free_y")
+ggplot(sst_ALL_both_event_long, aes(x = as.factor(year_index), y = value)) +
+  geom_boxplot(aes(fill = year_index), position = "dodge") +
+  facet_grid(variable+trend~site, scales = "free_y")
 ```
 
 ```{r event-median-table}
-sst_ALL_event_median <- sst_ALL_event_long %>% 
-  group_by(site, decades, variable) %>% 
+sst_ALL_both_event_median <- sst_ALL_both_event_long %>% 
+  group_by(site, trend, year_index, variable) %>% 
   summarise(value = median(value))
 
-spread(sst_ALL_event_median, key = variable, value = value) %>% 
-  arrange(site, rev(decades)) %>% 
+spread(sst_ALL_both_event_median, key = variable, value = value) %>% 
+  arrange(site, trend, rev(year_index)) %>% 
   knitr::kable(digits = 2, 
-               col.names = c("site", "decades", "duration", "int. cum.", "int. max", "int. mean"),
+               col.names = c("site", "trend", "start year", "duration", "int. cum.", "int. max", "int. mean"),
                caption = "Median values for the MHW metrics for the three different time series sites and lengths.")
 ```
 
