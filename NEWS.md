@@ -1,6 +1,6 @@
-# MHWdetection 0.0.4  (2018-010-24)
+# MHWdetection 0.0.3  (2018-010-24)
 
-* Editing continues
+* Finished editing the "simply shorter" section of the time series length vignette
 
 # MHWdetection 0.0.3  (2018-010-23)
 

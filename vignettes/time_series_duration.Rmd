@@ -463,52 +463,12 @@ CI_plot_1 <- ggplot(sst_ALL_both_event_CI, aes(x = year_index)) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5,
                 aes(ymin = lower, ymax = upper)) +
   geom_point(aes(y = mid), colour = "red", size = 0.5) +
-  facet_grid(metric+trend~site, scales = "free_y")
+  facet_grid(metric+trend~site, scales = "free_y") +
+  labs(x = "start year", y = "value")
 CI_plot_1
 ```
 
-When we look at the confidence intervals (CI) we see that all of the MHW metrics for all of the time periods overlap rather well, with the exception of the most recent few years in `WA`. We also see that the duration/intensity of MHWs tend to increase for the first few years of data being added on, but that this flattens out around ~ 7 -- 10 years. This effect is more pronounced in the time series that have not had their long-term trends removed.
-
-
-#### Median differences
-
-(ECJO)[The results of this analysis will be highly sensitive to the underlying trend in the data. In fact that is what will be driving the differences, on average.
-Therefore, this really has nothing to do with time series length, and probably shouldn't form part of the paper.]
-(RWS)[Yes... This paper is suffering from an identity crisis and I need to think about how to resolve it.]
-
-Now that we know that the detected events do not differ significantly when different lengths are used, we still want to know by what amounts they do differ. This information will then later be used during the re-sampling to see if this gap can be reduced through the clever use of statistics.
-
-```{r event-box1, fig.cap="Boxplots showing the spread of the metric values for the events detected in the most recent decade with the three different time periods."}
-# Long data.frame for plotting
-sst_ALL_both_event_long <- sst_ALL_both_event %>% 
-  select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
-  # select(-event_no) %>%
-  gather(variable, value, -site, -trend, - year_index)
-
-# Visualisations
-ggplot(sst_ALL_both_event_long, aes(x = as.factor(year_index), y = value)) +
-  geom_boxplot(aes(fill = year_index), position = "dodge") +
-  facet_grid(variable+trend~site, scales = "free_y")
-```
-
-```{r event-median-table}
-sst_ALL_both_event_median <- sst_ALL_both_event_long %>% 
-  group_by(site, trend, year_index, variable) %>% 
-  summarise(value = median(value))
-
-spread(sst_ALL_both_event_median, key = variable, value = value) %>% 
-  arrange(site, trend, rev(year_index)) %>% 
-  knitr::kable(digits = 2, 
-               col.names = c("site", "trend", "start year", "duration", "int. cum.", "int. max", "int. mean"),
-               caption = "Median values for the MHW metrics for the three different time series sites and lengths.")
-```
-
-
-The Mediterranean (`Med`) data change over time in a more predictable, linear fashion. The Western Australia (`WA`) data changed very little depending on the number of decades used for the climatology, which is most certainly due to that one huge event near the end. The Northwest Atlantic (`NW_Atl`) results for the 10 and 20 year periods appear to generally be more similar than for the 30 year period.
-
-I think the take away message from this is that one cannot be certain how time series length may affect the MHW metrics as with three different time series we see three different patterns. This must mean that there is a more complex relationship somewhere else within the time series that is affecting these values. But what that is must be important as the median duration for Mediterranean events from 30 year time series is 50% longer than from the 10 year time series.
-
-With these benchmarks established, we will now move on to re-sampling to see if the effect of a shorter time series on the detected climatology can be mitigated.
+When we look at the confidence intervals (CI) we see that all of the MHW metrics for all of the time periods overlap rather well (both normal and de-trended), with the exception of the most recent few years in `WA`. We also see that the duration/intensity of MHWs tend to increase for the first few years of data being added on, but that this flattens out around ~ 7 -- 10 years. This effect is more pronounced in the time series that have not had their long-term trends removed, but is not always the case. Please note that the events being compared here, and so the CIs seen above, are only for those with pek dates in the years 2012 -- 2014 so as not to violate the assumption that the sample sizes are similar.
 
 
 ## Re-sampling
