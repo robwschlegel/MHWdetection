@@ -1,3 +1,7 @@
+# MHWdetection 0.0.4  (2018-010-24)
+
+* Editing continues
+
 # MHWdetection 0.0.3  (2018-010-23)
 
 * Beginning aggressive editing of text
