@@ -1,0 +1,13 @@
+---
+title: "Assessing the effects of long-term trends"
+author: "Robert W Schlegel"
+date: "`r Sys.Date()`"
+description: "This vignette investigates the effects of long-term trends on the MHWs detected in a time series."
+# output: word_document
+output: rmarkdown::html_vignette
+vignette: >
+ %\VignetteIndexEntry{Vignette Title}
+ %\VignetteEngine{knitr::rmarkdown}
+ %\VignetteEncoding{UTF-8}
+bibliography: bibliography.bib
+---

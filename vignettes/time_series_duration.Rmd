@@ -195,41 +195,32 @@ event_aov_tukey <- function(df){
   return(aov_tukey)
   }
 
-# Run an ANOVA on each metric of the combined event results and get CI
+# Calculate CIs using a bootstrapping technique to deal with the non-normal small sample sizes
 
-# df <- sst_ALL_both_event %>% 
-#   filter(lubridate::year(date_peak) >= 2012, 
+# df <- sst_ALL_both_event %>%
+#   filter(lubridate::year(date_peak) >= 2012,
 #          site == "WA",
-#          trend == "detrended") %>% 
-#   select(year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>% 
+#          trend == "detrended") %>%
+#   select(year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>%
   # select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>%   
   # nest(-site, -trend)
 
+Bmean <- function(data, indices) {
+  d <- data[indices] # allows boot to select sample 
+    return(mean(d))
+} 
+
 event_aov_CI <- function(df){
-  label_levels <- unique(df$year_index)
-  # Run ANOVAs
-  # aov_models <- df[ , -grep("year_index", names(df))] %>%
-  #   map(~ aov(.x ~ df$year_index)) %>% 
-  #   map_dfr(~ confint_tidy(.), .id = 'metric') %>% 
-  #   mutate(year_index = rep(label_levels, nrow(.)/length(label_levels))) %>% 
-  #   select(metric, year_index, everything())
   df_conf <- gather(df, key = "metric", value = "value", -year_index) %>% 
     group_by(year_index, metric) %>% 
-    summarise(error = qnorm(0.975)*sd(value)/sqrt(n()),
-              lower = mean(value) - error,
+    # ggplot(aes(x = value)) +
+    # geom_histogram(aes(fill = metric)) +
+    # facet_wrap(~metric, scales = "free_x")
+    summarise(lower = boot.ci(boot(data=value, statistic=Bmean, R=1000), type = "basic")$basic[4],
               mid = mean(value),
-              upper = mean(value) + error)
-  # Calculate population means
-  # df_mid <- df %>% 
-  #   group_by(year_index) %>%
-  #   summarise_all(.funs = mean) %>%
-  #   gather(key = metric, value = conf.mid, -year_index)
-  # Correct CI for first category
-  # res <- aov_models %>%
-  #   left_join(df_mean, by = c("metric", "year_index")) %>%
-  #   mutate(conf.low = if_else(year_index == label_levels[1], conf.low - conf.mid, conf.low),
-  #          conf.high = if_else(year_index == label_levels[1], conf.high - conf.mid, conf.high)) %>%
-  #   select(-conf.mid)
+              upper = boot.ci(boot(data=value, statistic=Bmean, R=1000), type = "basic")$basic[5],
+              n = n()) %>% 
+    mutate_if(is.numeric, round, 4)
   return(df_conf)
   }
 
@@ -319,7 +310,7 @@ The figure above is perhaps a bit odd, but I think a lengthy table would have be
 
 Now knowing that the daily values that make up the climatologies tend to differ based on the number of years used, as seen with the ANOVA and Tukey results, we want to check where the distributions of the climatologies themselves begin to differ. We will do this through a series of pair-wise two-sample KS tests.
 
-```{r KS-clims}
+```{r KS-clims, fig.cap="Heatmap showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. Small black dots denote significant differences (_p_-value <= 0.05."}
 # Extract climatology values only
 sst_ALL_both_clim_only <- sst_ALL_both_clim %>% 
   select(-t, -temp) %>% 
@@ -419,7 +410,6 @@ The heatmap above shows us that the removal of the long-term trend in the time s
 It should not be surprising that comparing events detected from a climatology based on three years of data may differ significantly from those based on 34 years of data. Where the differences emerge is the real question. And to find this out we will use a post-hoc TUkey test, as done for the climatologies above.
 
 ```{r shorten-event-tukey, fig.cap="Heatmap showing the Tukey test results from the ANOVAs run on the MHW metrics generated from all possible time series lengths (i.e. 3 -- 34 years). The different sites are shown as different rows of panels, and the different climatologies (seasonal signal and 90th percentile threshold, from both normal and detrended time series) are shown as different columns. The X and Y axes here denote two different start years for time series being compared. For example, a pixel at '1990' on the X axis, and '2010' on the Y axis is showing the difference (_p_-value) between the climatology generated from a time series from 1990 -- 2014 against the climatology from the same time series that runs only from 2010 -- 2014. Significant differences are marked with a small black dot."}
-
 sst_ALL_both_event_tukey <- sst_ALL_both_event %>%
   filter(lubridate::year(date_peak) >= 2012) %>% 
   select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
@@ -449,7 +439,7 @@ The results of the Tukey tests shown above demonstrate that, except for one comp
 
 #### Confidence intervals
 
-```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for each of the shortened time series. Each panel shows the results for one of four MHW metrics. The X axis shows which site the CI bars are representing, and the Y axis shows the spread of the confidence around the population mean of the MHW metric."}
+```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for each of the shortened time series. Each panel shows the results for one of four MHW metrics. The X axis shows which year the time series began that the CI bars are representing, and the Y axis shows the spread of the confidence around the population mean of the MHW metric. The bottom row of panels shows the count of events detected from 2012 -- 2014, depending on what the climatology period was, as seen on the X axis."}
 # ANOVA CI
 sst_ALL_both_event_CI <- sst_ALL_both_event %>% 
   filter(lubridate::year(date_peak) >= 2012) %>% 
@@ -460,26 +450,36 @@ sst_ALL_both_event_CI <- sst_ALL_both_event %>%
   unnest()
 
 CI_plot_1 <- ggplot(sst_ALL_both_event_CI, aes(x = year_index)) +
-  geom_errorbar(position = position_dodge(0.9), width = 0.5,
-                aes(ymin = lower, ymax = upper)) +
-  geom_point(aes(y = mid), colour = "red", size = 0.5) +
-  facet_grid(metric+trend~site, scales = "free_y") +
+  geom_errorbar(width = 1, alpha = 0.8,
+                aes(ymin = lower, ymax = upper, linetype = trend)) +
+  # geom_text(aes(label = n, y = upper*1.3, colour = trend), size = 3) +
+  geom_point(aes(y = mid, colour = trend), size = 1, alpha = 0.7) +
+  facet_grid(metric~site, scales = "free_y") +
   labs(x = "start year", y = "value")
-CI_plot_1
+# CI_plot_1
+CI_plot_1.1 <- ggplot(filter(sst_ALL_both_event_CI, metric == "duration"), 
+                      aes(x = year_index, y = n, fill = trend)) +
+  geom_bar(stat = "identity", position = "identity", alpha = 0.6) +
+  # geom_text(aes(label = n, y = upper*1.3, colour = trend), size = 3) +
+  # geom_point(aes(y = mid, colour = trend), size = 1, alpha = 0.7) +
+  facet_wrap(~site) +
+  labs(x = "start year", y = "event count (n)")
+# CI_plot_1.1
+ggarrange(CI_plot_1, CI_plot_1.1, ncol = 1, nrow = 2, common.legend = T, heights = c(1, 0.5))
 ```
 
-When we look at the confidence intervals (CI) we see that all of the MHW metrics for all of the time periods overlap rather well (both normal and de-trended), with the exception of the most recent few years in `WA`. We also see that the duration/intensity of MHWs tend to increase for the first few years of data being added on, but that this flattens out around ~ 7 -- 10 years. This effect is more pronounced in the time series that have not had their long-term trends removed, but is not always the case. Please note that the events being compared here, and so the CIs seen above, are only for those with pek dates in the years 2012 -- 2014 so as not to violate the assumption that the sample sizes are similar.
+Please note that the events being compared here, and so the CIs seen above, are only for those with peak dates in the years 2012 -- 2014 so as not to violate the assumption that the sample sizes are similar. Therefore the overall number of events tends to be lower, which has led me to use basic bootstrapping to create the CIs above. This figure is rather busy, but we see on the bottom row that nearly twice as many MHWs were detected in the `NW_Atl` than the other two time series. This trend tends to hold true for all of the CIs. So when fewer events are detected, the CIs spread out. Looking at the top four rows we also see that when more years of data are used to calculate the climatologies with detrended data, fewer events are detected, but they tend to be stronger/longer. These differences generally do not appear to be significant.
 
 
 ## Re-sampling
 
-With the effect of shortening time series on the detection of events quantified, we will now perform [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to simulate one hundred 10, 20, and 30 year time series in order to quantify how much more variance one may expect from shorter time series. This will be measured through the following statistics:
+With the effect of shortening time series on the detection of events quantified, we will now perform [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to simulate one hundred time series at each length of 3 -- 34 years in order to more thoroughly quantify the effects of short time series. In addition to the statistica methods used in the previous section, this will also be measured through the following statistics:
 
  * for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 re-samplings;
  * for each doy, calculate the RMSE of the re-sampled means relative to the true climatology (i.e. the one produced from the 30-year long time series);
  * correspondence of detected events when using climatologies calculated from reduced time series vs. when using the full duration time series climatologies.
 
-The secondary goal of this step in this section of the methodology is to also identify how much more accurate this re-sampling may be able to make the climatologies generated from shorter time series as a technique for addressing this potential short-coming (yes, that was a pun).
+The secondary goal of this step in this section of the methodology is to also identify how much more accurate this re-sampling may be able to make the climatologies generated from shorter time series.
 
 ```{r re-sample-func}
 ### Need to insert here a function that does what 'sample_n' does
@@ -509,7 +509,33 @@ parse_date_sst <- function(data, rep_col, len) {
 ```
 
 ```{r re-sample-clims, eval = FALSE}
-sst_ALL_doy <- sst_ALL %>%
+
+# Calculate one specific clim period
+ts2clm_sub <- function(year_index, df){
+  res <- ts2clm(df, climatologyPeriod = c(paste0(year_index,"-01-01"), "2014-12-31")) %>% 
+    filter(lubridate::year(t) >= year_index) %>% 
+    mutate(year_index = year_index)
+  return(res)
+}
+
+# Calculate the full range of clims in a time series
+ts2clm_ALL <- function(df){
+  seq_year <- seq(min(lubridate::year(df$t)), 
+                  max(lubridate::year(df$t))-2)
+  res <- plyr::ldply(seq_year, .fun = ts2clm_sub, .parallel = T, df = df)
+  return(res)
+}
+
+sst_repl <- function(sst) {
+  sst.sampled <- sst %>% 
+    mutate(sample_10 = map(data, sample_n, 10, replace = TRUE),
+           sample_20 = map(data, sample_n, 20, replace = TRUE),
+           sample_30 = map(data, sample_n, 30, replace = TRUE))
+  return(sst.sampled)
+}
+
+
+sst_ALL_doy <- sst_ALL_detrend %>%
   mutate(doy = yday(as.Date(t))) %>%
   nest(-site, -doy)
 
@@ -683,7 +709,7 @@ As with the SD values in the previous figure, we see in the RMSE figure above th
 
 ### MHW metrics
 
-#### ANOVA
+#### ANOVA _p_-values
 
 ```{r re-sample-stats-temp-swap}
 # It is necessary to replace the 'temp' values in the smoothed data with the real values
@@ -765,11 +791,6 @@ ggplot(sst_ALL_aov_CI, aes(x = site)) +
 The CI plot above demonstrates that the general increase in MHW metrics in longer time series detected in the first round of experiments (when the real 10, 20, and 30 year baselines were used to generate a single clim each) does not hold up when we re-sample the data 100 times. The centre around which the CI spread shrinks dramatically with re-sampling, but we also see how the three different time periods converge around 0, whereas the samples from  the real data show the effect that the long-term trend has in the calculation of the metrics. The reason that we do not see the trend of increasing MHW duration/intensity with the re-sampling is that re-sampling effectively removes the decadal trend from the data. It is for this reason that I recommended at the start of this document that a second type of re-sampling be performed that would better maintain the effect that the decadal trend has on the data.
 
 Note that in an earlier version of this vignette bootstrapping was also tested. It has since been removed as it was shown to not be effective. This was because the bootstrapping of random values to create climatologies created much lower values than the real data because while the bootstrapping does sample the data randomly, it then takes those _n_ random samples and creates one mean value from them. This then makes artificially even values and so when one wants to calculate a 90th percentile threshold from this it is almost identical to the seasonal climatology.
-
-
-#### Median difference between decades
-
-(RWS: I've not calculated the median differences for the re-sampled data as one may see that they are practically identical.)
 
 
 ## Categories
@@ -981,12 +1002,10 @@ The above figure shows a similar pattern to the previous one, except that the di
 (RWS: As proposed by AJS, were this section of the analysis to be completed, the median and minimum five events should also be compared.)
 
 
-## De-trended MHW detection
+## Trend control
 
-(RWS: I've not yet started on this section as I'm not convinced it should be included in this paper.)
+(RWS)[This section will seek to understand the elationship between long-term trends and the effects they have on MHW results. This will be accomplished by adding known amounts of trends to de-trended time series and quantifying the results.]
 
-(ECJO)[We clearly need to have a general conversation about this since I feel the opposite.]
-(RWS)[I see more now why this is necessary. Perhaps rather than a de-trended results section, the whole paper should focus on de-trended data.]
 
 ## Arguments
 
@@ -1006,6 +1025,7 @@ Lastly we will now go about reproducing all of the checks made above, but based 
 (ECJO)[One advantage of the Fourier transform method (or, I think equivalently harmonic regression) is that it is VERY fast.  Much faster than the method used in the MHW code.  I also think you can probably get away with shorter time series using this method than with the “standard MHW climatology” method]
 
 (RWS)[I suppose then that I will need to look into this.]
+
 
 ## Best practices
 

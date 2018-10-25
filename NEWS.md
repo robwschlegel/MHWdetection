@@ -1,3 +1,11 @@
+# MHWdetection 0.0.4  (2018-010-25)
+
+* Big changes coming through
+* Added two new vignettes:
+  * `Assessing the effects of long-term trends`
+  * `Assessing the effects of variance`
+  
+
 # MHWdetection 0.0.3  (2018-010-24)
 
 * Finished editing the "simply shorter" section of the time series length vignette
