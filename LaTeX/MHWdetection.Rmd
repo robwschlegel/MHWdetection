@@ -125,8 +125,9 @@ In a sense it would be good to demonstrate our technique on in situ data however
 And moving to in-situ data there are many relatively short records that are of value to examine (e.g. think of the IMAS FAC records around Tassie we used in the Tasman Sea MHW paper -- many of those were 5-10 years in length).
 [/ECJO]
 
+## Do I have enough data?
 
-## Assessing the effect of time series duration
+### Assessing the effect of time series duration
 [ECJO]
 So this subsection and the remainder of Section 2 should go after the detailed “Outstanding issues” section, wherever that ends up going.
 [/ECJO]
@@ -136,7 +137,7 @@ So this subsection and the remainder of Section 2 should go after the detailed �
 - Bootstrapping (I have used 100 resamples, but this can be adjusted upwards if necessary).
 [/AJS]
 
-### Climatology estimation methods
+#### Climatology estimation methods
 [AJS]
 Both the 11 basis function Fourier fit and the MHW climatology function capture the dip you speak about better, but there are trade-offs:
 
@@ -151,7 +152,7 @@ For shorter time series, it might be better to use a more sinusoidal approximati
 I think presenting an analysis like this in the paper, either in full or in part, would be helpful.  (Regarding "in part": I like using the WA time series as a "standard case study example".)  Then we can provide an expert interpretation of the pros and cons of each method, as you do in your 3 points near the end of the email and the following paragraph, and the technical tools to perform each method (through the code itself). That then leaves the user with expert recommendations and can make their own informed choice, given what they know about their data and what they want to prioritise/consider in their own analysis.
 [/ECJO]
 
-### Standard climatologies (i.e. 11-day windowHalfWidth + 31-day smoothPercentile)
+#### Standard climatologies (i.e. 11-day windowHalfWidth + 31-day smoothPercentile)
 [AJS]
  - Also assess the effect of systematic varying windowHalfWidth and smoothPercentile and studying the outcomes for the three time series lengths.
  - Measurement metrics:
@@ -161,7 +162,7 @@ I think presenting an analysis like this in the paper, either in full or in part
 [/AJS]
 
 
-### Fourier transform climatologies
+#### Fourier transform climatologies/harmonic regression
 [ECJO]
 I think this is just harmonic regression right? i.e. regression of sines and cosines with annual, semi-annual, … periods onto the SST time series. I feel that would be the more commonly understood way of thinking about this?
 
@@ -169,13 +170,13 @@ Or do you actually perform an FFT on the temperature time series, isolate the fr
 [/ECJO]
 
 
-### Analysis of short-duration, high resolution gridded SSTs
+#### Analysis of short-duration, high resolution gridded SSTs
  - Comparison of detected events:
     - compare reference time series vs. other co-located SST data;
     - compare in special conditions where events may be expected, but are not present in the dOISST data due to constraints resulting from it not being of high enough resolution; e.g. in upwelling regions, embayments, etc.
 
 
-## Assessing the effect of missing data
+### Assessing the effect of missing data
 [ECJO]
 Why the distinction [between random and non-random]?  I think what it’s going to come down to is how long the periods of missing data are, and how much of the time series as a whole is missing.  Regardless of if it’s random or not.
 
@@ -184,13 +185,15 @@ Re: random vs. non-random missing data.  I see what you mean now... and both are
 "random missing data" -> "missing data", and we wrap "non-random missing data" into the same section/discussion.  We can handle regular seasonal gaps (e.g. sea ice cover) as one of several possible cases.  The other obvious case (at the other end of the spectrum) would be missing data that occurs in short enough periods that we can safely interpolate over the gaps (and we should recommend a time period....maybe <=5 days?). And then there is an intermediate case with some periods of missing data that spans longer than we are willing to interpolate over.  Which, according to the algorithm as it stands, will lead to MHWs starting/ending when they encounter missing value --- maybe not ideal?
 [/ECJO]
 
-## Assesing the effect of long-term trends
+
+## The role of long-term trends
 
 
 ## Assesing the effect of time series variance
 
 
 ## Best practices
+
 [ECJO]
 This sounds like what the outcome of our study will be. So it should be placed later, in the discussion or conclusions, after we have demonstrated all the tests, etc..
 
@@ -241,17 +244,22 @@ The investigation into the effect of [different methods](https://robwschlegel.gi
 
 # Discussion
 
+## Do I have enough data?
 
-## Time series length
+
+### Time series length
 
 
-## Missing data
+### Missing data
+
+
+### Decision tree
+
+
+## Long-term trends
 
 
 ## Variance
-
-
-## Long-term trend
 
 
 ## Best practices

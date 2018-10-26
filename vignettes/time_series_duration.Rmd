@@ -302,12 +302,12 @@ detrend <- function(df){
 # }
 
 # Calculate the full range of clims in a time series
-ts2clm_ALL <- function(df){
-  seq_year <- seq(min(lubridate::year(df$t)), 
-                  max(lubridate::year(df$t))-2)
-  res <- plyr::ldply(seq_year, .fun = ts2clm_sub, .parallel = T, df = df)
-  return(res)
-}
+# ts2clm_ALL <- function(df){
+#   seq_year <- seq(min(lubridate::year(df$t)), 
+#                   max(lubridate::year(df$t))-2)
+#   res <- plyr::ldply(seq_year, .fun = ts2clm_sub, .parallel = T, df = df)
+#   return(res)
+# }
 ```
 
 ```{r compare-funcs}
@@ -455,7 +455,7 @@ parse_date_sst <- function(df){
 df <- sst_ALL_parse %>% 
   filter(rep == 1, site == "WA", year_index2 == 2010) %>% 
   # group_by(rep, site, year_index2) %>% 
-  select(-rep, -site, -year_index2)
+  select(-rep, -site, -year_index2, -doy)
 ts2clm_sub <- function(df){
   year_start <- df$year_index[1]
   res <- ts2clm(df, climatologyPeriod = c(paste0(year_start,"-01-01"), "2014-12-31")) %>%
@@ -493,7 +493,7 @@ sst_repl <- function(df) {
 }
 
 # Re-sample the data 100 times
-sst_ALL_repl <- purrr::rerun(1, sst_repl(sst_ALL_doy)) %>%
+sst_ALL_repl <- purrr::rerun(1, sst_repl(sst_ALL_detrend)) %>%
   map_df(as.data.frame, .id = "rep")
 
 # Correct dates for upcoming climatology calculations
