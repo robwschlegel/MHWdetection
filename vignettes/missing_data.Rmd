@@ -597,7 +597,10 @@ I'm a little bit surprised at the results from the statistical climatology compa
 
 The impact this may have on the MHWs (for the periods of the year where data are present) is something I am very much interested in seeing. I'm really not sure what the effect may be...
 
-```{r ice-event-ttest, fig.cap="Heatmap showing the t-test results (_p_-value) comparing MHW metrics for events detected in a complete time series vs. ice coverage. Events detected in the complete time series whose peak intensity dates occurred during the ice coverage months were removed before the comparions were made.S"}
+
+#### t-test
+
+```{r ice-event-ttest, fig.cap="Heatmap showing the t-test results (_p_-value) comparing MHW metrics for events detected in a complete time series vs. ice coverage. Events detected in the complete time series whose peak intensity dates occurred during the ice coverage months were removed before the comparions were made."}
 
 # Calculate events
 suppressWarnings(
@@ -762,6 +765,8 @@ Consistently throughout we see that any minor changes to the time series have ap
 
 #### MHW metrics
 
+##### t-test
+
 ```{r 2-day-event-ttest, fig.cap="Heatmap showing the t-test results (_p_-value) comparing MHW metrics for events detected in a complete time series versus one missing weekend days."}
 # Calculate events
 sst_ALL_2_day_event <- sst_ALL_2_day_clim %>% 
@@ -805,11 +810,13 @@ ggplot(sst_ALL_2_day_event_ttest_p, aes(x = site, y = stat)) +
 The figure above shows the results of t-tests for each metric between the complete time series and when the weekend temperature data have been removed. There is no appreciable impact on the detected duration/intensities.
 
 
-### Missing _n_ consecutive days
+### Missing _n_-consecutive days
 
 (RWS: I'm rather leaving this section for now in favour of looking at the relationship between the number of total consecutive missing days and the effect that has on the results.)
 
 (ECJO)[I think that’s good. I think you can probably get this info from the first batch of analyses you did on random data removal.]
+
+(RWS: If it is not shown in detail above, the relationship between n-missing consecutive days will be quantified here.)
 
 ## Best practices
 

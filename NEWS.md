@@ -1,4 +1,8 @@
-# MHWdetection 0.0.4  (2018-010-25)
+# MHWdetection 0.0.4  (2018-10-30)
+
+* More editing on the time series length vignette
+
+# MHWdetection 0.0.4  (2018-10-25)
 
 * Big changes coming through
 * Added two new vignettes:
@@ -6,18 +10,18 @@
   * `Assessing the effects of variance`
   
 
-# MHWdetection 0.0.3  (2018-010-24)
+# MHWdetection 0.0.3  (2018-10-24)
 
 * Finished editing the "simply shorter" section of the time series length vignette
 
-# MHWdetection 0.0.3  (2018-010-23)
+# MHWdetection 0.0.3  (2018-10-23)
 
 * Beginning aggressive editing of text
 * Allowing calculation of events for all year ranges from 3 -- 34
   * Not just 10 20, and 30 years
 * Removing all `var` results
 
-# MHWdetection 0.0.3  (2018-010-14)
+# MHWdetection 0.0.3  (2018-10-14)
 
 * Incorporated ECJO's most recent round of comments into the main two vignettes.
 
