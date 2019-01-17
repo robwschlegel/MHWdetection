@@ -6,7 +6,7 @@ description: "This vignette goes into depth on the effects of missing data on th
 # output: word_document
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Assessing the effects of missing data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: bibliography.bib

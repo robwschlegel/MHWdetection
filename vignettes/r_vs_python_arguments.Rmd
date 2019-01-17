@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 description: "This vignette compares the code/work flow for altering the additional arguments found within the base Python and R detection function."
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Arguments for MHW outputs in R and Python}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: bibliography.bib

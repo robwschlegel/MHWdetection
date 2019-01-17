@@ -6,7 +6,7 @@ description: "This vignette investigates the effects of variance in a time serie
 # output: word_document
 output: rmarkdown::html_vignette
 vignette: >
- %\VignetteIndexEntry{Vignette Title}
+ %\VignetteIndexEntry{Assessing the effects of variance}
  %\VignetteEngine{knitr::rmarkdown}
  %\VignetteEncoding{UTF-8}
 bibliography: bibliography.bib
