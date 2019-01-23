@@ -12,6 +12,13 @@ vignette: >
 bibliography: bibliography.bib
 ---
 
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
+                      echo = TRUE, warning = FALSE, message = FALSE, 
+                      eval = FALSE, tidy = FALSE)
+options(scipen=999)
+```
+
 ## Overview
 
 The variance in a time series does not tend to have a linear relationship with whatever results one may be hoping to extract from said time series, other than to make the results less clear. It is also my opinion that one should not alter the variance of a time series artificially as this is not something that can be done in an entirely controlled manner that does not affect the "flavour" of the time series. For this reason I propose here a different methodology from the [time series duration](https://robwschlegel.github.io/MHWdetection/articles/time_series_duration.html), [missing data](https://robwschlegel.github.io/MHWdetection/articles/missing_data.html), and [trend](https://robwschlegel.github.io/MHWdetection/articles/trend.html) vignettes.

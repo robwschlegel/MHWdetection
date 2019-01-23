@@ -12,6 +12,13 @@ vignette: >
 bibliography: bibliography.bib
 ---
 
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
+                      echo = TRUE, warning = FALSE, message = FALSE, 
+                      eval = FALSE, tidy = FALSE)
+options(scipen=999)
+```
+
 ## Overview
 
 The following text has presently just been copy pasted from the time series duration vignette and serves as a place holder for the workflow that will be used for this vignette. It is not actually meant to be read at the moment...

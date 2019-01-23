@@ -1,7 +1,12 @@
+# MHWdetection 0.0.4  (2019-01-23)
+
+* Performed a deep dive on the issues around missing data and the quantile thresholds
+    * Must look at step-by-step process in Python code to determine the issue
+
 # MHWdetection 0.0.4  (2019-01-17)
 
 * Checked that R and Python base results still match up after heatwaveR v0.3.6 release
-    * The threshold calculations appear to be affected differently bu large amounts of missing data
+    * The threshold calculations appear to be affected differently by large amounts of missing data
 
 # MHWdetection 0.0.4  (2018-10-30)
 

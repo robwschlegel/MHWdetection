@@ -14,12 +14,12 @@ bibliography: bibliography.bib
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 4, fig.align = 'center',
                       warning = FALSE, message = FALSE, 
-                      tidy = FALSE)
+                      eval = TRUE, tidy = FALSE)
 ```
 
 ## Overview
 
-Building on the identical default functionality shared between the two languages, this vignette goes further to look at the additional functionality contained within the two packages. Along the way the outputs are checked for consistency and all of the arguments for all of the functions are tweaked to look for irregularities. This is necessary before only one language is used to further investigate best practices for dealing with sub-optimal time series in the detection of MHWs.
+Building on the default functionality shared between the two languages, this vignette goes further to look at how changing the default arguments may affect the results. Along the way the outputs are checked for consistency and all of the arguments for all of the functions are tweaked to look for irregularities. This is necessary before only one language is used to further investigate best practices for dealing with sub-optimal time series in the detection of MHWs.
 
 Preferably this step could have been done programmatically, without creating an army of outputs as seen below. The R package __`reticulate`__ does not seem to want to play along though so I must rather run the Python code, save the outputs, load them into R and compare the results natively in just R... So let's get started.
 
@@ -210,7 +210,7 @@ ggarrange(r_fig, py_fig, ncol = 1, nrow = 2)
 
 As we may see in the figure above, the difference is not perceptible to the human eye. Looking very closely at the clim outputs manually one may see that in the R code, the threshold on `2013-12-29` is just below the temperature value due to a rounding difference from the Python code at the third decimal place.
 
-Also above one may see that even though the values correlate nearly perfectly, the sum of the seasonal climatology value output by R are `1.98122` less than the Python output. Considering that there are 12053 values, the average difference is only `0.00016`, which is not terribly much at all. The issue appears to be in the calculation of the threshold climatology. This value is not consistently different based on the `pctile` value used. It varies quite a bit. With the sum difference at `pctile = 80` being `-13.86432`, the default of `pctile = 90` being `-6.563516`, `pctile = 95` being `-3.382435`, and `pctile = 80` being `28.37769`. This is strong evidence that the threshold values are being calculated using some different method that needs to be addressed. That being said, even at the largest difference of `28.37769`, that is still only an average difference per row of `0.002354409`
+Also above one may see that even though the values correlate nearly perfectly, the sum of the seasonal climatology value output by R are `1.98122` less than the Python output. Considering that there are 12053 values, the average difference is only `0.00016`, which is not terribly much at all. The issue appears to be in the calculation of the threshold climatology. This value is not consistently different based on the `pctile` value used. It varies quite a bit. With the sum difference at `pctile = 80` being `-13.86432`, the default of `pctile = 90` being `-6.563516`, `pctile = 95` being `-3.382435`, and `pctile = 99` being `28.37769`. This is strong evidence that the threshold values are being calculated using some different method that needs to be addressed. That being said, even at the largest difference of `28.37769`, that is still only an average difference per row of `0.002354409`
 
 Digging deeper still, let's pull up the old `RmarineHeatWaves` code and run another comparison with that to see if this difference is due to newer changes in the development of the `heatwaveR` package.
 
@@ -232,7 +232,7 @@ sum(default_r$event$intensity_max) - sum(default_py_event$intensity_max)
 default_event <- compare_event(default_r$event, default_r_old_event)
 default_event
 
-# Compare Python and old R clims  and intensities
+# Compare Python and old R clims and intensities
 cor(default_py_clim$seas, default_r_old_clim$seas_clim_year)
 sum(default_py_clim$seas) - sum(default_r_old_clim$seas_clim_year)
 cor(default_py_clim$thresh, default_r_old_clim$thresh_clim_year)
@@ -244,6 +244,8 @@ sum(default_py_event$intensity_max) - sum(default_r_old_event$int_max)
 default_event <- compare_event(default_r_old_event, default_py_event)
 default_event
 ```
+
+The differences between the old and new R implementation are minute to the point of being almost imperceptible.
 
 ## `smoothPercentileWidth` comparisons
 
@@ -338,6 +340,8 @@ sum(spw_no_py_clim$seas) - sum(spw_no_r$climatology$seas)
 sum(spw_no_py_clim$thresh) - sum(spw_no_r_old_clim$thresh_clim_year)
 sum(spw_no_py_clim$thresh) - sum(spw_no_r$climatology$thresh)
 ```
+
+Again, almost no difference.
 
 ## `windowHalfWidth` comparisons
 
@@ -558,6 +562,6 @@ A little surprising, but good to see, is that the length of gap between events d
 
 It appears as though, down to a very small degree, there are differences between the outputs of the two languages. That being said, these differences appear to be due to the rounding differences that exist between the languages and so it is not a fault of the code in either, nor are there fundamentally different processes being employed to make the calculations. Indeed, though minute differences may be found in the calculations of the seasonal and threshold climatologies, these differences are consistent. They do not vary. They may change in magnitude depending on the arguments supplied, but these differences never become larger than ~0.001 per row, which has been deemed here as acceptable. Interestingly, though not surprising in hindsight, is that the changing of the `windowHalfWidth` argument causes the largest difference between the languages. This makes sense because this argument determines how many values are meaned together in the beginning of the climatology calculations. And as the differences are due to rounding, that numerical fingerprint is boldest here.
 
-Depending on how some of the arguments were tweaked, the tow languages very rarely would detect one event more or less than the other. This was due to the odd day being just above or below the threshold by ~0.001 degrees or so. Very rare, but so is existent, hypothetically.
+Depending on how some of the arguments were tweaked, the two languages very rarely would detect one event more or less than the other. This was due to the odd day being just above or below the threshold by ~0.001 degrees or so. Very rare, but so is existence, hypothetically.
 
 Ultimately, I am very confident in saying that the outputs of these two languages are comparable.

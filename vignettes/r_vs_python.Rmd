@@ -186,7 +186,7 @@ mhw <- import("marineHeatWaves")
 
 One may run python code in it's native form within R by passing it as a character vector to `py_run_string()`.
 
-```{r python-strings, eval=TRUE}
+```{r python-strings}
 ## This is an R chunk ##
 
 py_run_string("t = np.arange(date(1982,1,1).toordinal(),date(2014,12,31).toordinal()+1)")
@@ -253,24 +253,31 @@ sum(res_clim_R$thresh) - sum(res_clim_Python$thresh)
 
 The seasonal and threshold climatologies correlate very well, but adding them up we see that the Python values are consistently higher. This is due to rounding differences between the languages. Even though the sum difference between the thresholds may look large at a value of ~6.5, considering this is over 12053 days of data, the difference is only ~0.0005/day. So I think it is safe to move on and look at the events.
 
-### Events
+### February 29th
 
-First we peek at a few specific values of interest.
+It was also recently brought to my attention by Zijie Zhao, author of the MATLAB distribution for MHW code, that Python and R calculate February 29th differently. With Python calculating the climatologies first, and then filling in the missing days, whereas R calculates February 29th first, and then the climatologies from that. So with that being said let's have a peek at the difference this may cause.
 
 ```{r}
 ## This is an R chunk ##
 
-cor(res_event_R$intensity_max, res_event_Python$intensity_max)
-sum(res_event_R$intensity_max) - sum(res_event_Python$intensity_max)
-cor(res_event_R$intensity_var, res_event_Python$intensity_var)
-sum(res_event_R$intensity_var) - sum(res_event_Python$intensity_var)
-cor(res_event_R$rate_onset, res_event_Python$rate_onset)
-sum(res_event_R$rate_onset) - sum(res_event_Python$rate_onset)
-cor(res_event_R$rate_decline, res_event_Python$rate_decline)
-sum(res_event_R$rate_decline) - sum(res_event_Python$rate_decline)
+res_clim_R_29 <- res_clim_R %>% 
+  filter(doy == 60) %>% 
+  select(seas, thresh) %>% 
+  distinct()
+res_clim_Python_29 <- res_clim_Python %>% 
+  filter(res_clim_R$doy == 60) %>% 
+  select(seas, thresh) %>% 
+  distinct()
+
+res_clim_R_29$seas - res_clim_Python_29$seas
+res_clim_R_29$thresh - res_clim_Python_29$thresh
 ```
 
-With that looking fine, we next run a for loop that will run a correlation on all rows with the same name.
+Another thing pointed out by Zijie is that Python and MATLAB calculate percentiles differently, this then is likely also true for R and Python. This would explain why the seasonal climatologies (`seas`) are always much closer than the thresholds (`thresh`) for all of these tests.
+
+### Events
+
+Below we have a for loop that will run a correlation on all rows with the same name, as well as find the sum difference between them.
 
 ```{r}
 ## This is an R chunk ##
@@ -298,6 +305,10 @@ for(i in 1:length(colnames(res_event_num))){
 na.omit(res_event)
 ```
 
+It is a bit odd that there is such a large difference between `intensity_var` for the two language. This implies that R is detecting larger differences in the intensity around the threshold than Python is. This may again be due to the differences in thresholds being detected, but that makes a rather small difference. It is perhaps more likely that variance is calculated slightly differently between languages. Looking at the source code one sees that this is calculated by first finding the variance of the intensity, and then the square root of that. These two calculations likely differ enough between the languages to be causing this. Ultimately it is of little concern as the variance values found throughout both packages are not of much interest to anyone. 
+
+We may also see that the difference in `intensity_max_abs` is a bit higher in Python than in R. This is rather surprising as `intensity_max_abs` simply shows the maximum temperature (independent of any thresholds etc.) experienced during that event. And considering that these  calculations were performed on the exact same time series, `intensity_max_abs` should always be exactly the same between the two languages. Looking at the climatology output one sees that the temperature is still correct, meaning that the difference must occur somewhere within the R function `detect_event`. Looking at the R source code we see that `intensity_max_abs` is calculated on line 298, for Python this is calculated on line 376. The reason for the difference is because R is looking for the maximum temperature throughout all dates for a given event, whereas Python is simply taking the temperature on the peak date of the event. This is a subtle but significant difference as this means this value is showing two different things. I'm not certain which is more appropriate, though I'm leaning towards the Python implementation.
+
 With all of our overlapping columns compared, and our differences and Pearson r values looking solid, let's finish off this basic comparison by finding which columns are not shared between the different language outputs. Also, please note that the apparently large differences between the `index_start`, `index_peak`, and `index_end` values are due to the different indexing methods of R and Python. R starts at 1 and Python at 0. The 
 
 ```{r}
@@ -315,7 +326,7 @@ It is also worth noting that the values for `index_start`, `index_peak`, and `in
 
 ### Missing data
 
-A bug was discovered in v0.3.3 of the R code with regards to the handling of missing data. Specifically, in the move to a C++ back-end, the R code stopped being able to handle missing data for the climatology calculations. This has since been corrected for is v0.3.4, but it is worthwhile to ensure that missing data are handled the same way.
+A bug was discovered in v0.3.3 of the R code with regards to the handling of missing data. Specifically, in the move to a C++ back-end, the R code stopped being able to handle missing data for the climatology calculations. This has since been corrected from v0.3.4 onwards, but it is worthwhile to ensure that missing data are handled the same way.
 
 First we'll create the dataframe with missing data:
 
@@ -372,13 +383,17 @@ mhws_random, clim_random = mhw.detect(t, sst_random)
 # Save climatology results
 clim_random_df = pd.DataFrame.from_dict(clim_random)
 clim_random_df.to_csv('data/clim_py_random.csv', sep = ',', index = False)
+mhws_random_df = pd.DataFrame.from_dict(mhws_random)
+mhws_random_df.to_csv('data/mhws_py_random.csv', sep = ',', index = False)
 #clim_ice_df = pd.DataFrame.from_dict(clim_ice)
 #clim_ice_df.to_csv('data/clim_ice_py.csv', sep = ',', index = False)
 ```
 
-With the Python climatologies calculated from the missing data, we will load the results and compare them to R.
+With the Python climatologies and events calculated from the missing data we'll now do the same for R.
 
 ```{r}
+## This is an R chunk ##
+
 # Load and prep missing data
 sst_WA_miss_random <- read_csv("data/sst_WA_miss_random.csv") %>% 
   dplyr::rename(temp = x) %>% 
@@ -386,20 +401,91 @@ sst_WA_miss_random <- read_csv("data/sst_WA_miss_random.csv") %>%
   select(t, temp)
 sst_WA_miss_random$temp[is.nan(sst_WA_miss_random$temp)] <- NA
 
+# caluclate R climatologies/events
+res_random_R <- detect_event(ts2clm(sst_WA_miss_random, climatologyPeriod = c("1982-01-01", "2014-12-31")))
+res_clim_random_R <- res_random_R$climatology
+res_event_random_R <- res_random_R$event
+
 # Load Python results
 res_clim_random_Python <- read_csv("data/clim_py_random.csv")
+res_event_random_Python <- read_csv("data/mhws_py_random.csv")
+```
 
-# caluclate R climatologies
-res_clim_random_R <- ts2clm(sst_WA_miss_random, climatologyPeriod = c("1982-01-01", "2014-12-31"))
+And then the comparisons of the `seas` and `thresh` values.
 
-# Compare
+```{r}
+## This is an R chunk ##
+
+# Compare clims/thresholds
 cor(res_clim_random_R$seas, res_clim_random_Python$seas)
 sum(res_clim_random_R$seas) - sum(res_clim_random_Python$seas)
 cor(res_clim_random_R$thresh, res_clim_random_Python$thresh)
 sum(res_clim_random_R$thresh) - sum(res_clim_random_Python$thresh)
 ```
 
-We may see from the results above that the values still correlate very strongly, if slightly less so than with no missing data. We see again that the Python values are higher overall for both the seasonal signal and the tyhreshold. This time however the differences are much larger. The seasonal signal is off by ~0.0004/day, which is acceptable, but the 90th percentile threshold is off by ~0.0695. This is too large of a difference and this issue will need to be investigated.
+We may see from the results above that the values still correlate very strongly, if slightly less so than with no missing data. We see again that the Python values are higher overall for both the seasonal climatology and the threshold. This time however the differences are much larger. The seasonal climatology is off by ~0.0004/day, which is acceptable, but the 90th percentile threshold is off by ~0.0695. This is too large of a difference and this issue will need to be investigated. It is most likely due to the difference in how quantiles are calculated between the languages though and so there may be little to do about it. Perhaps more importantly is how these differences may affect the events being detected.
+
+```{r}
+## This is an R chunk ##
+
+nrow(res_event_random_R)
+nrow(res_event_random_Python)
+```
+
+```{r}
+## This is an R chunk ##
+
+# Remove non-numeric columns
+res_event_random_num <- res_event_random_R %>% 
+  select_if(is.numeric)
+
+# Run the loop
+res_event_random <- data.frame()
+for(i in 1:length(colnames(res_event_random_num))){
+  if(colnames(res_event_random_num)[i] %in% colnames(res_event_random_Python)){
+    x1 <- res_event_random_R[colnames(res_event_random_R) == colnames(res_event_random_num)[i]]
+    x2 <- res_event_random_Python[colnames(res_event_random_Python) == colnames(res_event_random_num)[i]]
+    x <- data.frame(difference = round(sum(x1, na.rm = T) - sum(x2, na.rm = T), 4),
+                    var = colnames(res_event_random_num)[i])
+    # colnames(x)[1] <- "r"
+    rownames(x) <- NULL
+    } else {
+      x <- data.frame(difference = NA, var = colnames(res_event_random_num)[i])
+      }
+  res_event_random <- rbind(res_event_random, x)
+  }
+na.omit(res_event_random)
+```
+
+Because the count of events detected is not the same, we cannot run correlations. We can sum up the differences to get an idea of how far off things are, and we can see that the results are troubling. The differences in the `index_*` values can be discounted as we have already established that we have a different number of events. The next largest difference is that for `intensity_cumulative_abs`. Looking at the one event that is the same between the languages one may see that this value is the same for both, meaning that we may discount this difference as it is not due to calculation differences, but rather also due to the differing number of events. Regardless, it is an indicator that overall the much lower threshold in the R language is giving us results that look much more dire than the Python language. This is problematic and stems from the quantile calculation issue.
+
+I looked into this in quite some detail and it appears to stem not only from the calculation of quantiles being different, but also from the R quantile calculations never giving more than one additional decimal place of precision over the initial data, whereas the Python results float near infinity. This explains why the R results always tend to be lower, but does not account for why the presence of missing data has such a dramatic effect.
+
+```{r}
+## This is an R chunk ##
+
+clim_only_random_R <- res_clim_random_R %>% 
+  select(doy, seas, thresh) %>% 
+  distinct() %>% 
+  filter(doy != 60)
+
+clim_only_random_Python <- res_clim_random_Python %>% 
+  slice(1:365)
+
+cor(clim_only_random_R$seas, clim_only_random_Python$seas)
+sum(clim_only_random_R$seas) - sum(clim_only_random_Python$seas)
+cor(clim_only_random_R$seas, clim_only_random_Python$seas)
+sum(clim_only_random_R$thresh) - sum(clim_only_random_Python$thresh)
+```
+
+Looking at only the values for one seasonal climatology or threshold cycle we see that the differences are the same as when we compare all of the data. I don't know why they wouldn't be... but I wanted to check.
+
+After having gone over the R code very thoroughly I think the next course of action is to go through the step by step output of the Python code to see where exactly these changes begin to occur. It could be in the following places:  
+
+* clim_calc_cpp: The calculation of quantile values
+    * The rounding of the results to 0.001 will have an influence, but can't explain the size of the difference when missing data are present
+* smooth_percentile: RcppRoll::roll_mean is used for the rolling means and this may differ greatly from Python when missing data are present
+    * Line 290 in the Python code is where the function `runavg` is used for the same purpose
 
 ## Benchmarks
 
@@ -413,7 +499,7 @@ library(microbenchmark)
 library(RmarineHeatWaves)
 microbenchmark(detect(make_whole(data = sst_WA), climatology_start = "1982-01-01", climatology_end = "2014-12-31"), times = 10)
 # The new R code
-microbenchmark(detect_event(ts2clm(data = sst_WA, climatologyPeriod = c("1982-01-01", "2014-12-31"), robust = FALSE)), times = 10)
+microbenchmark(detect_event(ts2clm(data = sst_WA, climatologyPeriod = c("1982-01-01", "2014-12-31"))), times = 10)
 ```
 
 Unsurprisingly, the average for running the heatwave analysis on __`heatwaveR`__ 10 times comes out at ~0.194 seconds per calculations, which is faster than the average of ~0.730 with __`RmarineHeatWaves`__.
@@ -423,16 +509,16 @@ Unsurprisingly, the average for running the heatwave analysis on __`heatwaveR`__
 ```{python}
 import time
 total = 0
-for i in range(100):
+for i in range(10):
     start = time.clock()
     mhws, clim = mhw.detect(t, sst)
     end = time.clock()
     total += end-start
-bench_py = total/100
+bench_py = total/10
 print(bench_py)
 ```
 
-The average speed for running the Python code 10 times comes out at ~0.175 seconds, which is slgihtly faster than R. And the Python code is also calculating the event categories, which R is not. That is done in an additional step with `category()`. The R code is however allowing for a wider range of options for climatologies, and may be more easily multi-cored, as shown in this [vignette](https://robwschlegel.github.io/heatwaveR/articles/gridded_event_detection.html).
+The average speed for running the Python code 10 times comes out at ~0.175 seconds, which is slightly faster than R. And the Python code is also calculating the event categories, which R is not. That is done in an additional step with `category()`. The R code is however allowing for a wider range of options for climatologies, and may be more easily multi-cored, as shown in this [vignette](https://robwschlegel.github.io/heatwaveR/articles/gridded_event_detection.html).
 
 ## Conclusion
 
