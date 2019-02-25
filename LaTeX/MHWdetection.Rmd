@@ -17,11 +17,11 @@ The idea of hot seawater being problematic has been with humanity for a long tim
 It is perhaps belaboring the point to explain the danger that MHWs pose to the world, so below is a brief bulletted list outlining some of the more well studied MHWs and the impacts they have had:  
   
 - Mediterranean 2008:
-- South West coast of Australia 2010/11:
-- Northwest Atlantic 2012: 
-- "The Blob" Northeast Pacific Ocean 2013-16: 
-- Tasman Sea in 2015/16:
-- waters around tropical Australia in 2015/16:
+- South West coast of Australia 2010/11: (cite)
+- Northwest Atlantic 2012: (cite)
+- "The Blob" Northeast Pacific Ocean 2013-16: (cite) 
+- Tasman Sea in 2015/16: (cite)
+- waters around tropical Australia in 2015/16: (cite)
 
 
 # Marine heatwaves thus far
@@ -44,7 +44,7 @@ Before we outline the issues we intend to address below, it must be stressed tha
 
 There are a number of issues that were not within the scope of either @Hobday2016 or @Hobday2018 to address that we seek to investigate here. This breaks down into two main topics. The first topic is what can be done when a researcher wants to use a time series, but it does not meet the proscribed minimum requirements of: 1) 30 years and 2) no missing days. There are a number of methods within the already existing arsenal of tools that can address these concerns and we will lay them out here. The second broad topic is to determine how much of an effect long-term trends have on the accurate detection of events. @Oliver2018 has shown how dominant the climate change signal can be in the detection of events and we seek to break that down here, quantifying its effects in an informative manner.
 
-A final issue for consideration before beginning to investigate the outstanding issues outlined above was to ensure that the results generated for MHW detection from any programming language waould be the same. The MHW algorithm is currently available in [python](https://github.com/ecjoliver/marineHeatWaves), [R](https://cran.r-project.org/web/packages/heatwaveR/index.html), and [MATLAB](https://github.com/ZijieZhaoMMHW/m_mhw1.0). This included comparisons of the [default](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python.html) outputs, how changing the [arguments](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_arguments.html) effected the default outputs, as well as a comparison of the other [functionality](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_additional.html) provided between the two languages. It was found that while some style differences exist between the added functionality of the languages, the core climatology outputs are identical to within < 0.001 °C per measurement.
+A final issue for consideration before beginning to investigate the outstanding issues outlined above was to ensure that the results generated for MHW detection from any programming language waould be the same. The MHW algorithm is currently available in [python](https://github.com/ecjoliver/marineHeatWaves), [R](https://cran.r-project.org/web/packages/heatwaveR/index.html), and [MATLAB](https://github.com/ZijieZhaoMMHW/m_mhw1.0). This included comparisons of the [default](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python.html) outputs, how changing the [arguments](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_arguments.html) affected the default outputs, as well as a comparison of the other [functionality](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_additional.html) provided between the two languages. It was found that while some style differences exist between the added functionality of the languages, the core climatology outputs are identical to within < 0.001 °C per measurement.
     
 Before outlining the mthodology used in this paper, we have summaried some of the more commonly used data products for the detection of MHWs and what potential issues they may have. This information may then be used by the reader to more readily see which fixes may be most useful for them.
 
@@ -73,10 +73,6 @@ Table 1:
 |G1SST | 
 |MUR |
 
-Table 2:
-|Reanalysis data |Description |Spatial res. |Temporal res. |Start date |End date |Update |Advantages |Disadvantages |Solutions |Download |
-|------------------|------------------------------------------------|----------|--------|--------|-------|------|------|------|-------|-------|
-|NOAA OISST          |These are currenty the most commonly used data for the detection of MHWs.|
 
 [AJS]
 Also don’t think it is useful to make such a distinction. Simply accounting for the differences in time series length, temporal resolution, and gappiness should do—their effects will be the same regardless of the products being used.
@@ -85,6 +81,12 @@ Also don’t think it is useful to make such a distinction. Simply accounting fo
 [ECJO]
 Mentioning reanalysis (and models) is helpful as they are a class of product that allow us to look at the depth-structure of MHWs.
 [/ECJO]
+
+Table 2:
+|Reanalysis data |Description |Spatial res. |Temporal res. |Start date |End date |Update |Advantages |Disadvantages |Solutions |Download |
+|------------------|------------------------------------------------|----------|--------|--------|-------|------|------|------|-------|-------|
+|NOAA OISST          |These are currenty the most commonly used data for the detection of MHWs.|
+
 
 - _We also have a whole collection of in situ coastal (nearshore) water temperatures that are from 10-20 years long, but growing, and we would like to use them for MHW detection._
 - _e.g. the IMAS FAC records around Tassie we used in the Tasman Sea MHW paper -- many of those were 5-10 years in length_
@@ -200,6 +202,9 @@ In order to make this analysis more robust, the above methodology was also perfo
 ## Missing data
 
 
+### Non-daily data
+
+
 ## Long-term trends
 
 
@@ -209,16 +214,16 @@ In order to make this analysis more robust, the above methodology was also perfo
 <!-- ## Do I have enough data? -->
 
 
-### Time series length
+## Time series length
 
 
-### Missing data
+## Missing data
 
 
-### Long-term trends
+## Long-term trends
 
 
-### Decision tree
+## Decision tree
 
 
 ## Best practices
