@@ -1,3 +1,23 @@
+# MHWdetection 0.0.5  (2019-02-25)
+
+* More work on the skeleton
+* Beginning to flesh out the sections
+
+# MHWdetection 0.0.4  (2019-02-17)
+
+* Working over the skeleton
+
+# MHWdetection 0.0.4  (2019-02-15)
+
+* Back to business
+
+# MHWdetection 0.0.4  (2019-01-24)
+
+* Looking over skeleton of main text
+* Python issue was addressed
+  * The difference was caused by the default nature of how each language did/did not interpolate missing data
+  * The calculations otherwise still remained the same
+
 # MHWdetection 0.0.4  (2019-01-23)
 
 * Performed a deep dive on the issues around missing data and the quantile thresholds

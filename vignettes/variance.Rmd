@@ -26,3 +26,7 @@ The variance in a time series does not tend to have a linear relationship with w
 What I propose be done to measure the effects that time series variance may have on climatology and event estimation is that all of the normal steps be taken for calculating MHWs over the entire NOAA OISST dataset, and then R^2 values be calculated between the standard deviation at each pixel and the relevant climatology/MHW metrics that have been looked at elsewhere in this paper. In this way one has an organic/real-world tool to draw on for advising about how the variance one sees in ones time series may be affecting the detected events.
 
 This proposed methodology does however not control for any number of other important oceanographic features that will change regionally. But it is a good first step towards seeing if this is a useful thing to do. Should it be useful it can become part of the advice in the best practices section.
+
+## Conclusion
+
+This proposed step in the overall methodology was abandoned as it was determined not to be of enough importance to include in the paper.

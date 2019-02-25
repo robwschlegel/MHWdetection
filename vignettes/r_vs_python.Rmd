@@ -402,7 +402,8 @@ sst_WA_miss_random <- read_csv("data/sst_WA_miss_random.csv") %>%
 sst_WA_miss_random$temp[is.nan(sst_WA_miss_random$temp)] <- NA
 
 # caluclate R climatologies/events
-res_random_R <- detect_event(ts2clm(sst_WA_miss_random, climatologyPeriod = c("1982-01-01", "2014-12-31")))
+res_random_R <- detect_event(ts2clm(sst_WA_miss_random, maxPadLength = 10,
+                                    climatologyPeriod = c("1982-01-01", "2014-12-31")))
 res_clim_random_R <- res_random_R$climatology
 res_event_random_R <- res_random_R$event
 
@@ -418,9 +419,9 @@ And then the comparisons of the `seas` and `thresh` values.
 
 # Compare clims/thresholds
 cor(res_clim_random_R$seas, res_clim_random_Python$seas)
-sum(res_clim_random_R$seas) - sum(res_clim_random_Python$seas)
+mean(res_clim_random_R$seas) - mean(res_clim_random_Python$seas)
 cor(res_clim_random_R$thresh, res_clim_random_Python$thresh)
-sum(res_clim_random_R$thresh) - sum(res_clim_random_Python$thresh)
+mean(res_clim_random_R$thresh) - mean(res_clim_random_Python$thresh)
 ```
 
 We may see from the results above that the values still correlate very strongly, if slightly less so than with no missing data. We see again that the Python values are higher overall for both the seasonal climatology and the threshold. This time however the differences are much larger. The seasonal climatology is off by ~0.0004/day, which is acceptable, but the 90th percentile threshold is off by ~0.0695. This is too large of a difference and this issue will need to be investigated. It is most likely due to the difference in how quantiles are calculated between the languages though and so there may be little to do about it. Perhaps more importantly is how these differences may affect the events being detected.
