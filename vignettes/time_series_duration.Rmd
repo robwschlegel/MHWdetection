@@ -48,7 +48,6 @@ The effect this has on the climatologies will be quantified through the followin
  * A post-hoc Tukey test to determine where the difference in time series length for climatology creation become significant;
  * Pairwise Kolmogorov-Smirnoff tests will be used to determine if the distributions of the climatologies differ
  
- 
 The effect this has on the MHW metrics will be quantified with the following statistics:
 
  * SD of the MHW metrics from each 100 re-samplings per time series length;
@@ -61,14 +60,15 @@ In addition to checking all of the statistics mentioned above, it is also necess
 ```{r r-init}
 library(tidyverse)
 library(broom)
-library(heatwaveR)
+library(heatwaveR, lib.loc = "../../R-packages/")
+# cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
 library(lubridate) # This is intentionally activated after data.table
 library(fasttime)
 library(ggpubr)
 library(boot)
 library(FNN)
 library(mgcv)
-library(doMC); doMC::registerDoMC(cores = 3)
+library(doMC); doMC::registerDoMC(cores = 50)
 ```
 
 ```{r prep-funcs}
@@ -83,9 +83,6 @@ detrend <- function(df){
 #   geom_point() +
 #   geom_smooth(method = "lm") +
 #   facet_wrap(~site, nrow = 3)
-
-# A clomp of functions used below
-# Written out here for tidiness/convenience
 
 # Calculate only events
 detect_event_event <- function(df, y = temp){
@@ -184,25 +181,8 @@ clim_tukey <- function(df){
     unnest()
   return(res)
 }
-```
 
-```{r de-trend}
-# First put all of the data together and create a site column
-sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
-  mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 12053))
-
-# Then create a de-trended version
-sst_ALL_detrend <- sst_ALL %>% 
-  group_by(site) %>% 
-  do(detrend(.)) %>% 
-  ungroup() %>% 
-  as.tibble(.) %>% 
-  mutate(doy = yday(as.Date(t))) %>% 
-  select(site, doy, t, temp)
-```
-
-```{r re-sample-func}
-
+# Function for artificially correcting the years of the re-sampled time series
 # df <- sst_ALL_repl %>% 
 #   mutate(year_index2 = year_index) %>% 
 #   filter(year_index2 == 2010) %>% 
@@ -214,30 +194,27 @@ parse_date_sst <- function(df){
            d = day(t)) %>% 
     # group_by(site, rep, doy) %>%
     # summarise(n())
-    mutate(y = seq(unique(year_index), 2014)) %>%
+    mutate(y = seq(unique(year_index), 2018)) %>%
     mutate(t = as.Date(fastPOSIXct(paste(y, m, d, sep = "-")))) %>%
     select(-y, -m, -d) %>% 
     na.omit() # because of complications due to leap years
   return(parsed)
 }
-```
 
-```{r re-sample-time-series, eval = FALSE}
 # Calculate one specific clim period
-
 # df <- sst_ALL_parse %>% 
 #   filter(rep == 1, site == "WA", year_index2 == 2010) %>% 
   # group_by(rep, site, year_index2) %>% 
   # select(-rep, -site, -year_index2, -doy)
 ts2clm_sub <- function(df){
   year_start <- df$year_index[1]
-  res <- ts2clm(df, climatologyPeriod = c(paste0(year_start,"-01-01"), "2014-12-31")) %>%
+  res <- ts2clm(df, climatologyPeriod = c(paste0(year_start,"-01-01"), "2018-12-31")) %>%
     # filter(lubridate::year(t) >= year_index) %>%
     mutate(year_index = year_start)
   return(res)
 }
-# 
-# # Calculate the full range of clims in a time series
+
+# Calculate the full range of clims in a time series
 # ts2clm_ALL <- function(df){
 #   seq_year <- seq(min(lubridate::year(df$t)), 
 #                   max(lubridate::year(df$t))-2)
@@ -245,26 +222,58 @@ ts2clm_sub <- function(df){
 #   return(res)
 # }
 
-# df <- sst_ALL_detrend %>% 
-#   filter(site == "Med") #%>% 
-#   # select(-site)
-
-sample_all <- function(n_sample, df){
-  res <- sample_n(df, size = n_sample, replace = T) %>% 
-    mutate(year_index = 2014-n_sample+1)
+# Re-sample a time series for 30 randomly ordered years
+# df <- sst_ALL_detrend %>%
+  # filter(site == "Med") #%>%
+  # select(-site)
+# n_sample <- 10
+sample_30 <- function(df){
+  year_filter <- c(1,2,3)
+  while(length(unique(year_filter)) != 30){
+    year_filter <- factor(sample(1982:2018, size = 30, replace = F))
+  }
+  levels(year_filter) <- as.character(year_filter)
+  year_filter <- data.frame(year = as.character(year_filter), stringsAsFactors = F)
+  res <- df %>% 
+    mutate(year = as.character(year(t))) %>% 
+    right_join(year_filter, by = "year") %>% 
+    mutate(year_original = year,
+           month = month(t),
+           day = day(t),
+           year = factor(year, levels = 1989:2018),
+           raar = as.character(levels(year))) #%>% 
+    # mutate(t = as.Date(fastPOSIXct(paste(y, m, d, sep = "-"))))
   return(res)
 }
 
+# A wrapper function to resample the desired range of years
 sst_repl <- function(df) {
-  n_range <- seq(3, 33)
+  n_range <- 10:30
   res <- df %>% 
-    group_by(site, doy) %>% 
+    group_by(site) %>% 
     do(plyr::ldply(n_range, .fun = sample_all, .parallel = T, df = .)) %>% 
     ungroup() %>% 
     as.tibble(.)
   return(res)
 }
+```
 
+```{r de-trend}
+# First put all of the data together and create a site column
+sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
+  mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 13514))
+
+# Then create a de-trended version
+sst_ALL_detrend <- sst_ALL %>% 
+  group_by(site) %>% 
+  do(detrend(.)) %>% 
+  ungroup() %>% 
+  as.tibble(.) %>% 
+  mutate(doy = yday(as.Date(t))) %>% 
+  select(site, doy, t, temp)
+```
+
+```{r re-sample-time-series, eval = FALSE}
 # Re-sample the data 100 times
 sst_ALL_repl <- purrr::rerun(100, sst_repl(sst_ALL_detrend)) %>%
   map_df(as.data.frame, .id = "rep")
@@ -629,7 +638,7 @@ sst_ALL_clim_category_ALL <- sst_ALL_clim %>%
   select(-data) %>% 
   unnest(res)
 
-# The top 5 events froom 30 years
+# The top 5 events from 30 years
 sst_ALL_clim_category_30_top_5 <- sst_ALL_clim_category_ALL %>% 
   filter(decades == "clim_30",
          peak_date >= as.Date("1982-01-01"),
