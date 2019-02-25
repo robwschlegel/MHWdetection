@@ -85,12 +85,12 @@ detrend <- function(df){
 #   facet_wrap(~site, nrow = 3)
 
 # Calculate only events
-detect_event_event <- function(df, y = temp){
-  ts_y <- eval(substitute(y), df)
-  df$temp <- ts_y
-  res <- detect_event(df)$event
-  return(res)
-  }
+# detect_event_event <- function(df, y = temp){
+#   ts_y <- eval(substitute(y), df)
+#   df$temp <- ts_y
+#   res <- detect_event(df)$event
+#   return(res)
+#   }
 
 # Run an ANOVA on each metric of the combined event results and get the p-value
 event_aov_p <- function(df){
@@ -117,7 +117,6 @@ event_aov_tukey <- function(df){
   }
 
 # Calculate CIs using a bootstrapping technique to deal with the non-normal small sample sizes
-
 # df <- sst_ALL_both_event %>%
 #   filter(lubridate::year(date_peak) >= 2012,
 #          site == "WA",
@@ -125,7 +124,6 @@ event_aov_tukey <- function(df){
 #   select(year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>%
   # select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>%   
   # nest(-site, -trend)
-
 Bmean <- function(data, indices) {
   d <- data[indices] # allows boot to select sample 
     return(mean(d))
@@ -182,25 +180,6 @@ clim_tukey <- function(df){
   return(res)
 }
 
-# Function for artificially correcting the years of the re-sampled time series
-# df <- sst_ALL_repl %>% 
-#   mutate(year_index2 = year_index) %>% 
-#   filter(year_index2 == 2010) %>% 
-#   select(-year_index2)
-parse_date_sst <- function(df){
-  parsed <- df %>% 
-    mutate(y = year(t),
-           m = month(t),
-           d = day(t)) %>% 
-    # group_by(site, rep, doy) %>%
-    # summarise(n())
-    mutate(y = seq(unique(year_index), 2018)) %>%
-    mutate(t = as.Date(fastPOSIXct(paste(y, m, d, sep = "-")))) %>%
-    select(-y, -m, -d) %>% 
-    na.omit() # because of complications due to leap years
-  return(parsed)
-}
-
 # Calculate one specific clim period
 # df <- sst_ALL_parse %>% 
 #   filter(rep == 1, site == "WA", year_index2 == 2010) %>% 
@@ -232,30 +211,33 @@ sample_30 <- function(df){
   while(length(unique(year_filter)) != 30){
     year_filter <- factor(sample(1982:2018, size = 30, replace = F))
   }
-  levels(year_filter) <- as.character(year_filter)
-  year_filter <- data.frame(year = as.character(year_filter), stringsAsFactors = F)
-  res <- df %>% 
-    mutate(year = as.character(year(t))) %>% 
-    right_join(year_filter, by = "year") %>% 
-    mutate(year_original = year,
-           month = month(t),
-           day = day(t),
-           year = factor(year, levels = 1989:2018),
-           raar = as.character(levels(year))) #%>% 
-    # mutate(t = as.Date(fastPOSIXct(paste(y, m, d, sep = "-"))))
+  res <- data.frame()
+  for(i in 1:length(year_filter)){
+    df_sub <- df %>% 
+      filter(year(t) == year_filter[i],
+             # Remove leap-days here
+             paste0(month(t),"-",day(t)) != "2-29") %>% 
+      mutate(year = seq(1989,2018)[i],
+             month = month(t),
+             day = day(t),
+             year_orig = year(t)) %>% 
+      mutate(t = as.Date(fastPOSIXct(paste(year, month, day, sep = "-")))) %>% 
+      select(-year, -month, -day)
+    res <- rbind(res, df_sub)
+  }
   return(res)
 }
 
 # A wrapper function to resample the desired range of years
-sst_repl <- function(df) {
-  n_range <- 10:30
-  res <- df %>% 
-    group_by(site) %>% 
-    do(plyr::ldply(n_range, .fun = sample_all, .parallel = T, df = .)) %>% 
-    ungroup() %>% 
-    as.tibble(.)
-  return(res)
-}
+# sst_repl <- function(df) {
+#   n_range <- 10:30
+#   res <- df %>% 
+#     group_by(site) %>% 
+#     do(plyr::ldply(n_range, .fun = sample_all, .parallel = T, df = .)) %>% 
+#     ungroup() %>% 
+#     as.tibble(.)
+#   return(res)
+# }
 ```
 
 ```{r de-trend}
@@ -269,35 +251,43 @@ sst_ALL_detrend <- sst_ALL %>%
   do(detrend(.)) %>% 
   ungroup() %>% 
   as.tibble(.) %>% 
-  mutate(doy = yday(as.Date(t))) %>% 
-  select(site, doy, t, temp)
+  select(site, t, temp)
 ```
 
 ```{r re-sample-time-series, eval = FALSE}
 # Re-sample the data 100 times
-sst_ALL_repl <- purrr::rerun(100, sst_repl(sst_ALL_detrend)) %>%
+sst_ALL_repl <- purrr::rerun(100, sample_30(sst_ALL_detrend)) %>%
   map_df(as.data.frame, .id = "rep")
 save(sst_ALL_repl, file = "data/sst_ALL_repl.Rdata")
+```
 
-# Correct dates for upcoming climatology calculations
-sst_ALL_parse <- sst_ALL_repl %>% 
-  mutate(year_index2 = year_index) %>% 
-  group_by(site, rep, doy, year_index2) %>% 
-  parse_date_sst() %>%
-  ungroup() %>% 
-  # select(-year_index2) %>% 
-  as.tibble(.)
+```{r re-sample-clims-events, eval=FALSE}
+# NB: This chunk was run directly from a terminal as RMarkdown struggled too much with it
 
-# Calculate climatologies
-sst_ALL_clim <- sst_ALL_parse %>% 
-  group_by(rep, site, year_index2) %>% 
-  nest() %>% 
-  mutate(clims = map(data, ts2clm_sub))
-  # do(ts2clm_sub(df = .))
-  # do(ts2clm_sub(year_index = year_index, df = .))
+load("data/sst_ALL_repl.Rdata")
+
+# Calculate climatologies and events on shrinking time series
+# year_begin <- 2008
+shrinking_results <- function(year_begin){
+  sst_ALL_res <- sst_ALL_repl %>% 
+    select(-year_orig) %>% 
+    filter(year(t) >= year_begin) %>%
+    mutate(year_index = year_begin) %>% 
+    group_by(rep, site, year_index) %>%
+    nest() %>% 
+    mutate(clims = map(data, ts2clm, climatologyPeriod = c(paste0(year_begin,"-01-01"), "2018-12-31")),
+           events = map(clims, detect_event)) %>% 
+    select(-data, -clims) #%>% 
+    # unnest(events)
+  return(sst_ALL_res)
+}
+
+# Run this with preferably 21 cores for speed
+sst_ALL_smooth <- plyr::ldply(1989:2009, shrinking_results, .parallel = T)
 
 save(sst_ALL_smooth, file = "data/sst_ALL_smooth.Rdata")
 ```
+
 
 ```{r re-sample-clims-load}
 # This file is not uploaded to GitHub as it is too large
