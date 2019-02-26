@@ -85,7 +85,7 @@ Mentioning reanalysis (and models) is helpful as they are a class of product tha
 Table 2:
 |Reanalysis data |Description |Spatial res. |Temporal res. |Start date |End date |Update |Advantages |Disadvantages |Solutions |Download |
 |------------------|------------------------------------------------|----------|--------|--------|-------|------|------|------|-------|-------|
-|NOAA OISST          |These are currenty the most commonly used data for the detection of MHWs.|
+|BRAN |
 
 
 - _We also have a whole collection of in situ coastal (nearshore) water temperatures that are from 10-20 years long, but growing, and we would like to use them for MHW detection._
@@ -127,9 +127,6 @@ In order to make this analysis more robust, the above methodology was also perfo
 - _We can provide an expert interpretation of the pros and cons of each method, and the technical tools to perform each method (through the code itself)_
 - _That then leaves the user with expert recommendations and can make their own informed choice, given what they know about their data and what they want to prioritise/consider in their own analysis_
 - _Also assess the effect of systematic varying windowHalfWidth and smoothPercentile and studying the outcomes for the three time series lengths_
- - _Measurement metrics:_
-    - _for each day-of-year (doy) in the climatology, calculate the SD of the climatological means of the 100 bootstrapped samples;_
-    - _for each doy, calculate the RMSE of the re-sampled means relative to the true climatology (i.e. the one produced from the 30-year long time series);_
 
 
 - _Fourier transform climatologies/harmonic regression_
@@ -210,6 +207,7 @@ In order to make this analysis more robust, the above methodology was also perfo
 
 # Discussion
 
+The fact that there is such a broad range across the results shows that one must always excercise caution when using a sub-optimal time series. But that with a healthy dose of caution there is still much that can be done to ammeliorate the issues outlined in the results.
 
 <!-- ## Do I have enough data? -->
 
