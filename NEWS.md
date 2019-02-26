@@ -1,3 +1,7 @@
+# MHWdetection 0.0.5  (2019-02-26)
+
+* Working through the duration analyses
+
 # MHWdetection 0.0.5  (2019-02-25)
 
 * More work on the skeleton
