@@ -312,7 +312,7 @@ sst_ALL_smooth_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), clim_tukey
 save(sst_ALL_smooth_tukey, file = "data/sst_ALL_smooth_tukey.RData")
 ```
 
-```{r clim-tukey-box, fig.cap="Histogram showing the distribution of the difference in years for thresholds that were significantly different within the same time series when different lengths of the time series were used to calculate the thresholds."}
+```{r clim-tukey-hist, fig.cap="Histogram showing the distribution of the difference in years for thresholds that were significantly different within the same time series when different lengths of the time series were used to calculate the thresholds."}
 load("data/sst_ALL_smooth_tukey.RData")
 
 clim_tukey_sig <- sst_ALL_smooth_tukey %>% 
@@ -352,67 +352,103 @@ sst_ALL_smooth_cor_base <- sst_ALL_smooth %>%
 save(sst_ALL_smooth_cor_base, file = "data/sst_ALL_smooth_cor_base.RData")
 ```
 
-
-```{r clim-cor, fig.cap="Boxplots showing the distribution of Pearson's r values for the correlation between "}
+```{r clim-cor, fig.cap="Boxplots showing the distribution of Pearson's r values for the correlation between the mean and SD of the climatologies for the time series of varying lengths of each of the three reference time series."}
 load("data/sst_ALL_smooth_cor_base.RData")
 
 # library(corrr)
 sst_ALL_smooth_cor_length <- sst_ALL_smooth_cor_base %>% 
-  do(data.frame(t(cor(.[,4:8], .[,3])))) %>% 
+  do(data.frame(t(cor(.[,5:8], .[,3])))) %>% 
   gather(key = y, value = r, -rep, -site) %>% 
   mutate(x = "length")
 
 sst_ALL_smooth_cor_sd <- sst_ALL_smooth_cor_base %>% 
-  do(data.frame(t(cor(.[,c(3,5:8)], .[,4])))) %>% 
+  do(data.frame(t(cor(.[,c(5:8)], .[,4])))) %>% 
   gather(key = y, value = r, -rep, -site) %>% 
   mutate(x = "sd")
 
 sst_ALL_smooth_cor <- rbind(sst_ALL_smooth_cor_length, sst_ALL_smooth_cor_sd)
 
+ggplot(sst_ALL_smooth_cor, aes(x = y, y = r, fill = y)) +
+  geom_boxplot() +
+  scale_fill_viridis_d() +
+  facet_grid(site~x)
 ```
+
+The above figure shows us that all three reference time series respond relatively similarly with regards to the correlations of their climatology means and SD to the length and SD of the base temperatures from which the climatologies were derived. Though the patterns observed otherwise tell us little, it is an important finding to know that this dud pattern is consistent across the different reference time series. The other important pattern this figure shows is that the length of a time series appears to not have a consistent relationship with the resultant climatologies. Instead we see that it is the variance in the time series that tends to have a positive relationship with the variance in the climatologies.
+
+The pattern that is beginning to emerge from the results for the climatologies is that what matters most for the difference in the results is how much variance is present in the base time series. This variance is a representation of the presence of extreme temperature differences. Relating to the reseach question here this means large MHWs. It must therefore be investigated what the relationship is between categories of MHWs and the significant differences detected in the thresholds in the WA time series. It should also be taken into consideration that wheneber the re-sampled time series have the year 2011, the massive MHW, these will likely be the ones producing significantly different results.
 
 
 ## MHW metrics
 
-### ANOVA _p_-values
+With the effects of time series duration on the climatologies now mapped out it is ime to apply a similar methodology to the MHW metrics.
 
-```{r re-sample-stats-temp-swap}
-# It is necessary to replace the 'temp' values in the smoothed data with the real values
-sst_ALL_smooth_real <- sst_ALL_smooth %>% 
-  select(-temp) %>% 
-  left_join(sst_ALL, by = c("site", "t"))
+```{r}
+# Quick wrapper for getting results for ANOVA on events
+# df <- sst_ALL_smooth %>%
+#   filter(rep == "1", site == "WA") %>%
+#   select(-rep, -site)
+event_aov_tukey <- function(df){
+  res <- df %>% 
+    unnest(events) %>% 
+    filter(row_number() %% 2 == 0) %>% 
+    unnest(events) %>% 
+    filter(date_start >= "2009-01-01", date_end <= "2018-12-31") %>%
+    select(year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
+    mutate(year_index = as.factor(year_index)) %>% 
+    # unique() %>% 
+    nest() %>% 
+    mutate(aov = map(data, aov_p),
+           tukey = map(data, aov_tukey)) %>% 
+    select(-data) #%>% 
+    # unnest()
+  return(res)
+}
 ```
 
-```{r re-sample-stats-event-calc, eval=FALSE}
-# Then caluclate events using the many re-smapled clims on the real temperature data
-sst_ALL_smooth_event <- sst_ALL_smooth_real %>% 
-  group_by(site, id, rep) %>% 
-  nest() %>% 
-  mutate(res = map(data, detect_event_event)) %>%
-  select(-data) %>% 
-  unnest(res) %>% 
-  filter(date_start >= "2002-01-01", date_end <= "2011-12-31") %>% 
-  select(-c(index_start:index_end, date_start:date_end))
 
-save(sst_ALL_smooth_event, file = "data/sst_ALL_smooth_event.Rdata")
+### ANOVA _p_-values
+
+```{r re-sample-stats-event-calc, eval=FALSE}
+sst_ALL_event_aov_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), event_aov_tukey, .parallel = T)
+save(sst_ALL_event_aov_tukey, file = "data/sst_ALL_event_aov_tukey.RData")
 ```
 
 ```{r re-sample-stats-event-calc-load}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
-load("data/sst_ALL_smooth_event.Rdata")
+load("data/sst_ALL_event_aov_tukey.RData")
+```
 
-# Rename for project-wide consistency
-sst_ALL_smooth_event <- sst_ALL_smooth_event %>% 
-  rename(decades = id)
+```{r event-aov-box, fig.cap="Boxplots showing the range of _p_-values from ANOVA's for the different lengths of the 100 re-samplings for the three reference time series."}
+sst_ALL_event_aov <- sst_ALL_event_aov_tukey %>% 
+  select(-tukey) %>% 
+  unnest()
+
+label_count_event_aov_p <- sst_ALL_event_aov %>% 
+  group_by(site, metric) %>% 
+  filter(p.value <= 0.05) %>% 
+  summarise(count = n())
+
+ggplot(sst_ALL_event_aov, aes(x = metric, y = p.value, fill = metric)) +
+  geom_boxplot() +
+  # geom_jitter(alpha = 0.2, width = 0.1, aes(group = metric)) +
+  geom_label(data = label_count_event_aov_p, fill = "white",
+             aes(y = -0.1, label = count), show.legend = F) +
+  scale_fill_viridis_d() +
+  labs(y = "p-value", x = NULL) +
+  facet_wrap(~site) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+  
 ```
 
 ```{r re-sample-event-p, fig.cap="Heatmap showing the ANOVA results (_p_-values) when comparing the events detected based on climatologies created from 10, 20, or 30 years of re-sample data."}
 # ANOVA p
-sst_ALL_smooth_aov_p <- sst_ALL_smooth_event %>% 
-  select(site, decades, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
-  nest(-site) %>%
-  mutate(res = map(data, event_aov_p)) %>% 
+sst_ALL_smooth_event_aov_p <- sst_ALL_smooth_event %>% 
+  select(site, rep, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
+  nest(-site, -rep) %>%
+  mutate(res = map(data, aov_p)) %>% 
   select(-data) %>% 
   unnest() #%>% 
   # spread(key = metric, value = p.value) %>%
@@ -431,6 +467,7 @@ The heatmap above shows the ANOVA results (_p_-values) when one compares the eve
 
 (RWS: It would be worthwhile to compare the MHW metrics for each individual re-sampled time series against the MHW metrics from the real time series of the same length.)
 
+### Post-hoc Tukey test
 
 ### Confidence intervals
 
