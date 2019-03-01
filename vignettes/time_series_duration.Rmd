@@ -26,33 +26,34 @@ It has been shown that the length (duration) of a time series may be one of the 
 
 ## Time series shortening
 
-A time series derives it's usefulness from it's length. This is generally because the greater the number of observations (larger sample size), the more confident one can be about the resultant statistics. This is particularly true for decadal scale measurements and is why the WMO recommends a minimum of 30 years of data before drawing any conclusions about decadal (long-term) trends observed in a time series. We however want to look not at decadal scale trends, but rather at how observed MHWs compare against one another when they have been detected using longer or shorter time series. In order to to quantify this effect we will use the minimum and maximum range of time series available to us. The maximum length will be 37 years, as this is the full extent of the NOAA OISST data included in __`heatwaveR`__. The minimum length will be ten years so that we may still have enough MHWs detected between shortened time series to produce robust statistics.
+A time series derives it's usefulness from it's length. This is generally because the greater the number of observations (larger sample size), the more confident one can be about the resultant statistics. This is particularly true for decadal scale measurements and is why the WMO recommends a minimum of 30 years of data before drawing any conclusions about decadal (long-term) trends observed in a time series. We however want to look not at decadal scale trends, but rather at how observed MHWs compare against one another when they have been detected using longer or shorter time series. In order to to quantify this effect we will use the minimum and maximum range of time series available to us. The maximum length will be 37 years, as this is the full extent of the NOAA OISST data included in __`heatwaveR`__. The minimum length for comparing the seasonal signal and 90th percentile thresholds will be three years as his is the minimum number of years required to calculate a climatology. For comparing MHWs the minimum will be ten years so that we may still have enough events detected between shortened time series to produce robust statistics.
 
 Before we can discuss shortening techniques, we must first consider the inherent decadal trend in the time series themselves. This is usually the primary driver for much of the event detection changes over time [@Oliver2018]. Therefore, if we truly want to understand the effect that a shortened time series may have on event detection, apart from the effect of the decadal trend, we must de-trend the time series first. To this end there is an entire separate [vignette](https://robwschlegel.github.io/MHWdetection/articles/trend.html) that quantifies the effect of long-term trends on the detection of events.
 
-The time series shortening technique proposed here is [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html). This methodology takes the full 37 year de-trended time series and randomly samples _n_ years from it to simulate a 10 -- 30 year time series. One then uses the jumbled up, randomly selected years of data to create the seasonal signal and 90th percentile threshold (hereafter referred to as "the climatologies"). The real temperature data, in the correct day-of-year (doy) order, are still used against the re-sample created climatologies. Re-sampling the time series in this way is useful because it allows us to replicate random climatology creation 100 (or more) times for each time series length in order to produce a more confident estimation of how likely climatologies generated from certain time series lengths are to impact the accuracy of event detection.
+The time series shortening technique proposed here is [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html). This methodology takes the full 37 year de-trended time series and randomly samples _n_ years from it to simulate a 3 -- 37 year time series. One then uses the jumbled up, randomly selected years of data to create the seasonal signal and 90th percentile threshold (hereafter referred to as "the climatologies"). Re-sampling the time series in this way is useful because it allows us to replicate random climatology creation 100 (or more) times for each time series length in order to produce a more confident estimation of how likely climatologies generated from certain time series lengths are to impact the accuracy of event detection. It also allows us to see how consistent the size of MHWs are in a given time series, or if they very quite a bit depending on the years used.
 
-The WMO recommends that the period used to create a climatology be 30 years in length, starting on the first year of a decade (e.g. 1981), however; because we are going to be running these analyses on time series of many different lengths, it will be more consistent to use all of the years present in each as the climatology period. For example, if a time series spans 1989 -- 2018, that will be the period used for calculating the climatologies. Likewise, should the time series only span the years 2006 -- 2018, that will be the period used.
-
-
-## Re-sampling
-
-In this section we will compare the detection of events when we shorten time series using [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to simulate 100 time series at each length of 10 -- 30 year. This is presently being done with the three pre-packaged time series available in the __`heatwaveR`__ package and the python distribution, but eventually will be run on the global data.
+The WMO recommends that the period used to create a climatology be 30 years in length, starting on the first year of a decade (e.g. 1981), however; because we are going to be running these analyses on many time series shorter than 30 years, for the sake of consistency we will use all of the years present in each re-sampled time series them as the climatology period, regardless of length. For example, if a time series spans 1982 -- 2018, that will be the period used for calculating the climatologies. Likewise, should the time series only span the years 2006 -- 2018, that will be the period used.
 
 The effect this has on the climatologies will be quantified through the following statistics:
 
 - An ANOVA will compare the climatologies created from different lengths;
 - A post-hoc Tukey test to determine where the difference in time series length for climatology creation become significant;
-- Correlations between time series length/SD and seas/thresh mean/SD
+- Correlations between time series length/SD and seas/thresh mean/SD 
+- Kolmogorov-Smirnov test for where the climatologies diverge significantly from the 30 year climatologies
  
 The effect this has on the MHW metrics will be quantified with the following statistics:
 
 - ANOVA comparing the primary metrics for MHWs detected using different time series lengths;
 - A post-hoc Tukey test to show where the difference in time series length for event detection become significant;
 - Confidence intervals (CIs) for the measured metrics 
-- Correlations between time series length/SD and seas/thresh mean/SD
+- Correlations between time series length/SD and MHW metrics
  
 In addition to checking all of the statistics mentioned above, it is also necessary to record what the overall relationship is with the reduction of time series length and the resultant climatologies/metrics. For example, are MHWs on average more intense in shorter time series or less? We must also look into how the categories of the events are affected. This will form part of the best practice advice later.
+
+
+## Re-sampling
+
+Below we use [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to simulate 100 time series at each length of 3 -- 37 years on de-trended data. This is presently being done with the three pre-packaged time series available in the __`heatwaveR`__ package and the python distribution, but eventually will be run on the global data. The original data are appended to these 100 re-samples as `rep = 0`.
 
 ```{r r-init}
 library(tidyverse)
@@ -75,7 +76,7 @@ MHW_colours <- c(
 )
 ```
 
-```{r de-trend}
+```{r de-trend, eval=FALSE}
 # First put all of the data together and create a site column
 sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
   mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 13514))
@@ -98,19 +99,19 @@ sst_ALL_detrend <- sst_ALL %>%
 ```
 
 ```{r re-sample-time-series, eval = FALSE}
-# Function for creating a re-sample from 30 years of data
-sample_30 <- function(df){
+# Function for creating a re-sample from 37 years of data
+sample_37 <- function(rep){
   year_filter <- c(1,2,3)
-  while(length(unique(year_filter)) != 30){
-    year_filter <- factor(sample(1982:2018, size = 30, replace = F))
+  while(length(unique(year_filter)) != 37){
+    year_filter <- factor(sample(1982:2018, size = 37, replace = F))
   }
   res <- data.frame()
   for(i in 1:length(year_filter)){
-    df_sub <- df %>% 
+    df_sub <- sst_ALL_detrend %>% 
       filter(year(t) == year_filter[i],
              # Remove leap-days here
              paste0(month(t),"-",day(t)) != "2-29") %>% 
-      mutate(year = seq(1989,2018)[i],
+      mutate(year = seq(1982,2018)[i],
              month = month(t),
              day = day(t),
              year_orig = year(t)) %>% 
@@ -118,13 +119,23 @@ sample_30 <- function(df){
       select(-year, -month, -day)
     res <- rbind(res, df_sub)
   }
+  res$rep <- as.character(rep)
   return(res)
 }
 
 # Re-sample the data 100 times
-sst_ALL_repl <- purrr::rerun(100, sample_30(sst_ALL_detrend)) %>%
-  map_df(as.data.frame, .id = "rep")
+doMC::registerDoMC(cores = 25)
+sst_ALL_repl <- plyr::ldply(1:100, sample_37, .parallel = T)
+
+# Add the original data as rep = "0"
+sst_ALL_0 <- sst_ALL_detrend %>% 
+  mutate(year_orig = year(t),
+         rep = "0")
+
+sst_ALL_repl <- rbind(sst_ALL_0, sst_ALL_repl)
+
 save(sst_ALL_repl, file = "data/sst_ALL_repl.Rdata")
+rm(sst_ALL_0)
 ```
 
 ```{r re-sample-clims-events, eval=FALSE}
@@ -135,7 +146,7 @@ shrinking_results <- function(year_begin){
   sst_ALL_res <- sst_ALL_repl %>% 
     select(-year_orig) %>% 
     filter(year(t) >= year_begin) %>%
-    mutate(year_index = year_begin) %>% 
+    mutate(year_index = 2018-year_begin+1) %>% 
     group_by(rep, site, year_index) %>%
     nest() %>% 
     mutate(clims = map(data, ts2clm, 
@@ -146,18 +157,12 @@ shrinking_results <- function(year_begin){
   return(sst_ALL_res)
 }
 
-# Run this with preferably 21 cores for speed
-doMC::registerDoMC(cores = 11)
-sst_ALL_smooth <- plyr::ldply(1989:2009, shrinking_results, .parallel = T)
+# Run this preferably with at least 35 cores for speed, RAM allowing
+doMC::registerDoMC(cores = 50)
+sst_ALL_smooth <- plyr::ldply(1982:2016, shrinking_results, .parallel = T)
 
-save(sssst_ALL_smooth, file "data/sst_ALL_smooth.Rdata")
-```
-
-
-```{r re-sample-clims-load}
-# This file is not uploaded to GitHub as it is too large
-# One must first run the above code locally to generate and save the file
-load("data/sst_ALL_smooth.Rdata")
+save(sst_ALL_smooth, file = "data/sst_ALL_smooth.Rdata")
+rm(sst_ALL_repl)
 ```
 
 
@@ -194,11 +199,11 @@ aov_tukey <- function(df){
   return(aov_tukey)
 }
 
-# Quick wrapper for getting results for ANOVA on clims
+# Quick wrapper for getting results for ANOVA and Tukey on clims
 # df <- sst_ALL_smooth %>%
 #   filter(rep == "1", site == "WA") %>%
 #   select(-rep, -site)
-clim_aov <- function(df){
+clim_aov_tukey <- function(df){
   res <- df %>% 
     unnest(events) %>% 
     filter(row_number() %% 2 == 1) %>% 
@@ -207,86 +212,106 @@ clim_aov <- function(df){
     mutate(year_index = as.factor(year_index)) %>% 
     unique() %>% 
     nest() %>% 
-    mutate(res = map(data, aov_p)) %>% 
-    select(-data) %>% 
-    unnest()
-  return(res)
-}
-
-# Quick wrapper for getting results for Tukey on clims
-clim_tukey <- function(df){
-  res <- df %>% 
-    unnest(events) %>% 
-    filter(row_number() %% 2 == 1) %>% 
-    unnest(events) %>% 
-    select(year_index, seas, thresh) %>% 
-    mutate(year_index = as.factor(year_index)) %>% 
-    unique() %>% 
-    nest() %>% 
-    mutate(res = map(data, aov_tukey)) %>% 
-    select(-data) %>% 
-    unnest()
+    mutate(aov = map(data, aov_p),
+           tukey = map(data, aov_tukey)) %>% 
+    select(-data)
   return(res)
 }
 ```
 
 ```{r clim-aov-res, eval=FALSE}
-sst_ALL_smooth_aov <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), clim_aov, .parallel = T)
-save(sst_ALL_smooth_aov, file = "data/sst_ALL_smooth_aov.RData")
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_smooth.Rdata")
+doMC::registerDoMC(cores = 50)
+sst_ALL_smooth_aov_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), clim_aov_tukey, .parallel = T)
+save(sst_ALL_smooth_aov_tukey, file = "data/sst_ALL_smooth_aov_tukey.RData")
+rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)
 ```
 
-```{r clim-aov-box, fig.cap="Boxplots showing the range of _p_-values from ANOVA's for the different lengths of the 100 re-samplings for the three reference time series. A label at the bottom of the boxplot shows the number of re-samples that had significantly different results."}
-load("data/sst_ALL_smooth_aov.RData")
+```{r clim-aov-table}
+load("data/sst_ALL_smooth_aov_tukey.RData")
+
+sst_ALL_smooth_aov <- sst_ALL_smooth_aov_tukey %>% 
+  select(-tukey) %>% 
+  unnest()
 
 label_count_aov_p <- sst_ALL_smooth_aov %>% 
   group_by(site, metric) %>% 
   filter(p.value <= 0.05) %>% 
   summarise(count = n())
 
-ggplot(sst_ALL_smooth_aov, aes(x = metric, y = p.value, fill = metric)) +
-  geom_boxplot() +
-  # geom_jitter(alpha = 0.2, width = 0.1, aes(group = metric)) +
-  geom_label(data = label_count_aov_p, fill = "white",
-             aes(y = -0.1, label = count), show.legend = F) +
-  scale_fill_viridis_d() +
-  labs(y = "p-value", x = NULL) +
-  facet_wrap(~site) +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        legend.position = "bottom")
+knitr::kable(label_count_aov_p, 
+             col.names = c("Time series", "Climatology", "Significantly different"), 
+             caption = "Table 1: This table shows the results of 101 ANOVAs on the real and re-sampled time series with systematically shortened lengths from 37 -- 3 years. Note that the climatologies for the Med time series were never significantly different and so aren't shown here.")
+
+# ggplot(sst_ALL_smooth_aov, aes(x = metric, y = p.value, fill = metric)) +
+#   geom_boxplot() +
+#   # geom_jitter(alpha = 0.2, width = 0.1, aes(group = metric)) +
+#   geom_label(data = label_count_aov_p, fill = "white",
+#              aes(y = -0.1, label = count), show.legend = F) +
+#   scale_fill_viridis_d() +
+#   labs(y = "p-value", x = NULL) +
+#   facet_wrap(~site) +
+#   theme(axis.text.x = element_blank(),
+#         axis.ticks.x = element_blank(),
+#         legend.position = "bottom")
+rm(sst_ALL_smooth_aov_tukey, sst_ALL_smooth_aov, label_count_aov_p)
 ```
 
-The above figure shows that there are no significant differences in the climatologies for the Mediterannean or North West Atlantic time series. We do however see that of the 100 re-samples for the Western Australia time series, seven of the seasonal signals and 23 of the thresholds did differ significantly at some point during the shortening.
+The above figure shows that there are no significant differences in the climatologies for the Mediterannean and relatively few for the North West Atlantic time series. We do however see that of the 100 re-samples for the Western Australia time series, 54 of the seasonal signals and 84 of the thresholds did differ significantly at some point during the shortening.
 
 ### Post-hoc Tukey test
 
-```{r clim-tukey-res, eval=FALSE}
-sst_ALL_smooth_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), clim_tukey, .parallel = T)
-save(sst_ALL_smooth_tukey, file = "data/sst_ALL_smooth_tukey.RData")
-```
+To get a more precise pictures of where these differences are occurring we will need to look at the post-hoc Tukey test results.
 
 ```{r clim-tukey-hist, fig.cap="Histogram showing the distribution of the difference in years for thresholds that were significantly different within the same time series when different lengths of the time series were used to calculate the thresholds."}
-load("data/sst_ALL_smooth_tukey.RData")
+load("data/sst_ALL_smooth_aov_tukey.RData")
+
+sst_ALL_smooth_tukey <- sst_ALL_smooth_aov_tukey %>% 
+  select(-aov) %>% 
+  unnest()
 
 clim_tukey_sig <- sst_ALL_smooth_tukey %>% 
   filter(adj.p.value <= 0.05) %>% 
-  separate(comparison, into = c("year_short", "year_long"), sep = "-") %>% 
-  mutate(year_short = as.numeric(year_short),
-         year_long = as.numeric(year_long))
+  separate(comparison, into = c("year_long", "year_short"), sep = "-") %>% 
+  mutate(year_long = as.numeric(year_long),
+         year_short = as.numeric(year_short)) %>% 
+  mutate(year_dif = year_long - year_short) %>% 
+  # select(-adj.p.value, -rep) %>% 
+  group_by(site, metric, year_long, year_short, year_dif) %>% 
+  summarise(count = n()) %>% 
+  ungroup() %>%
+  arrange(-year_long, -year_dif) %>% 
+  mutate(year_index = factor(paste0(year_long,"-",year_dif)),
+         year_index = factor(year_index, levels = unique(year_index)))
+# levels(clim_tukey_sig$year_index)
 
-clim_tukey_count <- clim_tukey_sig %>% 
-  mutate(year_dif = year_short - year_long)
+ggplot(clim_tukey_sig) +
+  # geom_histogram(bins = 37, fill = "firebrick") +
+  geom_errorbarh(aes(xmin = year_long, xmax = year_short, 
+                     y = year_index)) +
+  geom_label(aes(x = year_dif/2, y = year_index, label = count)) +
+  labs(x = "Difference in years") #%>%
+  # facet_wrap(~site)
+  # facet_grid(rows = vars(metric), 
+  #            cols = vars(site), scales = "fixed")
 
-ggplot(clim_tukey_count, aes(x = year_dif)) +
-  geom_histogram(bins = 16, fill = "firebrick") +
-  labs(x = "Difference in years")
+ggplot(clim_tukey_sig, aes(x = year_dif, y = year_long)) +
+  geom_point() +
+  facet_wrap(~site) +
+  scale_x_reverse()
+
+rm(sst_ALL_smooth_aov_tukey, sst_ALL_smooth_tukey, clim_tukey_sig)
 ```
 
 The above figure shows us that as few as a four year difference in time series length was able to create significantly different thresholds, but that the most common difference was 14 -- 17 years with the distribution left-skewed. 
 
+
 ### Correlations
 
 ```{r clim-core-base, eval=FALSE}
+load("data/sst_ALL_smooth.Rdata")
 # Summary stats for correlation
 sst_ALL_smooth_cor_base <- sst_ALL_smooth %>% 
   unnest(events) %>% 
@@ -294,15 +319,15 @@ sst_ALL_smooth_cor_base <- sst_ALL_smooth %>%
   unnest(events) %>% 
   select(rep, site, year_index, temp, seas, thresh) %>% 
   group_by(rep, site, year_index) %>% 
-  summarise(length = 2018-year_index[1]+1,
-            temp_sd = sd(temp, na.rm = T),
+  summarise(temp_sd = sd(temp, na.rm = T),
             seas_mean = mean(seas),
             seas_sd = sd(seas),
             thresh_mean = mean(thresh),
             thresh_sd = sd(thresh)) %>% 
-  select(-year_index) %>% 
+  # select(-year_index) %>% 
   group_by(rep, site)
 save(sst_ALL_smooth_cor_base, file = "data/sst_ALL_smooth_cor_base.RData")
+rm(sst_ALL_smooth, sst_ALL_smoooth_cor_base)
 ```
 
 ```{r clim-cor, fig.cap="Boxplots showing the distribution of Pearson's r values for the correlation between the mean and SD of the climatologies for the time series of varying lengths of each of the three reference time series."}
@@ -330,6 +355,63 @@ ggplot(sst_ALL_smooth_cor, aes(x = y, y = r, fill = y)) +
 The above figure shows us that all three reference time series respond relatively similarly with regards to the correlations of their climatology means and SD to the length and SD of the base temperatures from which the climatologies were derived. Though the patterns observed otherwise tell us little, it is an important finding to know that this dud pattern is consistent across the different reference time series. The other important pattern this figure shows is that the length of a time series appears to not have a consistent relationship with the resultant climatologies. Instead we see that it is the variance in the time series that tends to have a positive relationship with the variance in the climatologies.
 
 The pattern that is beginning to emerge from the results for the climatologies is that what matters most for the difference in the results is how much variance is present in the base time series. This variance is a representation of the presence of extreme temperature differences. Relating to the reseach question here this means large MHWs. It must therefore be investigated what the relationship is between categories of MHWs and the significant differences detected in the thresholds in the WA time series. It should also be taken into consideration that wheneber the re-sampled time series have the year 2011, the massive MHW, these will likely be the ones producing significantly different results.
+
+#### Kolmogorov-Smirnov tests
+
+```{r KS-clims, fig.cap="Heatmap showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. Small black dots denote significant differences (_p_-value <= 0.05."}
+# Extract climatology values only
+sst_ALL_clim_only <- sst_ALL_smooth %>%
+  unnest(events) %>% 
+  filter(row_number() %% 2 == 1) %>% 
+  unnest(events)
+  select(-t, -temp) %>% 
+  unique() %>% 
+  arrange(site, trend, year_index, doy)
+
+KS_sub <- function(df, year_index_1, year_index_2){
+  df_1 <- df %>% 
+    filter(year_index == year_index_1)
+  df_2 <- df %>% 
+    filter(year_index == year_index_2)
+  res <- data.frame(seas = round(ks.test(df_1$seas, df_2$seas)$p.value, 4),
+                    thresh = round(ks.test(df_1$thresh, df_2$thresh)$p.value, 4),
+                    year_1 = year_index_1,
+                    year_2 = year_index_2)
+  return(res)
+}
+
+# The KS results
+sst_ALL_both_clim_KS_p <- data.frame()
+for(i in 1:length(unique(sst_ALL_both_clim_only$year_index))){
+  year_index_1 <- unique(sst_ALL_both_clim_only$year_index)[i]
+  for(j in 1:length(unique(sst_ALL_both_clim_only$year_index))){
+    year_index_2 <- unique(sst_ALL_both_clim_only$year_index)[j]
+    if(year_index_1 < year_index_2){
+      suppressWarnings(
+      res <- sst_ALL_both_clim_only %>% 
+        group_by(site, trend) %>% 
+        do(KS_sub(., year_index_1 = year_index_1, year_index_2 = year_index_2)) %>% 
+        ungroup() %>% 
+        as.tibble(.)
+      )
+      sst_ALL_both_clim_KS_p <- rbind(sst_ALL_both_clim_KS_p, res)
+    }
+  }
+}
+
+sst_ALL_both_clim_KS_p_long <- sst_ALL_both_clim_KS_p %>% 
+  tidyr::gather(key = "metric", value = "p.value", -site, -trend, -year_1, -year_2)
+
+ggplot(sst_ALL_both_clim_KS_p_long, aes(x = year_1, y = year_2)) +
+  geom_tile(aes(fill = p.value)) +
+  geom_point(data = filter(sst_ALL_both_clim_KS_p_long, p.value <= 0.05),
+             size = 0.01) +
+  # geom_text(aes(label = round(adj.p.value, 2))) +
+  scale_fill_gradient2(midpoint = 0.1) +
+  coord_equal(expand = 0) +
+  facet_grid(site~metric+trend) +
+  labs(x = "", y = "")
+```
 
 
 ## MHW metrics

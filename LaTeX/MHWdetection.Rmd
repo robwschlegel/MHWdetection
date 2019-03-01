@@ -16,10 +16,10 @@ The idea of hot seawater being problematic has been with humanity for a long tim
 
 It is perhaps belaboring the point to explain the danger that MHWs pose to the world, so below is a brief bulletted list outlining some of the more well studied MHWs and the impacts they have had:  
   
-- Mediterranean 2008:
-- South West coast of Australia 2010/11: (cite)
-- Northwest Atlantic 2012: (cite)
-- "The Blob" Northeast Pacific Ocean 2013-16: (cite) 
+- Mediterranean 2008: (Garrabou et al., 2009; Olita et al., 2007)
+- South West coast of Australia 2010/11: (Feng et al., 2013; Pearce and Feng, 2013; Wernberg et al., 2013)
+- Northwest Atlantic 2012: (Chen et al., 2014, 2015; Mills et al., 2012)
+- "The Blob" Northeast Pacific Ocean 2013-16: (Bond et al., 2015) 
 - Tasman Sea in 2015/16: (cite)
 - waters around tropical Australia in 2015/16: (cite)
 
@@ -52,6 +52,8 @@ It must also be mentioned that while this paper seeks to investigate the best pr
 
 
 # Useful data for MHW detection
+
+- _Rather talk about the three broad categories and what thier advantages and disadvantages are_
 
 Outlined here in a series of three table are a non-exhaustive list of the products currently available for work with MHW detection. The advantages, disadavantges, and any known issues are listed with the products in addition to a brief summary of their meta-data and where they may be downloaded. The products are broken up into three broad categories: Remotely sensed data, reanalysis data, and _ins situ_ data.
 
