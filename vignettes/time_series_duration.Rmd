@@ -278,7 +278,7 @@ clim_tukey_sig <- sst_ALL_smooth_tukey %>%
 ggplot(clim_tukey_sig, aes(x = year_long, y = year_short)) +
   # geom_point() +
   # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-  geom_raster(aes(fill = count)) +
+  geom_tile(aes(fill = count)) +
   facet_grid(metric~site) +
   scale_x_reverse(breaks = seq(3, 36, 3)) +
   scale_y_reverse(breaks = seq(4 , 16, 2)) +
@@ -315,12 +315,7 @@ rm(sst_ALL_smooth, sst_ALL_clim_only)
 load("data/sst_ALL_clim_only.Rdata")
 
 # Function for running a pairwise KS test against the 
-# year_index <- 3
 KS_sub <- function(df_2, df_1){
-  # df_1 <- sst_ALL_clim_only %>% 
-    # filter(year_index == 30)
-  # df_2 <- df #%>% 
-    # filter(year_index == year_index)
   suppressWarnings( # Suppress warnings about perfect matches
   res <- data.frame(seas = round(ks.test(df_1$seas, df_2$seas)$p.value, 4),
                     thresh = round(ks.test(df_1$thresh, df_2$thresh)$p.value, 4),
@@ -331,9 +326,10 @@ KS_sub <- function(df_2, df_1){
 }
 
 # Wrapper function to run all pairwise KS tests
-# df <- sst_ALL_clim_only %>% 
-#   filter(rep == "30", site == "WA")
+df <- sst_ALL_clim_only %>%
+  filter(rep == "30", site == "WA")
 KS_all <- function(df){
+  
   # The 30 year clims against which all are compared
   df_30 <- df %>% 
     filter(year_index == 30)
@@ -346,29 +342,63 @@ KS_all <- function(df){
     mutate(KS = map(data, KS_sub, df_1 = df_30)) %>% 
     select(-data, -year_index2) %>% 
     unnest() %>% 
-    tidyr::gather(key = "metric", value = "p.value", -site, -rep, -year_1, -year_2)
+    tidyr::gather(key = "metric", value = "p.value", -year_1, -year_2)
   return(res)
 }
 
 doMC::registerDoMC(cores = 50)
 sst_ALL_KS <- plyr::ddply(sst_ALL_clim_only, KS_all, 
                           .variables = c("rep", "site"), .parallel = T)
+save(sst_ALL_KS, file = "data/sst_ALL_KS.Rdata")
+rm(sst_ALL_clim_only, sst_ALL_KS)
 ```
 
+```{r KS-clims, fig.cap="Time series showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. The colour of the line shows how many times out of 101 re-samples that the location along the y-axis was significantly different from the 30 year climatology. The dotted verticle line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line."}
 
-```{r KS-clims, fig.cap="Heatmap showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. Small black dots denote significant differences (_p_-value <= 0.05."}
+load("data/sst_ALL_KS.Rdata")
 
-ggplot(sst_ALL_both_clim_KS_p_long, aes(x = year_1, y = year_2)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_point(data = filter(sst_ALL_both_clim_KS_p_long, p.value <= 0.05),
-             size = 0.01) +
-  # geom_text(aes(label = round(adj.p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1) +
-  coord_equal(expand = 0) +
-  facet_grid(site~metric+trend) +
-  labs(x = "", y = "")
+# Filter non-significant results
+KS_sig <- sst_ALL_KS %>% 
+  filter(p.value <= 0.05) %>% 
+  group_by(site, metric, year_2) %>% 
+  summarise(count = n()) %>%
+  ungroup()
+
+# Pad in NA for years with no significant differences
+KS_sig <- padr::pad_int(x = KS_sig, by = "year_2", group = c("site", "metric")) %>% 
+  select(site, metric, year_2, count) %>% 
+  rbind(data.frame(site = "Med", metric = "seas", year_2 = 25:37, count = NA))
+
+ggplot(KS_sig, aes(x = year_2, y = site)) +
+  geom_line(aes(colour = count)) +
+  geom_vline(aes(xintercept = 30), alpha = 0.7, linetype = "dotted") +
+  facet_wrap(~metric, ncol = 1) +
+  scale_colour_viridis_c() +
+  scale_x_reverse(breaks = seq(5, 35, 5)) +
+  labs(x = "Climatology period (years)", 
+       y = NULL,
+       colour = "Sig. dif.\nout of 101")
+  
+rm(sst_ALL_KS, KS_sig)
 ```
 
+The above figure shows that the results of the KS tests were more often significantly different than the ANOVAs. This means that the actual shape of the distributions changes rather quicklky, as shown by how it only takes a few years for the KS test to show the results as being different. The ANOVAs report fewer significant differences because that is a test of central tendency. Meaning that the shape of the climatologies changes rather quickly depending on the climatology period used, but the overall range of values within a climatology does not differ significantly as quickly.
+
+```{r clim-ts-all, fig.cap="Time series of each of climatology period used form the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used."}
+
+load("data/sst_ALL_clim_only.Rdata")
+
+sst_ALL_clim_0 <- sst_ALL_clim_only %>% 
+  filter(rep == "0") %>% 
+  arrange(year_index)
+
+ggplot(data = sst_ALL_clim_0, aes(x = doy, y = thresh)) +
+  geom_line(aes(group = year_index, colour = year_index), alpha = 0.8) +
+  facet_wrap(~site, ncol = 1) +
+  scale_colour_viridis_c()
+```
+
+The above figure shows us that the larger the seasonal signal is, the less effect deviations away from it will likely have.
 
 ### Correlations
 
@@ -389,7 +419,7 @@ sst_ALL_smooth_cor_base <- sst_ALL_smooth %>%
   # select(-year_index) %>% 
   group_by(rep, site)
 save(sst_ALL_smooth_cor_base, file = "data/sst_ALL_smooth_cor_base.RData")
-rm(sst_ALL_smooth, sst_ALL_smoooth_cor_base)
+rm(sst_ALL_smooth, sst_ALL_smooth_cor_base)
 ```
 
 ```{r clim-cor, fig.cap="Boxplots showing the distribution of Pearson's r values for the correlation between the mean and SD of the climatologies for the time series of varying lengths of each of the three reference time series."}
@@ -412,16 +442,18 @@ ggplot(sst_ALL_smooth_cor, aes(x = y, y = r, fill = y)) +
   geom_boxplot() +
   scale_fill_viridis_d() +
   facet_grid(site~x)
+
+rm(sst_ALL_smooth_cor, sst_ALL_smooth_cor_base, sst_ALL_smooth_cor_length, sst_ALL_smooth_cor_sd)
 ```
 
-The above figure shows us that all three reference time series respond relatively similarly with regards to the correlations of their climatology means and SD to the length and SD of the base temperatures from which the climatologies were derived. Though the patterns observed otherwise tell us little, it is an important finding to know that this dud pattern is consistent across the different reference time series. The other important pattern this figure shows is that the length of a time series appears to not have a consistent relationship with the resultant climatologies. Instead we see that it is the variance in the time series that tends to have a positive relationship with the variance in the climatologies.
+The above figure shows us that all three reference time series respond relatively similarly with regards to the correlations of their climatology means and SD to the length and SD of the base temperatures from which the climatologies were derived. Though the patterns observed otherwise tell us little, it is an important finding to know that this dud pattern is consistent across the different reference time series. The other important pattern this figure shows is that the length of a time series appears to not have a consistent relationship with the resultant climatologies. Instead we see that it is the variance in the time series that tends to have a positive relationship with the variance, and to a lesser extent the means, in the climatologies.
 
-The pattern that is beginning to emerge from the results for the climatologies is that what matters most for the difference in the results is how much variance is present in the base time series. This variance is a representation of the presence of extreme temperature differences. Relating to the reseach question here this means large MHWs. It must therefore be investigated what the relationship is between categories of MHWs and the significant differences detected in the thresholds in the WA time series. It should also be taken into consideration that wheneber the re-sampled time series have the year 2011, the massive MHW, these will likely be the ones producing significantly different results.
+The pattern that is beginning to emerge from the results for the climatologies is that what matters most for the difference in the results is how much variance is present in the base time series, meaning how large is the seasonal signal relative to the temperatures in the time series. This variance could also be a representation of the presence of extreme temperature differences. Relating to the reseach question here this means large MHWs. It must therefore be investigated what the relationship is between categories of MHWs and the significant differences detected in the thresholds in the WA time series. It should also be taken into consideration that whenever the re-sampled time series have the year 2011, the massive MHW, these will likely be the ones producing significantly different results.
 
 
 ## MHW metrics
 
-With the effects of time series duration on the climatologies now mapped out it is ime to apply a similar methodology to the MHW metrics.
+With the effects of time series duration on the climatologies now mapped out it is time to apply a similar methodology to the MHW metrics. In order to produce more robust statistics we will now use only results from time series of lengths 37 --10 years and will only compare events that occurred in the most recent 10 years of each time series.
 
 ```{r event-stat-func}
 # Quick wrapper for getting results for ANOVA on events
@@ -433,7 +465,8 @@ event_aov_tukey <- function(df){
     unnest(events) %>% 
     filter(row_number() %% 2 == 0) %>% 
     unnest(events) %>% 
-    filter(date_start >= "2009-01-01", date_end <= "2018-12-31") %>%
+    filter(year_index >= 10) %>% 
+    filter(date_start >= "2009-01-02", date_end <= "2018-12-31") %>%
     select(year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
     mutate(year_index = as.factor(year_index)) %>% 
     nest() %>% 
@@ -448,17 +481,18 @@ event_aov_tukey <- function(df){
 ### ANOVA _p_-values
 
 ```{r re-sample-stats-event-calc, eval=FALSE}
+load("data/sst_ALL_smooth.Rdata")
+doMC::registerDoMC(cores = 50)
 sst_ALL_event_aov_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), event_aov_tukey, .parallel = T)
 save(sst_ALL_event_aov_tukey, file = "data/sst_ALL_event_aov_tukey.RData")
 ```
 
-```{r re-sample-stats-event-calc-load}
+```{r event-aov-box, fig.cap="Boxplots showing the range of _p_-values from ANOVA's for the different lengths of the 100 re-samplings for the three reference time series. A label at the bottom of the boxplot shows the number of re-samples that had significantly different results."}
+
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_event_aov_tukey.RData")
-```
 
-```{r event-aov-box, fig.cap="Boxplots showing the range of _p_-values from ANOVA's for the different lengths of the 100 re-samplings for the three reference time series. A label at the bottom of the boxplot shows the number of re-samples that had significantly different results."}
 sst_ALL_event_aov <- sst_ALL_event_aov_tukey %>% 
   select(-tukey) %>% 
   unnest()
@@ -468,20 +502,12 @@ label_count_event_aov_p <- sst_ALL_event_aov %>%
   filter(p.value <= 0.05) %>% 
   summarise(count = n())
 
-ggplot(sst_ALL_event_aov, aes(x = metric, y = p.value, fill = metric)) +
-  geom_boxplot() +
-  geom_label(data = label_count_event_aov_p, fill = "white",
-             aes(y = -0.1, label = count), show.legend = F) +
-  scale_fill_viridis_d() +
-  labs(y = "p-value", x = NULL) +
-  facet_wrap(~site) +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        legend.position = "bottom")
-  
+knitr::kable(label_count_event_aov_p, 
+             col.names = c("Time series", "MHW metric", "Significantly different"), 
+             caption = "Table 1: This table shows the results of 101 ANOVAs on event metrics detected in the real and re-sampled time series with systematically shortened lengths from 37 -- 10 years.")
 ```
 
-The above figure shows us that generally the length of a time series has no significant effect on the MHWs detected within it. We see that the MHWs in the Mediterranean time series are not affected at all in any of the 100 replicates. Surprisingly the events in the North West Atlantic time series are significantly different more often than the Western Australia time series. This must mean that the event metrics are more sensistive to a number of longer larger events than a single large one, as is the case in the WA time series. This also means that the thresholds between shortened time series do not need to be significantly different in order to produce significantly different events. It must now be investigate just which years are significantly different from one another.
+The above table shows us that generally the length of a time series has no significant effect on the MHWs detected within it. We see that the MHWs in the Mediterranean time series are not affected at all in any of the 101 replicates. Surprisingly the events in the North West Atlantic time series are significantly different more often than the Western Australia time series. This must mean that the event metrics are more sensistive to a number of longer larger events than a single large one, as is the case in the WA time series. This also means that the thresholds between shortened time series may not need to be significantly different in order to produce significantly different events. It must now be investigate just which years are significantly different from one another.
 
 
 ### Post-hoc Tukey test
@@ -494,40 +520,44 @@ sst_ALL_event_tukey <- sst_ALL_event_aov_tukey %>%
 
 event_tukey_sig <- sst_ALL_event_tukey %>% 
   filter(adj.p.value <= 0.05) %>% 
-  separate(comparison, into = c("year_short", "year_long"), sep = "-") %>% 
-  mutate(year_short = as.numeric(year_short),
-         year_long = as.numeric(year_long))
+  separate(comparison, into = c("year_long", "year_short"), sep = "-") %>% 
+  mutate(year_long = as.numeric(year_long),
+         year_short = as.numeric(year_short)) %>% 
+  mutate(year_dif = year_long - year_short) %>% 
+  # select(-adj.p.value, -rep) %>% 
+  group_by(site, metric, year_long, year_short, year_dif) %>% 
+  summarise(count = n()) %>% 
+  ungroup() %>%
+  arrange(-year_long, -year_dif) %>% 
+  mutate(year_index = factor(paste0(year_long,"-",year_dif)),
+         year_index = factor(year_index, levels = unique(year_index)))
 
-event_tukey_count <- event_tukey_sig %>% 
-  mutate(year_dif = year_short - year_long)
-
-ggplot(event_tukey_count, aes(x = year_dif)) +
-  geom_histogram(bins = 6, fill = "firebrick") +
-  labs(x = "Difference in years")
+# ggplot(event_tukey_sig, aes(x = year_long, y = year_short)) +
+#   # geom_point() +
+#   # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
+#   geom_tile(aes(fill = count)) +
+#   facet_grid(~metric) +
+#   scale_x_reverse(breaks = seq(3, 36, 3)) +
+#   scale_y_reverse(breaks = seq(3 , 7, 1)) +
+#   scale_fill_viridis_c("count out of \n101 re-samples", breaks = seq(2,12,2)) +
+#   labs(x = "Length (years) of long time series",
+#        y = "Length (years) of short time series")
 ```
 
-The above figure shows us that of all the significantly different ANOVA results, when we run the post-hoc Tukey test only six of the pairwise comparisons produce significantly different MHW metrics, and they are all `mean intensity`. Five of these six results were from run 55 and only became significantly different from a difference in years of 16 -- 20.
+The post-hoc Tukey test revealed that no individual pairings of years profuced significantly different event metrics. This is a bit of a surprise and will require a more in depth analysis.
 
 
 ### Correlations
-
-```{r event-core-base, eval=FALSE}
-# Summary stats for correlation
-
-save(sst_ALL_smooth_cor_base, file = "data/sst_ALL_smooth_cor_base.RData")
-```
 
 ```{r clim-cor, fig.cap="Boxplots showing the distribution of Pearson's r values for the correlation between the mean and SD of the desired MHW metrics for the time series of varying lengths of each of the three reference time series. The horizontal dashed line helps to denote an r-vlaue of 0."}
 sst_ALL_event_cor <- sst_ALL_smooth %>% 
   unnest(events) %>% 
   filter(row_number() %% 2 == 0) %>% 
   unnest(events) %>% 
+  filter(year_index >= 10) %>% 
   filter(date_start >= "2009-01-01", date_end <= "2018-12-31") %>%
   select(rep, site, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
-  group_by(rep, site, year_index) %>% 
-  mutate(length = 2018-year_index[1]+1) %>% 
-  group_by(site, rep, length) %>% 
-  select(-year_index) %>% 
+  group_by(site, rep, year_index) %>% 
   summarise_all(.funs = c("mean", "sd")) %>% 
   group_by(site, rep) %>% 
   do(data.frame(t(cor(.[,4:11], .[,3])))) %>% 
@@ -546,7 +576,8 @@ ggplot(sst_ALL_event_cor, aes(x = y, y = r, fill = y)) +
         legend.position = "bottom")
 ```
 
-The figure above shows us that the relationship between the length of all three reference time series and the resultant MHW metrics are similar, though weakest for the NW Atl. Specifically we see that mean/sd duration of events has a strong (r~0.5) relationship to the length of the time series. Meaning that longer duration time series will tend to have MHWs with greater duration. This was to be expected as the initial hypothesis was that longer time series would have lower thresholds and so events detected with them would be longer and more intense. We see then that there is also generally a positive relationship between time series length and cummulative intensity mean/sd. This relationship breaks down a bit ith max intensity, and begins to appear negative for mean intensity.
+The figure above shows us that the relationship between the length of all three reference time series and the resultant MHW metrics are similar. Specifically we see that mean duration and intensities of events has a strong (r~-0.5) relationship to the length of the time series. Meaning that longer the climatology period used is, the shorter and less intense MHWs tend to be. This wasto be expected as the original hypothesis was that longer time series would have lower/smoother thresholds and so events detected with them would be longer and more intense. This pattern is a bit less clear for mean intensities.
+
 
 ### Confidence intervals
 
@@ -588,25 +619,24 @@ event_aov_CI <- function(df){
 
 In this section we want to look at how the categories in the different time periods compare. I'll start out with doing basic calculations and comparisons of the categories of events with the different time periods. And then based on how that looks, see if I can think of a way of quantifying the differences.
 
-```{r category-extract}
+```{r clim-category-compare, fig.cap="Bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
+
 suppressWarnings(
   sst_ALL_category <- sst_ALL_smooth %>% 
     select(-events) %>% 
     unnest(cats) %>% 
-    filter(peak_date >= "2009-01-01", peak_date <= "2018-12-31")
+    filter(year_index >= 10,
+           peak_date >= "2009-01-01", peak_date <= "2018-12-31")
 )
-```
 
-```{r clim-category-compare, fig.cap="Bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
 # Indeed... but how to compare qualitative data?
 # Let's start out by counting the occurrence of the categories
 sst_ALL_clim_category_count <- sst_ALL_category %>% 
-  group_by(site, rep,year_index, category) %>% 
+  group_by(site, rep, year_index, category) %>% 
   summarise(count = n()) %>% 
   mutate(category = factor(category,
                            levels = c("I Moderate", "II Strong",
-                                      "III Severe", "IV Extreme")),
-         length = 2018-year_index+1)
+                                      "III Severe", "IV Extreme")))
 
 # total_category_count <- sst_ALL_clim_category_count %>% 
 #   ungroup() %>% 
@@ -614,7 +644,7 @@ sst_ALL_clim_category_count <- sst_ALL_category %>%
 #   group_by(site, category) %>% 
 #   summarise(count = sum(count))
 
-ggplot(sst_ALL_clim_category_count, aes(x = length, y = count, fill = category)) +
+ggplot(sst_ALL_clim_category_count, aes(x = year_index, y = count, fill = category)) +
   geom_bar(stat = "identity") +
   # geom_label(data = label_category_count, show.legend = F, fill = "white",
   #           aes(label = count, y = 1000)) +
@@ -630,23 +660,32 @@ The results in the figure above are about what I was expecting. We tend to see m
 
 ```{r cat-peak-match-func}
 # Function for pulling out comparable events based on closest peak dates
-peak_date_index <- function(df, year_begin){
-  sst_10 <- df %>%
-    filter(year_index == 2009)
-  sst_sub <- df %>%
-    filter(year_index == year_begin)
-  peak_index <- as.data.frame(knnx.index(as.matrix(sst_10$peak_date), 
-                                         as.matrix(sst_sub$peak_date), k = 1))
-  res <- sst_10[as.matrix(peak_index),]
-  return(res)
-}
+# peak_date_index <- function(df, year_begin){
+#   sst_10 <- df %>%
+#     filter(year_index == 2009)
+#   sst_sub <- df %>%
+#     filter(year_index == year_begin)
+#   peak_index <- as.data.frame(knnx.index(as.matrix(sst_10$peak_date), 
+#                                          as.matrix(sst_sub$peak_date), k = 1))
+#   res <- sst_10[as.matrix(peak_index),]
+#   return(res)
+# }
 ```
 
 ```{r}
 # Find matching events based on nearest peak_date
-sst_ALL_category_peak <- plyr::ddply(sst_ALL_category, peak_date_index, 
-                                     .variables = c("site", "rep"), .parallel = T,
-                                     year_begin = seq(1989,2009))
+# sst_ALL_category_peak <- plyr::ddply(sst_ALL_category, peak_date_index, 
+#                                      .variables = c("site", "rep"), .parallel = T,
+#                                      year_begin = seq(1989,2009))
+```
+
+
+### Event count
+
+In this section we will use chi-squared tests to see if the count of events in the different re-sampled lengths differ significantly. We wil do this for the total count as well as the count of each category.
+
+```{r event-count-chi-squared}
+
 ```
 
 
