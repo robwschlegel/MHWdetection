@@ -311,12 +311,12 @@ save(sst_ALL_clim_only, file = "data/sst_ALL_clim_only.Rdata")
 rm(sst_ALL_smooth, sst_ALL_clim_only)
 ```
 
-```{r KS-clims, fig.cap="Heatmap showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. Small black dots denote significant differences (_p_-value <= 0.05."}
+```{r KS-results, eval=FALSE}
 load("data/sst_ALL_clim_only.Rdata")
 
 # Function for running a pairwise KS test against the 
 # year_index <- 3
-KS_sub <- function(df_1, df_2){
+KS_sub <- function(df_2, df_1){
   # df_1 <- sst_ALL_clim_only %>% 
     # filter(year_index == 30)
   # df_2 <- df #%>% 
@@ -324,54 +324,39 @@ KS_sub <- function(df_1, df_2){
   suppressWarnings( # Suppress warnings about perfect matches
   res <- data.frame(seas = round(ks.test(df_1$seas, df_2$seas)$p.value, 4),
                     thresh = round(ks.test(df_1$thresh, df_2$thresh)$p.value, 4),
-                    year_1 = 30,
-                    year_2 = df$year_index[1])
+                    year_1 = df_1$year_index[1],
+                    year_2 = df_2$year_index[1])
   )
   return(res)
 }
 
-# rep_count <- 3
-KS_all <- function(rep_count){
-  # df_30
-  df_main <- sst_ALL_clim_only %>% 
-    # filter(as.numeric(rep) == rep_count) %>% 
+# Wrapper function to run all pairwise KS tests
+# df <- sst_ALL_clim_only %>% 
+#   filter(rep == "30", site == "WA")
+KS_all <- function(df){
+  # The 30 year clims against which all are compared
+  df_30 <- df %>% 
+    filter(year_index == 30)
+  
+  # The results
+  res <- df %>% 
     mutate(year_index2 = year_index) %>%
-    # group_by(site, rep, year_index2) %>%
     group_by(year_index2) %>% 
     nest() %>% 
-    mutate(KS = map(data, KS_sub)) %>% 
+    mutate(KS = map(data, KS_sub, df_1 = df_30)) %>% 
     select(-data, -year_index2) %>% 
     unnest() %>% 
     tidyr::gather(key = "metric", value = "p.value", -site, -rep, -year_1, -year_2)
-  return(df_main)
+  return(res)
 }
 
 doMC::registerDoMC(cores = 50)
-sst_ALL_KS <- plyr::ldply(1:100, KS_all, .parallel = T)
 sst_ALL_KS <- plyr::ddply(sst_ALL_clim_only, KS_all, 
                           .variables = c("rep", "site"), .parallel = T)
+```
 
-# The KS results
-sst_ALL_both_clim_KS_p <- data.frame()
-for(i in 1:length(unique(sst_ALL_both_clim_only$year_index))){
-  year_index_1 <- unique(sst_ALL_both_clim_only$year_index)[i]
-  for(j in 1:length(unique(sst_ALL_both_clim_only$year_index))){
-    year_index_2 <- unique(sst_ALL_both_clim_only$year_index)[j]
-    if(year_index_1 < year_index_2){
-      suppressWarnings(
-      res <- sst_ALL_both_clim_only %>% 
-        group_by(site, rep) %>% 
-        do(KS_sub(., year_index_1 = year_index_1, year_index_2 = year_index_2)) %>% 
-        ungroup() %>% 
-        as.tibble(.)
-      )
-      sst_ALL_both_clim_KS_p <- rbind(sst_ALL_both_clim_KS_p, res)
-    }
-  }
-}
 
-sst_ALL_both_clim_KS_p_long <- sst_ALL_both_clim_KS_p %>% 
-  tidyr::gather(key = "metric", value = "p.value", -site, -trend, -year_1, -year_2)
+```{r KS-clims, fig.cap="Heatmap showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. Small black dots denote significant differences (_p_-value <= 0.05."}
 
 ggplot(sst_ALL_both_clim_KS_p_long, aes(x = year_1, y = year_2)) +
   geom_tile(aes(fill = p.value)) +
