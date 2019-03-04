@@ -7,3 +7,5 @@ sst_ALL_clim_only.Rdata
 sst_ALL_clim_only_miss.Rdata
 sst_ALL_event_miss.Rdata
 sst_ALL_event_aov_tukey.RData
+sst_ALL_miss_clim_event_cat.Rdata
+sst_ALL_miss_clim_only.Rdata

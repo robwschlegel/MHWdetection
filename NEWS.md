@@ -1,3 +1,7 @@
+# MHWdetection 0.0.5  (2019-03-04)
+
+* Working through the missing data analyses
+
 # MHWdetection 0.0.5  (2019-02-26)
 
 * Working through the duration analyses

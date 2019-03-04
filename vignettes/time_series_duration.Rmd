@@ -96,6 +96,8 @@ sst_ALL_detrend <- sst_ALL %>%
   ungroup() %>% 
   as.tibble(.) %>% 
   select(site, t, temp)
+
+save(sst_ALL_detrend, file = "data/sst_ALL_detrend.Rdata")
 ```
 
 ```{r re-sample-time-series, eval = FALSE}
@@ -141,7 +143,7 @@ rm(sst_ALL_0)
 ```{r re-sample-clims-events, eval=FALSE}
 load("data/sst_ALL_repl.Rdata")
 
-# Calculate climatologies and events on shrinking time series
+# Calculate climatologies, events, and categories on shrinking time series
 shrinking_results <- function(year_begin){
   sst_ALL_res <- sst_ALL_repl %>% 
     select(-year_orig) %>% 
@@ -224,7 +226,8 @@ clim_aov_tukey <- function(df){
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_smooth.Rdata")
 doMC::registerDoMC(cores = 50)
-sst_ALL_smooth_aov_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), clim_aov_tukey, .parallel = T)
+sst_ALL_smooth_aov_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), 
+                                        clim_aov_tukey, .parallel = T)
 save(sst_ALL_smooth_aov_tukey, file = "data/sst_ALL_smooth_aov_tukey.RData")
 # rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)
 ```
