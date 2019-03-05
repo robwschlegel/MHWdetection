@@ -54,7 +54,7 @@ library(ggridges)
 
 First up we begin with the random removal of increasing proportions of the data. We are going to use the full 37 year time series for these missing data experiments. We will randomly remove, 0 -- 50% of the data from each of the three times series in 1% steps. This is being repeated 100 times to allow for more reproducible results. It is assumed that the results will begin to break down well before the 50% mark. Should they not then we will extend the missing proportion.
 
-```{r random-knockout, eval=FALSE}
+```{r random-knockout, eval=TRUE}
 # First load the de-trended data created in the duration vignette
 load("data/sst_ALL_detrend.Rdata")
 
@@ -69,7 +69,7 @@ random_knockout <- function(prop){
     group_by(site) %>%
     mutate(row_index = 1:n(),
            temp = replace(temp, which(row_index %in% miss_index), NA)) %>% 
-    mutate(miss = as.character(1-prop)) %>% 
+    mutate(miss = as.character(prop)) %>% 
     select(-row_index)
   return(res)
 }
@@ -84,27 +84,18 @@ knockout_repl <- function(prop) {
   return(res)
 }
 
-# Randomly knockout 1 - 50% of data
+# Randomly knockout 0 - 50% of data
 # The knockout_repl() function repeats random_knockout() 100 times
 # for each step in the missing data progression
-doMC::registerDoMC(cores = 50)
-sst_ALL_miss <- plyr::ldply(seq(0.01, 0.50, 0.01), knockout_repl, .parallel = T)
-
-# Add the original data as rep = "0" and miss = "0.00" 
-sst_ALL_0 <- sst_ALL_detrend %>% 
-  mutate(miss = "0.00",
-         rep = "0") %>% 
-  select(miss, rep, everything())
-
-sst_ALL_miss <- rbind(sst_ALL_0, sst_ALL_miss)
-
+doMC::registerDoMC(cores = 26)
+sst_ALL_miss <- plyr::ldply(seq(0.00, 0.50, 0.01), knockout_repl, .parallel = T)
 save(sst_ALL_miss, file = "data/sst_ALL_miss.Rdata")
 ```
 
 
 ## Consecutive missing days
 
-```{r miss-con-calc, eval=FALSE}
+```{r miss-con-calc, eval=TRUE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss.Rdata")
@@ -126,7 +117,7 @@ con_miss <- function(df){
 
 # Calculate the consecutive missing days
 doMC::registerDoMC(cores = 50)
-sst_ALL_con <- plyr::ddply(filter(sst_ALL_miss, miss != "0.00"), 
+sst_ALL_con <- plyr::ddply(filter(sst_ALL_miss, miss != 0), 
                            c("site", "miss", "rep"), con_miss, .parallel = T)
 save(sst_ALL_con, file = "data/sst_ALL_con.Rdata")
 ```
@@ -186,7 +177,7 @@ We see in the figure above that the number of consective missing days increases 
 
 ## Climatology statistics
 
-```{r miss-clim-event-cat-calc, eval=FALSE}
+```{r miss-clim-event-cat-calc, eval=TRUE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss.Rdata")
@@ -210,7 +201,7 @@ sst_ALL_miss_clim_event_cat <- plyr::ddply(sst_ALL_miss, c("miss", "rep", "site"
 save(sst_ALL_miss_clim_event_cat, file = "data/sst_ALL_miss_clim_event_cat.Rdata")
 ```
 
-```{r miss_clim_only, eval=FALSE}
+```{r miss_clim_only, eval=TRUE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss_clim_event_cat.Rdata")
@@ -311,7 +302,7 @@ clim_aov_tukey <- function(df){
 }
 ```
 
-```{r clim-aov-res, eval=FALSE}
+```{r clim-aov-res, eval=TRUE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss_clim_only.Rdata")
@@ -343,7 +334,7 @@ The difference for the 90th percentile thresholds from missing data significant,
 
 To get a more precise pictures of where these differences are occurring we will need to look at the post-hoc Tukey test results.
 
-```{r clim-tukey-heat, fig.cap="Heatmap showing the distribution of the difference in years for climatologies that were significantly different within the same time series when different lengths of the time series were used to calculate the thresholds. The y axis shows the range of shorter time series lengths that produced significant results when compared to longer time series lengths, which are shown on the x axis. The fill at each pixel shows the count out of 101 re-samples in which the comparison of these two time series lengths were significantly different."}
+```{r clim-tukey-heat, fig.cap="Segments showing the range of the percent of missing data present when climatologies were significantly different. The x and y axes show the percent of missing data."}
 
 sst_ALL_miss_clim_tukey <- sst_ALL_miss_clim_aov_tukey %>% 
   select(-aov) %>% 
@@ -368,6 +359,11 @@ clim_tukey_sig <- clim_tukey_sig %>%
   filter(miss_dif > 0) %>% 
   rbind(clim_tukey_sig_fix)
 
+# Create a summary for better plotting
+clim_tukey_summary <- clim_tukey_sig %>% 
+  group_by(site, metric, miss_small) %>% 
+  summarise(range_bottom = min(miss_large),
+            range_top = max(miss_large))
   # group_by(site, metric, miss_small) 
   # mutate(miss_dif = round(miss_large - miss_small, 2)) %>% 
   # group_by(site, metric, miss_large, miss_small, miss_dif) %>% 
@@ -377,13 +373,13 @@ clim_tukey_sig <- clim_tukey_sig %>%
   # mutate(miss_index = factor(paste0(miss_large,"-",miss_dif)),
          # miss_index = factor(miss_index, levels = unique(miss_index)))
 
-ggplot(clim_tukey_sig, aes(x = miss_small, y = miss_large)) +
-  geom_point() +
+ggplot(clim_tukey_summary, aes(x = miss_small)) +
+  # geom_point() +
   # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
   # geom_tile() +
-  # geom_segment(aes(xend = miss_small, 
-  #                  y = min(miss_large), yend = max(miss_large))) +
-  facet_grid(~site) +
+  geom_segment(aes(xend = miss_small,
+                   y = range_bottom, yend = range_top)) +
+  facet_wrap(~site, ncol = 1) +
   # scale_x_reverse() +
   # scale_y_continuous(limits = c(1, 50)) +
   # scale_y_reverse() +
@@ -391,7 +387,10 @@ ggplot(clim_tukey_sig, aes(x = miss_small, y = miss_large)) +
        y = "Missing data (%)")
 ```
 
-The above figure tends to show 
+The above figure shows the results of all possible pairwise comparisons from the ANOVA looking at the difference in threshold climatologies for different percentages of missing data. Curiously the time series missing no data do not seem to be significantly different from any of the missing data time series. I'm not convinced by this and will need to re-examine the results (a third time). Otherwise this figure shows us that the thresholds diverge from each other very quickly. 
+
+Ultimately I don't think this is very useful.
+
 
 ### Confidence intervals
 
@@ -441,10 +440,10 @@ Overall this analysis/figure is not very helpful.
 
 ### Kolmogorov-Smirnov
 
-```{r miss-clims-KS-calc, eval=FALSE}
+```{r miss-clims-KS-calc, eval=TRUE}
 # Extract the true climatologies
 sst_ALL_miss_clim_only_0 <- sst_ALL_miss_clim_only %>% 
-  filter(miss == "0.00")
+  filter(miss == 0, rep == "1")
 
 # KS function
 # Takes one rep of missing data and compares it against the complete signal
@@ -460,7 +459,7 @@ clim_KS_p <- function(df){
 # The KS results
 suppressWarnings( # Suppress perfect match warnings
 sst_ALL_miss_clim_KS_p <- sst_ALL_miss_clim_only %>% 
-  filter(miss != "0.00") %>% 
+  filter(miss != 0) %>% 
   mutate(miss = as.factor(miss)) %>%
   mutate(site2 = site) %>% 
   group_by(site2, miss, rep) %>% 
@@ -487,15 +486,15 @@ KS_sig <- sst_ALL_miss_clim_KS_p %>%
   ungroup() %>% 
   # There are three "seas" results from "WA" that are significant
   # But that isnt enough to bother visualising here
-  filter(metric == "thresh") %>% 
+  filter(metric == "thresh") %>%
   mutate(prop = round(1-as.numeric(as.character(miss)), 2),
          perc = prop*100) %>% 
   select(site, metric, count, perc)
 
 # Manually pad in NA for missing percentages with no significant differences
-KS_sig <- rbind(KS_sig, data.frame(site = "Med", metric = "thresh", perc = 1:26, count = NA))
-KS_sig <- rbind(KS_sig, data.frame(site = "NW_Atl", metric = "thresh", perc = 1:21, count = NA))
-KS_sig <- rbind(KS_sig, data.frame(site = "WA", metric = "thresh", perc = 1:8, count = NA))
+KS_sig <- rbind(KS_sig, data.frame(site = "Med", metric = "thresh", perc = 100:74, count = NA))
+KS_sig <- rbind(KS_sig, data.frame(site = "NW_Atl", metric = "thresh", perc = 100:79, count = NA))
+KS_sig <- rbind(KS_sig, data.frame(site = "WA", metric = "thresh", perc = 100:92, count = NA))
 
 ggplot(KS_sig, aes(x = perc, y = site)) +
   geom_line(aes(colour = count)) +
@@ -507,6 +506,7 @@ ggplot(KS_sig, aes(x = perc, y = site)) +
 ```
 
 As we se in the line graph above, it is the Western Australia (`WA`) time series that most quickly deviate from the real signal when missing data are introduced. I think this is due to a combination of two things. The first is that the smaller the seasonal signal is, the more sensitive the data are when trying to create an accurate climatology. The second reason is that the more variance there is in a time series, apart from the seasonal signal, the more sensitive the data are to accurate climatology creation. The `WA` time series hits both of these problems and so this comes through clearly in the results.
+
 
 ### Correlations
 
@@ -523,7 +523,7 @@ sst_ALL_miss_joined <- sst_ALL_miss_clim_KS_p %>%
 suppressWarnings( # Supress warnings from small sample sizes
 sst_ALL_miss_cor <- sst_ALL_miss_joined %>% 
   group_by(site, metric) %>% 
-  do(data.frame(t(cor(.[,6:25], .[,5], use = "pairwise.complete.obs")))) %>% 
+  do(data.frame(t(cor(.[,6:ncol(sst_ALL_miss_joined)], .[,5], use = "pairwise.complete.obs")))) %>% 
   gather(key = duration, value = r, -metric, -site) %>%
   mutate(duration = as.numeric(gsub("X", "", duration)))
 )
@@ -544,7 +544,7 @@ Now that we know that missing data from a time series does produce significantly
 
 ### ANOVA
 
-```{r miss-event-aov-calc, eval=FALSE}
+```{r miss-event-aov-calc, eval=TRUE}
 # Quick wrapper for getting results for ANOVA and Tukey on event metrics
 # df <- sst_ALL_miss_clim_event_cat %>%
 #   filter(site == "WA") %>%
@@ -571,7 +571,7 @@ event_aov_tukey <- function(df){
 load("data/sst_ALL_miss_clim_event_cat.Rdata")
 doMC::registerDoMC(cores = 50)
 sst_ALL_miss_event_aov_tukey <- plyr::ddply(sst_ALL_miss_clim_event_cat, c("site"), 
-                                           event_aov_tukey, .parallel = T)
+                                            event_aov_tukey, .parallel = T)
 save(sst_ALL_miss_event_aov_tukey, file = "data/sst_ALL_miss_event_aov_tukey.Rdata")
 # rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)
 ```
@@ -592,6 +592,61 @@ ggplot(sst_ALL_miss_event_aov_p, aes(x = site, y = metric)) +
 ```
 
 As we may see in the figure above, all of the metrics differ significantly when various amounts of missing data are introduced into the time series. To see where these differences materialise we will visualise the post-hoc Tukey test results.
+
+
+### Post-hoc Tukey test
+
+```{r event-tukey-heat, fig.cap="Segments showing the range of the percent of missing data present when climatologies were significantly different. The x and y axes show the percent of missing data."}
+
+sst_ALL_miss_event_tukey <- sst_ALL_miss_event_aov_tukey %>% 
+  select(-aov) %>% 
+  unnest()
+
+event_tukey_sig <- sst_ALL_miss_event_tukey %>% 
+  filter(adj.p.value <= 0.05) %>% 
+  separate(comparison, into = c("comp_left", "comp_right"), sep = "-") %>% 
+  mutate(miss_small = round((1-as.numeric(miss_small))*100),
+         miss_large = round((1-as.numeric(miss_large))*100)) %>% 
+  mutate(miss_dif = round(miss_large - miss_small, 2))
+
+# Need to correct for the tukey putting the 0% missing data on the wrong side
+event_tukey_sig_fix <- event_tukey_sig %>% 
+  filter(miss_dif < 0) %>% 
+  mutate(miss_dif = abs(miss_dif))
+colnames(event_tukey_sig_fix)[3:4] <- c("miss_large", "miss_small")
+
+# Apend the corrected data
+event_tukey_sig <- event_tukey_sig %>% 
+  filter(miss_dif > 0) %>% 
+  rbind(event_tukey_sig_fix)
+
+# Create a summary for better plotting
+event_tukey_summary <- event_tukey_sig %>% 
+  group_by(site, metric, miss_small) %>% 
+  summarise(range_bottom = min(miss_large),
+            range_top = max(miss_large))
+  # group_by(site, metric, miss_small) 
+  # mutate(miss_dif = round(miss_large - miss_small, 2)) %>% 
+  # group_by(site, metric, miss_large, miss_small, miss_dif) %>% 
+  # summarise(count = n()) %>% 
+  # ungroup() %>%
+  # arrange(-miss_large, -miss_dif) %>% 
+  # mutate(miss_index = factor(paste0(miss_large,"-",miss_dif)),
+         # miss_index = factor(miss_index, levels = unique(miss_index)))
+
+ggplot(event_tukey_summary, aes(x = miss_small)) +
+  # geom_point() +
+  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
+  # geom_tile() +
+  geom_segment(aes(xend = miss_small,
+                   y = range_bottom, yend = range_top)) +
+  facet_wrap(~site, ncol = 1) +
+  # scale_x_reverse() +
+  # scale_y_continuous(limits = c(1, 50)) +
+  # scale_y_reverse() +
+  labs(x = "Missing data (%)",
+       y = "Missing data (%)")
+```
 
 
 ### Confidence intervals
