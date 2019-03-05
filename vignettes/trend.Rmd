@@ -21,25 +21,60 @@ options(scipen=999)
 
 ## Overview
 
-The following text has presently just been copy pasted from the time series duration vignette and serves as a place holder for the workflow that will be used for this vignette. It is not actually meant to be read at the moment...
-
-
-## Real trend vs. no trend
+The last major variable we want to look at that could potentially affect accurate MHW detection is the long-term (secular) trend present in a time series. To do so we will be using the same de-trended data from the previous two vignettes and slowly adding in decadal trends from 0.01 to 0.30 °C/dec in 0.0.1 °C/dec steps.
 
 ```{r r-init}
 library(tidyverse)
 library(broom)
-library(heatwaveR)
+library(heatwaveR, lib.loc = "../../R-packages/")
+# cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
 library(lubridate) # This is intentionally activated after data.table
 library(fasttime)
 library(ggpubr)
 library(boot)
 library(FNN)
 library(mgcv)
-library(doMC); doMC::registerDoMC(cores = 3)
+# library(padr)
+library(ggridges)
 ```
 
-The WMO recommends that the period used to create a climatology be 30 years in length, starting on the first year of a decade (e.g. 1981), however; because we are going to be running these analyses on time series of many different lengths, it will be better to use all of the years present in each as the climatology period. For example, if a time series spans 1989 -- 2014, that will be the period used for calculating the climatologies. Likewise should the time series only span the years 2006 -- 2014.
+
+## Trending
+
+```{r trending, eval=TRUE}
+# First load the de-trended data created in the duration vignette
+load("data/sst_ALL_detrend.Rdata")
+
+# Function for adding trends to data
+# rate <- 0.1
+add_trend <- function(rate){
+  daily_step <- rate/3652.5
+  res <- sst_ALL_detrend %>% 
+    group_by(site) %>%
+    mutate(row_index = 1:n(),
+           temp = temp+(row_index*daily_step)) %>% 
+    mutate(trend = as.character(rate)) %>% 
+    select(-row_index)
+  return(res)
+}
+
+# Wrapper function
+# This then allows for easier replication
+# It expects the data passed to it to already be nested
+# trend_repl <- function(prop) {
+#   res <- purrr::rerun(100, random_knockout(prop)) %>%
+#     map_df(as.data.frame, .id = "rep") %>% 
+#     select(miss, rep, everything())
+#   return(res)
+# }
+
+# Randomly knockout 0 - 50% of data
+# The knockout_repl() function repeats random_knockout() 100 times
+# for each step in the missing data progression
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), add_trend, .parallel = T)
+save(sst_ALL_trend, file = "data/sst_ALL_trend.Rdata")
+```
 
 ```{r prep-funcs}
 # Remove the trend from a time series
@@ -238,9 +273,9 @@ clim_tukey <- function(df){
 ```
 
 
-### Climatology statistics
+## Climatology statistics
 
-#### ANOVA _p_-values
+### ANOVA _p_-values
 
 Given that there are perceptible differences in the mean seasonal signal values between the decades of data used, let's see if an ANOVA determines these differences to be significant.
 
@@ -257,7 +292,7 @@ ggplot(sst_ALL_both_clim_aov, aes(x = site, y = metric)) +
 We may see in the figure above that the climatologies do not differ appreciably at any length for the `Med`. The climatologies do however differ significantly for both the `NW_Atl` and the `WA` time series. Interestingly, when the long-term trend is removed (simple linear model flattening), the 90th percentile thresholds do not differ significantly at any length within the `NW_Atl` time series. It is worth pointing out that the `Med` time series has the lowest decadal warming trend of the three time series, that coupled with the decrease in significance for the difference in thresholds in the `NW_Atl` seems to imply that the decadal trend may play a role in determining the difference in the time series. Though the fact that the `WA` time series, by far the most variable of the three, always produces significant differences leads me to think that the variance of a time series may be able to win out over the long-term trend. This interaction will need to be quantified.
 
 
-#### Post-hoc Tukey test
+### Post-hoc Tukey test
 
 Before getting to that step we need to run a post-hoc Tukey test to see where the significant differences when comparing the different time series lengths begins.
 
@@ -281,7 +316,7 @@ ggplot(sst_ALL_both_clim_tukey, aes(x = comp2, y = comp1)) +
 The figure above is perhaps a bit odd, but I think a lengthy table would have been less informative. What the figure above is showing is that most time series lengths do not create significantly different results for the calculated climatologies. We also see that even with very short time series (< 10 years), the calculated climatologies tend not to differ from those created from nearby years. The exception to this is the `WA` time series. We may see that the 90th percentile threshold for the three year time series (top row of pixels in the `WA` panels) differs significantly from the ~4 -- 7 year time series, but then does not differ significantly from the much longer time series. This is certainly due to the massive MHW near the end of this time series. It is a good indicator of one of the perils of using such short time series; that one massive event can create significant changes in the results. 
 
 
-#### Kolmogorov-Smirnov tests
+### Kolmogorov-Smirnov tests
 
 Now knowing that the daily values that make up the climatologies tend to differ based on the number of years used, as seen with the ANOVA and Tukey results, we want to check where the distributions of the climatologies themselves begin to differ. We will do this through a series of pair-wise two-sample KS tests.
 
@@ -340,9 +375,9 @@ ggplot(sst_ALL_both_clim_KS_p_long, aes(x = year_1, y = year_2)) +
 The table above shows that while climatology values only generated from short time series against long time series tend to be significantly different when tested with an ANOVA, Kolmogorov-Smirnov tests on the shape of these distributions say otherwise. For the `WA` time series, nearly any comparison being made will show that the climatology distributions are significantly different. However, we also see different patterns in each of the other two time series. These results do not show one clear pattern and so one is left to wonder how representative these results are. This will require that this analysis be run on a global scale as well.
 
 
-### MHW metrics
+## MHW metrics
 
-#### ANOVA
+### ANOVA
 
 With the effects of shortened time series on the calculation of climatologies quantified, we will now compare the results of the MHWs detected using an ANOVA. Unfortunately, in order to make a direct comparison of all of the MHW detected in the different time series lengths, we may only use the date range for the shortest time series used. This means that only events whose peak dates occurred in 2012 -- 2014 will be used.
 
@@ -380,7 +415,7 @@ ggplot(sst_ALL_both_event_aov_p, aes(x = site, y = metric)) +
 The heatmap above shows us that the removal of the long-term trend in the time series often has a significant impact on how much the detected MHWs may differ depending on time series length. Curiously, detrending the time series actually makes the differences between the max and mean intensities not significant for the `NW_Atl` time series. The opposite is true for the other two time series. What's also interesting is that when the trend is left in, none of the MHW metrics for events detected in the `Med` differ significantly, but the removal of the trend causes all of them to become significantly different.
 
 
-#### Post-hoc Tukey test
+### Post-hoc Tukey test
 
 It should not be surprising that comparing events detected from a climatology based on three years of data may differ significantly from those based on 34 years of data. Where the differences emerge is the real question. And to find this out we will use a post-hoc TUkey test, as done for the climatologies above.
 
@@ -412,7 +447,7 @@ ggplot(sst_ALL_both_event_tukey, aes(x = comp2, y = comp1)) +
 The results of the Tukey tests shown above demonstrate that, except for one comparison, the differences between the events detected with different time series lengths do not differ significantly on a pairwise basis. There are however some interesting artifacts in the results that seem to show that some dramatic events may be having a large impact on how the results compare against one another.
 
 
-#### Confidence intervals
+### Confidence intervals
 
 ```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for each of the shortened time series. Each panel shows the results for one of four MHW metrics. The X axis shows which year the time series began that the CI bars are representing, and the Y axis shows the spread of the confidence around the population mean of the MHW metric. The bottom row of panels shows the count of events detected from 2012 -- 2014, depending on what the climatology period was, as seen on the X axis."}
 # ANOVA CI
