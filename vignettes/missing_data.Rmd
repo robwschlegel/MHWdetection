@@ -397,10 +397,9 @@ Ultimately I don't think this is very useful.
 ```{r clim-miss-CI-plot, fig.cap="Confidence intervals of the MHW metrics for each missing data step for all three time series."}
 
 # Calculate the 97.5th, 50th, and 2.5th quantiles to get the CI of each metric
-df <- sst_ALL_miss_clim_only %>% 
-  filter(site == "WA") %>% 
-  select(-doy, -rep, -site)
-
+# df <- sst_ALL_miss_clim_only %>% 
+  # filter(site == "WA") %>% 
+  # select(-doy, -rep, -site)
 metric_CI <- function(df){
   res <- df %>% 
     group_by(miss) %>% 
@@ -412,7 +411,7 @@ metric_CI <- function(df){
   return(res)
   }
 
-# The ANOVA confidence intervals
+# The quantile based 95% confidence intervals
 sst_ALL_miss_clim_CI <- sst_ALL_miss_clim_only %>% 
   select(-doy, -rep) %>% 
   mutate(miss = miss) %>% 
@@ -420,12 +419,10 @@ sst_ALL_miss_clim_CI <- sst_ALL_miss_clim_only %>%
   nest() %>% 
   mutate(res = map(data, metric_CI)) %>% 
   select(-data) %>% 
-  unnest() %>% 
-  mutate(prop = round(1-as.numeric(miss), 2),
-         prop = ifelse(prop == 1.00, 0.00, prop))
+  unnest()
 
 ggplot(filter(sst_ALL_miss_clim_CI, metric != "seas"), 
-       aes(x = as.factor(prop*100))) +
+       aes(x = as.factor(miss))) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5,
                 aes(ymin = quant_2.5, ymax = quant_97.5)) +
   geom_point(aes(y = quant_50)) +
@@ -523,7 +520,8 @@ sst_ALL_miss_joined <- sst_ALL_miss_clim_KS_p %>%
 suppressWarnings( # Supress warnings from small sample sizes
 sst_ALL_miss_cor <- sst_ALL_miss_joined %>% 
   group_by(site, metric) %>% 
-  do(data.frame(t(cor(.[,6:ncol(sst_ALL_miss_joined)], .[,5], use = "pairwise.complete.obs")))) %>% 
+  do(data.frame(t(cor(.[,6:ncol(sst_ALL_miss_joined)], 
+                      .[,5], use = "pairwise.complete.obs")))) %>% 
   gather(key = duration, value = r, -metric, -site) %>%
   mutate(duration = as.numeric(gsub("X", "", duration)))
 )
@@ -531,10 +529,21 @@ sst_ALL_miss_cor <- sst_ALL_miss_joined %>%
 ggplot(sst_ALL_miss_cor, aes(x = duration, y = r)) +
   geom_point() +
   # scale_fill_viridis_d() +
+  geom_hline(aes(yintercept = 0.0)) +
   scale_x_continuous(limits = c(1, 14), breaks = seq(1, 13, 3)) +
   facet_grid(site~metric) +
-  labs(x = "Consecutive missing days")
+  labs(x = "Consecutive missing days", 
+       y = "Correlation (r) between significance\nand count of consecutive days missing")
 ```
+
+This plot shows the count of consecutive days of missing data is a very good indicator of whether or not the 90th percentile threshold will be significantly different from the control time series. This works best for counts of consecutive days below 5, and works a bit more poorly for the `WA` time series.
+
+It must now be seen what the relationship is between count of consecutive missing days at each day step and the corresponding _p_-values.
+
+```{r miss-clim-cor-step}
+
+```
+
 
 
 ## MHW metrics
@@ -570,7 +579,7 @@ event_aov_tukey <- function(df){
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss_clim_event_cat.Rdata")
 doMC::registerDoMC(cores = 50)
-sst_ALL_miss_event_aov_tukey <- plyr::ddply(sst_ALL_miss_clim_event_cat, c("site"), 
+sst_ALL_miss_event_aov_tukey <- plyr::ddply(sst_ALL_miss_clim_event_cat, c("site", "rep"), 
                                             event_aov_tukey, .parallel = T)
 save(sst_ALL_miss_event_aov_tukey, file = "data/sst_ALL_miss_event_aov_tukey.Rdata")
 # rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)
@@ -583,15 +592,20 @@ sst_ALL_miss_event_aov_p <- sst_ALL_miss_event_aov_tukey %>%
   select(-tukey) %>% 
   unnest()
 
+event_aov_plot <- sst_ALL_miss_event_aov_p %>% 
+  group_by(site, metric) %>% 
+  filter(p.value <= 0.05) %>% 
+  summarise(count = n())
+
 # visualise
-ggplot(sst_ALL_miss_event_aov_p, aes(x = site, y = metric)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_text(aes(label = round(p.value, 4))) +
-  scale_fill_gradient2(midpoint = 0.1, limits = c(0, 1)) +
+ggplot(event_aov_plot, aes(x = site, y = metric)) +
+  geom_tile(aes(fill = count)) +
+  geom_text(aes(label = count)) +
+  scale_fill_viridis_c() +
   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
 ```
 
-As we may see in the figure above, all of the metrics differ significantly when various amounts of missing data are introduced into the time series. To see where these differences materialise we will visualise the post-hoc Tukey test results.
+As we may see in the figure above, the duration (and likely therefore cummulative intensity) of events always differed significantly when missing data were introduced into a time series. For the `NW_Atl` time series all of the metrics were always significantly different, with mean and max intensities occassionally being different for `Med`, and never for `WA`. To see where these differences materialise we will visualise the post-hoc Tukey test results.
 
 
 ### Post-hoc Tukey test
@@ -602,87 +616,140 @@ sst_ALL_miss_event_tukey <- sst_ALL_miss_event_aov_tukey %>%
   select(-aov) %>% 
   unnest()
 
-event_tukey_sig <- sst_ALL_miss_event_tukey %>% 
-  filter(adj.p.value <= 0.05) %>% 
-  separate(comparison, into = c("comp_left", "comp_right"), sep = "-") %>% 
-  mutate(miss_small = round((1-as.numeric(miss_small))*100),
-         miss_large = round((1-as.numeric(miss_large))*100)) %>% 
-  mutate(miss_dif = round(miss_large - miss_small, 2))
-
-# Need to correct for the tukey putting the 0% missing data on the wrong side
-event_tukey_sig_fix <- event_tukey_sig %>% 
-  filter(miss_dif < 0) %>% 
-  mutate(miss_dif = abs(miss_dif))
-colnames(event_tukey_sig_fix)[3:4] <- c("miss_large", "miss_small")
-
-# Apend the corrected data
-event_tukey_sig <- event_tukey_sig %>% 
-  filter(miss_dif > 0) %>% 
-  rbind(event_tukey_sig_fix)
-
 # Create a summary for better plotting
-event_tukey_summary <- event_tukey_sig %>% 
-  group_by(site, metric, miss_small) %>% 
-  summarise(range_bottom = min(miss_large),
-            range_top = max(miss_large))
-  # group_by(site, metric, miss_small) 
-  # mutate(miss_dif = round(miss_large - miss_small, 2)) %>% 
-  # group_by(site, metric, miss_large, miss_small, miss_dif) %>% 
-  # summarise(count = n()) %>% 
-  # ungroup() %>%
-  # arrange(-miss_large, -miss_dif) %>% 
-  # mutate(miss_index = factor(paste0(miss_large,"-",miss_dif)),
-         # miss_index = factor(miss_index, levels = unique(miss_index)))
+event_tukey_summary <- sst_ALL_miss_event_tukey %>% 
+  separate(comparison, into = c("comp_left", "comp_right"), sep = "-") %>% 
+  mutate(comp_left = as.numeric(comp_left),
+         comp_right = as.numeric(comp_right)) %>% 
+  filter(comp_left == 0 | comp_right == 0) %>%
+  mutate(comp_dif = abs(round(comp_right - comp_left, 2))) %>% 
+  filter(adj.p.value <= 0.05) %>% 
+  group_by(site, metric, comp_dif) %>% 
+  summarise(count = n())
 
-ggplot(event_tukey_summary, aes(x = miss_small)) +
-  # geom_point() +
-  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-  # geom_tile() +
-  geom_segment(aes(xend = miss_small,
-                   y = range_bottom, yend = range_top)) +
-  facet_wrap(~site, ncol = 1) +
-  # scale_x_reverse() +
-  # scale_y_continuous(limits = c(1, 50)) +
-  # scale_y_reverse() +
-  labs(x = "Missing data (%)",
-       y = "Missing data (%)")
+ggplot(event_tukey_summary, aes(x = comp_dif, y = site)) +
+  geom_line(aes(colour = count)) +
+  geom_point(aes(colour = count), size = 0.5) +
+  facet_wrap(~metric, ncol = 1) +
+  scale_colour_viridis_c() +
+  # scale_x_reverse(breaks = seq(5, 35, 5)) +
+  labs(x = "Missing data (%)", y = NULL,
+       colour = "Sig. dif.\nout of 100")
 ```
+
+The figure above shows that significant differences in the duration (and therefore cummulative intensity) of events begins occurring as soon as 9% of data are missing in the `NW_Atl` time series, 15% in `Med`, and 18% in `WA`. Only the `NW_Atl` showed any real signs of significant differences for max and mean intensities and these don't begin until 31%.
 
 
 ### Confidence intervals
 
-```{r event-miss-CI-plot, fig.cap="Confidence intervals of the different metrics for the different proportions of missing data. Note that the _y_-axes are not the same."}
-# The ANOVA confidence intervals
-sst_ALL_event_aov_CI <- sst_ALL_event %>% 
-  select(site, miss, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
-  mutate(miss = as.factor(miss)) %>% 
-  nest(-site) %>%
-  mutate(res = map(data, event_aov_CI)) %>% 
-  select(-data) %>% 
-  unnest()
-
-ggplot(sst_ALL_event_aov_CI, aes(x = site)) +
-  geom_errorbar(position = position_dodge(0.9), width = 0.5,
-                aes(ymin = conf.low, ymax = conf.high, linetype = miss)) +
-  facet_wrap(~metric, scales = "free_y")
+```{r event-CI-func}
+# Run an ANOVA on each metric of the combined event results and get CI
+# event_aov_CI <- function(df){
+#   # Run ANOVAs
+#   aov_models <- df[ , -grep("miss", names(df))] %>%
+#     map(~ aov(.x ~ df$miss)) %>% 
+#     map_dfr(~ confint_tidy(.), .id = 'metric') %>% 
+#     # mutate(miss = as.factor(rep(c("0", "0.1", "0.25", "0.5"), nrow(.)/4))) %>% 
+#     select(metric, miss, everything())
+#   # Calculate population means
+#   df_mean <- df %>% 
+#     group_by(miss) %>%
+#     summarise_all(.funs = mean) %>%
+#     gather(key = metric, value = conf.mid, -miss)
+#   # Correct CI for first category
+#   res <- aov_models %>%
+#     left_join(df_mean, by = c("metric", "miss")) %>%
+#     mutate(conf.low = if_else(miss == 0, conf.low - conf.mid, conf.low),
+#            conf.high = if_else(miss == 0, conf.high - conf.mid, conf.high)) %>%
+#     select(-conf.mid)
+#   return(res)
+#   }
 ```
 
-As with the climatology values, the MHW metrics from time series missing 50% of their data are significantly different from the control (0% missing), as well as the 10% and 25% missing data groups. There is generally a decrease in the magnitude of the metrics reported as one increases the amounts of missing data, with the exception of the North West Atlantic (NW_Atl) time series, which tends to have larger values reported at 10% missing data. This is important to note as it means that one may not say with certainty that the more data are missing from a time series, the less intense the MHWs detected will be. Though this is generally the case.
 
-Perhaps the increase in max intensity at 10% missing data for the Northwest Atlantic time series is due to many cold-spells pulling the 90th percentile threshold down. Tough it would be odd that this would only emerge at 10% missing data. Remember though that these confidence intervals have been generated from 100 replicates, so it is unlikely this is just a chance effect.
+```{r event-miss-CI-plot, fig.cap="Confidence intervals of the different metrics for the different proportions of missing data. Note that the _y_-axes are not the same."}
+# The ANOVA confidence intervals
+sst_ALL_miss_event_CI <- sst_ALL_miss_clim_event_cat %>%
+  select(-cats) %>% 
+  unnest(events) %>% 
+  filter(row_number() %% 2 == 0) %>% 
+  unnest(events) %>% 
+  select(site, miss, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
+  mutate(miss = as.factor(miss)) %>%
+  nest(-site) %>%
+  mutate(res = map(data, metric_CI)) %>%
+  select(-data) %>%
+  unnest()
 
-(ECJO)[I would think that as the proportion of missing data is increased, the climatological mean stays the same (so anomalies are unchanged) but the threshold is reduced. Therefore, events will start and end at smaller temperature anomalies thus bringing down the mean intensity but raising the duration.  You see this in the change from 0 to 10% missing, but it breaks down for >10% missing.  This may be because as more data is missing the events are destroyed since the gaps are too large.]
+ggplot(sst_ALL_miss_event_CI, aes(x = as.factor(miss))) +
+  geom_errorbar(position = position_dodge(0.9), width = 0.5,
+                aes(ymin = quant_2.5, ymax = quant_97.5)) +
+  geom_point(aes(y = quant_50)) +
+  facet_grid(metric~site, scales = "free_y") +
+  labs(x = "Missing data (%)", y = NULL)
+```
 
-(RWS)[That sounds about right to me. It's just strange that this realy only comes through for the NW Atlantic.]
+There is generally a slight decrease in the max and mean intensity of events as one increases the amounts of missing data, but the range of these values also tends to increase. This is important to note as it means that one may not say with certainty that the more data are missing from a time series, the less intense the MHWs detected will be. We see however that the median duration and cum. intensity are rather similar for all missing data steps.
+
+As the proportion of missing data are increased, the climatological means stay the same (so anomalies are unchanged) but the thresholds are reduced. Therefore, events will start and end at smaller temperature anomalies thus bringing down the mean intensity but raising the duration. We do not howeversee this increase in duration due to the fact that all of these missing days start dividing up the events into multiple shorter events. More on this in the categories section.
+
 
 ### Correlations
 
-(RWS: I think it would also be worthwhile to run a linear regression on the number of consecutive missing days in a time series against how much (ANOVA; _p_-value) the detected events differ from the control group.
+```{r clim-cor, fig.cap="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests."}
+
+# Create wide joiined data frame
+sst_ALL_miss_event_joined <- sst_ALL_miss_event_tukey %>%
+  separate(comparison, into = c("comp_left", "comp_right"), sep = "-") %>% 
+  mutate(comp_left = as.numeric(comp_left),
+         comp_right = as.numeric(comp_right)) %>% 
+  filter(comp_left == 0 | comp_right == 0) %>%
+  mutate(miss = as.character(abs(round(comp_right - comp_left, 2)))) %>% 
+  select(site, miss, rep, metric, adj.p.value) %>% 
+  left_join(sst_ALL_con, by = c("site", "miss", "rep")) 
+
+sst_ALL_miss_event_joined_wide <- sst_ALL_miss_event_joined %>% 
+  spread(key = duration, value = count)
+
+# Run correlations
+suppressWarnings( # Supress warnings from small sample sizes
+sst_ALL_miss_event_cor <- sst_ALL_miss_event_joined_wide %>% 
+  group_by(site, metric) %>% 
+  do(data.frame(t(cor(.[,6:ncol(sst_ALL_miss_event_joined_wide)], 
+                      .[,5], use = "pairwise.complete.obs")))) %>% 
+  gather(key = duration, value = r, -metric, -site) %>%
+  mutate(duration = as.numeric(gsub("X", "", duration)))
+)
+
+ggplot(sst_ALL_miss_event_cor, aes(x = duration, y = r)) +
+  geom_point() +
+  # scale_fill_viridis_d() +
+  geom_hline(aes(yintercept = 0.0)) +
+  scale_x_continuous(limits = c(1, 14), breaks = seq(1, 13, 3)) +
+  facet_grid(site~metric) +
+  labs(x = "Consecutive missing days", 
+       y = "Correlation (r) between significance\nand count of consecutive days missing")
+```
+
+The correlations shown above as dot plots tell us that the count of consecutive missing days from 1 -- 3 are a very good indicator of whether or not the duration (and int. cum.) will be significantly different from a time series with no missing data. For intensity max and mean it looks like the count of consecutive missing days from 4 -- 6 is the best indicator, with no real pattern emerging for the `WA` time series.
+
+```{r event-cor-linear-plot,fig.cap="Linear models showing the relationship between count of consecutive missing days in a time series and the probability (_p_-value) that the time series will be different from the control."}
+
+ggplot(filter(sst_ALL_miss_event_joined, duration <= 8), 
+       aes(x = count, y = adj.p.value, colour = as.factor(duration))) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm", se = F) +
+  scale_y_continuous(expand = c(0, 0)) +
+  facet_grid(metric~site) +
+  labs(y = "p-value", colour = "Consecutive\nmissing days")
+```
+
+The figure above shows that the relationships between the count of consecutive missing days and the _p_-value comparing that time series against the control is srongest for duration (and int. cum.) at lower consecutive missing day, but that the strength of this relationship is due to the tails at the top and bottom of the distribution of results and so this isn't necessarily as good of a predictor as it may have initially looked. This is more a case of large sample sizes producing sexy results. That being said, coount of consecutive missing days at 2 and 3 may be useful later on in the best practices. 
 
 
 ## Categories
 
-(RWS: I'm not currently looking at the effect of missing data on MHW categories. But I can do if there is interest in it.)
+
 
 
 ## Non-random missing data
