@@ -300,7 +300,7 @@ aov_tukey <- function(df){
 #   select(-site)
 clim_aov_tukey <- function(df){
   res <- df %>% 
-    filter(miss != "0.00") %>% 
+    # filter(miss != "0.00") %>% 
     select(miss, seas, thresh) %>% 
     mutate(miss = as.factor(miss)) %>% 
     nest() %>% 
@@ -347,39 +347,55 @@ To get a more precise pictures of where these differences are occurring we will 
 
 sst_ALL_miss_clim_tukey <- sst_ALL_miss_clim_aov_tukey %>% 
   select(-aov) %>% 
-  unnest()
+  unnest() %>% 
+  mutate(comparison = gsub("0.00", "1.00", comparison))
 
 clim_tukey_sig <- sst_ALL_miss_clim_tukey %>% 
   filter(adj.p.value <= 0.05) %>% 
   separate(comparison, into = c("miss_small", "miss_large"), sep = "-") %>% 
   mutate(miss_small = round((1-as.numeric(miss_small))*100),
          miss_large = round((1-as.numeric(miss_large))*100)) %>% 
-  mutate(miss_dif = round(miss_large - miss_small,2)) %>% 
-  group_by(site, metric, miss_large, miss_small, miss_dif) %>% 
-  summarise(count = n()) %>% 
-  ungroup() %>%
-  arrange(-miss_large, -miss_dif) %>% 
-  mutate(miss_index = factor(paste0(miss_large,"-",miss_dif)),
-         miss_index = factor(miss_index, levels = unique(miss_index)))
+  mutate(miss_dif = round(miss_large - miss_small, 2))
 
-ggplot(clim_tukey_sig, aes(x = miss_large, y = miss_small)) +
-  # geom_point() +
+# Need to correct for the tukey putting the 0% missing data on the wrong side
+clim_tukey_sig_fix <- clim_tukey_sig %>% 
+  filter(miss_dif < 0) %>% 
+  mutate(miss_dif = abs(miss_dif))
+colnames(clim_tukey_sig_fix)[3:4] <- c("miss_large", "miss_small")
+
+# Apend the corrected data
+clim_tukey_sig <- clim_tukey_sig %>% 
+  filter(miss_dif > 0) %>% 
+  rbind(clim_tukey_sig_fix)
+
+  # group_by(site, metric, miss_small) 
+  # mutate(miss_dif = round(miss_large - miss_small, 2)) %>% 
+  # group_by(site, metric, miss_large, miss_small, miss_dif) %>% 
+  # summarise(count = n()) %>% 
+  # ungroup() %>%
+  # arrange(-miss_large, -miss_dif) %>% 
+  # mutate(miss_index = factor(paste0(miss_large,"-",miss_dif)),
+         # miss_index = factor(miss_index, levels = unique(miss_index)))
+
+ggplot(clim_tukey_sig, aes(x = miss_small, y = miss_large)) +
+  geom_point() +
   # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-  geom_tile() +
-  facet_grid(metric~site) +
-  scale_x_reverse() +
-  scale_y_continuous(limits = c(1, 50)) +
+  # geom_tile() +
+  # geom_segment(aes(xend = miss_small, 
+  #                  y = min(miss_large), yend = max(miss_large))) +
+  facet_grid(~site) +
+  # scale_x_reverse() +
+  # scale_y_continuous(limits = c(1, 50)) +
   # scale_y_reverse() +
   labs(x = "Missing data (%)",
        y = "Missing data (%)")
-
-rm(sst_ALL_smooth_aov_tukey, sst_ALL_smooth_tukey, clim_tukey_sig)
 ```
 
+The above figure tends to show 
 
 ### Confidence intervals
 
-```{r clim-miss-CI-plot, fig.cap="Confidence intervals of the seas and thresh for each missing data step for all three time series."}
+```{r clim-miss-CI-plot, fig.cap="Confidence intervals of the MHW metrics for each missing data step for all three time series."}
 
 # Calculate the 97.5th, 50th, and 2.5th quantiles to get the CI of each metric
 df <- sst_ALL_miss_clim_only %>% 
@@ -492,46 +508,90 @@ ggplot(KS_sig, aes(x = perc, y = site)) +
 
 As we se in the line graph above, it is the Western Australia (`WA`) time series that most quickly deviate from the real signal when missing data are introduced. I think this is due to a combination of two things. The first is that the smaller the seasonal signal is, the more sensitive the data are when trying to create an accurate climatology. The second reason is that the more variance there is in a time series, apart from the seasonal signal, the more sensitive the data are to accurate climatology creation. The `WA` time series hits both of these problems and so this comes through clearly in the results.
 
+### Correlations
+
+```{r clim-cor, fig.cap="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests."}
+
+# Create wide joiined data frame
+suppressWarnings(
+sst_ALL_miss_joined <- sst_ALL_miss_clim_KS_p %>% 
+  left_join(sst_ALL_con, by = c("site", "miss", "rep")) %>% 
+  spread(key = duration, value = count)
+)
+
+# Run correlations
+suppressWarnings( # Supress warnings from small sample sizes
+sst_ALL_miss_cor <- sst_ALL_miss_joined %>% 
+  group_by(site, metric) %>% 
+  do(data.frame(t(cor(.[,6:25], .[,5], use = "pairwise.complete.obs")))) %>% 
+  gather(key = duration, value = r, -metric, -site) %>%
+  mutate(duration = as.numeric(gsub("X", "", duration)))
+)
+
+ggplot(sst_ALL_miss_cor, aes(x = duration, y = r)) +
+  geom_point() +
+  # scale_fill_viridis_d() +
+  scale_x_continuous(limits = c(1, 14), breaks = seq(1, 13, 3)) +
+  facet_grid(site~metric) +
+  labs(x = "Consecutive missing days")
+```
+
 
 ## MHW metrics
 
 Now that we know that missing data from a time series does produce significantly different 90th percentile thresholds, we want to see what the downstream effects are on the MHW metrics. 
 
-```{r compare-shorten, eval=FALSE}
-# Calculate events
-sst_ALL_event <- sst_ALL_clim %>% 
-  group_by(site, miss, rep) %>% 
-  nest() %>% 
-  mutate(res = map(data, detect_event_event)) %>% 
-  select(-data) %>% 
-  unnest()
-save(sst_ALL_event, file = "data/sst_ALL_event_miss.Rdata")
-```
-```{r compare-shorten-load}
-load("data/sst_ALL_event_miss.Rdata")
-```
-
 
 ### ANOVA
 
-```{r compare-shorten-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for the four different proportions of missing data. The differences are significant (_p_ <0.05) for all of the metrics."}
+```{r miss-event-aov-calc, eval=FALSE}
+# Quick wrapper for getting results for ANOVA and Tukey on event metrics
+# df <- sst_ALL_miss_clim_event_cat %>%
+#   filter(site == "WA") %>%
+#   select(-site)
+event_aov_tukey <- function(df){
+  res <- df %>% 
+    select(-cats) %>% 
+    unnest(events) %>% 
+    filter(row_number() %% 2 == 0) %>% 
+    unnest(events) %>% 
+    # select(miss) %>% 
+    # filter(miss != "0.00") %>% 
+    select(miss, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
+    mutate(miss = as.factor(miss)) %>% 
+    nest() %>% 
+    mutate(aov = map(data, aov_p),
+           tukey = map(data, aov_tukey)) %>% 
+    select(-data)
+  return(res)
+}
+
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_miss_clim_event_cat.Rdata")
+doMC::registerDoMC(cores = 50)
+sst_ALL_miss_event_aov_tukey <- plyr::ddply(sst_ALL_miss_clim_event_cat, c("site"), 
+                                           event_aov_tukey, .parallel = T)
+save(sst_ALL_miss_event_aov_tukey, file = "data/sst_ALL_miss_event_aov_tukey.Rdata")
+# rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)
+```
+
+```{r event-aov-plot, fig.cap="Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for all proportions of missing data per reference time series. The differences are significant (_p_ <0.05) for all of the metrics."}
+
 # ANOVA p
-sst_ALL_event_aov_p <- sst_ALL_event %>% 
-  select(site, miss, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
-  nest(-site) %>%
-  mutate(res = map(data, event_aov_p)) %>% 
-  select(-data) %>% 
+sst_ALL_miss_event_aov_p <- sst_ALL_miss_event_aov_tukey %>% 
+  select(-tukey) %>% 
   unnest()
 
 # visualise
-ggplot(sst_ALL_event_aov_p, aes(x = site, y = metric)) +
+ggplot(sst_ALL_miss_event_aov_p, aes(x = site, y = metric)) +
   geom_tile(aes(fill = p.value)) +
   geom_text(aes(label = round(p.value, 4))) +
   scale_fill_gradient2(midpoint = 0.1, limits = c(0, 1)) +
   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
 ```
 
-As we may see in the figure above, all of the metrics differ significantly when various amounts of missing data are introduced into the time series. To see where these differences materialise we will visualise the confidence intervals.
+As we may see in the figure above, all of the metrics differ significantly when various amounts of missing data are introduced into the time series. To see where these differences materialise we will visualise the post-hoc Tukey test results.
 
 
 ### Confidence intervals
@@ -560,7 +620,7 @@ Perhaps the increase in max intensity at 10% missing data for the Northwest Atla
 
 (RWS)[That sounds about right to me. It's just strange that this realy only comes through for the NW Atlantic.]
 
-### Consecutive missing days
+### Correlations
 
 (RWS: I think it would also be worthwhile to run a linear regression on the number of consecutive missing days in a time series against how much (ANOVA; _p_-value) the detected events differ from the control group.
 
