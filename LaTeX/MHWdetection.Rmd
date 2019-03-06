@@ -104,7 +104,16 @@ Table 3: This tabe differs from the preceding two in that types of products are 
 
 - _Show the time series from NOAA OISST; Western Australian, NW Atlantic, and Mediterranean (henceforth reference time series)_ 
 - _Maybe include a description of the MHWs as detected from the “default algorithm parameters”, which we can then use as a reference for the rest of the work (i.e. sensitivity to time series length, missing values, etc…)_
+- _ A table shown below should include all aspects/statistics of the time series (e.g. range of seasonal signal) that will come out as imporatant in the results section._
 
+```{r trend-table}
+# Quick peak at the decadal trends
+# knitr::kable(sst_ALL_DT, col.names = c("site", "trend (°C/dec)"), align = "c", 
+#              caption = "Table showing the decadal trends detected for the three default sites.", 
+#              digits = 3)
+```
+
+<!-- We see in the table above that the three default time series currently being used all have decadal trends much higher than the global average of ~0.1°C. -->
 
 # Do I have enough data?
 

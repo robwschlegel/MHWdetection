@@ -10,3 +10,5 @@ sst_ALL_event_aov_tukey.RData
 sst_ALL_miss_clim_event_cat.Rdata
 sst_ALL_miss_clim_only.Rdata
 sst_ALL_miss_event_aov_tukey.Rdata
+sst_ALL_trend.Rdata
+sst_ALL_trend_clim_event_cat.Rdata

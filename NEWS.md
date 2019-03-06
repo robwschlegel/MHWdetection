@@ -1,6 +1,7 @@
 # MHWdetection 0.0.5  (2019-03-05)
 
 * More missing data work
+* Worked through basic decadal trend results
 
 # MHWdetection 0.0.5  (2019-03-04)
 

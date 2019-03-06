@@ -470,7 +470,6 @@ sst_ALL_miss_clim_KS_p <- sst_ALL_miss_clim_only %>%
 save(sst_ALL_miss_clim_KS_p, file = "data/sst_ALL_miss_clim_KS_p.Rdata")
 ```
 
-
 ```{r KS-clims, fig.cap="Histograms showing the _p_-value results from Kolmogorov-Smirnov tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three sites."}
 
 load("data/sst_ALL_miss_clim_KS_p.Rdata")
@@ -545,7 +544,6 @@ It must now be seen what the relationship is between count of consecutive missin
 ```
 
 
-
 ## MHW metrics
 
 Now that we know that missing data from a time series does produce significantly different 90th percentile thresholds, we want to see what the downstream effects are on the MHW metrics. 
@@ -610,7 +608,7 @@ As we may see in the figure above, the duration (and likely therefore cummulativ
 
 ### Post-hoc Tukey test
 
-```{r event-tukey-heat, fig.cap="Segments showing the range of the percent of missing data present when climatologies were significantly different. The x and y axes show the percent of missing data."}
+```{r event-tukey-line, fig.cap="Segments showing the range of the percent of missing data present when climatologies were significantly different."}
 
 sst_ALL_miss_event_tukey <- sst_ALL_miss_event_aov_tukey %>% 
   select(-aov) %>% 
@@ -748,8 +746,6 @@ The figure above shows that the relationships between the count of consecutive m
 
 
 ## Categories
-
-
 
 
 ## Non-random missing data
@@ -1116,14 +1112,6 @@ ggplot(sst_ALL_2_day_event_ttest_p, aes(x = site, y = stat)) +
 
 The figure above shows the results of t-tests for each metric between the complete time series and when the weekend temperature data have been removed. There is no appreciable impact on the detected duration/intensities.
 
-
-### Missing _n_-consecutive days
-
-(RWS: I'm rather leaving this section for now in favour of looking at the relationship between the number of total consecutive missing days and the effect that has on the results.)
-
-(ECJO)[I think that’s good. I think you can probably get this info from the first batch of analyses you did on random data removal.]
-
-(RWS: If it is not shown in detail above, the relationship between n-missing consecutive days will be quantified here.)
 
 ## Best practices
 

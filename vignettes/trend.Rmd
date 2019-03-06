@@ -41,6 +41,8 @@ library(ggridges)
 
 ## Trending
 
+The following chunks contain the code used to systematically add increasing decadal trends to the three reference time series.
+
 ```{r trending, eval=TRUE}
 # First load the de-trended data created in the duration vignette
 load("data/sst_ALL_detrend.Rdata")
@@ -58,13 +60,14 @@ add_trend <- function(rate){
   return(res)
 }
 
+## NB: Not repeating these results as there is no variance possible
 # Wrapper function
 # This then allows for easier replication
 # It expects the data passed to it to already be nested
-# trend_repl <- function(prop) {
-#   res <- purrr::rerun(100, random_knockout(prop)) %>%
+# trend_repl <- function(rate) {
+#   res <- purrr::rerun(100, add_trend(rate)) %>%
 #     map_df(as.data.frame, .id = "rep") %>% 
-#     select(miss, rep, everything())
+#     select(rate, rep, everything())
 #   return(res)
 # }
 
@@ -77,34 +80,6 @@ save(sst_ALL_trend, file = "data/sst_ALL_trend.Rdata")
 ```
 
 ```{r prep-funcs}
-# Remove the trend from a time series
-detrend <- function(df){
-  resids <- broom::augment(lm(temp ~ t, df))
-  res <- df %>% 
-    mutate(temp = temp - resids$.fitted)
-  return(res)
-}
-# ggplot(sst_ALL_detrend, aes(x = t, y = temp)) +
-#   geom_point() +
-#   geom_smooth(method = "lm") +
-#   facet_wrap(~site, nrow = 3)
-
-# Calculate one specific clim period
-ts2clm_sub <- function(year_index, df){
-  res <- ts2clm(df, climatologyPeriod = c(paste0(year_index,"-01-01"), "2014-12-31")) %>% 
-    filter(lubridate::year(t) >= year_index) %>% 
-    mutate(year_index = year_index)
-  return(res)
-}
-
-# Calculate the full range of clims in a time series
-ts2clm_ALL <- function(df){
-  seq_year <- seq(min(lubridate::year(df$t)), 
-                  max(lubridate::year(df$t))-2)
-  res <- plyr::ldply(seq_year, .fun = ts2clm_sub, .parallel = T, df = df)
-  return(res)
-}
-
 # Calculate decadal trends
 decadal_trend <- function(df) {
   df2 <- df %>% 
@@ -121,70 +96,95 @@ decadal_trend <- function(df) {
 }
 ```
 
-```{r shorten}
-# First put all of the data together and create a site column
-sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
-  mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 12053))
 
-# Then create a de-trended version
-sst_ALL_detrend <- sst_ALL %>% 
-  group_by(site) %>% 
-  do(detrend(.)) %>% 
-  ungroup() %>% 
-  as.tibble(.)
+## Climatology statistics
 
-# Then calculate all of the clims
-## With trend left in
-sst_ALL_clim <- sst_ALL %>% 
-  nest(-site) %>% 
-  mutate(clim = map(data, ts2clm_ALL)) %>% 
-  select(-data) %>% 
-  unnest()
-## With de-trended data
-sst_ALL_detrend_clim <- sst_ALL_detrend %>% 
-  nest(-site) %>% 
-  mutate(clim = map(data, ts2clm_ALL)) %>% 
-  select(-data) %>% 
-  unnest()
-## Combine for ease later
-sst_ALL_both_clim <- rbind(sst_ALL_clim, sst_ALL_detrend_clim) %>% 
-  mutate(trend = rep(c("normal", "detrended"), each = nrow(sst_ALL_clim)))
+```{r trend-clim-event-cat-calc, eval=FALSE}
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_trend.Rdata")
 
-# Calculate the different decadal trends
-# See Schlegel and Smit 2016 for GLS model explanation/validation
-sst_ALL_DT <- sst_ALL_clim %>% 
-  # group_by(site) %>% 
-  nest(-site) %>% 
-  mutate(DT = map(data, decadal_trend)) %>% 
-  select(-data) %>% 
-  unnest() #%>% 
-  # rename(decades = decades2)
-```
-```{r shorten-table}
-# Quick peak at the decadal trends
-knitr::kable(sst_ALL_DT, col.names = c("site", "trend (°C/dec)"), align = "c", 
-             caption = "Table showing the decadal trends detected for the three default sites.", 
-             digits = 3)
-```
-
-We see in the table above that the three default time series currently being used all have decadal trends much higher than the global average of ~0.1°C.
-
-```{r compare-funcs}
-# A clomp of functions used below
-# Written out here for tidiness/convenience
-
-# Calculate only events
-detect_event_event <- function(df, y = temp){
-  ts_y <- eval(substitute(y), df)
-  df$temp <- ts_y
-  res <- detect_event(df)$event
+# Calculate climatologies, events, and categories on shrinking time series
+clim_event_cat_calc <- function(df){
+  res <- df %>% 
+    nest() %>% 
+    mutate(clims = map(data, ts2clm, 
+                       climatologyPeriod = c("1982-01-01", "2011-12-31")),
+           events = map(clims, detect_event),
+           cats = map(events, category)) %>% 
+    select(-data, -clims)
   return(res)
-  }
+}
 
-# Run an ANOVA on each metric of the combined event results and get the p-value
-event_aov_p <- function(df){
-  aov_models <- df[ , -grep("year_index", names(df))] %>%
-    map(~ aov(.x ~ df$year_index)) %>% 
+# Calculate all of the MHW related results
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend_clim_event_cat <- plyr::ddply(sst_ALL_trend, c("trend", "site"), 
+                                           clim_event_cat_calc, .parallel = T)
+save(sst_ALL_trend_clim_event_cat, file = "data/sst_ALL_trend_clim_event_cat.Rdata")
+```
+
+```{r trend_clim_only, eval=TRUE}
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_trend_clim_event_cat.Rdata")
+
+# Wrapper function to speed up the extraction of clims
+trend_clim_only <- function(df){
+  res <- df %>% 
+      select(-cats) %>% 
+  unnest(events) %>% 
+  filter(row_number() %% 2 == 1) %>% 
+  unnest(events) %>% 
+  select(trend:doy, seas:thresh) %>% 
+  unique() %>% 
+  arrange(doy)
+}
+
+# Pull out only seas and thresh for ease of plotting
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend_clim_only <- plyr::ddply(sst_ALL_trend_clim_event_cat, c("trend", "site"), 
+                                      trend_clim_only, .parallel = T)
+save(sst_ALL_trend_clim_only, file = "data/sst_ALL_trend_clim_only.Rdata")
+```
+
+```{r load-trend-clim-only}
+load("data/sst_ALL_trend_clim_only.Rdata")
+```
+
+```{r clim_trend_seas, fig.cap="The seasonal signals created from time series with increasingly large decadal trends added."}
+
+ggplot(sst_ALL_trend_clim_only, 
+       aes(y = seas, x = doy, colour = as.numeric(trend))) +
+  geom_line(alpha = 0.3, aes(group = trend)) +
+  scale_colour_viridis_c() +
+  facet_wrap(~site, ncol = 1, scales = "free_y") +
+  labs(x = "Calendar day of year", y = "Temp. (°C)", colour = "trend (°C/dec)")
+```
+
+Looking at the range of seasonal signals we see how pronounced the effect of adding a decadal trend is to `WA` over the other two time series. This is because the proportionate to the overall range of the seasonal signal, we are adding much more to the `WA` time series than the others.
+
+```{r clim-trend-thresh, fig.cap = "The 90th percentile thresholds created from time series with increasingly large decadal trends added."}
+ggplot(sst_ALL_trend_clim_only, 
+       aes(y = thresh, x = doy, colour = as.numeric(trend))) +
+  geom_line(alpha = 0.3, aes(group = trend)) +
+  scale_colour_viridis_c() +
+  facet_wrap(~site, ncol = 1, scales = "free_y") +
+  labs(x = "Calendar day of year", y = "Temp. (°C)", colour = "trend (°C/dec)")
+```
+
+Interestingly the increase in the 90th percentile threshold appears to be similar for the 90th percentile threshold as it is for the seasonal signal. This implies that the upcoming results are likely to vary from the previous two vignettes.
+
+
+### ANOVA _p_-values
+
+Given that there are perceptible differences in the seasonal signals as decadal trends increase, an ANOVA will almost certainly determine these differences to be significant.
+
+```{r trend-clim-funcs}
+# Run an ANOVA on each metric of the event results from 
+# the same amount of trending data and get the p-value
+aov_p <- function(df){
+  aov_models <- df[ , -grep("trend", names(df))] %>%
+    map(~ aov(.x ~ df$trend)) %>% 
     map_dfr(~ broom::tidy(.), .id = 'metric') %>%
     mutate(p.value = round(p.value, 4)) %>%
     filter(term != "Residuals") %>%
@@ -193,9 +193,9 @@ event_aov_p <- function(df){
   }
 
 # Run an ANOVA on each metric and then a Tukey test
-event_aov_tukey <- function(df){
-  aov_tukey <- df[ , -grep("year_index", names(df))] %>%
-    map(~ TukeyHSD(aov(.x ~ df$year_index))) %>% 
+aov_tukey <- function(df){
+  aov_tukey <- df[ , -grep("trend", names(df))] %>%
+    map(~ TukeyHSD(aov(.x ~ df$trend))) %>% 
     map_dfr(~ broom::tidy(.), .id = 'metric') %>%
     mutate(p.value = round(adj.p.value, 4)) %>%
     # filter(term != "Residuals") %>%
@@ -203,8 +203,245 @@ event_aov_tukey <- function(df){
     # filter(adj.p.value <= 0.05) %>% 
     arrange(metric, adj.p.value)
   return(aov_tukey)
-  }
+}
 
+# Quick wrapper for getting results for ANOVA and Tukey on clims
+# df <- sst_ALL_trend_clim_only %>%
+#   filter(site == "WA") %>%
+#   select(-site)
+clim_aov_tukey <- function(df){
+  res <- df %>% 
+    # filter(trend != "0.00") %>% 
+    select(trend, seas, thresh) %>% 
+    mutate(trend = as.factor(trend)) %>% 
+    nest() %>% 
+    mutate(aov = map(data, aov_p),
+           tukey = map(data, aov_tukey)) %>% 
+    select(-data)
+  return(res)
+}
+```
+
+```{r clim-aov-res, eval=TRUE}
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_trend_clim_only.Rdata")
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend_clim_aov_tukey <- plyr::ddply(sst_ALL_trend_clim_only, c("site"), 
+                                            clim_aov_tukey, .parallel = T)
+save(sst_ALL_trend_clim_aov_tukey, file = "data/sst_ALL_trend_clim_aov_tukey.Rdata")
+# rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)
+```
+
+```{r clim-trend-AOV-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of trending data. The 90th percentile thresholds are significantly different at p < 0.05 but the seasonal signals are not."}
+
+load("data/sst_ALL_trend_clim_aov_tukey.RData")
+
+sst_ALL_trend_clim_aov <- sst_ALL_trend_clim_aov_tukey %>% 
+  select(-tukey) %>% 
+  unnest()
+
+ggplot(sst_ALL_trend_clim_aov, aes(x = site, y = metric)) +
+  geom_tile(aes(fill = p.value)) +
+  geom_text(aes(label = round(p.value, 2))) +
+  scale_fill_gradient2(midpoint = 0.1)
+```
+
+We may see in the figure above that the climatologies do not differ appreciably across all of the decadal trends used for the `Med` and `NW_Atl`. The climatologies do however differ significantly for the `WA` time series.
+
+
+### Post-hoc Tukey test
+
+And now to see where exactly the `WA` climatologies begin to diverge.
+
+```{r clim-tukey-line, fig.cap="Segments showing the range of decadal trends added to the data when climatologies were significantly different."}
+
+sst_ALL_trend_clim_tukey <- sst_ALL_trend_clim_aov_tukey %>% 
+  select(-aov) %>% 
+  unnest()
+
+# Create a summary for better plotting
+clim_tukey_summary <- sst_ALL_trend_clim_tukey %>% 
+  separate(comparison, into = c("comp_left", "comp_right"), sep = "-") %>% 
+  mutate(comp_left = as.numeric(comp_left),
+         comp_right = as.numeric(comp_right)) %>% 
+  filter(comp_left == 0 | comp_right == 0) %>%
+  mutate(comp_dif = abs(round(comp_right - comp_left, 2))) %>% 
+  filter(adj.p.value <= 0.05) %>% 
+  group_by(site, metric, comp_dif)
+
+ggplot(clim_tukey_summary, aes(x = comp_dif, y = site)) +
+  geom_line() +
+  geom_point(size = 0.5) +
+  facet_wrap(~metric, ncol = 1) +
+  scale_x_continuous(limits = c(0, 0.3)) +
+  labs(x = "Trend (°C/dec)", y = NULL,
+       colour = "Sig. dif.\nout of 100")
+```
+
+In the figure above we see that the `WA` seasonal signals become significantly different at a decadal trend of 0.25°C/dec, and the 90th percentile threshold becomes sig. dif. at 0.24°C/dec.
+
+
+### Kolmogorov-Smirnov tests
+
+Now knowing that the daily values that make up the climatologies tend to differ based on the decadal trend added, as seen with the ANOVA and Tukey results, we want to check where the distributions of the climatologies themselves begin to differ. We will do this through a series of pair-wise two-sample KS tests.
+
+```{r trend-clims-KS-calc, eval=TRUE}
+# Extract the true climatologies
+sst_ALL_trend_clim_only_0 <- sst_ALL_trend_clim_only %>% 
+  filter(trend == 0)
+
+# KS function
+# Takes one rep of trending data and compares it against the complete signal
+clim_KS_p <- function(df){
+  df_comp <- sst_ALL_trend_clim_only_0 %>% 
+    filter(site == df$site[1])
+  res <- data.frame(site = df$site[1],
+                    seas = round(ks.test(df$seas, df_comp$seas)$p.value, 4),
+                    thresh = round(ks.test(df$thresh, df_comp$thresh)$p.value, 4))
+  return(res)
+}
+
+# The KS results
+suppressWarnings( # Suppress perfect match warnings
+sst_ALL_trend_clim_KS_p <- sst_ALL_trend_clim_only %>% 
+  filter(trend != 0) %>% 
+  mutate(trend = as.factor(trend)) %>%
+  mutate(site2 = site) %>% 
+  group_by(site2, trend) %>% 
+  nest() %>% 
+  mutate(res = map(data, clim_KS_p)) %>% 
+  select(-data) %>% 
+  unnest() %>% 
+  select(site, trend, seas, thresh) %>%
+  gather(key = metric, value = p.value, -site, - trend)
+)
+save(sst_ALL_trend_clim_KS_p, file = "data/sst_ALL_trend_clim_KS_p.Rdata")
+```
+
+```{r KS-clims, fig.cap="Histograms showing the _p_-value results from Kolmogorov-Smirnov tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no trending data) climatologies for each of the three sites."}
+
+load("data/sst_ALL_trend_clim_KS_p.Rdata")
+
+# Filter non-significant results
+KS_sig <- sst_ALL_trend_clim_KS_p %>% 
+  filter(p.value <= 0.05) %>% 
+  group_by(site, trend, metric) %>% 
+  summarise(count = n()) %>%
+  ungroup()
+
+# Manually pad in NA for trending percentages with no significant differences
+# KS_sig <- rbind(KS_sig, data.frame(site = "Med", metric = "thresh", perc = 100:74, count = NA))
+# KS_sig <- rbind(KS_sig, data.frame(site = "NW_Atl", metric = "thresh", perc = 100:79, count = NA))
+# KS_sig <- rbind(KS_sig, data.frame(site = "WA", metric = "thresh", perc = 100:92, count = NA))
+
+ggplot(KS_sig, aes(x = trend, y = site)) +
+  geom_line(aes(group = site)) +
+  geom_point() +
+  facet_wrap(~metric, ncol = 1) +
+  # scale_x_reverse(breaks = seq(5, 35, 5)) +
+  labs(x = "trending data (%)", y = NULL)
+```
+
+Surprisingly the above figure shows that the seasonal signal is much more sensitive than the 90th percentile threshold to the addition of decadal trends. The `WA` time series remains the most sensitive with sig. dif. occurring at an added decadal trend of 0.05°C. The interesting thing here is that the `NW_Atl` threshold never had a significantly different distribution regardless of the amount added.
+
+Thinking about this more I have alighted upon the idea that because the threshold is determined by the largest values detected on any given _calendar day_, the size of the deadal trend present in the data could be deminished by the fact that some of the values creating the threshold will be from the earlier portion of the time series before the decadal trend realy starts having an effect.
+
+
+## MHW metrics
+
+
+### ANOVA
+
+```{r trend-event-aov-calc, eval=TRUE}
+# Quick wrapper for getting results for ANOVA and Tukey on event metrics
+# df <- sst_ALL_trend_clim_event_cat %>%
+#   filter(site == "WA") %>%
+#   select(-site)
+event_aov_tukey <- function(df){
+  res <- df %>% 
+    select(-cats) %>% 
+    unnest(events) %>% 
+    filter(row_number() %% 2 == 0) %>% 
+    unnest(events) %>% 
+    # select(trend) %>% 
+    # filter(trend != "0.00") %>% 
+    select(trend, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
+    mutate(trend = as.factor(trend)) %>% 
+    nest() %>% 
+    mutate(aov = map(data, aov_p),
+           tukey = map(data, aov_tukey)) %>% 
+    select(-data)
+  return(res)
+}
+
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load("data/sst_ALL_trend_clim_event_cat.Rdata")
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend_event_aov_tukey <- plyr::ddply(sst_ALL_trend_clim_event_cat, c("site"), 
+                                             event_aov_tukey, .parallel = T)
+save(sst_ALL_trend_event_aov_tukey, file = "data/sst_ALL_trend_event_aov_tukey.Rdata")
+# rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)
+```
+
+```{r event-aov-plot}
+
+# ANOVA p
+sst_ALL_trend_event_aov_p <- sst_ALL_trend_event_aov_tukey %>% 
+  select(-tukey) %>% 
+  unnest()
+
+event_aov_plot <- sst_ALL_trend_event_aov_p %>% 
+  group_by(site, metric) %>% 
+  filter(p.value <= 0.05) %>% 
+  summarise(count = n())
+
+# visualise
+# ggplot(event_aov_plot, aes(x = site, y = metric)) +
+#   geom_tile(aes(fill = count)) +
+#   geom_text(aes(label = count)) +
+#   scale_fill_viridis_c() +
+#   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))
+```
+
+There is no figure here because there is nothing to show. None of the metrics for any of the time series were significantly different.
+
+
+### Post-hoc Tukey test
+
+```{r event-tukey-line, fig.cap="Segments showing the range of the decadal trends added when climatologies were significantly different."}
+
+sst_ALL_trend_event_tukey <- sst_ALL_trend_event_aov_tukey %>% 
+  select(-aov) %>% 
+  unnest()
+
+# Create a summary for better plotting
+event_tukey_summary <- sst_ALL_trend_event_tukey %>% 
+  separate(comparison, into = c("comp_left", "comp_right"), sep = "-") %>% 
+  mutate(comp_left = as.numeric(comp_left),
+         comp_right = as.numeric(comp_right)) %>% 
+  filter(comp_left == 0 | comp_right == 0) %>%
+  mutate(comp_dif = abs(round(comp_right - comp_left, 2))) %>% 
+  filter(adj.p.value <= 0.05) %>% 
+  group_by(site, metric, comp_dif)
+
+# ggplot(event_tukey_summary, aes(x = comp_dif, y = site)) +
+#   geom_line(aes(colour = count)) +
+#   geom_point(aes(colour = count), size = 0.5) +
+#   facet_wrap(~metric, ncol = 1) +
+#   scale_colour_viridis_c() +
+#   # scale_x_reverse(breaks = seq(5, 35, 5)) +
+#   labs(x = "trending data (%)", y = NULL,
+#        colour = "Sig. dif.\nout of 100")
+```
+
+Nope, no differences on a pair-wise basis. How could there be when the ANOVAs weren't significant.
+
+
+### Confidence intervals
+
+```{r CI-calc, eval=FALSE}
 # Calculate CIs using a bootstrapping technique to deal with the non-normal small sample sizes
 
 # df <- sst_ALL_both_event %>%
@@ -214,15 +451,14 @@ event_aov_tukey <- function(df){
 #   select(year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>%
   # select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%>%   
   # nest(-site, -trend)
-
 Bmean <- function(data, indices) {
   d <- data[indices] # allows boot to select sample 
     return(mean(d))
 } 
 
-event_aov_CI <- function(df){
-  df_conf <- gather(df, key = "metric", value = "value", -year_index) %>% 
-    group_by(year_index, metric) %>% 
+event_CI <- function(df){
+  df_conf <- gather(df, key = "metric", value = "value") %>% 
+    group_by(metric) %>% 
     # ggplot(aes(x = value)) +
     # geom_histogram(aes(fill = metric)) +
     # facet_wrap(~metric, scales = "free_x")
@@ -232,240 +468,31 @@ event_aov_CI <- function(df){
               n = n()) %>% 
     mutate_if(is.numeric, round, 4)
   return(df_conf)
-  }
-
-# A particular summary output
-event_output <- function(df){
-  res <- df %>%
-    group_by(year_index) %>% 
-    # select(-event_no) %>% 
-    summarise_all(c("mean", "sd"))
-  return(res)
 }
 
-# Quick wrapper for getting results for ANOVA on clims
-clim_aov <- function(df){
-  res <- df %>% 
-    select(-t, - temp, -doy) %>% 
-    mutate(year_index = as.factor(year_index)) %>% 
-    unique() %>% 
-    group_by(site, trend) %>% 
-    nest() %>% 
-    mutate(res = map(data, event_aov_p)) %>% 
-    select(-data) %>% 
-    unnest()
-  return(res)
-}
-
-# Quick wrapper for getting results for Tukey on clims
-clim_tukey <- function(df){
-  res <- df %>% 
-    select(-t, - temp, -doy) %>% 
-    mutate(year_index = as.factor(year_index)) %>% 
-    unique() %>% 
-    group_by(site, trend) %>% 
-    nest() %>% 
-    mutate(res = map(data, event_aov_tukey)) %>% 
-    select(-data) %>% 
-    unnest()
-  return(res)
-}
-```
-
-
-## Climatology statistics
-
-### ANOVA _p_-values
-
-Given that there are perceptible differences in the mean seasonal signal values between the decades of data used, let's see if an ANOVA determines these differences to be significant.
-
-```{r shorten-clim-aov, fig.cap="Heatmap showing the ANOVA results for the comparisons of the climatologies for the many different time periods for the default time series."}
-sst_ALL_both_clim_aov <- clim_aov(sst_ALL_both_clim)
-
-ggplot(sst_ALL_both_clim_aov, aes(x = site, y = metric)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_text(aes(label = round(p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1) +
-  facet_wrap(~trend)
-```
-
-We may see in the figure above that the climatologies do not differ appreciably at any length for the `Med`. The climatologies do however differ significantly for both the `NW_Atl` and the `WA` time series. Interestingly, when the long-term trend is removed (simple linear model flattening), the 90th percentile thresholds do not differ significantly at any length within the `NW_Atl` time series. It is worth pointing out that the `Med` time series has the lowest decadal warming trend of the three time series, that coupled with the decrease in significance for the difference in thresholds in the `NW_Atl` seems to imply that the decadal trend may play a role in determining the difference in the time series. Though the fact that the `WA` time series, by far the most variable of the three, always produces significant differences leads me to think that the variance of a time series may be able to win out over the long-term trend. This interaction will need to be quantified.
-
-
-### Post-hoc Tukey test
-
-Before getting to that step we need to run a post-hoc Tukey test to see where the significant differences when comparing the different time series lengths begins.
-
-```{r shorten-tukey, fig.cap="Heatmap showing the Tukey test results from the ANOVAs run on the climatologies generated from all possible time series lengths (i.e. 3 -- 34 years). The different sites are shown as different rows of panels, and the different climatologies (seasonal signal and 90th percentile threshold, from both normal and detrended time series) are shown as different columns. The X and Y axes here denote two different start years for time series being compared. For example, a pixel at '1990' on the X axis, and '2010' on the Y axis is showing the difference (_p_-value) between the climatology generated from a time series from 1990 -- 2014 against the climatology from the same time series that runs only from 2010 -- 2014. Significant differences are marked with a small black dot. Note that results tend not to differ significantly once the time series being compared are more than several years long."}
-sst_ALL_both_clim_tukey <- clim_tukey(sst_ALL_both_clim) %>% 
-  tidyr::separate(col = comparison, into = c("comp1", "comp2")) %>% 
-  mutate(comp1 = as.numeric(comp1), 
-         comp2 = as.numeric(comp2))
-
-ggplot(sst_ALL_both_clim_tukey, aes(x = comp2, y = comp1)) +
-  geom_tile(aes(fill = adj.p.value)) +
-  geom_point(data = filter(sst_ALL_both_clim_tukey, adj.p.value <= 0.05),
-             size = 0.01) +
-  # geom_text(aes(label = round(adj.p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1) +
-  coord_equal(expand = 0) +
-  facet_grid(site~metric+trend) +
-  labs(x = "", y = "")
-```
-
-The figure above is perhaps a bit odd, but I think a lengthy table would have been less informative. What the figure above is showing is that most time series lengths do not create significantly different results for the calculated climatologies. We also see that even with very short time series (< 10 years), the calculated climatologies tend not to differ from those created from nearby years. The exception to this is the `WA` time series. We may see that the 90th percentile threshold for the three year time series (top row of pixels in the `WA` panels) differs significantly from the ~4 -- 7 year time series, but then does not differ significantly from the much longer time series. This is certainly due to the massive MHW near the end of this time series. It is a good indicator of one of the perils of using such short time series; that one massive event can create significant changes in the results. 
-
-
-### Kolmogorov-Smirnov tests
-
-Now knowing that the daily values that make up the climatologies tend to differ based on the number of years used, as seen with the ANOVA and Tukey results, we want to check where the distributions of the climatologies themselves begin to differ. We will do this through a series of pair-wise two-sample KS tests.
-
-```{r KS-clims, fig.cap="Heatmap showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. Small black dots denote significant differences (_p_-value <= 0.05."}
-# Extract climatology values only
-sst_ALL_both_clim_only <- sst_ALL_both_clim %>% 
-  select(-t, -temp) %>% 
-  unique() %>% 
-  arrange(site, trend, year_index, doy)
-
-KS_sub <- function(df, year_index_1, year_index_2){
-  df_1 <- df %>% 
-    filter(year_index == year_index_1)
-  df_2 <- df %>% 
-    filter(year_index == year_index_2)
-  res <- data.frame(seas = round(ks.test(df_1$seas, df_2$seas)$p.value, 4),
-                    thresh = round(ks.test(df_1$thresh, df_2$thresh)$p.value, 4),
-                    year_1 = year_index_1,
-                    year_2 = year_index_2)
-  return(res)
-}
-
-# The KS results
-sst_ALL_both_clim_KS_p <- data.frame()
-for(i in 1:length(unique(sst_ALL_both_clim_only$year_index))){
-  year_index_1 <- unique(sst_ALL_both_clim_only$year_index)[i]
-  for(j in 1:length(unique(sst_ALL_both_clim_only$year_index))){
-    year_index_2 <- unique(sst_ALL_both_clim_only$year_index)[j]
-    if(year_index_1 < year_index_2){
-      suppressWarnings(
-      res <- sst_ALL_both_clim_only %>% 
-        group_by(site, trend) %>% 
-        do(KS_sub(., year_index_1 = year_index_1, year_index_2 = year_index_2)) %>% 
-        ungroup() %>% 
-        as.tibble(.)
-      )
-      sst_ALL_both_clim_KS_p <- rbind(sst_ALL_both_clim_KS_p, res)
-    }
-  }
-}
-
-sst_ALL_both_clim_KS_p_long <- sst_ALL_both_clim_KS_p %>% 
-  tidyr::gather(key = "metric", value = "p.value", -site, -trend, -year_1, -year_2)
-
-ggplot(sst_ALL_both_clim_KS_p_long, aes(x = year_1, y = year_2)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_point(data = filter(sst_ALL_both_clim_KS_p_long, p.value <= 0.05),
-             size = 0.01) +
-  # geom_text(aes(label = round(adj.p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1) +
-  coord_equal(expand = 0) +
-  facet_grid(site~metric+trend) +
-  labs(x = "", y = "")
-```
-
-The table above shows that while climatology values only generated from short time series against long time series tend to be significantly different when tested with an ANOVA, Kolmogorov-Smirnov tests on the shape of these distributions say otherwise. For the `WA` time series, nearly any comparison being made will show that the climatology distributions are significantly different. However, we also see different patterns in each of the other two time series. These results do not show one clear pattern and so one is left to wonder how representative these results are. This will require that this analysis be run on a global scale as well.
-
-
-## MHW metrics
-
-### ANOVA
-
-With the effects of shortened time series on the calculation of climatologies quantified, we will now compare the results of the MHWs detected using an ANOVA. Unfortunately, in order to make a direct comparison of all of the MHW detected in the different time series lengths, we may only use the date range for the shortest time series used. This means that only events whose peak dates occurred in 2012 -- 2014 will be used.
-
-```{r compare-shorten}
-# Calculate events and filter only those from 2002 -- 2011
-sst_ALL_both_event <- sst_ALL_both_clim %>% 
-  group_by(site, trend, year_index) %>% 
-  nest() %>% 
-  mutate(res = map(data, detect_event_event)) %>% 
-  select(-data) %>% 
-  unnest(res) #%>% 
-  # filter(date_start >= "2002-01-01", date_end <= "2011-12-31") %>% 
-  # select(-c(index_start:index_end, date_start:date_end))
-```
-```{r compare-shorten-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics from events that peaked in the years 2012 -- 2014 from all time series lengths, both with and without the long-term trend removed."}
-# ANOVA p
-sst_ALL_both_event_aov_p <- sst_ALL_both_event %>% 
-  filter(lubridate::year(date_peak) >= 2012) %>% 
-  select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
+sst_ALL_trend_event_CI <- sst_ALL_trend_clim_event_cat %>%
+  select(-cats) %>% 
+  unnest(events) %>% 
+  filter(row_number() %% 2 == 0) %>% 
+  unnest(events) %>% 
+  select(site, trend, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
   nest(-site, -trend) %>%
-  mutate(res = map(data, event_aov_p)) %>% 
-  select(-data) %>% 
-  unnest() #%>% 
-  # spread(key = metric, value = p.value)
-
-# visualise
-ggplot(sst_ALL_both_event_aov_p, aes(x = site, y = metric)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_text(aes(label = round(p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1) +
-  theme(axis.text.y = element_text(angle = 75, hjust = 0.5)) +
-  facet_wrap(~trend)
-```
-
-The heatmap above shows us that the removal of the long-term trend in the time series often has a significant impact on how much the detected MHWs may differ depending on time series length. Curiously, detrending the time series actually makes the differences between the max and mean intensities not significant for the `NW_Atl` time series. The opposite is true for the other two time series. What's also interesting is that when the trend is left in, none of the MHW metrics for events detected in the `Med` differ significantly, but the removal of the trend causes all of them to become significantly different.
-
-
-### Post-hoc Tukey test
-
-It should not be surprising that comparing events detected from a climatology based on three years of data may differ significantly from those based on 34 years of data. Where the differences emerge is the real question. And to find this out we will use a post-hoc TUkey test, as done for the climatologies above.
-
-```{r shorten-event-tukey, fig.cap="Heatmap showing the Tukey test results from the ANOVAs run on the MHW metrics generated from all possible time series lengths (i.e. 3 -- 34 years). The different sites are shown as different rows of panels, and the different climatologies (seasonal signal and 90th percentile threshold, from both normal and detrended time series) are shown as different columns. The X and Y axes here denote two different start years for time series being compared. For example, a pixel at '1990' on the X axis, and '2010' on the Y axis is showing the difference (_p_-value) between the climatology generated from a time series from 1990 -- 2014 against the climatology from the same time series that runs only from 2010 -- 2014. Significant differences are marked with a small black dot."}
-sst_ALL_both_event_tukey <- sst_ALL_both_event %>%
-  filter(lubridate::year(date_peak) >= 2012) %>% 
-  select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
-  mutate(year_index = as.factor(year_index)) %>% 
-  group_by(site, trend) %>% 
-  nest() %>% 
-  mutate(res = map(data, event_aov_tukey)) %>% 
-  select(-data) %>% 
-  unnest() %>% 
-  tidyr::separate(col = comparison, into = c("comp1", "comp2")) %>% 
-  mutate(comp1 = as.numeric(comp1), 
-         comp2 = as.numeric(comp2))
-
-ggplot(sst_ALL_both_event_tukey, aes(x = comp2, y = comp1)) +
-  geom_tile(aes(fill = adj.p.value)) +
-  geom_point(data = filter(sst_ALL_both_event_tukey, adj.p.value <= 0.05),
-             size = 0.01) +
-  # geom_text(aes(label = round(adj.p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1) +
-  coord_equal(expand = 0) +
-  facet_grid(site~metric+trend) +
-  labs(x = "", y = "")
-```
-
-The results of the Tukey tests shown above demonstrate that, except for one comparison, the differences between the events detected with different time series lengths do not differ significantly on a pairwise basis. There are however some interesting artifacts in the results that seem to show that some dramatic events may be having a large impact on how the results compare against one another.
-
-
-### Confidence intervals
-
-```{r event-CI-plot1, fig.cap="Confidence intervals of the different metrics for each of the shortened time series. Each panel shows the results for one of four MHW metrics. The X axis shows which year the time series began that the CI bars are representing, and the Y axis shows the spread of the confidence around the population mean of the MHW metric. The bottom row of panels shows the count of events detected from 2012 -- 2014, depending on what the climatology period was, as seen on the X axis."}
-# ANOVA CI
-sst_ALL_both_event_CI <- sst_ALL_both_event %>% 
-  filter(lubridate::year(date_peak) >= 2012) %>% 
-  select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) %>% 
-  nest(-site, -trend) %>%
-  mutate(res = map(data, event_aov_CI)) %>% 
+  mutate(res = map(data, event_CI)) %>% 
   select(-data) %>% 
   unnest()
 
-CI_plot_1 <- ggplot(sst_ALL_both_event_CI, aes(x = year_index)) +
+save(sst_ALL_trend_event_CI, file = "data/sst_ALL_trend_event_CI.Rdata")
+```
+
+```{r event-CI-plot1, fig.cap="Confidence intervals of the MHW metrics when increasing decadal trends were added."}
+
+CI_plot_1 <- ggplot(sst_ALL_trend_event_CI, aes(x = trend)) +
   geom_errorbar(width = 1, alpha = 0.8,
-                aes(ymin = lower, ymax = upper, linetype = trend)) +
+                aes(ymin = lower, ymax = upper)) +
   # geom_text(aes(label = n, y = upper*1.3, colour = trend), size = 3) +
-  geom_point(aes(y = mid, colour = trend), size = 1, alpha = 0.7) +
+  geom_point(aes(y = mid), size = 1, alpha = 0.7) +
   facet_grid(metric~site, scales = "free_y") +
-  labs(x = "start year", y = "value")
+  labs(x = "Trend (°C)", y = NULL)
 # CI_plot_1
 CI_plot_1.1 <- ggplot(filter(sst_ALL_both_event_CI, metric == "duration"), 
                       aes(x = year_index, y = n, fill = trend)) +
@@ -478,4 +505,8 @@ CI_plot_1.1 <- ggplot(filter(sst_ALL_both_event_CI, metric == "duration"),
 ggarrange(CI_plot_1, CI_plot_1.1, ncol = 1, nrow = 2, common.legend = T, heights = c(1, 0.5))
 ```
 
-Please note that the events being compared here, and so the CIs seen above, are only for those with peak dates in the years 2012 -- 2014 so as not to violate the assumption that the sample sizes are similar. Therefore the overall number of events tends to be lower, which has led me to use basic bootstrapping to create the CIs above. This figure is rather busy, but we see on the bottom row that nearly twice as many MHWs were detected in the `NW_Atl` than the other two time series. This trend tends to hold true for all of the CIs. So when fewer events are detected, the CIs spread out. Looking at the top four rows we also see that when more years of data are used to calculate the climatologies with detrended data, fewer events are detected, but they tend to be stronger/longer. These differences generally do not appear to be significant.
+Because this set of data is smaller than the previous two vignettes I have used basic bootstrapping to create the CIs above. From these we see that the duration and int. cum. of all of the time series tend to increase as the decadal trend increase, but this is never significant. The patterns for mean and max int. are different for each time series. The `Med` remains relatively flat regardless of decadal trend, `WA` increases, and `NW_Atl` decreases. This is likely due to the distribution of MHWs throughout the time series.
+
+
+## Categories
+
