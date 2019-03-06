@@ -622,7 +622,8 @@ event_aov_CI <- function(df){
 
 In this section we want to look at how the categories in the different time periods compare. I'll start out with doing basic calculations and comparisons of the categories of events with the different time periods. And then based on how that looks, see if I can think of a way of quantifying the differences.
 
-```{r clim-category-compare, fig.cap="Bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
+```{r cat-count, eval=FALSE}
+load("data/sst_ALL_smooth.Rdata")
 
 suppressWarnings(
   sst_ALL_category <- sst_ALL_smooth %>% 
@@ -640,6 +641,12 @@ sst_ALL_clim_category_count <- sst_ALL_category %>%
   mutate(category = factor(category,
                            levels = c("I Moderate", "II Strong",
                                       "III Severe", "IV Extreme")))
+save(sst_ALL_clim_category_count, file = "data/sst_ALL_clim_category_count.Rdata")
+```
+
+```{r cat-compare, fig.cap="Bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
+
+load("data/sst_ALL_clim_category_count.Rdata")
 
 # total_category_count <- sst_ALL_clim_category_count %>% 
 #   ungroup() %>% 

@@ -43,7 +43,7 @@ library(ggridges)
 
 The following chunks contain the code used to systematically add increasing decadal trends to the three reference time series.
 
-```{r trending, eval=TRUE}
+```{r trending, eval=FALSE}
 # First load the de-trended data created in the duration vignette
 load("data/sst_ALL_detrend.Rdata")
 
@@ -123,7 +123,7 @@ sst_ALL_trend_clim_event_cat <- plyr::ddply(sst_ALL_trend, c("trend", "site"),
 save(sst_ALL_trend_clim_event_cat, file = "data/sst_ALL_trend_clim_event_cat.Rdata")
 ```
 
-```{r trend_clim_only, eval=TRUE}
+```{r trend_clim_only, eval=FALSE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_trend_clim_event_cat.Rdata")
@@ -222,7 +222,7 @@ clim_aov_tukey <- function(df){
 }
 ```
 
-```{r clim-aov-res, eval=TRUE}
+```{r clim-aov-res, eval=FALSE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_trend_clim_only.Rdata")
@@ -235,7 +235,7 @@ save(sst_ALL_trend_clim_aov_tukey, file = "data/sst_ALL_trend_clim_aov_tukey.Rda
 
 ```{r clim-trend-AOV-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of trending data. The 90th percentile thresholds are significantly different at p < 0.05 but the seasonal signals are not."}
 
-load("data/sst_ALL_trend_clim_aov_tukey.RData")
+load("data/sst_ALL_trend_clim_aov_tukey.Rdata")
 
 sst_ALL_trend_clim_aov <- sst_ALL_trend_clim_aov_tukey %>% 
   select(-tukey) %>% 
@@ -286,7 +286,7 @@ In the figure above we see that the `WA` seasonal signals become significantly d
 
 Now knowing that the daily values that make up the climatologies tend to differ based on the decadal trend added, as seen with the ANOVA and Tukey results, we want to check where the distributions of the climatologies themselves begin to differ. We will do this through a series of pair-wise two-sample KS tests.
 
-```{r trend-clims-KS-calc, eval=TRUE}
+```{r trend-clims-KS-calc, eval=FALSE}
 # Extract the true climatologies
 sst_ALL_trend_clim_only_0 <- sst_ALL_trend_clim_only %>% 
   filter(trend == 0)
@@ -353,7 +353,7 @@ Thinking about this more I have alighted upon the idea that because the threshol
 
 ### ANOVA
 
-```{r trend-event-aov-calc, eval=TRUE}
+```{r trend-event-aov-calc, eval=FALSE}
 # Quick wrapper for getting results for ANOVA and Tukey on event metrics
 # df <- sst_ALL_trend_clim_event_cat %>%
 #   filter(site == "WA") %>%
@@ -386,6 +386,8 @@ save(sst_ALL_trend_event_aov_tukey, file = "data/sst_ALL_trend_event_aov_tukey.R
 ```
 
 ```{r event-aov-plot}
+
+load("data/sst_ALL_trend_event_aov_tukey.Rdata")
 
 # ANOVA p
 sst_ALL_trend_event_aov_p <- sst_ALL_trend_event_aov_tukey %>% 
@@ -486,7 +488,9 @@ save(sst_ALL_trend_event_CI, file = "data/sst_ALL_trend_event_CI.Rdata")
 
 ```{r event-CI-plot1, fig.cap="Confidence intervals of the MHW metrics when increasing decadal trends were added."}
 
-CI_plot_1 <- ggplot(sst_ALL_trend_event_CI, aes(x = trend)) +
+load("data/sst_ALL_trend_event_CI.Rdata")
+
+ggplot(sst_ALL_trend_event_CI, aes(x = trend)) +
   geom_errorbar(width = 1, alpha = 0.8,
                 aes(ymin = lower, ymax = upper)) +
   # geom_text(aes(label = n, y = upper*1.3, colour = trend), size = 3) +
@@ -494,19 +498,58 @@ CI_plot_1 <- ggplot(sst_ALL_trend_event_CI, aes(x = trend)) +
   facet_grid(metric~site, scales = "free_y") +
   labs(x = "Trend (°C)", y = NULL)
 # CI_plot_1
-CI_plot_1.1 <- ggplot(filter(sst_ALL_both_event_CI, metric == "duration"), 
-                      aes(x = year_index, y = n, fill = trend)) +
-  geom_bar(stat = "identity", position = "identity", alpha = 0.6) +
-  # geom_text(aes(label = n, y = upper*1.3, colour = trend), size = 3) +
-  # geom_point(aes(y = mid, colour = trend), size = 1, alpha = 0.7) +
-  facet_wrap(~site) +
-  labs(x = "start year", y = "event count (n)")
-# CI_plot_1.1
-ggarrange(CI_plot_1, CI_plot_1.1, ncol = 1, nrow = 2, common.legend = T, heights = c(1, 0.5))
 ```
 
 Because this set of data is smaller than the previous two vignettes I have used basic bootstrapping to create the CIs above. From these we see that the duration and int. cum. of all of the time series tend to increase as the decadal trend increase, but this is never significant. The patterns for mean and max int. are different for each time series. The `Med` remains relatively flat regardless of decadal trend, `WA` increases, and `NW_Atl` decreases. This is likely due to the distribution of MHWs throughout the time series.
 
 
 ## Categories
+
+### _chi_-squared
+
+In order to detemine if the count of MHWs, both total and individual categories, differs based on the decadal trends present in the data, we will be performing a series of _chi_-squared tests for each site.
+
+```{r trend-chi-calc, eval=FALSE}
+# Simple wrapper for nesting
+# df <- sst_ALL_trend_cat_all %>% 
+#   filter(site == "WA")
+chi_p <- function(df){
+  res <- chisq.test(table(df$trend, df$category), correct = FALSE)
+  res_tidy <- broom::tidy(res)
+  return(res_tidy$p.value)
+}
+
+# Load and extract category data
+load("data/sst_ALL_trend_clim_event_cat.Rdata")
+suppressWarnings( # Suppress warning about category levels not all being present
+sst_ALL_trend_cat <- sst_ALL_trend_clim_event_cat %>%
+  select(-events) %>%
+  unnest()
+)
+
+# Get data into the expected format
+sst_ALL_trend_cat_total <- sst_ALL_trend_cat %>% 
+  select(trend, site, category) %>% 
+  mutate(category = "total")
+
+sst_ALL_trend_cat_all <- sst_ALL_trend_cat %>% 
+  select(trend, site, category) %>% 
+  rbind(sst_ALL_trend_cat_total)
+
+# Calculate chi-squared p-value 
+sst_ALL_trend_cat_chi <- sst_ALL_trend_cat_all %>% 
+  group_by(site) %>% 
+  nest() %>% 
+  mutate(p.value = map(data, chi_p)) %>% 
+  select(-data) %>% 
+  unnest()
+
+save(sst_ALL_trend_cat_chi, file = "data/sst_ALL_trend_cat_chi.Rdata")
+```
+
+```{r cat-chi-res}
+load("data/sst_ALL_trend_cat_chi.Rdata")
+
+knitr::kable(sst_ALL_trend_cat_chi, caption = "Table showing the significant difference (_p_-value) for the count of different categories of events for each site based on the trends introduced into the data. No differences were found.")
+```
 

@@ -54,7 +54,7 @@ library(ggridges)
 
 First up we begin with the random removal of increasing proportions of the data. We are going to use the full 37 year time series for these missing data experiments. We will randomly remove, 0 -- 50% of the data from each of the three times series in 1% steps. This is being repeated 100 times to allow for more reproducible results. It is assumed that the results will begin to break down well before the 50% mark. Should they not then we will extend the missing proportion.
 
-```{r random-knockout, eval=TRUE}
+```{r random-knockout, eval=FALSE}
 # First load the de-trended data created in the duration vignette
 load("data/sst_ALL_detrend.Rdata")
 
@@ -95,7 +95,7 @@ save(sst_ALL_miss, file = "data/sst_ALL_miss.Rdata")
 
 ## Consecutive missing days
 
-```{r miss-con-calc, eval=TRUE}
+```{r miss-con-calc, eval=FALSE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss.Rdata")
@@ -151,7 +151,7 @@ ggplot(sst_ALL_con_plot, aes(x = prop, y = duration, colour = count)) +
   geom_point(aes(group = miss)) +
   scale_colour_viridis_c(trans = "log10", breaks = c(1, 10, 100, 1000, 2000)) +
   scale_y_continuous(breaks = seq(1, 19, 2)) +
-  scale_x_continuous(limits = c(1, 50)) +
+  # scale_x_continuous(limits = c(1, 50)) +
   labs(y = "Consecutive missing days", x = "Missing data (%)")
 
 # Ridgeline plot
@@ -177,7 +177,7 @@ We see in the figure above that the number of consective missing days increases 
 
 ## Climatology statistics
 
-```{r miss-clim-event-cat-calc, eval=TRUE}
+```{r miss-clim-event-cat-calc, eval=FALSE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss.Rdata")
@@ -201,7 +201,7 @@ sst_ALL_miss_clim_event_cat <- plyr::ddply(sst_ALL_miss, c("miss", "rep", "site"
 save(sst_ALL_miss_clim_event_cat, file = "data/sst_ALL_miss_clim_event_cat.Rdata")
 ```
 
-```{r miss_clim_only, eval=TRUE}
+```{r miss_clim_only, eval=FALSE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss_clim_event_cat.Rdata")
@@ -302,7 +302,7 @@ clim_aov_tukey <- function(df){
 }
 ```
 
-```{r clim-aov-res, eval=TRUE}
+```{r clim-aov-res, eval=FALSE}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss_clim_only.Rdata")
@@ -437,7 +437,7 @@ Overall this analysis/figure is not very helpful.
 
 ### Kolmogorov-Smirnov
 
-```{r miss-clims-KS-calc, eval=TRUE}
+```{r miss-clims-KS-calc, eval=FALSE}
 # Extract the true climatologies
 sst_ALL_miss_clim_only_0 <- sst_ALL_miss_clim_only %>% 
   filter(miss == 0, rep == "1")
@@ -551,7 +551,7 @@ Now that we know that missing data from a time series does produce significantly
 
 ### ANOVA
 
-```{r miss-event-aov-calc, eval=TRUE}
+```{r miss-event-aov-calc, eval=FALSE}
 # Quick wrapper for getting results for ANOVA and Tukey on event metrics
 # df <- sst_ALL_miss_clim_event_cat %>%
 #   filter(site == "WA") %>%
@@ -584,6 +584,8 @@ save(sst_ALL_miss_event_aov_tukey, file = "data/sst_ALL_miss_event_aov_tukey.Rda
 ```
 
 ```{r event-aov-plot, fig.cap="Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for all proportions of missing data per reference time series. The differences are significant (_p_ <0.05) for all of the metrics."}
+
+load("data/sst_ALL_miss_event_aov_tukey.Rdata")
 
 # ANOVA p
 sst_ALL_miss_event_aov_p <- sst_ALL_miss_event_aov_tukey %>% 
@@ -664,8 +666,10 @@ The figure above shows that significant differences in the duration (and therefo
 #   }
 ```
 
+```{r event-miss-CI-calc, eval=FALSE}
 
-```{r event-miss-CI-plot, fig.cap="Confidence intervals of the different metrics for the different proportions of missing data. Note that the _y_-axes are not the same."}
+load("data/sst_ALL_miss_clim_event_cat.Rdata")
+
 # The ANOVA confidence intervals
 sst_ALL_miss_event_CI <- sst_ALL_miss_clim_event_cat %>%
   select(-cats) %>% 
@@ -678,6 +682,14 @@ sst_ALL_miss_event_CI <- sst_ALL_miss_clim_event_cat %>%
   mutate(res = map(data, metric_CI)) %>%
   select(-data) %>%
   unnest()
+
+save(sst_ALL_miss_event_CI, file = "data/sst_ALL_miss_event_CI.Rdata")
+```
+
+
+```{r event-miss-CI-plot, fig.cap="Confidence intervals of the different metrics for the different proportions of missing data. Note that the _y_-axes are not the same."}
+
+load("data/sst_ALL_miss_event_CI.Rdata")
 
 ggplot(sst_ALL_miss_event_CI, aes(x = as.factor(miss))) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5,
@@ -746,6 +758,140 @@ The figure above shows that the relationships between the count of consecutive m
 
 
 ## Categories
+
+### _chi_-squared
+
+In order to detemine if the count of MHWs, both total and individual categories, differs based on the percent of missing data, we will be performing a series of _chi_-squared tests for each site and rep.
+
+```{r miss-chi-calc, eval=FALSE}
+# Simple wrapper for nesting
+# df <- sst_ALL_miss_cat_all %>%
+  # filter(site == "WA", rep == "1")
+chi_p <- function(df){
+  res <- chisq.test(table(df$miss, df$category), correct = FALSE)
+  res_tidy <- broom::tidy(res)
+  return(res_tidy$p.value)
+}
+
+# Load and extract category data
+load("data/sst_ALL_miss_clim_event_cat.Rdata")
+suppressWarnings( # Suppress warning about category levels not all being present
+sst_ALL_miss_cat <- sst_ALL_miss_clim_event_cat %>%
+  select(-events) %>%
+  unnest()
+)
+
+# Get data into the expected format
+sst_ALL_miss_cat_total <- sst_ALL_miss_cat %>% 
+  select(miss, rep, site, category) %>% 
+  mutate(category = "total")
+
+sst_ALL_miss_cat_all <- sst_ALL_miss_cat %>% 
+  select(miss, rep, site, category) %>% 
+  # rbind(sst_ALL_miss_cat_total) %>% 
+  mutate(category = ifelse(category == "III Severe", "III & IV", category),
+         category = ifelse(category == "IV Extreme", "III & IV", category))
+
+# Calculate chi-squared p-value 
+sst_ALL_miss_cat_chi <- sst_ALL_miss_cat_all %>% 
+  group_by(site, rep) %>% 
+  nest() %>% 
+  mutate(p.value = map(data, chi_p)) %>% 
+  select(-data) %>% 
+  unnest()
+
+save(sst_ALL_miss_cat_chi, file = "data/sst_ALL_miss_cat_chi.Rdata")
+```
+
+```{r cat-chi-table}
+load("data/sst_ALL_miss_cat_chi.Rdata")
+
+sst_ALL_miss_cat_chi_sig <- sst_ALL_miss_cat_chi %>% 
+  filter(p.value <= 0.05) %>% 
+  select(site, miss, p.value) %>% 
+  group_by(site, miss) %>% 
+  unique() %>% 
+  summarise(count = n())
+
+knitr::kable(sst_ALL_miss_cat_chi_sig, caption = "Table showing the count out of 100 for significant differences (_p_-value) for the count of different categories of events for each site based on the amount of missing data present.")
+```
+
+```{r cat-chi-post, eval=FALSE}
+# Load and extract category data
+load("data/sst_ALL_miss_clim_event_cat.Rdata")
+suppressWarnings( # Suppress warning about category levels not all being present
+sst_ALL_miss_cat <- sst_ALL_miss_clim_event_cat %>%
+  select(-events) %>%
+  unnest()
+)
+
+# Prep the data for better chi-squared use
+sst_ALL_miss_cat_prep <- sst_ALL_miss_cat %>% 
+  select(miss, rep, site, category) %>% 
+  mutate(category = ifelse(category == "III Severe", "III & IV", category),
+         category = ifelse(category == "IV Extreme", "III & IV", category))
+
+# Extract the true climatologies
+sst_ALL_miss_cat_only_0 <- sst_ALL_miss_cat_prep %>% 
+  filter(miss == 0, rep == "1") %>% 
+  select(site, miss, category)
+
+# chi-squared pairwise function
+# Takes one rep of missing data and compares it against the complete data
+# df <- sst_ALL_miss_cat_prep %>%
+  # filter(site == "WA", rep == "20", miss == 0.1)
+df <- unnest(slice(sst_ALL_miss_cat_chi,1)) %>% 
+  # select(-site2, -rep, -miss2)
+chi_pair <- function(df){
+  # Prep data
+  df_comp <- sst_ALL_miss_cat_only_0 %>% 
+    filter(site == df$site[1])
+  df_joint <- rbind(df, df_comp)
+  # Run tests
+  res <- chisq.test(table(df_joint$miss, df_joint$category), correct = FALSE)
+  res_broom <- broom::augment(res) %>% 
+    mutate(p.value = broom::tidy(res)$p.value)
+  return(res_broom)
+}
+
+# The pairwise chai-squared results
+suppressWarnings( # Suppress poor match warnings
+sst_ALL_miss_cat_chi <- sst_ALL_miss_cat_prep %>% 
+  filter(miss != 0) %>% 
+  # mutate(miss = as.factor(miss)) %>%
+  mutate(site2 = site,
+         miss2 = miss) %>% 
+  group_by(site2, miss2, rep) %>% 
+  nest() %>% 
+  mutate(chi = map(data, chi_pair)) %>% 
+  select(-data) %>% 
+  unnest() %>%
+  dplyr::rename(site = site2, miss = miss2,
+                miss_comp = Var1, category = Var2)
+)
+save(sst_ALL_miss_cat_chi, file = "data/sst_ALL_miss_cat_chi.Rdata")
+```
+
+```{r chi-pair-plot, fig.cap="Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test."}
+load("data/sst_ALL_miss_cat_chi.Rdata")
+
+# Prep data for plotting
+chi_sig <- sst_ALL_miss_cat_chi %>% 
+  filter(p.value <= 0.05) %>% 
+  select(site, miss, p.value) %>% 
+  group_by(site, miss) %>% 
+  unique() %>% 
+  summarise(count = n())
+
+ggplot(chi_sig, aes(x = as.numeric(miss), y = site)) +
+  geom_line(aes(colour = count, group = site)) +
+  # facet_wrap(~metric, ncol = 1) +
+  scale_colour_viridis_c() +
+  scale_x_continuous(breaks = seq(0, 0.5, 0.05)) +
+  labs(x = "Missing data (%)", y = NULL,
+       colour = "Sig. dif.\nout of 100") +
+  theme(axis.text.x = element_text(angle = 20))
+```
 
 
 ## Non-random missing data
