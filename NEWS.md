@@ -1,3 +1,7 @@
+# MHWdetection 0.0.5  (2019-03-07)
+
+* Beginning to edit
+
 # MHWdetection 0.0.5  (2019-03-06)
 
 * Worked out basic event count results for all vignettes

@@ -219,11 +219,10 @@ sst_ALL_con_plot &lt;-<span class="st"> </span>sst_ALL_con <span class="op">%&gt
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>rep) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">group_by</a></span>(miss, duration) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">round</span>(<span class="kw">mean</span>(count))) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">mutate</a></span>(<span class="dt">prop =</span> <span class="kw">round</span>((<span class="dv">1</span><span class="op">-</span><span class="kw">as.numeric</span>(miss))<span class="op">*</span><span class="dv">100</span>))
+<span class="st">  </span><span class="kw">ungroup</span>()
 
-sst_ALL_con_plot_sub &lt;-<span class="st"> </span>sst_ALL_con_plot <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(prop <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">50</span>))
+<span class="co"># sst_ALL_con_plot_sub &lt;- sst_ALL_con_plot %&gt;% </span>
+<span class="co">#   filter(prop %in% c(1, 10, 20, 30, 40, 50))</span>
 
 <span class="co"># Bar plot</span>
 <span class="co"># ggplot(sst_ALL_con_plot_sub, aes(x = duration, y = count, fill = as.factor(prop))) +</span>
@@ -234,7 +233,7 @@ sst_ALL_con_plot_sub &lt;-<span class="st"> </span>sst_ALL_con_plot <span class=
 <span class="co">#   labs(x = "Consecutive missing days", y = "Count (average)")</span>
 
 <span class="co"># Line plot</span>
-<span class="kw">ggplot</span>(sst_ALL_con_plot, <span class="kw">aes</span>(<span class="dt">x =</span> prop, <span class="dt">y =</span> duration, <span class="dt">colour =</span> count)) <span class="op">+</span>
+<span class="kw">ggplot</span>(sst_ALL_con_plot, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as.numeric</span>(miss), <span class="dt">y =</span> duration, <span class="dt">colour =</span> count)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">group =</span> miss)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">group =</span> miss)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>(<span class="dt">trans =</span> <span class="st">"log10"</span>, <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>, <span class="dv">2000</span>)) <span class="op">+</span>
@@ -315,7 +314,7 @@ sst_ALL_miss_clim_only &lt;-<span class="st"> </span>plyr<span class="op">::</sp
 
 <span class="co"># visualise</span>
 <span class="kw">ggplot</span>(<span class="kw">filter</span>(sst_ALL_miss_clim_only, rep <span class="op">%in%</span><span class="st"> </span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)), 
-       <span class="kw">aes</span>(<span class="dt">y =</span> seas, <span class="dt">x =</span> doy, <span class="dt">colour =</span> <span class="kw">as.numeric</span>(miss))) <span class="op">+</span>
+       <span class="kw">aes</span>(<span class="dt">y =</span> seas, <span class="dt">x =</span> doy, <span class="dt">colour =</span> <span class="kw">as.numeric</span>(miss)<span class="op">*</span><span class="dv">100</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="kw">aes</span>(<span class="dt">group =</span> <span class="kw">interaction</span>(rep, miss))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
@@ -327,7 +326,7 @@ The seasonal signals created from time series with increasing percentages of mis
 </div>
 <p>As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediterranean (<code>Med</code>) and North West Atlantic (<code>NW_Atl</code>) times series. The signal does appear to vary both above and below the real signal after approaching the ~40% missing data mark for the Western Australia (<code>WA</code>) time series.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">filter</span>(sst_ALL_miss_clim_only, rep <span class="op">%in%</span><span class="st"> </span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)), 
-       <span class="kw">aes</span>(<span class="dt">y =</span> thresh, <span class="dt">x =</span> doy, <span class="dt">colour =</span> <span class="kw">as.numeric</span>(miss))) <span class="op">+</span>
+       <span class="kw">aes</span>(<span class="dt">y =</span> thresh, <span class="dt">x =</span> doy, <span class="dt">colour =</span> <span class="kw">as.numeric</span>(miss)<span class="op">*</span><span class="dv">100</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="kw">aes</span>(<span class="dt">group =</span> <span class="kw">interaction</span>(rep, miss))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
@@ -609,8 +608,8 @@ sst_ALL_miss_cor &lt;-<span class="st"> </span>sst_ALL_miss_joined <span class="
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Consecutive missing days"</span>, 
        <span class="dt">y =</span> <span class="st">"Correlation (r) between significance</span><span class="ch">\n</span><span class="st">and count of consecutive days missing"</span>)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="missing_data_files/figure-html/clim-cor-1.png" alt="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests." width="768"><p class="caption">
-Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests.
+<img src="missing_data_files/figure-html/clim-cor-1.png" alt="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests. Consecutive missing days are a much better predictor for thresholds than for seasonal signals." width="768"><p class="caption">
+Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests. Consecutive missing days are a much better predictor for thresholds than for seasonal signals.
 </p>
 </div>
 <p>This plot shows the count of consecutive days of missing data is a very good indicator of whether or not the 90th percentile threshold will be significantly different from the control time series. This works best for counts of consecutive days below 5, and works a bit more poorly for the <code>WA</code> time series.</p>
@@ -802,8 +801,8 @@ sst_ALL_miss_event_cor &lt;-<span class="st"> </span>sst_ALL_miss_event_joined_w
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Consecutive missing days"</span>, 
        <span class="dt">y =</span> <span class="st">"Correlation (r) between significance</span><span class="ch">\n</span><span class="st">and count of consecutive days missing"</span>)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="missing_data_files/figure-html/event-cor-1.png" alt="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests." width="768"><p class="caption">
-Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests.
+<img src="missing_data_files/figure-html/event-cor-1.png" alt="Dot plot showing the relationship between number of consecutive missing days and the significant difference of the MHW metric from the control." width="768"><p class="caption">
+Dot plot showing the relationship between number of consecutive missing days and the significant difference of the MHW metric from the control.
 </p>
 </div>
 <p>The correlations shown above as dot plots tell us that the count of consecutive missing days from 1 – 3 are a very good indicator of whether or not the duration (and int. cum.) will be significantly different from a time series with no missing data. For intensity max and mean it looks like the count of consecutive missing days from 4 – 6 is the best indicator, with no real pattern emerging for the <code>WA</code> time series.</p>

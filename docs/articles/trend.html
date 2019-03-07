@@ -404,15 +404,15 @@ KS_sig &lt;-<span class="st"> </span>sst_ALL_trend_clim_KS_p <span class="op">%&
 <span class="co"># KS_sig &lt;- rbind(KS_sig, data.frame(site = "NW_Atl", metric = "thresh", perc = 100:79, count = NA))</span>
 <span class="co"># KS_sig &lt;- rbind(KS_sig, data.frame(site = "WA", metric = "thresh", perc = 100:92, count = NA))</span>
 
-<span class="kw">ggplot</span>(KS_sig, <span class="kw">aes</span>(<span class="dt">x =</span> trend, <span class="dt">y =</span> site)) <span class="op">+</span>
+<span class="kw">ggplot</span>(KS_sig, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as.numeric</span>(trend), <span class="dt">y =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">group =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="co"># scale_x_reverse(breaks = seq(5, 35, 5)) +</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"trending data (%)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Added decadal trend (°C)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="trend_files/figure-html/KS-clims-1.png" alt="Histograms showing the _p_-value results from Kolmogorov-Smirnov tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no trending data) climatologies for each of the three sites." width="768"><p class="caption">
-Histograms showing the <em>p</em>-value results from Kolmogorov-Smirnov tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no trending data) climatologies for each of the three sites.
+<img src="trend_files/figure-html/KS-clims-1.png" alt="Dot and line plot showing the _p_-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series." width="768"><p class="caption">
+Dot and line plot showing the <em>p</em>-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series.
 </p>
 </div>
 <p>Surprisingly the above figure shows that the seasonal signal is much more sensitive than the 90th percentile threshold to the addition of decadal trends. The <code>WA</code> time series remains the most sensitive with sig. dif. occurring at an added decadal trend of 0.05°C. The interesting thing here is that the <code>NW_Atl</code> threshold never had a significantly different distribution regardless of the amount added.</p>

@@ -131,11 +131,10 @@ sst_ALL_con_plot <- sst_ALL_con %>%
   select(-rep) %>%
   group_by(miss, duration) %>% 
   summarise(count = round(mean(count))) %>% 
-  ungroup() %>% 
-  mutate(prop = round((1-as.numeric(miss))*100))
+  ungroup()
 
-sst_ALL_con_plot_sub <- sst_ALL_con_plot %>% 
-  filter(prop %in% c(1, 10, 20, 30, 40, 50))
+# sst_ALL_con_plot_sub <- sst_ALL_con_plot %>% 
+#   filter(prop %in% c(1, 10, 20, 30, 40, 50))
 
 # Bar plot
 # ggplot(sst_ALL_con_plot_sub, aes(x = duration, y = count, fill = as.factor(prop))) +
@@ -146,7 +145,7 @@ sst_ALL_con_plot_sub <- sst_ALL_con_plot %>%
 #   labs(x = "Consecutive missing days", y = "Count (average)")
 
 # Line plot
-ggplot(sst_ALL_con_plot, aes(x = prop, y = duration, colour = count)) +
+ggplot(sst_ALL_con_plot, aes(x = as.numeric(miss), y = duration, colour = count)) +
   geom_line(aes(group = miss)) +
   geom_point(aes(group = miss)) +
   scale_colour_viridis_c(trans = "log10", breaks = c(1, 10, 100, 1000, 2000)) +
@@ -233,7 +232,7 @@ load("data/sst_ALL_miss_clim_only.Rdata")
 
 # visualise
 ggplot(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), 
-       aes(y = seas, x = doy, colour = as.numeric(miss))) +
+       aes(y = seas, x = doy, colour = as.numeric(miss)*100)) +
   geom_line(alpha = 0.3, aes(group = interaction(rep, miss))) +
   scale_colour_viridis_c() +
   facet_wrap(~site, ncol = 1, scales = "free_y") +
@@ -244,7 +243,7 @@ As we may see in the figure above, there is no perceptible difference in the sea
 
 ```{r clim-miss-thresh, fig.cap = "The 90th percentile thresholds created from time series with increasing percentages of missing data."}
 ggplot(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), 
-       aes(y = thresh, x = doy, colour = as.numeric(miss))) +
+       aes(y = thresh, x = doy, colour = as.numeric(miss)*100)) +
   geom_line(alpha = 0.3, aes(group = interaction(rep, miss))) +
   scale_colour_viridis_c() +
   facet_wrap(~site, ncol = 1, scales = "free_y") +
@@ -469,7 +468,7 @@ sst_ALL_miss_clim_KS_p <- sst_ALL_miss_clim_only %>%
 save(sst_ALL_miss_clim_KS_p, file = "data/sst_ALL_miss_clim_KS_p.Rdata")
 ```
 
-```{r KS-clims, fig.cap="Line plot showing the _p_-value results from KS tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three reference time series."}
+```{r KS-clims, fig.height=2, fig.width=8, fig.cap="Line plot showing the _p_-value results from KS tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three reference time series."}
 
 load("data/sst_ALL_miss_clim_KS_p.Rdata")
 
@@ -493,8 +492,8 @@ KS_sig <- rbind(KS_sig, data.frame(site = "NW_Atl", metric = "thresh",
 KS_sig <- rbind(KS_sig, data.frame(site = "WA", metric = "thresh", 
                                    miss = seq(0, 0.08, 0.01), count = NA))
 
-ggplot(KS_sig, aes(x = miss, y = site)) +
-  geom_line(aes(colour = count, group = site)) +
+ggplot(KS_sig, aes(x = miss*100, y = site)) +
+  geom_line(aes(colour = count, group = site), size = 3) +
   facet_wrap(~metric, ncol = 1) +
   scale_colour_viridis_c() +
   # scale_x_reverse(breaks = seq(5, 35, 5)) +
@@ -628,7 +627,7 @@ event_tukey_summary <- sst_ALL_miss_event_tukey %>%
   group_by(site, metric, comp_dif) %>% 
   summarise(count = n())
 
-ggplot(event_tukey_summary, aes(x = comp_dif, y = site)) +
+ggplot(event_tukey_summary, aes(x = comp_dif*100, y = site)) +
   geom_line(aes(colour = count)) +
   geom_point(aes(colour = count), size = 0.5) +
   facet_wrap(~metric, ncol = 1) +
@@ -844,11 +843,11 @@ chi_sig <- sst_ALL_miss_cat_chi %>%
   unique() %>% 
   summarise(count = n())
 
-ggplot(chi_sig, aes(x = as.numeric(miss), y = site)) +
+ggplot(chi_sig, aes(x = as.numeric(miss)*100, y = site)) +
   geom_line(aes(colour = count, group = site)) +
   # facet_wrap(~metric, ncol = 1) +
   scale_colour_viridis_c() +
-  scale_x_continuous(breaks = seq(0, 0.5, 0.05)) +
+  scale_x_continuous() +
   labs(x = "Missing data (%)", y = NULL,
        colour = "Sig. dif.\nout of 100") +
   theme(axis.text.x = element_text(angle = 20))
