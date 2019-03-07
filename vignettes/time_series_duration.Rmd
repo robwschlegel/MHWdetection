@@ -80,6 +80,7 @@ MHW_colours <- c(
 # First put all of the data together and create a site column
 sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
   mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 13514))
+save(sst_ALL, file = "data/sst_ALL.Rdata")
 
 # Function to remove the trend from a time series
 detrend <- function(df){
