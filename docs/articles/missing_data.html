@@ -107,7 +107,7 @@
       <h1>Assessing the effects of missing data</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2019-03-06</h4>
+            <h4 class="date">2019-03-07</h4>
       
       
       <div class="hidden name"><code>missing_data.Rmd</code></div>
@@ -240,9 +240,13 @@ sst_ALL_con_plot_sub &lt;-<span class="st"> </span>sst_ALL_con_plot <span class=
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>(<span class="dt">trans =</span> <span class="st">"log10"</span>, <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>, <span class="dv">2000</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">19</span>, <span class="dv">2</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="co"># scale_x_continuous(limits = c(1, 50)) +</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">y =</span> <span class="st">"Consecutive missing days"</span>, <span class="dt">x =</span> <span class="st">"Missing data (%)"</span>)
-
-<span class="co"># Ridgeline plot</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">y =</span> <span class="st">"Consecutive missing days"</span>, <span class="dt">x =</span> <span class="st">"Missing data (%)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/con-miss-1.png" alt="Dot and line plot showing the average count of consecutive missing days of data as the percentage of missing data increases. The colour scale is log transformed." width="768"><p class="caption">
+Dot and line plot showing the average count of consecutive missing days of data as the percentage of missing data increases. The colour scale is log transformed.
+</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Ridgeline plot</span>
 <span class="co"># ggplot(sst_ALL_con_plot_sub, aes(x = duration, y = as.factor(prop), fill = ..x..)) +</span>
 <span class="co">#   # geom_density_ridges() +</span>
 <span class="co">#   # geom_ridgeline(aes(height = count/1000)) +</span>
@@ -307,21 +311,32 @@ sst_ALL_miss_clim_only &lt;-<span class="st"> </span>plyr<span class="op">::</sp
 <span class="kw">save</span>(sst_ALL_miss_clim_only, <span class="dt">file =</span> <span class="st">"data/sst_ALL_miss_clim_only.Rdata"</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This file is not uploaded to GitHub as it is too large</span>
 <span class="co"># One must first run the above code locally to generate and save the file</span>
-<span class="kw">load</span>(<span class="st">"data/sst_ALL_miss_clim_only.Rdata"</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># visualise</span>
+<span class="kw">load</span>(<span class="st">"data/sst_ALL_miss_clim_only.Rdata"</span>)
+
+<span class="co"># visualise</span>
 <span class="kw">ggplot</span>(<span class="kw">filter</span>(sst_ALL_miss_clim_only, rep <span class="op">%in%</span><span class="st"> </span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)), 
-       <span class="kw">aes</span>(<span class="dt">y =</span> seas, <span class="dt">x =</span> doy, <span class="dt">colour =</span> ((<span class="dv">1</span><span class="op">-</span><span class="kw">as.numeric</span>(miss))<span class="op">*</span><span class="dv">100</span>))) <span class="op">+</span>
+       <span class="kw">aes</span>(<span class="dt">y =</span> seas, <span class="dt">x =</span> doy, <span class="dt">colour =</span> <span class="kw">as.numeric</span>(miss))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="kw">aes</span>(<span class="dt">group =</span> <span class="kw">interaction</span>(rep, miss))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Calendar day of year"</span>, <span class="dt">y =</span> <span class="st">"Temp. (°C)"</span>, <span class="dt">colour =</span> <span class="st">"Missing (%)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/clim-miss-seas-1.png" alt="The seasonal signals created from time series with increasing percentages of missing data." width="768"><p class="caption">
+The seasonal signals created from time series with increasing percentages of missing data.
+</p>
+</div>
 <p>As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediterranean (<code>Med</code>) and North West Atlantic (<code>NW_Atl</code>) times series. The signal does appear to vary both above and below the real signal after approaching the ~40% missing data mark for the Western Australia (<code>WA</code>) time series.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">filter</span>(sst_ALL_miss_clim_only, rep <span class="op">%in%</span><span class="st"> </span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)), 
-       <span class="kw">aes</span>(<span class="dt">y =</span> thresh, <span class="dt">x =</span> doy, <span class="dt">colour =</span> ((<span class="dv">1</span><span class="op">-</span><span class="kw">as.numeric</span>(miss))<span class="op">*</span><span class="dv">100</span>))) <span class="op">+</span>
+       <span class="kw">aes</span>(<span class="dt">y =</span> thresh, <span class="dt">x =</span> doy, <span class="dt">colour =</span> <span class="kw">as.numeric</span>(miss))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="kw">aes</span>(<span class="dt">group =</span> <span class="kw">interaction</span>(rep, miss))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Calendar day of year"</span>, <span class="dt">y =</span> <span class="st">"Temp. (°C)"</span>, <span class="dt">colour =</span> <span class="st">"Missing (%)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/clim-miss-thresh-1.png" alt="The 90th percentile thresholds created from time series with increasing percentages of missing data." width="768"><p class="caption">
+The 90th percentile thresholds created from time series with increasing percentages of missing data.
+</p>
+</div>
 <p>We see above that the 90th percentile threshold appears to decrease linearly the larger the percentage of missing data becomes. This is most pronounced for the Western Australia (<code>WA</code>) time series. This will likely have a significant impact on the size of the MHWs detected.</p>
 <div id="anova-p-values" class="section level3">
 <h3 class="hasAnchor">
@@ -385,6 +400,11 @@ sst_ALL_miss_clim_aov &lt;-<span class="st"> </span>sst_ALL_miss_clim_aov_tukey 
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/clim-miss-AOV-p-1.png" alt="Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of missing data. The 90th percentile thresholds are significantly different at p &lt; 0.05 but the seasonal signals are not." width="768"><p class="caption">
+Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of missing data. The 90th percentile thresholds are significantly different at p &lt; 0.05 but the seasonal signals are not.
+</p>
+</div>
 <p>The difference for the 90th percentile thresholds from missing data significant, but the seasonal signals do not differ. At first the extreme contrast here seems odd, but if you think about it this is what we should expect, on average. Randomly removing data from a fixed sample we are just as likely to remove data above and below the mean, so the sample mean will not change. However, as we remove data we will reduce the size of the tails (on average) i.e. they will contract towards the median of the distribution. This will lead to an under-estimate of the 90th percentile, and an over-estimate of the 10th percentile. This means that as more data are missing in a time series, the more the threshold for what is considered a MHW will be lowered. Ideally we could come up with a recommended correction to the threshold given a proportion of missing data.</p>
 </div>
 <div id="post-hoc-tukey-test" class="section level3">
@@ -440,6 +460,11 @@ clim_tukey_summary &lt;-<span class="st"> </span>clim_tukey_sig <span class="op"
 <span class="st">  </span><span class="co"># scale_y_reverse() +</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Missing data (%)"</span>,
        <span class="dt">y =</span> <span class="st">"Missing data (%)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/clim-tukey-heat-1.png" alt="Segments showing the range of the percent of missing data present when climatologies were significantly different. The x and y axes show the percent of missing data." width="768"><p class="caption">
+Segments showing the range of the percent of missing data present when climatologies were significantly different. The x and y axes show the percent of missing data.
+</p>
+</div>
 <p>The above figure shows the results of all possible pairwise comparisons from the ANOVA looking at the difference in threshold climatologies for different percentages of missing data. Curiously the time series missing no data do not seem to be significantly different from any of the missing data time series. I’m not convinced by this and will need to re-examine the results (a third time). Otherwise this figure shows us that the thresholds diverge from each other very quickly.</p>
 <p>Ultimately I don’t think this is very useful.</p>
 </div>
@@ -478,6 +503,11 @@ sst_ALL_miss_clim_CI &lt;-<span class="st"> </span>sst_ALL_miss_clim_only <span 
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> quant_<span class="dv">50</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">scales =</span> <span class="st">"free_y"</span>, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Missing data (%)"</span>, <span class="dt">y =</span> <span class="st">"Temp. (°C)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/clim-miss-CI-plot-1.png" alt="Confidence intervals of the MHW metrics for each missing data step for all three time series." width="768"><p class="caption">
+Confidence intervals of the MHW metrics for each missing data step for all three time series.
+</p>
+</div>
 <p>Whereas <em>p</em>-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. The seasonal signal is not included in the above figure as any changes caused by missing data are nearly imperceptible. With the 90th percentile threshold (thresh) however, the more data are missing the lower the 90th percentile threshold tends to become. This appears to be because the seasonal signal is a smooth composite of the available data whereas the 90th percentile threshold is affected by large amounts of missing data because that prevents the accurate creation of the 90th percentile thresholds due to the many large (outlier-like, but real) values that are not included in the calculation, which by necessity requires large values to be calculated accurately.</p>
 <p>Overall this analysis/figure is not very helpful.</p>
 </div>
@@ -522,25 +552,32 @@ KS_sig &lt;-<span class="st"> </span>sst_ALL_miss_clim_KS_p <span class="op">%&g
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">group_by</a></span>(site, miss, metric) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">mutate</a></span>(<span class="dt">miss =</span> <span class="kw">as.numeric</span>(<span class="kw">as.character</span>(miss))) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="co"># There are three "seas" results from "WA" that are significant</span>
 <span class="st">  </span><span class="co"># But that isnt enough to bother visualising here</span>
 <span class="st">  </span><span class="kw">filter</span>(metric <span class="op">==</span><span class="st"> "thresh"</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">mutate</a></span>(<span class="dt">prop =</span> <span class="kw">round</span>(<span class="dv">1</span><span class="op">-</span><span class="kw">as.numeric</span>(<span class="kw">as.character</span>(miss)), <span class="dv">2</span>),
-         <span class="dt">perc =</span> prop<span class="op">*</span><span class="dv">100</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(site, metric, count, perc)
+<span class="st">  </span><span class="kw">select</span>(site, metric, miss, count)
 
 <span class="co"># Manually pad in NA for missing percentages with no significant differences</span>
-KS_sig &lt;-<span class="st"> </span><span class="kw">rbind</span>(KS_sig, <span class="kw">data.frame</span>(<span class="dt">site =</span> <span class="st">"Med"</span>, <span class="dt">metric =</span> <span class="st">"thresh"</span>, <span class="dt">perc =</span> <span class="dv">100</span><span class="op">:</span><span class="dv">74</span>, <span class="dt">count =</span> <span class="ot">NA</span>))
-KS_sig &lt;-<span class="st"> </span><span class="kw">rbind</span>(KS_sig, <span class="kw">data.frame</span>(<span class="dt">site =</span> <span class="st">"NW_Atl"</span>, <span class="dt">metric =</span> <span class="st">"thresh"</span>, <span class="dt">perc =</span> <span class="dv">100</span><span class="op">:</span><span class="dv">79</span>, <span class="dt">count =</span> <span class="ot">NA</span>))
-KS_sig &lt;-<span class="st"> </span><span class="kw">rbind</span>(KS_sig, <span class="kw">data.frame</span>(<span class="dt">site =</span> <span class="st">"WA"</span>, <span class="dt">metric =</span> <span class="st">"thresh"</span>, <span class="dt">perc =</span> <span class="dv">100</span><span class="op">:</span><span class="dv">92</span>, <span class="dt">count =</span> <span class="ot">NA</span>))
+KS_sig &lt;-<span class="st"> </span><span class="kw">rbind</span>(KS_sig, <span class="kw">data.frame</span>(<span class="dt">site =</span> <span class="st">"Med"</span>, <span class="dt">metric =</span> <span class="st">"thresh"</span>, 
+                                   <span class="dt">miss =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">0.26</span>, <span class="fl">0.01</span>), <span class="dt">count =</span> <span class="ot">NA</span>))
+KS_sig &lt;-<span class="st"> </span><span class="kw">rbind</span>(KS_sig, <span class="kw">data.frame</span>(<span class="dt">site =</span> <span class="st">"NW_Atl"</span>, <span class="dt">metric =</span> <span class="st">"thresh"</span>, 
+                                   <span class="dt">miss =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">0.21</span>, <span class="fl">0.01</span>), <span class="dt">count =</span> <span class="ot">NA</span>))
+KS_sig &lt;-<span class="st"> </span><span class="kw">rbind</span>(KS_sig, <span class="kw">data.frame</span>(<span class="dt">site =</span> <span class="st">"WA"</span>, <span class="dt">metric =</span> <span class="st">"thresh"</span>, 
+                                   <span class="dt">miss =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">0.08</span>, <span class="fl">0.01</span>), <span class="dt">count =</span> <span class="ot">NA</span>))
 
-<span class="kw">ggplot</span>(KS_sig, <span class="kw">aes</span>(<span class="dt">x =</span> perc, <span class="dt">y =</span> site)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> count)) <span class="op">+</span>
+<span class="kw">ggplot</span>(KS_sig, <span class="kw">aes</span>(<span class="dt">x =</span> miss, <span class="dt">y =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> count, <span class="dt">group =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="co"># scale_x_reverse(breaks = seq(5, 35, 5)) +</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Missing data (%)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>,
        <span class="dt">colour =</span> <span class="st">"Sig. dif.</span><span class="ch">\n</span><span class="st">out of 100"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/KS-clims-1.png" alt="Line plot showing the _p_-value results from KS tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three reference time series." width="768"><p class="caption">
+Line plot showing the <em>p</em>-value results from KS tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three reference time series.
+</p>
+</div>
 <p>As we se in the line graph above, it is the Western Australia (<code>WA</code>) time series that most quickly deviate from the real signal when missing data are introduced. I think this is due to a combination of two things. The first is that the smaller the seasonal signal is, the more sensitive the data are when trying to create an accurate climatology. The second reason is that the more variance there is in a time series, apart from the seasonal signal, the more sensitive the data are to accurate climatology creation. The <code>WA</code> time series hits both of these problems and so this comes through clearly in the results.</p>
 </div>
 <div id="correlations" class="section level3">
@@ -571,6 +608,11 @@ sst_ALL_miss_cor &lt;-<span class="st"> </span>sst_ALL_miss_joined <span class="
 <span class="st">  </span><span class="kw">facet_grid</span>(site<span class="op">~</span>metric) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Consecutive missing days"</span>, 
        <span class="dt">y =</span> <span class="st">"Correlation (r) between significance</span><span class="ch">\n</span><span class="st">and count of consecutive days missing"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/clim-cor-1.png" alt="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests." width="768"><p class="caption">
+Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests.
+</p>
+</div>
 <p>This plot shows the count of consecutive days of missing data is a very good indicator of whether or not the 90th percentile threshold will be significantly different from the control time series. This works best for counts of consecutive days below 5, and works a bit more poorly for the <code>WA</code> time series.</p>
 <p>It must now be seen what the relationship is between count of consecutive missing days at each day step and the corresponding <em>p</em>-values.</p>
 </div>
@@ -629,6 +671,11 @@ event_aov_plot &lt;-<span class="st"> </span>sst_ALL_miss_event_aov_p <span clas
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> count)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="fl">0.5</span>))</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/event-aov-plot-1.png" alt="Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for all proportions of missing data per reference time series. The differences are significant (_p_ &lt;0.05) for all of the metrics." width="768"><p class="caption">
+Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for all proportions of missing data per reference time series. The differences are significant (<em>p</em> &lt;0.05) for all of the metrics.
+</p>
+</div>
 <p>As we may see in the figure above, the duration (and likely therefore cummulative intensity) of events always differed significantly when missing data were introduced into a time series. For the <code>NW_Atl</code> time series all of the metrics were always significantly different, with mean and max intensities occassionally being different for <code>Med</code>, and never for <code>WA</code>. To see where these differences materialise we will visualise the post-hoc Tukey test results.</p>
 </div>
 <div id="post-hoc-tukey-test-1" class="section level3">
@@ -657,6 +704,11 @@ event_tukey_summary &lt;-<span class="st"> </span>sst_ALL_miss_event_tukey <span
 <span class="st">  </span><span class="co"># scale_x_reverse(breaks = seq(5, 35, 5)) +</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Missing data (%)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>,
        <span class="dt">colour =</span> <span class="st">"Sig. dif.</span><span class="ch">\n</span><span class="st">out of 100"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/event-tukey-line-1.png" alt="Segments showing the range of the percent of missing data present when climatologies were significantly different." width="768"><p class="caption">
+Segments showing the range of the percent of missing data present when climatologies were significantly different.
+</p>
+</div>
 <p>The figure above shows that significant differences in the duration (and therefore cummulative intensity) of events begins occurring as soon as 9% of data are missing in the <code>NW_Atl</code> time series, 15% in <code>Med</code>, and 18% in <code>WA</code>. Only the <code>NW_Atl</code> showed any real signs of significant differences for max and mean intensities and these don’t begin until 31%.</p>
 </div>
 <div id="confidence-intervals-1" class="section level3">
@@ -707,6 +759,11 @@ sst_ALL_miss_event_CI &lt;-<span class="st"> </span>sst_ALL_miss_clim_event_cat 
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> quant_<span class="dv">50</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(metric<span class="op">~</span>site, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Missing data (%)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/event-miss-CI-plot-1.png" alt="Confidence intervals of the different metrics for the different proportions of missing data. Note that the _y_-axes are not the same." width="768"><p class="caption">
+Confidence intervals of the different metrics for the different proportions of missing data. Note that the <em>y</em>-axes are not the same.
+</p>
+</div>
 <p>There is generally a slight decrease in the max and mean intensity of events as one increases the amounts of missing data, but the range of these values also tends to increase. This is important to note as it means that one may not say with certainty that the more data are missing from a time series, the less intense the MHWs detected will be. We see however that the median duration and cum. intensity are rather similar for all missing data steps.</p>
 <p>As the proportion of missing data are increased, the climatological means stay the same (so anomalies are unchanged) but the thresholds are reduced. Therefore, events will start and end at smaller temperature anomalies thus bringing down the mean intensity but raising the duration. We do not howeversee this increase in duration due to the fact that all of these missing days start dividing up the events into multiple shorter events. More on this in the categories section.</p>
 </div>
@@ -744,6 +801,11 @@ sst_ALL_miss_event_cor &lt;-<span class="st"> </span>sst_ALL_miss_event_joined_w
 <span class="st">  </span><span class="kw">facet_grid</span>(site<span class="op">~</span>metric) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Consecutive missing days"</span>, 
        <span class="dt">y =</span> <span class="st">"Correlation (r) between significance</span><span class="ch">\n</span><span class="st">and count of consecutive days missing"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/event-cor-1.png" alt="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests." width="768"><p class="caption">
+Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests.
+</p>
+</div>
 <p>The correlations shown above as dot plots tell us that the count of consecutive missing days from 1 – 3 are a very good indicator of whether or not the duration (and int. cum.) will be significantly different from a time series with no missing data. For intensity max and mean it looks like the count of consecutive missing days from 4 – 6 is the best indicator, with no real pattern emerging for the <code>WA</code> time series.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="kw">filter</span>(sst_ALL_miss_event_joined, duration <span class="op">&lt;=</span><span class="st"> </span><span class="dv">8</span>), 
        <span class="kw">aes</span>(<span class="dt">x =</span> count, <span class="dt">y =</span> adj.p.value, <span class="dt">colour =</span> <span class="kw">as.factor</span>(duration))) <span class="op">+</span>
@@ -752,6 +814,11 @@ sst_ALL_miss_event_cor &lt;-<span class="st"> </span>sst_ALL_miss_event_joined_w
 <span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">expand =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(metric<span class="op">~</span>site) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">y =</span> <span class="st">"p-value"</span>, <span class="dt">colour =</span> <span class="st">"Consecutive</span><span class="ch">\n</span><span class="st">missing days"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/event-cor-linear-plot-1.png" alt="Linear models showing the relationship between count of consecutive missing days in a time series and the probability (_p_-value) that the time series will be different from the control." width="768"><p class="caption">
+Linear models showing the relationship between count of consecutive missing days in a time series and the probability (<em>p</em>-value) that the time series will be different from the control.
+</p>
+</div>
 <p>The figure above shows that the relationships between the count of consecutive missing days and the <em>p</em>-value comparing that time series against the control is srongest for duration (and int. cum.) at lower consecutive missing day, but that the strength of this relationship is due to the tails at the top and bottom of the distribution of results and so this isn’t necessarily as good of a predictor as it may have initially looked. This is more a case of large sample sizes producing sexy results. That being said, coount of consecutive missing days at 2 and 3 may be useful later on in the best practices.</p>
 </div>
 </div>
@@ -843,6 +910,11 @@ chi_sig &lt;-<span class="st"> </span>sst_ALL_miss_cat_chi <span class="op">%&gt
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Missing data (%)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>,
        <span class="dt">colour =</span> <span class="st">"Sig. dif.</span><span class="ch">\n</span><span class="st">out of 100"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">20</span>))</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/chi-pair-plot-1.png" alt="Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test." width="768"><p class="caption">
+Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a <em>chi</em>-squared test.
+</p>
+</div>
 <p>The line plot above shows at what point the category counts begin to differ significantly from time series with no missing data. The difference in count appears to be realted to the variance in the time series, with the <code>WA</code> becoming different the quickest, and the <code>Med</code> the slowest.</p>
 </div>
 <div id="post-hoc-chi-squared" class="section level3">
@@ -891,6 +963,11 @@ sst_ALL_ice &lt;-<span class="st"> </span><span class="kw">rbind</span>(sst_WA_i
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">scales =</span> <span class="st">"free_y"</span>, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">""</span>, <span class="dt">y =</span> <span class="st">"temp. (C)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/ice-cover-line-1.png" alt="The three time series with artificial ice cover in the winter months removed. The missing data may be seen as a faint grey line filling in the winter months." width="768"><p class="caption">
+The three time series with artificial ice cover in the winter months removed. The missing data may be seen as a faint grey line filling in the winter months.
+</p>
+</div>
 <p>In the figure above we see that removing the winter months for the Mediterranean and Northwest Atlantic time series produces relatively even missing gaps near the bottom of each seasonal cycle. The Western Australia time series appears to have a much less regular seasonal signal and so the missing data periods vary somewhat more.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate the thresholds for all of the created time series</span>
 sst_ALL_ice_clim &lt;-<span class="st"> </span>sst_ALL_ice <span class="op">%&gt;%</span><span class="st"> </span>
@@ -917,6 +994,11 @@ sst_ALL_ice_clim_only &lt;-<span class="st"> </span>sst_ALL_ice_clim <span class
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">scales =</span> <span class="st">"free_y"</span>, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">""</span>, <span class="dt">y =</span> <span class="st">"temp. (C)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/ice-seas-1.png" alt="Line graph showing the seasonal signal calculated from time series with a simulated 3 months of ice coverage. The seasonal signal based on the complete time series is shown in grey behind." width="768"><p class="caption">
+Line graph showing the seasonal signal calculated from time series with a simulated 3 months of ice coverage. The seasonal signal based on the complete time series is shown in grey behind.
+</p>
+</div>
 <p>We may see in the figure above that the calculated seasonal climatologies from the ‘ice coverage’ time series appear to be nearly identical to those from complete time series. The <code>WA</code> does however look to be slightly different.</p>
 <div id="t-test-p-values" class="section level5">
 <h5 class="hasAnchor">
@@ -952,6 +1034,11 @@ sst_ALL_ice_clim_ttest_p &lt;-<span class="st"> </span>sst_ALL_ice_clim_only <sp
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/ice-ttest-p-1.png" alt="Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those with ice coverage." width="768"><p class="caption">
+Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those with ice coverage.
+</p>
+</div>
 <p>From the heatmap above we see that there is no difference in the climatologies calculated when there is ice coverage.</p>
 </div>
 <div id="kolmogorov-smirnov-1" class="section level5">
@@ -985,6 +1072,11 @@ sst_ALL_ice_clim_KS_p &lt;-<span class="st"> </span>sst_ALL_ice_clim_only <span 
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/ice-KS-clims-1.png" alt="Heatmap showing the Kolmogorov-Smirnov _p_-values from comparing the climatology distributions for complete against ice coverage time series." width="768"><p class="caption">
+Heatmap showing the Kolmogorov-Smirnov <em>p</em>-values from comparing the climatology distributions for complete against ice coverage time series.
+</p>
+</div>
 <p>Here we see that the overall shape of the climatologies for the <code>WA</code> time series do differ significantly when ice coverage is present. It should be pointed out that ann earlier version of this analysis used time series with the original decadal trends left in (rather than using the de-trended time series here) and no significant differences were found.</p>
 </div>
 </div>
@@ -1063,6 +1155,11 @@ sst_ALL_ice_clim_KS_p &lt;-<span class="st"> </span>sst_ALL_ice_clim_only <span 
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">scales =</span> <span class="st">"free_y"</span>, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">""</span>, <span class="dt">y =</span> <span class="st">"temp. (C)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/2-day-line-1.png" alt="The three time series when weekend days have been removed. The complete time series is shown behind as a faint grey line." width="768"><p class="caption">
+The three time series when weekend days have been removed. The complete time series is shown behind as a faint grey line.
+</p>
+</div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate the thresholds for all of the created time series</span>
 sst_ALL_2_day_clim &lt;-<span class="st"> </span>sst_ALL_2_day <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">group_by</a></span>(site) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -1109,6 +1206,11 @@ sst_ALL_2_day_clim_ttest_p &lt;-<span class="st"> </span>sst_ALL_2_day_clim_only
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/2-day-ttest-p-1.png" alt="Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those missing weekend days." width="768"><p class="caption">
+Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those missing weekend days.
+</p>
+</div>
 <p>The seasonal signals and 90th percentile thresholds do not differ appreciably.</p>
 <p>As I’ve run a t-test here and not an ANOVA, I am not going to manually generate CI’s. Also, there are only two time series being compared here so CI’s aren’t as meaningful.</p>
 </div>
@@ -1139,6 +1241,11 @@ sst_ALL_2_day_clim_KS_p &lt;-<span class="st"> </span>sst_ALL_2_day_clim_only <s
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="missing_data_files/figure-html/2-day-KS-clims-1.png" alt="Heatmap showing the Kolmogorov-Smirnov _p_-values from comparing the climatology distributions for complete against missing weekend time series." width="768"><p class="caption">
+Heatmap showing the Kolmogorov-Smirnov <em>p</em>-values from comparing the climatology distributions for complete against missing weekend time series.
+</p>
+</div>
 <p>Jip, differences.</p>
 </div>
 </div>

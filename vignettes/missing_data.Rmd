@@ -15,7 +15,7 @@ bibliography: bibliography.bib
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       echo = TRUE, warning = FALSE, message = FALSE, 
-                      eval = FALSE, tidy = FALSE)
+                      eval = TRUE, tidy = FALSE)
 options(scipen=999)
 ```
 
@@ -225,16 +225,15 @@ sst_ALL_miss_clim_only <- plyr::ddply(sst_ALL_miss_clim_event_cat, c("miss", "re
 save(sst_ALL_miss_clim_only, file = "data/sst_ALL_miss_clim_only.Rdata")
 ```
 
-```{r load-miss-clim-only}
+```{r clim-miss-seas, fig.cap="The seasonal signals created from time series with increasing percentages of missing data."}
+
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss_clim_only.Rdata")
-```
 
-```{r clim_miss_seas, fig.cap="The seasonal signals created from time series with increasingly large proportions of missing data."}
 # visualise
 ggplot(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), 
-       aes(y = seas, x = doy, colour = ((1-as.numeric(miss))*100))) +
+       aes(y = seas, x = doy, colour = as.numeric(miss))) +
   geom_line(alpha = 0.3, aes(group = interaction(rep, miss))) +
   scale_colour_viridis_c() +
   facet_wrap(~site, ncol = 1, scales = "free_y") +
@@ -245,7 +244,7 @@ As we may see in the figure above, there is no perceptible difference in the sea
 
 ```{r clim-miss-thresh, fig.cap = "The 90th percentile thresholds created from time series with increasing percentages of missing data."}
 ggplot(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), 
-       aes(y = thresh, x = doy, colour = ((1-as.numeric(miss))*100))) +
+       aes(y = thresh, x = doy, colour = as.numeric(miss))) +
   geom_line(alpha = 0.3, aes(group = interaction(rep, miss))) +
   scale_colour_viridis_c() +
   facet_wrap(~site, ncol = 1, scales = "free_y") +
@@ -470,7 +469,7 @@ sst_ALL_miss_clim_KS_p <- sst_ALL_miss_clim_only %>%
 save(sst_ALL_miss_clim_KS_p, file = "data/sst_ALL_miss_clim_KS_p.Rdata")
 ```
 
-```{r KS-clims, fig.cap="Histograms showing the _p_-value results from Kolmogorov-Smirnov tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three sites."}
+```{r KS-clims, fig.cap="Line plot showing the _p_-value results from KS tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three reference time series."}
 
 load("data/sst_ALL_miss_clim_KS_p.Rdata")
 
@@ -480,20 +479,22 @@ KS_sig <- sst_ALL_miss_clim_KS_p %>%
   group_by(site, miss, metric) %>% 
   summarise(count = n()) %>%
   ungroup() %>% 
+  mutate(miss = as.numeric(as.character(miss))) %>% 
   # There are three "seas" results from "WA" that are significant
   # But that isnt enough to bother visualising here
   filter(metric == "thresh") %>%
-  mutate(prop = round(1-as.numeric(as.character(miss)), 2),
-         perc = prop*100) %>% 
-  select(site, metric, count, perc)
+  select(site, metric, miss, count)
 
 # Manually pad in NA for missing percentages with no significant differences
-KS_sig <- rbind(KS_sig, data.frame(site = "Med", metric = "thresh", perc = 100:74, count = NA))
-KS_sig <- rbind(KS_sig, data.frame(site = "NW_Atl", metric = "thresh", perc = 100:79, count = NA))
-KS_sig <- rbind(KS_sig, data.frame(site = "WA", metric = "thresh", perc = 100:92, count = NA))
+KS_sig <- rbind(KS_sig, data.frame(site = "Med", metric = "thresh", 
+                                   miss = seq(0, 0.26, 0.01), count = NA))
+KS_sig <- rbind(KS_sig, data.frame(site = "NW_Atl", metric = "thresh", 
+                                   miss = seq(0, 0.21, 0.01), count = NA))
+KS_sig <- rbind(KS_sig, data.frame(site = "WA", metric = "thresh", 
+                                   miss = seq(0, 0.08, 0.01), count = NA))
 
-ggplot(KS_sig, aes(x = perc, y = site)) +
-  geom_line(aes(colour = count)) +
+ggplot(KS_sig, aes(x = miss, y = site)) +
+  geom_line(aes(colour = count, group = site)) +
   facet_wrap(~metric, ncol = 1) +
   scale_colour_viridis_c() +
   # scale_x_reverse(breaks = seq(5, 35, 5)) +
@@ -506,7 +507,7 @@ As we se in the line graph above, it is the Western Australia (`WA`) time series
 
 ### Correlations
 
-```{r clim-cor, fig.cap="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests."}
+```{r clim-cor, fig.cap="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests. Consecutive missing days are a much better predictor for thresholds than for seasonal signals."}
 
 # Create wide joiined data frame
 suppressWarnings(
@@ -706,7 +707,7 @@ As the proportion of missing data are increased, the climatological means stay t
 
 ### Correlations
 
-```{r event-cor, fig.cap="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests."}
+```{r event-cor, fig.cap="Dot plot showing the relationship between number of consecutive missing days and the significant difference of the MHW metric from the control."}
 
 # Create wide joiined data frame
 sst_ALL_miss_event_joined <- sst_ALL_miss_event_tukey %>%

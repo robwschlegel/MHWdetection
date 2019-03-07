@@ -15,7 +15,7 @@ bibliography: bibliography.bib
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       echo = TRUE, warning = FALSE, message = FALSE, 
-                      eval = FALSE, tidy = FALSE)
+                      eval = TRUE, tidy = FALSE)
 ```
 
 
@@ -357,7 +357,7 @@ save(sst_ALL_KS, file = "data/sst_ALL_KS.Rdata")
 rm(sst_ALL_clim_only, sst_ALL_KS)
 ```
 
-```{r KS-clims, fig.cap="Time series showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. The colour of the line shows how many times out of 101 re-samples that the location along the y-axis was significantly different from the 30 year climatology. The dotted verticle line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line."}
+```{r KS-clims, fig.cap="Line plots showing the results of pairwise Kolmogorov-Smirnoff tests for the seasonal signals (top panel) and 90th percentile thresholds (bottom panel) from the same time series at differing lengths. The colour of the line shows how many times out of 100 re-samples that the climatologies were significantly different from the control. The dotted verticle line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line."}
 
 load("data/sst_ALL_KS.Rdata")
 
@@ -381,14 +381,14 @@ ggplot(KS_sig, aes(x = year_2, y = site)) +
   scale_x_reverse(breaks = seq(5, 35, 5)) +
   labs(x = "Climatology period (years)", 
        y = NULL,
-       colour = "Sig. dif.\nout of 101")
+       colour = "Sig. dif.\nout of 100")
   
 rm(sst_ALL_KS, KS_sig)
 ```
 
 The above figure shows that the results of the KS tests were more often significantly different than the ANOVAs. This means that the actual shape of the distributions changes rather quicklky, as shown by how it only takes a few years for the KS test to show the results as being different. The ANOVAs report fewer significant differences because that is a test of central tendency. Meaning that the shape of the climatologies changes rather quickly depending on the climatology period used, but the overall range of values within a climatology does not differ significantly as quickly.
 
-```{r clim-ts-all, fig.cap="Time series of each of climatology period used form the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used."}
+```{r clim-ts-all, fig.cap="Time series of each of climatology period used from the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used."}
 
 load("data/sst_ALL_clim_only.Rdata")
 
@@ -487,11 +487,12 @@ event_aov_tukey <- function(df){
 ```{r re-sample-stats-event-calc, eval=FALSE}
 load("data/sst_ALL_smooth.Rdata")
 doMC::registerDoMC(cores = 50)
-sst_ALL_event_aov_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), event_aov_tukey, .parallel = T)
+sst_ALL_event_aov_tukey <- plyr::ddply(sst_ALL_smooth, c("rep", "site"), 
+                                       event_aov_tukey, .parallel = T)
 save(sst_ALL_event_aov_tukey, file = "data/sst_ALL_event_aov_tukey.RData")
 ```
 
-```{r event-aov-box, fig.cap="Boxplots showing the range of _p_-values from ANOVA's for the different lengths of the 100 re-samplings for the three reference time series. A label at the bottom of the boxplot shows the number of re-samples that had significantly different results."}
+```{r event-aov-table}
 
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
@@ -508,7 +509,7 @@ label_count_event_aov_p <- sst_ALL_event_aov %>%
 
 knitr::kable(label_count_event_aov_p, 
              col.names = c("Time series", "MHW metric", "Significantly different"), 
-             caption = "Table 1: This table shows the results of 101 ANOVAs on event metrics detected in the real and re-sampled time series with systematically shortened lengths from 37 -- 10 years.")
+             caption = "Table 1: This table shows the results of 100 ANOVAs on event metrics detected in the real and re-sampled time series with systematically shortened lengths from 37 -- 10 years.")
 ```
 
 The above table shows us that generally the length of a time series has no significant effect on the MHWs detected within it. We see that the MHWs in the Mediterranean time series are not affected at all in any of the 101 replicates. Surprisingly the events in the North West Atlantic time series are significantly different more often than the Western Australia time series. This must mean that the event metrics are more sensistive to a number of longer larger events than a single large one, as is the case in the WA time series. This also means that the thresholds between shortened time series may not need to be significantly different in order to produce significantly different events. It must now be investigate just which years are significantly different from one another.
@@ -758,7 +759,7 @@ sst_ALL_cat_chi_sig <- sst_ALL_cat_chi %>%
 knitr::kable(sst_ALL_cat_chi_sig, caption = "Table showing the count out of 100 for significant differences (_p_-value) for the count of different categories of events for each site based on the amount of missing data present.")
 ```
 
-```{r chi-pair-plot, fig.cap="Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test."}
+```{r chi-pair-plot, fig.cap="Line graph showing the count of times out of 100 random replicates when a given time series length led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test."}
 load("data/sst_ALL_cat_chi.Rdata")
 
 # Prep data for plotting

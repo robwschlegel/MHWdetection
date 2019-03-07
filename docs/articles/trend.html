@@ -107,7 +107,7 @@
       <h1>Assessing the effects of long-term trends</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2019-03-06</h4>
+            <h4 class="date">2019-03-07</h4>
       
       
       <div class="hidden name"><code>trend.Rmd</code></div>
@@ -237,6 +237,11 @@ sst_ALL_trend_clim_only &lt;-<span class="st"> </span>plyr<span class="op">::</s
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Calendar day of year"</span>, <span class="dt">y =</span> <span class="st">"Temp. (°C)"</span>, <span class="dt">colour =</span> <span class="st">"trend (°C/dec)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="trend_files/figure-html/clim-trend-seas-1.png" alt="The seasonal signals created from time series with increasingly large decadal trends added." width="768"><p class="caption">
+The seasonal signals created from time series with increasingly large decadal trends added.
+</p>
+</div>
 <p>Looking at the range of seasonal signals we see how pronounced the effect of adding a decadal trend is to <code>WA</code> over the other two time series. This is because the proportionate to the overall range of the seasonal signal, we are adding much more to the <code>WA</code> time series than the others.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sst_ALL_trend_clim_only, 
        <span class="kw">aes</span>(<span class="dt">y =</span> thresh, <span class="dt">x =</span> doy, <span class="dt">colour =</span> <span class="kw">as.numeric</span>(trend))) <span class="op">+</span>
@@ -244,6 +249,11 @@ sst_ALL_trend_clim_only &lt;-<span class="st"> </span>plyr<span class="op">::</s
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Calendar day of year"</span>, <span class="dt">y =</span> <span class="st">"Temp. (°C)"</span>, <span class="dt">colour =</span> <span class="st">"trend (°C/dec)"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="trend_files/figure-html/clim-trend-thresh-1.png" alt="The 90th percentile thresholds created from time series with increasingly large decadal trends added." width="768"><p class="caption">
+The 90th percentile thresholds created from time series with increasingly large decadal trends added.
+</p>
+</div>
 <p>Interestingly the increase in the 90th percentile threshold appears to be similar for the 90th percentile threshold as it is for the seasonal signal. This implies that the upcoming results are likely to vary from the previous two vignettes.</p>
 <div id="anova-p-values" class="section level3">
 <h3 class="hasAnchor">
@@ -307,6 +317,11 @@ sst_ALL_trend_clim_aov &lt;-<span class="st"> </span>sst_ALL_trend_clim_aov_tuke
 <span class="st">  </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> p.value)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> <span class="kw">round</span>(p.value, <span class="dv">2</span>))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="fl">0.1</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="trend_files/figure-html/clim-trend-AOV-p-1.png" alt="Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of trending data. The 90th percentile thresholds are significantly different at p &lt; 0.05 but the seasonal signals are not." width="768"><p class="caption">
+Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of trending data. The 90th percentile thresholds are significantly different at p &lt; 0.05 but the seasonal signals are not.
+</p>
+</div>
 <p>We may see in the figure above that the climatologies do not differ appreciably across all of the decadal trends used for the <code>Med</code> and <code>NW_Atl</code>. The climatologies do however differ significantly for the <code>WA</code> time series.</p>
 </div>
 <div id="post-hoc-tukey-test" class="section level3">
@@ -334,6 +349,11 @@ clim_tukey_summary &lt;-<span class="st"> </span>sst_ALL_trend_clim_tukey <span 
 <span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.3</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Trend (°C/dec)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>,
        <span class="dt">colour =</span> <span class="st">"Sig. dif.</span><span class="ch">\n</span><span class="st">out of 100"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="trend_files/figure-html/clim-tukey-line-1.png" alt="Segments showing the range of decadal trends added to the data when climatologies were significantly different." width="768"><p class="caption">
+Segments showing the range of decadal trends added to the data when climatologies were significantly different.
+</p>
+</div>
 <p>In the figure above we see that the <code>WA</code> seasonal signals become significantly different at a decadal trend of 0.25°C/dec, and the 90th percentile threshold becomes sig. dif. at 0.24°C/dec.</p>
 </div>
 <div id="kolmogorov-smirnov-tests" class="section level3">
@@ -390,6 +410,11 @@ KS_sig &lt;-<span class="st"> </span>sst_ALL_trend_clim_KS_p <span class="op">%&
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="co"># scale_x_reverse(breaks = seq(5, 35, 5)) +</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"trending data (%)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="trend_files/figure-html/KS-clims-1.png" alt="Histograms showing the _p_-value results from Kolmogorov-Smirnov tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no trending data) climatologies for each of the three sites." width="768"><p class="caption">
+Histograms showing the <em>p</em>-value results from Kolmogorov-Smirnov tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no trending data) climatologies for each of the three sites.
+</p>
+</div>
 <p>Surprisingly the above figure shows that the seasonal signal is much more sensitive than the 90th percentile threshold to the addition of decadal trends. The <code>WA</code> time series remains the most sensitive with sig. dif. occurring at an added decadal trend of 0.05°C. The interesting thing here is that the <code>NW_Atl</code> threshold never had a significantly different distribution regardless of the amount added.</p>
 <p>Thinking about this more I have alighted upon the idea that because the threshold is determined by the largest values detected on any given <em>calendar day</em>, the size of the deadal trend present in the data could be deminished by the fact that some of the values creating the threshold will be from the earlier portion of the time series before the decadal trend realy starts having an effect.</p>
 </div>
@@ -527,8 +552,13 @@ sst_ALL_trend_event_CI &lt;-<span class="st"> </span>sst_ALL_trend_clim_event_ca
 <span class="st">  </span><span class="co"># geom_text(aes(label = n, y = upper*1.3, colour = trend), size = 3) +</span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> mid), <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">alpha =</span> <span class="fl">0.7</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_grid</span>(metric<span class="op">~</span>site, <span class="dt">scales =</span> <span class="st">"free_y"</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Trend (°C)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>)
-<span class="co"># CI_plot_1</span></code></pre></div>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Trend (°C)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="trend_files/figure-html/event-CI-plot1-1.png" alt="Confidence intervals of the MHW metrics when increasing decadal trends were added." width="768"><p class="caption">
+Confidence intervals of the MHW metrics when increasing decadal trends were added.
+</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># CI_plot_1</span></code></pre></div>
 <p>Because this set of data is smaller than the previous two vignettes I have used basic bootstrapping to create the CIs above. From these we see that the duration and int. cum. of all of the time series tend to increase as the decadal trend increase, but this is never significant. The patterns for mean and max int. are different for each time series. The <code>Med</code> remains relatively flat regardless of decadal trend, <code>WA</code> increases, and <code>NW_Atl</code> decreases. This is likely due to the distribution of MHWs throughout the time series.</p>
 </div>
 </div>
@@ -577,6 +607,27 @@ sst_ALL_trend_cat_chi &lt;-<span class="st"> </span>sst_ALL_trend_cat_all <span 
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"data/sst_ALL_trend_cat_chi.Rdata"</span>)
 
 knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>(sst_ALL_trend_cat_chi, <span class="dt">caption =</span> <span class="st">"Table showing the significant difference (_p_-value) for the count of different categories of events for each site based on the trends introduced into the data. No differences were found."</span>)</code></pre></div>
+<table class="table">
+<caption>Table showing the significant difference (<em>p</em>-value) for the count of different categories of events for each site based on the trends introduced into the data. No differences were found.</caption>
+<thead><tr class="header">
+<th align="left">site</th>
+<th align="right">p.value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Med</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">NW_Atl</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">WA</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
   </div>

@@ -107,7 +107,7 @@
       <h1>Assessing the effects of time series duration</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2019-03-06</h4>
+            <h4 class="date">2019-03-07</h4>
       
       
       <div class="hidden name"><code>time_series_duration.Rmd</code></div>
@@ -321,9 +321,38 @@ label_count_aov_p &lt;-<span class="st"> </span>sst_ALL_smooth_aov <span class="
 
 knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>(label_count_aov_p, 
              <span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">"Time series"</span>, <span class="st">"Climatology"</span>, <span class="st">"Significantly different"</span>), 
-             <span class="dt">caption =</span> <span class="st">"Table 1: This table shows the results of 101 ANOVAs on the real and re-sampled time series with systematically shortened lengths from 37 -- 3 years. Note that the climatologies for the Med time series were never significantly different and so aren't shown here."</span>)
-
-<span class="kw">rm</span>(sst_ALL_smooth_aov, label_count_aov_p)</code></pre></div>
+             <span class="dt">caption =</span> <span class="st">"Table 1: This table shows the results of 101 ANOVAs on the real and re-sampled time series with systematically shortened lengths from 37 -- 3 years. Note that the climatologies for the Med time series were never significantly different and so aren't shown here."</span>)</code></pre></div>
+<table class="table">
+<caption>Table 1: This table shows the results of 101 ANOVAs on the real and re-sampled time series with systematically shortened lengths from 37 – 3 years. Note that the climatologies for the Med time series were never significantly different and so aren’t shown here.</caption>
+<thead><tr class="header">
+<th align="left">Time series</th>
+<th align="left">Climatology</th>
+<th align="right">Significantly different</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">NW_Atl</td>
+<td align="left">seas</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">NW_Atl</td>
+<td align="left">thresh</td>
+<td align="right">15</td>
+</tr>
+<tr class="odd">
+<td align="left">WA</td>
+<td align="left">seas</td>
+<td align="right">54</td>
+</tr>
+<tr class="even">
+<td align="left">WA</td>
+<td align="left">thresh</td>
+<td align="right">84</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rm</span>(sst_ALL_smooth_aov, label_count_aov_p)</code></pre></div>
 <p>The above figure shows that there are no significant differences in the climatologies for the Mediterannean and relatively few for the North West Atlantic time series. We do however see that of the 100 re-samples for the Western Australia time series, 54 of the seasonal signals and 84 of the thresholds did differ significantly at some point during the shortening.</p>
 </div>
 <div id="post-hoc-tukey-test" class="section level3">
@@ -358,9 +387,13 @@ clim_tukey_sig &lt;-<span class="st"> </span>sst_ALL_smooth_tukey <span class="o
 <span class="st">  </span><span class="kw">scale_y_reverse</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">4</span> , <span class="dv">16</span>, <span class="dv">2</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_viridis_c</span>(<span class="st">"count out of </span><span class="ch">\n</span><span class="st">101 re-samples"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Length (years) of long time series"</span>,
-       <span class="dt">y =</span> <span class="st">"Length (years) of short time series"</span>)
-
-<span class="kw">rm</span>(sst_ALL_smooth_aov_tukey, sst_ALL_smooth_tukey, clim_tukey_sig)</code></pre></div>
+       <span class="dt">y =</span> <span class="st">"Length (years) of short time series"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/clim-tukey-heat-1.png" alt="Heatmap showing the distribution of the difference in years for climatologies that were significantly different within the same time series when different lengths of the time series were used to calculate the thresholds. The y axis shows the range of shorter time series lengths that produced significant results when compared to longer time series lengths, which are shown on the x axis. The fill at each pixel shows the count out of 101 re-samples in which the comparison of these two time series lengths were significantly different." width="768"><p class="caption">
+Heatmap showing the distribution of the difference in years for climatologies that were significantly different within the same time series when different lengths of the time series were used to calculate the thresholds. The y axis shows the range of shorter time series lengths that produced significant results when compared to longer time series lengths, which are shown on the x axis. The fill at each pixel shows the count out of 101 re-samples in which the comparison of these two time series lengths were significantly different.
+</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rm</span>(sst_ALL_smooth_aov_tukey, sst_ALL_smooth_tukey, clim_tukey_sig)</code></pre></div>
 <p>The above figure shows us that as few as a four year difference in time series length was able to create significantly different thresholds, but that the most common difference was 14 – 17 years with the distribution left-skewed.</p>
 </div>
 <div id="kolmogorov-smirnov-tests" class="section level3">
@@ -441,9 +474,13 @@ KS_sig &lt;-<span class="st"> </span>padr<span class="op">::</span><span class="
 <span class="st">  </span><span class="kw">scale_x_reverse</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">5</span>, <span class="dv">35</span>, <span class="dv">5</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Climatology period (years)"</span>, 
        <span class="dt">y =</span> <span class="ot">NULL</span>,
-       <span class="dt">colour =</span> <span class="st">"Sig. dif.</span><span class="ch">\n</span><span class="st">out of 101"</span>)
-  
-<span class="kw">rm</span>(sst_ALL_KS, KS_sig)</code></pre></div>
+       <span class="dt">colour =</span> <span class="st">"Sig. dif.</span><span class="ch">\n</span><span class="st">out of 101"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/KS-clims-1.png" alt="Time series showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. The colour of the line shows how many times out of 101 re-samples that the location along the y-axis was significantly different from the 30 year climatology. The dotted verticle line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line." width="768"><p class="caption">
+Time series showing the results of pairwise Kolmogorov-Smirnoff tests for the climatologies from the same time series at differing lengths. The colour of the line shows how many times out of 101 re-samples that the location along the y-axis was significantly different from the 30 year climatology. The dotted verticle line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line.
+</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rm</span>(sst_ALL_KS, KS_sig)</code></pre></div>
 <p>The above figure shows that the results of the KS tests were more often significantly different than the ANOVAs. This means that the actual shape of the distributions changes rather quicklky, as shown by how it only takes a few years for the KS test to show the results as being different. The ANOVAs report fewer significant differences because that is a test of central tendency. Meaning that the shape of the climatologies changes rather quickly depending on the climatology period used, but the overall range of values within a climatology does not differ significantly as quickly.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"data/sst_ALL_clim_only.Rdata"</span>)
 
@@ -455,6 +492,11 @@ sst_ALL_clim_<span class="dv">0</span> &lt;-<span class="st"> </span>sst_ALL_cli
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">group =</span> year_index, <span class="dt">colour =</span> year_index), <span class="dt">alpha =</span> <span class="fl">0.8</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>()</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/clim-ts-all-1.png" alt="Time series of each of climatology period used form the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used." width="768"><p class="caption">
+Time series of each of climatology period used form the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used.
+</p>
+</div>
 <p>The above figure shows us that the larger the seasonal signal is, the less effect deviations away from it will likely have.</p>
 </div>
 <div id="correlations" class="section level3">
@@ -495,9 +537,13 @@ sst_ALL_smooth_cor &lt;-<span class="st"> </span><span class="kw">rbind</span>(s
 <span class="kw">ggplot</span>(sst_ALL_smooth_cor, <span class="kw">aes</span>(<span class="dt">x =</span> y, <span class="dt">y =</span> r, <span class="dt">fill =</span> y)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_boxplot</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_viridis_d</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">facet_grid</span>(site<span class="op">~</span>x)
-
-<span class="kw">rm</span>(sst_ALL_smooth_cor, sst_ALL_smooth_cor_base, sst_ALL_smooth_cor_length, sst_ALL_smooth_cor_sd)</code></pre></div>
+<span class="st">  </span><span class="kw">facet_grid</span>(site<span class="op">~</span>x)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/clim-cor-1.png" alt="Boxplots showing the distribution of Pearson's r values for the correlation between the mean and SD of the climatologies for the time series of varying lengths of each of the three reference time series." width="768"><p class="caption">
+Boxplots showing the distribution of Pearson’s r values for the correlation between the mean and SD of the climatologies for the time series of varying lengths of each of the three reference time series.
+</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rm</span>(sst_ALL_smooth_cor, sst_ALL_smooth_cor_base, sst_ALL_smooth_cor_length, sst_ALL_smooth_cor_sd)</code></pre></div>
 <p>The above figure shows us that all three reference time series respond relatively similarly with regards to the correlations of their climatology means and SD to the length and SD of the base temperatures from which the climatologies were derived. Though the patterns observed otherwise tell us little, it is an important finding to know that this dud pattern is consistent across the different reference time series. The other important pattern this figure shows is that the length of a time series appears to not have a consistent relationship with the resultant climatologies. Instead we see that it is the variance in the time series that tends to have a positive relationship with the variance, and to a lesser extent the means, in the climatologies.</p>
 <p>The pattern that is beginning to emerge from the results for the climatologies is that what matters most for the difference in the results is how much variance is present in the base time series, meaning how large is the seasonal signal relative to the temperatures in the time series. This variance could also be a representation of the presence of extreme temperature differences. Relating to the reseach question here this means large MHWs. It must therefore be investigated what the relationship is between categories of MHWs and the significant differences detected in the thresholds in the WA time series. It should also be taken into consideration that whenever the re-sampled time series have the year 2011, the massive MHW, these will likely be the ones producing significantly different results.</p>
 </div>
@@ -548,6 +594,51 @@ label_count_event_aov_p &lt;-<span class="st"> </span>sst_ALL_event_aov <span cl
 knitr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/knitr/topics/kable">kable</a></span>(label_count_event_aov_p, 
              <span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">"Time series"</span>, <span class="st">"MHW metric"</span>, <span class="st">"Significantly different"</span>), 
              <span class="dt">caption =</span> <span class="st">"Table 1: This table shows the results of 101 ANOVAs on event metrics detected in the real and re-sampled time series with systematically shortened lengths from 37 -- 10 years."</span>)</code></pre></div>
+<table class="table">
+<caption>Table 1: This table shows the results of 101 ANOVAs on event metrics detected in the real and re-sampled time series with systematically shortened lengths from 37 – 10 years.</caption>
+<thead><tr class="header">
+<th align="left">Time series</th>
+<th align="left">MHW metric</th>
+<th align="right">Significantly different</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">NW_Atl</td>
+<td align="left">duration</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">NW_Atl</td>
+<td align="left">intensity_cumulative</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">NW_Atl</td>
+<td align="left">intensity_max</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">NW_Atl</td>
+<td align="left">intensity_mean</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">WA</td>
+<td align="left">duration</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">WA</td>
+<td align="left">intensity_max</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">WA</td>
+<td align="left">intensity_mean</td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
 <p>The above table shows us that generally the length of a time series has no significant effect on the MHWs detected within it. We see that the MHWs in the Mediterranean time series are not affected at all in any of the 101 replicates. Surprisingly the events in the North West Atlantic time series are significantly different more often than the Western Australia time series. This must mean that the event metrics are more sensistive to a number of longer larger events than a single large one, as is the case in the WA time series. This also means that the thresholds between shortened time series may not need to be significantly different in order to produce significantly different events. It must now be investigate just which years are significantly different from one another.</p>
 </div>
 <div id="post-hoc-tukey-test-1" class="section level3">
@@ -615,6 +706,11 @@ sst_ALL_event_cor &lt;-<span class="st"> </span>sst_ALL_smooth <span class="op">
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
         <span class="dt">axis.ticks.x =</span> <span class="kw">element_blank</span>(),
         <span class="dt">legend.position =</span> <span class="st">"bottom"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/event-cor-1.png" alt="Boxplots showing the distribution of Pearson's r values for the correlation between the mean and SD of the desired MHW metrics for the time series of varying lengths of each of the three reference time series. The horizontal dashed line helps to denote an r-vlaue of 0." width="768"><p class="caption">
+Boxplots showing the distribution of Pearson’s r values for the correlation between the mean and SD of the desired MHW metrics for the time series of varying lengths of each of the three reference time series. The horizontal dashed line helps to denote an r-vlaue of 0.
+</p>
+</div>
 <p>The figure above shows us that the relationship between the length of all three reference time series and the resultant MHW metrics are similar. Specifically we see that mean duration and intensities of events has a strong (r~-0.5) relationship to the length of the time series. Meaning that longer the climatology period used is, the shorter and less intense MHWs tend to be. This wasto be expected as the original hypothesis was that longer time series would have lower/smoother thresholds and so events detected with them would be longer and more intense. This pattern is a bit less clear for mean intensities.</p>
 </div>
 <div id="confidence-intervals" class="section level3">
@@ -693,6 +789,11 @@ sst_ALL_clim_category_count &lt;-<span class="st"> </span>sst_ALL_category <span
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>site, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Tim series length (years)"</span>, <span class="dt">y =</span> <span class="st">"Total count"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">"bottom"</span>)</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/cat-compare-1.png" alt="Bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle." width="768"><p class="caption">
+Bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more ‘smaller’ events are detected with a 10 year clim period, and more ‘larger’ events detected with the 30 year clim. The 20 year clim tends to rest in the middle.
+</p>
+</div>
 <p>The results in the figure above show that we see more larger events when the climatologies are based on 30 years of data, rather than 10, but that we tend to see more events overall when we use only 10 years of data. This is about what would be expected if there were a trend present in the data. SO it is interesting that it still comes through.</p>
 </div>
 <div id="chi-squared" class="section level3">
@@ -785,6 +886,11 @@ chi_sig &lt;-<span class="st"> </span>sst_ALL_cat_chi <span class="op">%&gt;%</s
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Time series length (years)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>,
        <span class="dt">colour =</span> <span class="st">"Sig. dif.</span><span class="ch">\n</span><span class="st">out of 100"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">20</span>))</code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="time_series_duration_files/figure-html/chi-pair-plot-1.png" alt="Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test." width="768"><p class="caption">
+Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a <em>chi</em>-squared test.
+</p>
+</div>
 <p>The line plot above shows at what point the category counts begin to differ significantly from the matching 30 year time series. It was expected that the <code>WA</code> time series would show sig. dif. more quickly than the other two, though I had expected the <code>Med</code> to be the slowest to change, not the <code>NW_Atl</code>. Over a sample of 100, there were never more than five replicates showing significant differences in count of categories though so it is relatively safe to say that the length of a time series has little effect on the count of events.</p>
 </div>
 <div id="post-hoc-chi-squared" class="section level3">

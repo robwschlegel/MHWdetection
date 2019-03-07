@@ -15,7 +15,7 @@ bibliography: bibliography.bib
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       echo = TRUE, warning = FALSE, message = FALSE, 
-                      eval = FALSE, tidy = FALSE)
+                      eval = TRUE, tidy = FALSE)
 options(scipen=999)
 ```
 
@@ -151,7 +151,7 @@ save(sst_ALL_trend_clim_only, file = "data/sst_ALL_trend_clim_only.Rdata")
 load("data/sst_ALL_trend_clim_only.Rdata")
 ```
 
-```{r clim_trend_seas, fig.cap="The seasonal signals created from time series with increasingly large decadal trends added."}
+```{r clim-trend-seas, fig.cap="The seasonal signals created from time series with increasingly large decadal trends added."}
 
 ggplot(sst_ALL_trend_clim_only, 
        aes(y = seas, x = doy, colour = as.numeric(trend))) +
@@ -319,7 +319,7 @@ sst_ALL_trend_clim_KS_p <- sst_ALL_trend_clim_only %>%
 save(sst_ALL_trend_clim_KS_p, file = "data/sst_ALL_trend_clim_KS_p.Rdata")
 ```
 
-```{r KS-clims, fig.cap="Histograms showing the _p_-value results from Kolmogorov-Smirnov tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no trending data) climatologies for each of the three sites."}
+```{r KS-clims, fig.cap="Dot and line plot showing the _p_-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series."}
 
 load("data/sst_ALL_trend_clim_KS_p.Rdata")
 
@@ -335,12 +335,12 @@ KS_sig <- sst_ALL_trend_clim_KS_p %>%
 # KS_sig <- rbind(KS_sig, data.frame(site = "NW_Atl", metric = "thresh", perc = 100:79, count = NA))
 # KS_sig <- rbind(KS_sig, data.frame(site = "WA", metric = "thresh", perc = 100:92, count = NA))
 
-ggplot(KS_sig, aes(x = trend, y = site)) +
+ggplot(KS_sig, aes(x = as.numeric(trend), y = site)) +
   geom_line(aes(group = site)) +
   geom_point() +
   facet_wrap(~metric, ncol = 1) +
   # scale_x_reverse(breaks = seq(5, 35, 5)) +
-  labs(x = "trending data (%)", y = NULL)
+  labs(x = "Added decadal trend (°C)", y = NULL)
 ```
 
 Surprisingly the above figure shows that the seasonal signal is much more sensitive than the 90th percentile threshold to the addition of decadal trends. The `WA` time series remains the most sensitive with sig. dif. occurring at an added decadal trend of 0.05°C. The interesting thing here is that the `NW_Atl` threshold never had a significantly different distribution regardless of the amount added.

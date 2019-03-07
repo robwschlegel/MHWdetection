@@ -3,18 +3,48 @@ title: "Detecting marine heatwaves"
 author: "Robert W. Schlegel, Eric C. J. Oliver, Alistair J. Hobday, Albertus J. Smit"
 date: "25 May 2018"
 output: word_document
+bibliography: MHWdetection.bib
 ---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
+                      echo = TRUE, warning = FALSE, message = FALSE, 
+                      eval = TRUE, tidy = FALSE)
+```
+
+```{r r-init, echo=FALSE}
+library(tidyverse)
+library(broom)
+library(heatwaveR, lib.loc = "../../R-packages/")
+# cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
+library(lubridate) # This is intentionally activated after data.table
+library(fasttime)
+library(ggpubr)
+library(boot)
+library(FNN)
+library(mgcv)
+library(doMC); doMC::registerDoMC(cores = 50)
+
+MHW_colours <- c(
+  "I Moderate" = "#ffc866",
+  "II Strong" = "#ff6900",
+  "III Severe" = "#9e0000",
+  "IV Extreme" = "#2d0000"
+)
+```
 
 # Abstract
 
-It is now known that marine heatwaves (MHWs) have been increasing in duration and intensity globally for decades, implying that the destruction that follows in their wake is increasing, too. There are however many ocean, sea, and coastal regions that have not been sampled continuously for 30 or more years, as is the standard recommendation for accurately detecting MHWs. It was therefore necessary to quantify the size of the effect that short time series duration or missing data may have on the accurate detection of MHWs where optimal data are not available. It was found that time series as short as ten years did not produce MHWs of significantly different durations or intensities than either 20 or 30 year time series, nor was the accurate creation of seasonal signals or 90th percentile thresholds statistically significantly affected, but it is still preferable to use time series at least 20 years in length. It was also found that MHWs detected in time series missing as much as 25% of their data did not differ significantly from those detected in complete time series. A greater amount of missing data prevented the accurate creation of the 90th percentile threshold, which in turn prevented the accurate detection of MHWs. It was also found that linear decadal trends as low as XXX°C/dec led to the detection of significantly longer and more intense MHWs. The best practices for how to improve the precision of MHW detection with sub-optimal time series has been itemised and is discussed in detail here using specific case studies of three notable MHWs from the literature.
+It is now known that marine heatwaves (MHWs) have been increasing in duration and intensity globally for decades, implying that the destruction that follows in their wake is increasing, too. There are many documented instances of such destruction however, there are many ocean, sea, and coastal regions where our ability to accurately detect events is uncertain because they have not been sampled continuously for 30 or more years, as is the standard recommendation. It was therefore necessary to quantify the effect that short time series duration or missing data may have on the accurate detection of MHWs where optimal data are not available. It was found that time series as short as 10 years had little effect on the duration or intensities of events detected, but the accurate creation of the 90th percentile thresholds was impaired when fewer than ~25 years of data were used. It was also found that the categories of MHWs detected in time series missing 15 -- 25% of their data did not differ significantly from those detected in complete time series. It was also found that linear decadal trends as low as 0.10°C/dec could lead to inaccurate creation of seasonal climatologies, but that this did not impact accurate event detection. The percentage of missing data in a time series was determined to have the most dramatic effect on the accurate detection of events. The best practices for how to improve the accuracy of MHW detection with sub-optimal time series has been itemised and is discussed in detail here using specific case studies of three notable MHWs from the literature as workable examples.
 
 
 # Introduction
 
-The idea of hot seawater being problematic has been with humanity for a long time. We have known for decades, perhaps milenia, that strange and seemingly transient occurrences in the ocean may leave entire ecosystems barrens without anyone noticing until after waters had already cooled down. It was perhaps due to our lack of ability of tracking and recording ocean temperatures globally that people did not begin to quantify the effects of anomolously warm seawater temperatures until the mid 90s (cite). It was not until the 00's that much work began to be done on the direct consequences of this hot water (e.g. @Garabou2008). Later still was the development of a globally utilised definition for these events that enjoyed wide-spread use. The now commonly used @Hobday2016 definition for anomolously warm seawater temperature events, better known as marine heatwaves (MHWs) has allowed researchers around the world to directly compare events in very different environments for the present as well as the past. A follow up to this definition has now also introduced a categry naming convention (@Hobday2018) that makes the application of this definition even more useful for transdisciplinary work.
+The idea of hot seawater being problematic is not a novel concept. We have known for decades, perhaps millenia, that strange and seemingly transient occurrences in the ocean could leave ecosystems barrens with no notice of the event until the waters had already cooled. It was perhaps due to our lack of ability to track and record ocean temperatures globally that people did not begin to quantify the effects of anomalously warm seawater temperatures until the mid 90s (cite). It was not until the 00's that much work began to be done on the direct consequences of this hot water (e.g. @Garrabou2009). Later still was the development of a globally utilised definition for these events that enjoyed wide-spread use. The now commonly used @Hobday2016 definition for anomalously warm seawater temperature events, better known as marine heatwaves (MHWs) has allowed researchers around the world to directly compare events in very different environments for the present as well as the past. A follow up to this definition has now also introduced a category naming convention (@Hobday2018) that makes the application of this definition even more useful for transdisciplinary work.
 
-It is perhaps belaboring the point to explain the danger that MHWs pose to the world, so below is a brief bulletted list outlining some of the more well studied MHWs and the impacts they have had:  
+- _I'm willing to write a more conventional paragraph below if everyone would prefer._
+
+It is perhaps belaboring the point to explain the danger that MHWs pose to the world, so below is a brief bulleted list outlining some of the more well studied MHWs and the impacts they have had:  
   
 - Mediterranean 2008: (Garrabou et al., 2009; Olita et al., 2007)
 - South West coast of Australia 2010/11: (Feng et al., 2013; Pearce and Feng, 2013; Wernberg et al., 2013)
@@ -26,38 +56,36 @@ It is perhaps belaboring the point to explain the danger that MHWs pose to the w
 
 # Marine heatwaves thus far
 
-The @Hobday2016 definition for MHWs is best summed up as "A prolonged discrete anomalously warm water event that can be described by its duration, intensity, rate of evolution, and spatial extent.". Accompanying this deinition is an algorithm that produces a suite of metrics that researchrs may use to define the events and to effectively compare them against known ecological/financial impacts using an ever-growing list of statistical tools. A ful explanation for these metrics may be found in Table 2 of @Hobday2016.
+The @Hobday2016 definition for MHWs is best summed up as "A prolonged discrete anomalously warm water event that can be described by its duration, intensity, rate of evolution, and spatial extent.". Accompanying this definition is an algorithm that produces a suite of metrics that researchers may use to define the events and to effectively compare them against known ecological/financial impacts using an ever-growing list of statistical tools. A full explanation for these metrics may be found in Table 2 of @Hobday2016.
 
 - _Perhaps more here on the framing of the history and on atmospheric heatwaves, but it is already feeling a bit long_
 
-A common definition for MHWs was necessary because as they begin to increase in duration and intensity around the world (@Oliver2018), the research of different groups will be able to directly benefit from cross-comparison of results. For example, it has been published that an intensity of 2°C for at least XXX days may be damaging to a range of coral species (cite). Using this research from the Great Barrier Reef, a team in the Carribean may now have a better idea of what to look out for with regards to their own research. 
+A common definition for MHWs was necessary because as they begin to increase in duration and intensity around the world (@Oliver2018), the research of different groups will be able to directly benefit from cross-comparison of results. For example, it has been published that an intensity of 2°C for at least XXX days may be damaging to a range of coral species (cite). Using this research from the Great Barrier Reef, a team in the Caribbean may now have a better idea of what to look out for with regards to their own research. 
 
-It is perhaps due to the ease and interoperability of this mehtodology that it has seen rapidly increasing use across marine sciences (cite?). This has introduced a new series of meta-issues in that different groups often depart from the default use of the algorithm for MHW detection in varying degrees (e.g. Cite Spanish paper), or simply use entirely different methods but still call their results MHWs (e.g. @Froehlicher2018). This has given rise to concerns over best practices. What should a group do if faced with a particular challenge, such as wanting to use an _in situ_ collected time series of bottom temperatures that is only 15 years old. Or perhaps using a time series that is collected by hand during only weekdays, and not weekends? Questions like these have been steadily trickling into our inboxes for years and so we decided it was time to do something abou it.
+It is perhaps due to the ease and interoperability of this methodology that it has seen rapidly increasing use across marine sciences (cite?). This has introduced a new series of meta-issues in that different groups often depart from the default use of the algorithm for MHW detection in varying degrees (e.g. cite Spanish paper), or simply use entirely different methodologies (e.g. @Frolicher2018) while referring to the @Hobday2016 definition. This has given rise to concerns over best practices. What should a group do if faced with a particular challenge, such as wanting to use an _in situ_ collected time series of bottom temperatures that is only 15 years old? Or perhaps using a time series that is collected by hand during only weekdays, and not weekends? These are real issues that need answers.
 
-Before we outline the issues we intend to address below, it must be stressed that this list is neither exhaustive, nor is it meant to be perceived as authoritative. However one chooses to quantify MHWs will be of benefit to the scientific community. The issues that we work out in this paper are designed to ensure that the inter-comparibility of results that use the @Hobday2016 and @Hobday2018 methodology will remain comparable even if performed with data that do not meet the minimum requirements that were first proscribe. The definition of a MHW is naturally evolving as our tools for detection advance and so the definition itself is not set in stone any more than is necessary to ensure backwards compatibility with previously published research.
+Before we outline the issues we intend to address below, it must be stressed that this list is neither exhaustive, nor is it meant to be perceived as authoritative. However one chooses to quantify MHWs will be of benefit to the scientific community. The issues that we work out in this paper are designed to ensure that the use of the @Hobday2016 and @Hobday2018 methodology will remain comparable even if performed with data that do not meet the minimum requirements that were first proscribe. The definition of a MHW is naturally evolving as our tools for detection advance and so the definition itself is not set in stone any more than is necessary to ensure backwards compatibility with previously published research.
 
 
 # Outstanding issues
 
-- _What this paper contributes to the MHW knowledge base_ 
-    - _Essentially it should provide a go-to reference for best practices when a researcher has questions on how to perform a MHW study with sub-optimal data_
-
 There are a number of issues that were not within the scope of either @Hobday2016 or @Hobday2018 to address that we seek to investigate here. This breaks down into two main topics. The first topic is what can be done when a researcher wants to use a time series, but it does not meet the proscribed minimum requirements of: 1) 30 years and 2) no missing days. There are a number of methods within the already existing arsenal of tools that can address these concerns and we will lay them out here. The second broad topic is to determine how much of an effect long-term trends have on the accurate detection of events. @Oliver2018 has shown how dominant the climate change signal can be in the detection of events and we seek to break that down here, quantifying its effects in an informative manner.
 
-A final issue for consideration before beginning to investigate the outstanding issues outlined above was to ensure that the results generated for MHW detection from any programming language waould be the same. The MHW algorithm is currently available in [python](https://github.com/ecjoliver/marineHeatWaves), [R](https://cran.r-project.org/web/packages/heatwaveR/index.html), and [MATLAB](https://github.com/ZijieZhaoMMHW/m_mhw1.0). This included comparisons of the [default](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python.html) outputs, how changing the [arguments](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_arguments.html) affected the default outputs, as well as a comparison of the other [functionality](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_additional.html) provided between the two languages. It was found that while some style differences exist between the added functionality of the languages, the core climatology outputs are identical to within < 0.001 °C per measurement.
-    
-Before outlining the mthodology used in this paper, we have summaried some of the more commonly used data products for the detection of MHWs and what potential issues they may have. This information may then be used by the reader to more readily see which fixes may be most useful for them.
+A final issue for consideration before beginning to investigate the outstanding issues outlined above was to ensure that the results generated for MHW detection from any programming language would be the same. The MHW algorithm is currently available in [python](https://github.com/ecjoliver/marineHeatWaves)(cite), [R](https://cran.r-project.org/web/packages/heatwaveR/index.html)(cite), and [MATLAB](https://github.com/ZijieZhaoMMHW/m_mhw1.0)(cite). For this analysis we compared the R and python [default](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python.html) outputs, how changing the [arguments](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_arguments.html) affected the default outputs, as well as a comparison of the other [functionality](https://robwschlegel.github.io/MHWdetection/articles/r_vs_python_additional.html) provided between the two languages. It was found that while some style differences exist between the added functionality of the languages, the core climatology outputs are identical to within < 0.001 °C per day-of-year (doy). An independent analysis of the Python and MATLAB results also confirmed that they were functionally identical (pers. com. Zijie Zhao; MATLAB distribution author).
 
-It must also be mentioned that while this paper seeks to investigate the best practices for the application of the @Hobday2016 definition for MHWs, this may also be done independently and there should be no obstacle to researchers obtaining comparable results using their own implementation of these ideas.
+Before outlining the methodology used in this paper, we have summarised some of the more commonly used data products for the detection of MHWs and what potential issues they may have. This information may then be used by the reader to more readily see which fixes may be most useful for them.
+
+It must be mentioned that while this paper seeks to investigate the best practices for the application of the @Hobday2016 and @Hobday2018 definition for MHWs, this may also be done independently and there should be no obstacle to researchers obtaining comparable results using their own implementation of these ideas.
 
 
 # Useful data for MHW detection
 
-- _Rather talk about the three broad categories and what thier advantages and disadvantages are_
+- _I'm thinking that the data summary section should be removed or severely shorteneds_  
+    - _Perhaps just talk about the three broad categories and what their advantages and disadvantages are_
 
-Outlined here in a series of three table are a non-exhaustive list of the products currently available for work with MHW detection. The advantages, disadavantges, and any known issues are listed with the products in addition to a brief summary of their meta-data and where they may be downloaded. The products are broken up into three broad categories: Remotely sensed data, reanalysis data, and _ins situ_ data.
+Outlined here in a series of three tables are a non-exhaustive list of the products currently available for work with MHW detection. The advantages, disadvantages, and any known issues are listed with the products in addition to a brief summary of their meta-data and where they may be downloaded. The products are broken up into three broad categories: remotely sensed data, reanalysis data, and _ins situ_ data.
 
-- _Under each we can list the most common products that may be used at this time advantages would obviously be things like global vs. point location (satellite), inclusion of subsurface data (reanalysis), resolution of coastal processes (in situ). Disadvantages around interpolation, resolution, missing data, time series length, etc…_
+- _In each table we can list the most common products that may be used at this time advantages would obviously be things like global vs. point location (satellite), inclusion of subsurface data (reanalysis), resolution of coastal processes (in situ). Disadvantages around interpolation, resolution, missing data, time series length, etc…_
 - _Maybe insert a table here that lists all of the data sets that might be potentially useful, if we can overcome some of their limitation; in the table, also mention each product’s limitations (e.g. too short, too many NAs, etc.)_
 - _Many gridded daily SST products are available that may make them more useful closer to the coast (but see Smit et al., 2013; etc.) due to their finer grid size (1-4km refs.), but the data do not yet cover a full 30 year period_
 - _The finer resolution AVHRR data (4km) also run from 1981, but it is dodgy here off the coast of SA, and probably also elsewhere_
@@ -69,7 +97,7 @@ Outlined here in a series of three table are a non-exhaustive list of the produc
 Table 1:
 |Remotely sensed data |Description |Spatial res. |Temporal res. |Start date |End date |Update |Advantages |Disadvantages |Solutions |Download |
 |------------------|------------------------------------------------|----------|--------|--------|-------|------|------|------|-------|-------|
-|NOAA OISST |The NOAA optimally interpolated SST (OISST) data (@Reynolds2007) are currenty the most commonly used for the detection of MHWs. This product is corrected with the use _in situ_ collected data, which are also used to fill gaps in the record. |0.25° (~25 km) global grid |Daily |1981-09-01 |Near real-time |Gapless global 30+ year time series |Course resolution and interpolation of data over gaps. Not suitable for use within one pixel of a coastaline. |... |www.ncdc.noaa.gov/oisst/data-access |
+|NOAA OISST |The NOAA optimally interpolated SST (OISST) data (@Reynolds2007) are currently the most commonly used for the detection of MHWs. This product is corrected with the use _in situ_ collected data, which are also used to fill gaps in the record. |0.25° (~25 km) global grid |Daily |1981-09-01 |Near real-time |Gapless global 30+ year time series |Course resolution and interpolation of data over gaps. Not suitable for use within one pixel of a coastline. |... |www.ncdc.noaa.gov/oisst/data-access |
 |MODIS AQUA | 
 |MODIS TERRA | 
 |AVHRR Pathfinder v5.2 | 
@@ -89,135 +117,213 @@ Table 2:
 - _We don’t want an exhaustive list of data products but rather the “types” of data products available and the pros/cons in the context of MHW analyses._
 
 
-Table 3: This tabe differs from the preceding two in that types of products are presented here rather than specific products. This is because the meta-data for differing _in situ_ products will vary widely, but the issues facing them do not. So listed here are the braod types of _in situ_ data one is likely to encounter and what to expect from them.
+Table 3: This table differs from the preceding two in that types of products are presented here rather than specific products. This is because the meta-data for differing _in situ_ products will vary widely, but the issues facing them do not. So listed here are the broad types of _in situ_ data one is likely to encounter and what to expect from them.
 | _In situ_ data |Description |Spatial res. |Temporal res. |Start date |End date |Update |Advantages |Disadvantages |Solutions |Download |
 |------------------|------------------------------------------------|----------|--------|--------|-------|------|------|------|-------|-------|
 
 
 ## Reference time series 
 
-- _Show the time series from NOAA OISST; Western Australian, NW Atlantic, and Mediterranean (henceforth reference time series)_ 
+- _Show the time series from NOAA OISST; Western Australian (WA), NW Atlantic (NW Atl), and Mediterranean (Med) (henceforth reference time series)_ 
 - _Maybe include a description of the MHWs as detected from the “default algorithm parameters”, which we can then use as a reference for the rest of the work (i.e. sensitivity to time series length, missing values, etc…)_
 - _ A table shown below should include all aspects/statistics of the time series (e.g. range of seasonal signal) that will come out as imporatant in the results section._
 
-```{r trend-table}
-# Quick peak at the decadal trends
-# knitr::kable(sst_ALL_DT, col.names = c("site", "trend (°C/dec)"), align = "c", 
-#              caption = "Table showing the decadal trends detected for the three default sites.", 
-#              digits = 3)
+```{r}
+
 ```
 
 <!-- We see in the table above that the three default time series currently being used all have decadal trends much higher than the global average of ~0.1°C. -->
 
+
 # Do I have enough data?
 
-The titular question of this section is what this paper seeks to answer. If one refers back to the previous section 'Available data for MHW detection', it is clear that there are many data products that currently exist with which we may very comfortably answer with 'yes'. But there would be little reason in writing a paper about something everyone in marine science already likely knows, so in the following sub-sections we will highlight the most fundamental challenges presented by the use of sub-optimal data, and outline how we ensured that one could still use these data in the face of these challenges.
+The titular question of this section is what this paper seeks to answer. If one refers back to the previous section 'Available data for MHW detection', it is clear that there are many data products that currently exist with which we may very comfortably answer with 'yes'. But there would be little reason in writing a paper about something everyone in marine science already likely knows, so in the following sub-sections we will highlight the most fundamental challenges presented by the use of sub-optimal time series, and outline how we ensured that one could still use these data in the face of these challenges.
 
-It must be pointed out that the context of the question of having a suitable amount of data is benchmarked to the category classification system from @Hobday2018. Specifically we wanted to know how different time series issues affected our ability to detect MHWs of the varying categories. This is because category one MHWs are very common, and it seems from the literature that they are not very important ecologicaly/financially. So it is not of overwhlming concern if some time series problems prevent the accurate detection of these smaller events. It is therefore the accurate detection of the category three and four events that we use as a guiding principle for evaluating the severity of the time series problem, and the usefulnes of the method proposed to counteract it.
+It must be pointed out that the context of the question of having a suitable amount of data is benchmarked to the category classification system from @Hobday2018. Specifically we wanted to know how the different time series deficiencies affected our ability to detect MHWs of the varying categories. This is because category I MHWs are very common, and it seems from the literature that neither category I or II events are very important ecologically/financially. This means it is not of overwhelming concern if some time series deficiencies prevent the accurate detection of these smaller events. It is therefore the accurate detection of the category III and IV events that we use as a guiding principle for evaluating the severity of the time series deficiencies, and the usefulness of the methods proposed to counteract them.
 
 
 ## Assessing the effect of time series duration
 
-The duration of a time series may affect the detection of marine heatwaves by negatively affecting the creation of a daily climatology relative to which the events can be detected. A climatology serves two main roles (WMO, 2017); 1) it serves as a ‘benchmark’ relative to which past and future measurements can be compared, and against which anomalies can be calculated, 2) it reflects the typical conditions likely to be experienced at a particular place at a particular time. The WMO technical guidelines (WMO, 2016) stipulate that daily climatologies (which they call ‘climate normals’) must be based on the most recent 30-year period that ends on an even decade (currently 1981-2010). 
+The duration of a time series may affect the detection of marine heatwaves by negatively affecting the creation of an accurate daily climatology relative to which the events can be detected. A climatology serves two main roles (WMO, 2017); 1) it serves as a ‘benchmark’ relative to which past and future measurements can be compared, and against which anomalies can be calculated, 2) it reflects the typical conditions likely to be experienced at a particular place at a particular time. The WMO technical guidelines (WMO, 2016) stipulate that daily climatologies (which they call ‘climate normals’) must be based on the most recent 30-year period that ends on an even decade (currently 1981-2010). 
 
-What we aim to determine here is at what number of years do the detected MHWs in shortened time series become significantly different from the 'business as usual' results. This is done by first removing the long-term linear trend in the data before systematically shortening the reference time series one year at a time, down to a minimum of ten years, and comparing the results. In addition to tracking the difference in the count, duration, and intensity of events in the overlapping final ten years of data, we are also looking for how the category classifications of events change.
+What we aim to determine here is at what number of years do the detected MHWs in shortened time series become significantly different from the 30 year standard. This is done by first removing the long-term linear trends in the data before systematically shortening the reference time series one year at a time, down to a minimum of ten years, before comparing the results.
 
-In order to make this analysis more robust, the above methodology was also performed on each time series with the order of the years randomly re-sampled and recombined 100 times. We chose this method instead of creating artificial time series with comparable auto-correlation structures as it ensured that the large historical MHWs present in the reference time series could still be accounted for.
+In order to make this analysis more robust, the above methodology was also performed on each reference time series with the order of the years randomly re-sampled and recombined 100 times. We chose this method instead of creating artificial time series with comparable auto-correlation structures as it ensured that the large historical MHWs present in the reference time series could still be accounted for as these are an important reason why these time series were chosen.
 
+The differences in the seasonal signals and 90th percentile thresholds from different time series lengths were determined with Kolmogorov-Smirnov (KS) tests. This test is designed specifically to look for differences in distributions between two sets of data and so is considered a better test for difference between climatologies than a test of central tendency (e.g. t-test or ANOVA). 
 
-### Climatology estimation methods
+The default MHW detection algorithm creates an overwhelming number of metrics. Of primary interest to us here however are only the four primary statistics that are often referenced in the literature: duration, cumulative intensity, mean intensity, and maximum intensity. The difference caused by time series length for these metrics was determined with an ANOVA, and the pairwise relationships were puzzled out with a post-hoc tukey test. Because it would violate the assumption of equitable sample sizes were we to compare events from a 30 year time series against a 20 year time series, we have limited the length of the shortest time series being compared to 10 years. This was so that we could still have a reasonable sample size to draw from because we could only compare the results from time series of varying lengths for years in which they overlapped.
 
-- _For shorter time series, it might be better to use a more sinusoidal approximation of the climatology that captures the trend for the bulk of the year, but loses something around the deviations away from the perfect sine form_ 
-- _Alternatively, if those deviations are seen as important features that need to be accounted for, then using the MHW climatology is probably better, but at the expense of overall accuracy_
-- _We can provide an expert interpretation of the pros and cons of each method, and the technical tools to perform each method (through the code itself)_
-- _That then leaves the user with expert recommendations and can make their own informed choice, given what they know about their data and what they want to prioritise/consider in their own analysis_
-- _Also assess the effect of systematic varying windowHalfWidth and smoothPercentile and studying the outcomes for the three time series lengths_
-
-
-- _Fourier transform climatologies/harmonic regression_
-
-
-- _Analysis of short-duration, high resolution gridded SSTs_
-- _It might be useful to show that in regions where events (at a certain threshold) can be detected in the dOISST data, that they also are present in the higher-res, shorter duration SST products_ 
-- _Then we can show that in some scenarios the hi-res, short time series additionally capture some events that are not present in the OISST data due to its coarse spatial grid size_
-    - _compare reference time series vs. other co-located SST data;_
-    - _compare in special conditions where events may be expected, but are not present in the dOISST data due to constraints resulting from it not being of high enough resolution; e.g. in upwelling regions, embayments, etc_
+To determine if the count of different categories of events differed we used pairwise chi-squared tests of each time series against the control 30 year length. To further determine which category counts were most responsible for the observed differences between time series lengths the standardised residuals from the tests were used. 
 
 
 ## Assessing the effect of missing data
 
-- Some of the aforementioned data products (mention which…) also suffer from ‘gappiness’ that results from NAs being introduced
-    - This may be due to cloud cover, the presence of sea ice, unsuitable sea states, etc., which become more prevalent at smaller scales, particularly nearer the coast
-        - Some products smooth out these influences, but this results in smoothed SST fields that mask some of the small-scale spatial variation in surface temperatures
-        - Other times they rely on blending with data from other products, which may have its own suite of consequences
-        - This is why the use of imperfect _in situ_ collected time series may still be encouraged in certain situations
+Some remotely sensed products suffer from ‘gappiness’ that results from NAs being introduced. This may be due to cloud cover, the presence of sea ice, unsuitable sea states, etc., which become more prevalent at smaller scales, particularly nearer the coast. Some products smooth out these influences, but this results in smoothed SST fields that mask some of the small-scale spatial variation in surface temperatures. Other times they rely on blending with data from other products, which may have its own suite of consequences. This is why the use of imperfect _in situ_ collected time series may still be encouraged in certain situations. These data are however also prone to large gaps and so the problems these data face with regards to accurate event detection are generally uncertain. 
 
-- _How long the periods of missing data are, and how much of the time series as a whole is missing_
-    - _Regardless of if it’s random or not_
+What we wanted to know was how much random missing data could be accommodated before the MHW results began to differ, and what the effect of consecutive missing data was in addition to simply how much data overall were missing. Regardless if the missing data were random or not. In order to simulate missing data in the de-trended reference time series we randomly removed 0 -- 50% of the data in 1% steps. This was repeated 100 times to account for the random nature of this process. We also investigated what the effect of large non-random gaps (e.g. sea ice coverage) would be.
 
-- _We can handle regular seasonal gaps (e.g. sea ice cover) as one of several possible cases_
-    - _The other obvious case (at the other end of the spectrum) would be missing data that occurs in short enough periods that we can safely interpolate over the gaps (and we should recommend a time period....maybe <=5 days?)_
-    - _And then there is an intermediate case with some periods of missing data that spans longer than we are willing to interpolate over_ 
-    - _Which, according to the algorithm as it stands, will lead to MHWs starting/ending when they encounter missing value --- maybe not ideal?_
-
-
-### Non-daily data
-
-- Some datasets come in weekly or monthly temporal resolution
-    - These may be useful when daily data have too many NAs (e.g. AVHRR Pathfinder, MODIS, and MERIS data)
-    - Can we use weekly and monthly data? 
-    - What has been done along these lines?
-    - The way the R code is currently set-up, it will try to correct non-daily data into a daily time series with many gaps 
-    - The problem then is that a time series will generally have about 1 MHW per year by virtue of the 90th percentile threshold being used
-    - So if one uses monthly data it may be rather alarming to see that an area is experiencing month long MHWs every year
-    - The quick answer that comes to mind is to then play around with the 'pctile' argument and see at what percentile threshold do different levels of super-daily data begin to match up with the 90th percentile on daily data
-    - Meaning, when there really is a month long MHW detected in daily data at a 90th percentile threshold, what must a comparable threshold be so that monthly data only 'shows' a MHW at comparable times
+The quantification of the effect of missing data on the results used the same statistical tests as for time series length. The difference being that the full 37 years of data were used for each test and the control time series were now those with 0% missing data.
 
 
 ## The role of long-term trends
 
-- Influence of decadal trends
-    - It is known that the long-term secular trend in a time series may be the controlling factor for the detection of events
-    - How/should this be dealt with in sub-optimal time series?
-    
+It is known that the long-term secular trend in a time series may be the controlling factor for the detection of events. To quantify what this effect may be we started with the de-trended reference time series and added decadal trends of 0.00 -- 0.30°C/dec in 0.01°C steps.
+
+The difference this caused in the results was quantified with the same tests as for length and missing data. The control time series were those with no added trend.
+
 
 # Results
+
+- _The following section is still a rough outline of the results thus far._
+- _I've kept it as brief as possible rather giving links to the full analyses elsewhere._
+- _I'm thinking that in the interest of saving space I will need to think of a way to combine most of these figures and tables as they share a similar methodological structure._ 
 
 
 ## Time series duration
 
-- _We can provide guidelines about which suitable shorter time series data can/should be used for MHW detection, and how to select the best climatology creation method_
-
-* When time series shorter than the proscribed 30 years are not available, it is still possible to extract usable climatologies from them. 
-* The best [methods](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.htmlhttps://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to use are... 
+- _The detailed results are [here](https://robwschlegel.github.io/MHWdetection/articles/time_series_duration.html)_
 
 
-### Alternative climatologies
+### Climatologies
 
-* The investigation into the effect of [different methods](https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) for calculating climatologies showed that, given certain circumstances, the accuracy of the threshold climatologies could be improved.
+- Seasonal signals tend to differ with fewer than 20 years of data
+- Thresholds differ with fewer than 25 years
+- This occurs much more quickly in the `WA` time series
 
-1. The 7 basis function Fourier has very little variation over the entire year amongst the 100 simulations, but the dip during summer months is missed.
+![Figure 1: Time series of each of climatology period used from the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used.](../docs/articles/time_series_duration_files/figure-html/clim-ts-all-1.png)
+
+![Figure 2: Line plots showing the results of pairwise Kolmogorov-Smirnoff tests for the seasonal signals (top panel) and 90th percentile thresholds (bottom panel) from the same time series at differing lengths. The colour of the line shows how many times out of 100 re-samples that the climatologies were significantly different from the control. The dotted verticle line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line.](../docs/articles/time_series_duration_files/figure-html/KS-clims-1.png)
+
+- _It may be better to show these results with a table as it would be easier to see when exactly the climatologies begin to differ._
+
+
+#### Alternative climatologies
+
+- _I am thinking about removing this section due to time constraints._
+
+- The investigation into the effect of [different methods](https://robwschlegel.github.io/MHWdetection/articles/Climatologies_and_baselines.html) for calculating climatologies showed that, given certain circumstances, the accuracy of the threshold climatologies could be improved.
+
+1. The 7 basis function Fourier has very little variation over the entire year among the 100 simulations, but the dip during summer months is missed.
 2.  The 11 basis function Fourier gets some of the dip, but there is slightly more variation between the 100 simulations.
 3. The MHW function's climatology captures the profile as it deviates away from a sinusoidal patterns better, but there is a large amount of variation between the randomisations.
 
 
+### Events
+
+- The length of a time series had a negligible effect on the MHW metrics with only a few significant differences occurring at shorter time series
+- The post-hoc Tukey tests showed that no individual parings were significantly different
+- This is a surprising result
+    - _I double checked this but will triple check it_
+    
+
+### Categories
+
+- The length of a time series had little effect on the count of categories
+    - The largest count was for the `WA` at a time series length of 10 being significantly different from 30 years only 5 times out of 100.
+
+![Figure 3: Line graph showing the count of times out of 100 random replicates when a given time series length led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test.](../docs/articles/time_series_duration_files/figure-html/chi-pair-plot-1.png)
+
+
 ## Missing data
 
+- _The detailed results are [here](https://robwschlegel.github.io/MHWdetection/articles/missing_data.html)_
 
-### Non-daily data
+### Consecutive missing days
+
+- The count of consecutive missing days increased with greater percentages of random missing data
+    - The proportion of smaller consecutive missing days was logarithmic to the larger consecutive missing days
+
+![Figure 4: Dot and line plot showing the average count of consecutive missing days of data as the percentage of missing data increases. The colour scale is log transformed.](../docs/articles/missing_data_files/figure-html/con-miss-1.png)
+
+
+### Climatologies
+
+- Missing data had little perceptible effect on seasonal signals and produced only a few random significant differences with no clear pattern
+
+![Figure 5: The seasonal signals created from time series with increasing percentages of missing data.](../docs/articles/missing_data_files/figure-html/clim-miss-seas-1.png)
+
+- The effect of missing data on the threshold was obvious and usually significant
+
+![Figure 6: The thresholds created from time series with increasing percentages of missing data.](../docs/articles/missing_data_files/figure-html/clim-miss-thresh-1.png)
+
+- Significant differences in thresholds from missing data differed
+- `WA` different at only 10% missing data
+- `NW_Atl` different at ~23%
+- `Med` not different until ~29%
+
+![Figure 7: Line plot showing the _p_-value results from KS tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three reference time series.](../docs/articles/missing_data_files/figure-html/KS-clims-1.png)
+
+- The count of 1 -- 3 consecutive missing days is a possible predictor of the threshold being significantly different from control
+
+![Figure 8: Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests. Consecutive missing days are a much better predictor for thresholds than for seasonal signals. ](../docs/articles/missing_data_files/figure-html/clim-cor-1.png)
+
+### Events
+
+- The time series proved to be remarkably resilient to missing data affecting the max and mean intensity of events
+    - There was little effect, with missing percentages as large as 40% being the most sensitivity observed
+- The `WA` was the most resilient
+- The `NW_Atl` was the most sensitive
+- Duration (and therefore cumulative intensity) became significantly different with as little as 10 -- 20% missing data
+
+![Figure 9: Segments showing the range of the percent of missing data present when climatologies were significantly different.](../docs/articles/missing_data_files/figure-html/event-tukey-line-1.png)
+
+- Consecutive missing days appear to be a decent predictor for duration (and int. cum.) but not mean/max intensity
+
+![Figure 10: Dot plot showing the relationship between number of consecutive missing days and the significant difference of the MHW metric from the control.](../docs/articles/missing_data_files/figure-html/event-cor-1.png)
+
+
+### Categories
+
+- The `WA` was the most sensitive to missing data affecting category count, with the `Med` least sensitive
+- The range of missing data leading to significant differences in category count was ~15 -- 25%
+
+![Figure 11: Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test.](../docs/articles/missing_data_files/figure-html/chi-pair-plot-1.png)
+
+- _Currently not showing the results of non-random missing data here._
+    - _My thinking is to bring it up in the best practices section when the use of linear interpolation to deal with missing data is show cased._
 
 
 ## Long-term trends
 
+- _The detailed results are [here](https://robwschlegel.github.io/MHWdetection/articles/trend.html)_
+
+
+### Climatologies
+
+- Adding decadal trends had a large effect on the `WA` seasonal signal
+
+![Figure 12: The seasonal signals created from time series with increasingly large decadal trends added.](../docs/articles/trend_files/figure-html/clim-trend-seas-1.png)
+
+- Adding decadal trends had a smaller effect on the thresholds, which is interesting
+
+![Figure 13: The thresholds created from time series with increasingly large decadal trends added.](../docs/articles/trend_files/figure-html/clim-trend-thresh-1.png)
+
+- Depending on the time series, no amount of added decadal trend may make a difference
+
+![Figure 14: Dot and line plot showing the _p_-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series.](../docs/articles/trend_files/figure-html/KS-clims-1.png)
+
+
+### Events
+
+- No significant differences were detected
+
+
+### Categories
+
+- The counts of categories did not differ significantly either
+
 
 # Discussion
 
-The fact that there is such a broad range across the results shows that one must always excercise caution when using a sub-optimal time series. But that with a healthy dose of caution there is still much that can be done to ammeliorate the issues outlined in the results.
+The fact that there is such a broad range across the results shows that one must always exercise caution when using a sub-optimal time series. But that with a healthy dose of caution there is still much that can be done to ameliorate the issues outlined in the results.
 
 <!-- ## Do I have enough data? -->
 
 
 ## Time series length
+
+- This is problematic 
 
 
 ## Missing data
@@ -232,8 +338,47 @@ The fact that there is such a broad range across the results shows that one must
 ## Best practices
 
 * _After the investigation into the aforementioned topics has been completed, a series of best practices for dealing with these issues may be discussed_
+- _We can provide guidelines about which suitable shorter time series data can/should be used for MHW detection, and how to select the best climatology creation method_
 * _Ideally these could also be retroactively worked into the R/Python code to provide them as options for users_
-* _Below is to be given an itemised list that readers could easilt consult_
+* _Below is to be given an itemised list that readers could easily consult_
+
+
+### De-trending
+
+- _How/should a researcher account for a decadal trend when it is not technically possible to calculate one from a short time series?_
+    - _It could be advised that determining the trend from a nearby longer time series that shows good agreement could be done._
+
+
+### Linear interpolation
+
+- _This is probably going to prove to be a silver bullet for most of the missing data issues_
+
+### Climatology estimation methods
+
+- _For shorter time series, it might be better to use a more sinusoidal approximation of the climatology that captures the trend for the bulk of the year, but loses something around the deviations away from the perfect sine form_ 
+- _Alternatively, if those deviations are seen as important features that need to be accounted for, then using the MHW climatology is probably better, but at the expense of overall accuracy_
+- _We can provide an expert interpretation of the pros and cons of each method, and the technical tools to perform each method (through the code itself)_
+- _That then leaves the user with expert recommendations and can make their own informed choice, given what they know about their data and what they want to prioritise/consider in their own analysis_
+- _Also assess the effect of systematic varying windowHalfWidth and smoothPercentile and studying the outcomes for the three time series lengths_
+- _Fourier transform climatologies/harmonic regression_
+- _Analysis of short-duration, high resolution gridded SSTs_
+- _It might be useful to show that in regions where events (at a certain threshold) can be detected in the dOISST data, that they also are present in the higher-res, shorter duration SST products_ 
+- _Then we can show that in some scenarios the hi-res, short time series additionally capture some events that are not present in the OISST data due to its coarse spatial grid size_
+    - _compare reference time series vs. other co-located SST data_
+    - _compare in special conditions where events may be expected, but are not present in the dOISST data due to constraints resulting from it not being of high enough resolution; e.g. in upwelling regions, embayments, etc_
+    
+
+### Non-daily data
+
+- Some datasets come in weekly or monthly temporal resolution
+    - These may be useful when daily data have too many NAs (e.g. AVHRR Pathfinder, MODIS, and MERIS data)
+    - Can we use weekly and monthly data? 
+    - What has been done along these lines?
+    - The way the R code is currently set-up, it will try to correct non-daily data into a daily time series with many gaps 
+    - The problem then is that a time series will generally have about 1 MHW per year by virtue of the 90th percentile threshold being used
+    - So if one uses monthly data it may be rather alarming to see that an area is experiencing month long MHWs every year
+    - The quick answer that comes to mind is to then play around with the 'pctile' argument and see at what percentile threshold do different levels of super-daily data begin to match up with the 90th percentile on daily data
+    - Meaning, when there really is a month long MHW detected in daily data at a 90th percentile threshold, what must a comparable threshold be so that monthly data only 'shows' a MHW at comparable times
 
 
 ## Pitfalls
@@ -244,3 +389,9 @@ The fact that there is such a broad range across the results shows that one must
 # Conclusions
 
 * _What are the main take away messages_
+
+- It looks like one can be pretty indelicate in choice of time series.
+- The MHW algorithm appears to be remarkably robust!
+
+
+# References
