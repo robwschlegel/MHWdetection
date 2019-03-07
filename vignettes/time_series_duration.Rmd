@@ -553,7 +553,9 @@ The post-hoc Tukey test revealed that no individual pairings of years profuced s
 
 ### Correlations
 
-```{r clim-cor, fig.cap="Boxplots showing the distribution of Pearson's r values for the correlation between the mean and SD of the desired MHW metrics for the time series of varying lengths of each of the three reference time series. The horizontal dashed line helps to denote an r-vlaue of 0."}
+```{r event-cor-calc, eval=FALSE}
+load("data/sst_ALL_smooth.Rdata")
+
 sst_ALL_event_cor <- sst_ALL_smooth %>% 
   unnest(events) %>% 
   filter(row_number() %% 2 == 0) %>% 
@@ -567,6 +569,14 @@ sst_ALL_event_cor <- sst_ALL_smooth %>%
   do(data.frame(t(cor(.[,4:11], .[,3])))) %>% 
   gather(key = y, value = r, -rep, -site) %>% 
   mutate(x = "length")
+
+save(sst_ALL_event_cor, file = "data/sst_ALL_event_cor.Rdata")
+```
+
+
+```{r event-cor, fig.cap="Boxplots showing the distribution of Pearson's r values for the correlation between the mean and SD of the desired MHW metrics for the time series of varying lengths of each of the three reference time series. The horizontal dashed line helps to denote an r-vlaue of 0."}
+
+load("data/sst_ALL_event_cor.Rdata")
 
 ggplot(sst_ALL_event_cor, aes(x = y, y = r, fill = y)) +
   geom_boxplot() +
@@ -621,7 +631,10 @@ event_aov_CI <- function(df){
 
 ## Categories
 
-In this section we want to look at how the categories in the different time periods compare. I'll start out with doing basic calculations and comparisons of the categories of events with the different time periods. And then based on how that looks, see if I can think of a way of quantifying the differences.
+In this section we want to look at how the categories in the different time periods compare. I'll start out with doing basic calculations and comparisons of the categories of events with the different time periods. After that we will run _chi_-squared tests. Lastly a post-hoc test of sorts will be used to pull out exactly which categories differ significantly in count with different time series lengths.
+
+
+### Event count
 
 ```{r cat-count, eval=FALSE}
 load("data/sst_ALL_smooth.Rdata")
@@ -665,39 +678,121 @@ ggplot(sst_ALL_clim_category_count, aes(x = year_index, y = count, fill = catego
   theme(legend.position = "bottom")
 ```
 
-The results in the figure above are about what I was expecting. We tend to see more larger events when the climatologies are based on 30 years of data, rather than 10, but that we tend to see more events overall when we use only 10 years of data.
+The results in the figure above show that we see more larger events when the climatologies are based on 30 years of data, rather than 10, but that we tend to see more events overall when we use only 10 years of data. This is about what would be expected if there were a trend present in the data. SO it is interesting that it still comes through.
 
-(RWS: Perhaps add a panel that shows the R2 values for change in event count over time)
 
-```{r cat-peak-match-func}
-# Function for pulling out comparable events based on closest peak dates
-# peak_date_index <- function(df, year_begin){
-#   sst_10 <- df %>%
-#     filter(year_index == 2009)
-#   sst_sub <- df %>%
-#     filter(year_index == year_begin)
-#   peak_index <- as.data.frame(knnx.index(as.matrix(sst_10$peak_date), 
-#                                          as.matrix(sst_sub$peak_date), k = 1))
-#   res <- sst_10[as.matrix(peak_index),]
-#   return(res)
-# }
+### _chi_-squared
+
+In this section we will use pairwise chi-squared tests to see if the count of events in the different re-sampled lengths differ significantly from the same re-sampled time series of 30 years (this serves as the control). We will combine categories 3 and 4 together into one category for a more robust test and because we are interested in how these larger events stand out together against the smaller events.
+
+```{r cat-chi-post, eval=FALSE}
+# Load and extract category data
+load("data/sst_ALL_smooth.Rdata")
+suppressWarnings( # Suppress warning about category levels not all being present
+sst_ALL_cat <- sst_ALL_smooth %>%
+  select(-events) %>%
+  unnest()
+)
+
+# Prep the data for better chi-squared use
+sst_ALL_cat_prep <- sst_ALL_cat %>% 
+  filter(year_index >= 10,
+         peak_date >= "2009-01-01", peak_date <= "2018-12-31") %>% 
+  select(year_index, rep, site, category) %>% 
+  mutate(category = ifelse(category == "III Severe", "III & IV", category),
+         category = ifelse(category == "IV Extreme", "III & IV", category))
+
+# Extract the true climatologies
+sst_ALL_cat_only_30 <- sst_ALL_cat_prep %>% 
+  filter(year_index == 30) %>% 
+  select(site, year_index, rep, category)
+
+# chi-squared pairwise function
+# Takes one rep of missing data and compares it against the complete data
+# df <- sst_ALL_miss_cat_prep %>%
+  # filter(site == "WA", rep == "20", miss == 0.1)
+# df <- unnest(slice(sst_ALL_miss_cat_chi,1)) %>% 
+  # select(-site2, -rep, -miss2)
+chi_pair <- function(df){
+  # Prep data
+  df_comp <- sst_ALL_cat_only_30 %>% 
+    filter(site == df$site[1],
+           rep == df$rep[1])
+  df_joint <- rbind(df, df_comp)
+  # Run tests
+  res <- chisq.test(table(df_joint$year_index, df_joint$category), correct = FALSE)
+  res_broom <- broom::augment(res) %>% 
+    mutate(p.value = broom::tidy(res)$p.value)
+  return(res_broom)
+}
+
+# The pairwise chai-squared results
+suppressWarnings( # Suppress poor match warnings
+sst_ALL_cat_chi <- sst_ALL_cat_prep %>% 
+  filter(year_index != 30) %>% 
+  # mutate(miss = as.factor(miss)) %>%
+  mutate(site2 = site,
+         year_index2 = year_index,
+         rep2 = rep) %>% 
+  group_by(site2, year_index2, rep2) %>% 
+  nest() %>% 
+  mutate(chi = map(data, chi_pair)) %>% 
+  select(-data) %>% 
+  unnest() %>%
+  dplyr::rename(site = site2, year_index = year_index2, rep = rep2,
+                year_comp = Var1, category = Var2)
+)
+save(sst_ALL_cat_chi, file = "data/sst_ALL_cat_chi.Rdata")
 ```
 
-```{r}
-# Find matching events based on nearest peak_date
-# sst_ALL_category_peak <- plyr::ddply(sst_ALL_category, peak_date_index, 
-#                                      .variables = c("site", "rep"), .parallel = T,
-#                                      year_begin = seq(1989,2009))
+```{r cat-chi-table, eval=FALSE}
+load("data/sst_ALL_cat_chi.Rdata")
+
+sst_ALL_cat_chi_sig <- sst_ALL_cat_chi %>% 
+  filter(p.value <= 0.05) %>% 
+  select(site, year_index, p.value) %>% 
+  group_by(site, year_index) %>% 
+  unique() %>% 
+  summarise(count = n())
+
+knitr::kable(sst_ALL_cat_chi_sig, caption = "Table showing the count out of 100 for significant differences (_p_-value) for the count of different categories of events for each site based on the amount of missing data present.")
 ```
 
+```{r chi-pair-plot, fig.cap="Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test."}
+load("data/sst_ALL_cat_chi.Rdata")
 
-### Event count
+# Prep data for plotting
+chi_sig <- sst_ALL_cat_chi %>% 
+  filter(p.value <= 0.05) %>% 
+  select(site, year_index, p.value) %>% 
+  group_by(site, year_index) %>% 
+  unique() %>% 
+  summarise(count = n())
 
-In this section we will use chi-squared tests to see if the count of events in the different re-sampled lengths differ significantly. We wil do this for the total count as well as the count of each category.
-
-```{r event-count-chi-squared}
-
+ggplot(chi_sig, aes(x = as.numeric(year_index), y = site)) +
+  geom_line(aes(colour = count, group = site)) +
+  geom_point(aes(colour = count)) +
+  # facet_wrap(~metric, ncol = 1) +
+  scale_colour_viridis_c() +
+  scale_x_reverse() +
+  labs(x = "Time series length (years)", y = NULL,
+       colour = "Sig. dif.\nout of 100") +
+  theme(axis.text.x = element_text(angle = 20))
 ```
+
+The line plot above shows at what point the category counts begin to differ significantly from the matching 30 year time series. It was expected that the `WA` time series would show sig. dif. more quickly than the other two, though I had expected the `Med` to be the slowest to change, not the `NW_Atl`. Over a sample of 100, there were never more than five replicates showing significant differences in count of categories though so it is relatively safe to say that the length of a time series has little effect on the count of events.
+
+
+### Post-hoc _chi_-squared
+
+It is also necessary to see which of the categories specifically are differing significantly. Unfortunately there is no proper post-hoc _chi_-squared test. Instead it is possible to look at the standardised residuals for each category within the pairwise comparisons being made.
+
+I still need to do this...
+
+
+### Correlations
+
+It would also be useful to look at the correlations between consecutive missing days of data and significantly different counts of categories.
 
 
 ## Can we fix it?
@@ -711,6 +806,11 @@ Lastly we will now go about reproducing all of the checks made above, but based 
 (ECJO)[One advantage of the Fourier transform method (or, I think equivalently harmonic regression) is that it is VERY fast.  Much faster than the method used in the MHW code.  I also think you can probably get away with shorter time series using this method than with the “standard MHW climatology” method]
 
 (RWS)[I suppose then that I will need to look into this.]
+
+
+### Wider windows
+
+Talk a bit here about changing the arguments for climatology creation to get them closer to the control.
 
 
 ## Best practices

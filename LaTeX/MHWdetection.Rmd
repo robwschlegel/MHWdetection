@@ -65,6 +65,7 @@ Outlined here in a series of three table are a non-exhaustive list of the produc
 - _More recently people have started using the MUR and G1SST data, which at a resolution of 1 km resolve details in the coastal areas and look promising, but have not really been widely validated_
 - _Many of these newer data sets are close to around 10 years long._
 
+
 Table 1:
 |Remotely sensed data |Description |Spatial res. |Temporal res. |Start date |End date |Update |Advantages |Disadvantages |Solutions |Download |
 |------------------|------------------------------------------------|----------|--------|--------|-------|------|------|------|-------|-------|
@@ -76,14 +77,6 @@ Table 1:
 |MUR |
 
 
-[AJS]
-Also don’t think it is useful to make such a distinction. Simply accounting for the differences in time series length, temporal resolution, and gappiness should do—their effects will be the same regardless of the products being used.
-[/AJS]
-
-[ECJO]
-Mentioning reanalysis (and models) is helpful as they are a class of product that allow us to look at the depth-structure of MHWs.
-[/ECJO]
-
 Table 2:
 |Reanalysis data |Description |Spatial res. |Temporal res. |Start date |End date |Update |Advantages |Disadvantages |Solutions |Download |
 |------------------|------------------------------------------------|----------|--------|--------|-------|------|------|------|-------|-------|
@@ -94,6 +87,7 @@ Table 2:
 - _e.g. the IMAS FAC records around Tassie we used in the Tasman Sea MHW paper -- many of those were 5-10 years in length_
 - _The thing with coastal data is simply that they might suffer from being too short, or have too many NAs, or both. Solving it requires an understanding of the data properties rather than knowing that it is in situ_
 - _We don’t want an exhaustive list of data products but rather the “types” of data products available and the pros/cons in the context of MHW analyses._
+
 
 Table 3: This tabe differs from the preceding two in that types of products are presented here rather than specific products. This is because the meta-data for differing _in situ_ products will vary widely, but the issues facing them do not. So listed here are the braod types of _in situ_ data one is likely to encounter and what to expect from them.
 | _In situ_ data |Description |Spatial res. |Temporal res. |Start date |End date |Update |Advantages |Disadvantages |Solutions |Download |

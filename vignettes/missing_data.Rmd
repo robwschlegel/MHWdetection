@@ -551,7 +551,7 @@ Now that we know that missing data from a time series does produce significantly
 
 ### ANOVA
 
-```{r miss-event-aov-calc, eval=FALSE}
+```{r event-aov-calc, eval=FALSE}
 # Quick wrapper for getting results for ANOVA and Tukey on event metrics
 # df <- sst_ALL_miss_clim_event_cat %>%
 #   filter(site == "WA") %>%
@@ -706,7 +706,7 @@ As the proportion of missing data are increased, the climatological means stay t
 
 ### Correlations
 
-```{r clim-cor, fig.cap="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests."}
+```{r event-cor, fig.cap="Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests."}
 
 # Create wide joiined data frame
 sst_ALL_miss_event_joined <- sst_ALL_miss_event_tukey %>%
@@ -763,46 +763,6 @@ The figure above shows that the relationships between the count of consecutive m
 
 In order to detemine if the count of MHW categories differs based on the percent of missing data, we will be performing a series of _chi_-squared tests for each site and rep. We will combine category 3 and 4 events together as this will make the resuls more robust and we are interested specifically in how these two categories differ more so than the other smaller two categories.
 
-```{r miss-chi-calc, eval=FALSE}
-# Simple wrapper for nesting
-# df <- sst_ALL_miss_cat_all %>%
-  # filter(site == "WA", rep == "1")
-chi_p <- function(df){
-  res <- chisq.test(table(df$miss, df$category), correct = FALSE)
-  res_tidy <- broom::tidy(res)
-  return(res_tidy$p.value)
-}
-
-# Load and extract category data
-load("data/sst_ALL_miss_clim_event_cat.Rdata")
-suppressWarnings( # Suppress warning about category levels not all being present
-sst_ALL_miss_cat <- sst_ALL_miss_clim_event_cat %>%
-  select(-events) %>%
-  unnest()
-)
-
-# Get data into the expected format
-sst_ALL_miss_cat_total <- sst_ALL_miss_cat %>% 
-  select(miss, rep, site, category) %>% 
-  mutate(category = "total")
-
-sst_ALL_miss_cat_all <- sst_ALL_miss_cat %>% 
-  select(miss, rep, site, category) %>% 
-  # rbind(sst_ALL_miss_cat_total) %>% 
-  mutate(category = ifelse(category == "III Severe", "III & IV", category),
-         category = ifelse(category == "IV Extreme", "III & IV", category))
-
-# Calculate chi-squared p-value 
-sst_ALL_miss_cat_chi <- sst_ALL_miss_cat_all %>% 
-  group_by(site, rep) %>% 
-  nest() %>% 
-  mutate(p.value = map(data, chi_p)) %>% 
-  select(-data) %>% 
-  unnest()
-
-save(sst_ALL_miss_cat_chi, file = "data/sst_ALL_miss_cat_chi.Rdata")
-```
-
 ```{r cat-chi-post, eval=FALSE}
 # Load and extract category data
 load("data/sst_ALL_miss_clim_event_cat.Rdata")
@@ -827,7 +787,7 @@ sst_ALL_miss_cat_only_0 <- sst_ALL_miss_cat_prep %>%
 # Takes one rep of missing data and compares it against the complete data
 # df <- sst_ALL_miss_cat_prep %>%
   # filter(site == "WA", rep == "20", miss == 0.1)
-df <- unnest(slice(sst_ALL_miss_cat_chi,1)) %>% 
+# df <- unnest(slice(sst_ALL_miss_cat_chi,1)) %>% 
   # select(-site2, -rep, -miss2)
 chi_pair <- function(df){
   # Prep data
@@ -896,7 +856,7 @@ ggplot(chi_sig, aes(x = as.numeric(miss), y = site)) +
 The line plot above shows at what point the category counts begin to differ significantly from time series with no missing data. The difference in count appears to be realted to the variance in the time series, with the `WA` becoming different the quickest, and the `Med` the slowest.
 
 
-### Post-hoc _chi_squared
+### Post-hoc _chi_-squared
 
 It is also necessary to see which of the categories specifically are differing significantly. Unfortunately there is no proper post-hoc _chi_-squared test. Instead it is possible to look at the standardised residuals for each category within the pairwise comparisons being made.
 
