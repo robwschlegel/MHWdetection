@@ -3,6 +3,7 @@ title: "Detecting marine heatwaves"
 author: "Robert W. Schlegel, Eric C. J. Oliver, Alistair J. Hobday, Albertus J. Smit"
 date: "25 May 2018"
 output: word_document
+# csl: frontiersSCNS.cls
 bibliography: MHWdetection.bib
 ---
 
@@ -12,26 +13,6 @@ knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       eval = TRUE, tidy = FALSE)
 ```
 
-```{r r-init, echo=FALSE}
-library(tidyverse)
-library(broom)
-library(heatwaveR, lib.loc = "../../R-packages/")
-# cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
-library(lubridate) # This is intentionally activated after data.table
-library(fasttime)
-library(ggpubr)
-library(boot)
-library(FNN)
-library(mgcv)
-library(doMC); doMC::registerDoMC(cores = 50)
-
-MHW_colours <- c(
-  "I Moderate" = "#ffc866",
-  "II Strong" = "#ff6900",
-  "III Severe" = "#9e0000",
-  "IV Extreme" = "#2d0000"
-)
-```
 
 # Abstract
 
