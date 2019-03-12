@@ -18,3 +18,14 @@ knitr::opts_chunk$set(fig.width = 6, fig.align = 'center',
 ```
 
 ## Overview
+
+In this vignette the results from the main three vignettes are combined in order to visualise them simultaneously. Following this are individual sections on how to address the challenges presented by length, missing data, and decadal trends respectively.
+
+
+## Overview of reference time series
+
+
+
+## Overview of results
+
+### Climatologies

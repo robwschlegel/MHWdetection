@@ -1,6 +1,11 @@
+# MHWdetection 0.0.5  (2019-03-12)
+
+* Incorporated first round of edits from AJH
+* Began writing new decadal detection chunk
+
 # MHWdetection 0.0.5  (2019-03-07)
 
-* Beginning to edit
+* Incorporated first round of edits from AJS
 
 # MHWdetection 0.0.5  (2019-03-06)
 

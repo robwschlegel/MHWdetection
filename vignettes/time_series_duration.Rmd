@@ -76,32 +76,12 @@ MHW_colours <- c(
 )
 ```
 
-```{r de-trend, eval=FALSE}
+```{r re-sample-time-series, eval = FALSE}
 # First put all of the data together and create a site column
 sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
-  mutate(site = rep(c("Med", "NW_Atl", "WA"), each = 13514))
+  mutate(site = rep(c("Med", "NW_Atl", "WA"), each = nrow(sst_WA)))
 save(sst_ALL, file = "data/sst_ALL.Rdata")
 
-# Function to remove the trend from a time series
-detrend <- function(df){
-  resids <- broom::augment(lm(temp ~ t, df))
-  res <- df %>% 
-    mutate(temp = temp - resids$.fitted)
-  return(res)
-}
-
-# Then create a de-trended version
-sst_ALL_detrend <- sst_ALL %>% 
-  group_by(site) %>% 
-  do(detrend(.)) %>% 
-  ungroup() %>% 
-  as.tibble(.) %>% 
-  select(site, t, temp)
-
-save(sst_ALL_detrend, file = "data/sst_ALL_detrend.Rdata")
-```
-
-```{r re-sample-time-series, eval = FALSE}
 # Function for creating a re-sample from 37 years of data
 sample_37 <- function(rep){
   year_filter <- c(1,2,3)
@@ -110,7 +90,7 @@ sample_37 <- function(rep){
   }
   res <- data.frame()
   for(i in 1:length(year_filter)){
-    df_sub <- sst_ALL_detrend %>% 
+    df_sub <- sst_ALL %>% 
       filter(year(t) == year_filter[i],
              # Remove leap-days here
              paste0(month(t),"-",day(t)) != "2-29") %>% 
@@ -128,17 +108,62 @@ sample_37 <- function(rep){
 
 # Re-sample the data 100 times
 doMC::registerDoMC(cores = 25)
-sst_ALL_repl <- plyr::ldply(1:100, sample_37, .parallel = T)
+sst_ALL_repl <- plyr::ldply(2:100, sample_37, .parallel = T)
 
-# Add the original data as rep = "0"
-sst_ALL_0 <- sst_ALL_detrend %>% 
+# Add the original data as rep = "1"
+sst_ALL_1 <- sst_ALL %>% 
   mutate(year_orig = year(t),
-         rep = "0")
+         rep = "1")
+sst_ALL_repl <- rbind(sst_ALL_1, sst_ALL_repl)
 
-sst_ALL_repl <- rbind(sst_ALL_0, sst_ALL_repl)
-
+# Save and clear
 save(sst_ALL_repl, file = "data/sst_ALL_repl.Rdata")
-rm(sst_ALL_0)
+rm(sst_ALL_0, sst_ALL_repl); gc()
+```
+
+```{r de-trend, eval=FALSE}
+load("data/sst_ALL_repl.Rdata")
+# Function to remove the trend from a time series
+# detrend <- function(df){
+#   resids <- broom::augment(lm(temp ~ t, df))
+#   res <- df %>% 
+#     mutate(temp = temp - resids$.fitted)
+#   return(res)
+# }
+
+# Calculate decadal trends and remove them
+# df <- sst_ALL_repl %>% 
+  # filter(site == "WA", rep == "32")
+detrend <- function(df) {
+  df2 <- df %>% 
+    ungroup() %>%
+    mutate(date = floor_date(t, "month")) %>% 
+    group_by(date) %>% 
+    summarise(temp = mean(temp,na.rm = T)) %>% 
+    mutate(year = year(date),
+           num = seq(1, n()))
+    dt <- round(as.numeric(coef(gls(
+      temp ~ num, correlation = corARMA(form = ~ 1 | year, p = 2),
+      method = "REML", data = df2, na.action = na.exclude))[2] * 120), 3)
+  return(dt)
+}
+
+
+sst_all_flat <- plyr::ddply(sst_ALL_repl, c("site", "rep"), )
+
+# Save and clear
+save(sst_ALL_flat, file = "data/sst_ALL_flat.Rdata")
+rm(sst_ALL_0, sst_ALL_repl); gc()
+
+# Then create a de-trended version
+# sst_ALL_detrend <- sst_ALL %>% 
+#   group_by(site) %>% 
+#   do(detrend(.)) %>% 
+#   ungroup() %>% 
+#   as.tibble(.) %>% 
+#   select(site, t, temp)
+# 
+# save(sst_ALL_detrend, file = "data/sst_ALL_detrend.Rdata")
 ```
 
 ```{r re-sample-clims-events, eval=FALSE}
