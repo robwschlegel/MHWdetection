@@ -118,42 +118,75 @@ sst_ALL_repl <- rbind(sst_ALL_1, sst_ALL_repl)
 
 # Save and clear
 save(sst_ALL_repl, file = "data/sst_ALL_repl.Rdata")
-rm(sst_ALL_0, sst_ALL_repl); gc()
+rm(sst_ALL_1, sst_ALL_repl); gc()
 ```
 
 ```{r de-trend, eval=FALSE}
+# Load randomly sample time series
 load("data/sst_ALL_repl.Rdata")
-# Function to remove the trend from a time series
-# detrend <- function(df){
-#   resids <- broom::augment(lm(temp ~ t, df))
-#   res <- df %>% 
-#     mutate(temp = temp - resids$.fitted)
-#   return(res)
-# }
 
-# Calculate decadal trends and remove them
-# df <- sst_ALL_repl %>% 
-  # filter(site == "WA", rep == "32")
-detrend <- function(df) {
-  df2 <- df %>% 
-    ungroup() %>%
-    mutate(date = floor_date(t, "month")) %>% 
-    group_by(date) %>% 
-    summarise(temp = mean(temp,na.rm = T)) %>% 
-    mutate(year = year(date),
-           num = seq(1, n()))
-    dt <- round(as.numeric(coef(gls(
-      temp ~ num, correlation = corARMA(form = ~ 1 | year, p = 2),
-      method = "REML", data = df2, na.action = na.exclude))[2] * 120), 3)
-  return(dt)
+# Function to remove the simple linear trend from a time series
+detrend <- function(df){
+  resids <- broom::augment(lm(temp ~ t, df))
+  res <- df %>%
+    mutate(temp = temp - resids$.fitted)
+  return(res)
 }
 
+# Calculate decadal trends and remove them
+# df <- sst_ALL_repl %>%
+  # filter(site == "WA", rep == "32")
+detrend <- function(df) {
+  
+  # Create month and year columns for better trend detection
+  df2 <- df %>% 
+    mutate(year = year(t),
+           month = month(t)) %>% 
+    group_by(year, month) %>%
+    summarise(temp = mean(temp,na.rm = T)) %>%
+    ungroup() %>% 
+    mutate(num = seq(1, n()))
+  
+  # Run the gls model from Schlegel 2016
+  gls_res <- gls(temp ~ num, correlation = corARMA(form = ~ 1 | year, p = 2),
+                 method = "REML", data = df2, na.action = na.exclude)
+  
+  # The decadal trend from the resampled data
+  dt <- round(as.numeric(coef(gls_res)[2] * 120), 3)
+  
+  # The gls residuals
+  gls_fitted <- data.frame(year = df2$year, 
+                           month = df2$month,  
+                           fitted = as.vector(gls_res$fitted))
+  
+  # Combine results and exit
+  res <- df %>%
+    mutate(year = year(t),
+           month = month(t)) %>% 
+    left_join(gls_fitted, by = c("year", "month")) %>% 
+    mutate(anom_flat = temp - fitted) %>% 
+    select(t, anom_flat) %>% 
+    dplyr::rename(temp = anom_flat)
+  return(res)
+}
 
-sst_all_flat <- plyr::ddply(sst_ALL_repl, c("site", "rep"), )
+# testing the old vs. ne methods
+test <- rbind(res, res_old[,1:2])
+test$test <- rep(c("new", "old"), each = nrow(res))
+
+ggplot(data = test, aes(x = t, y = temp, colour = test)) +
+  geom_line() +
+  geom_smooth(method = "lm")
+
+lm(temp~t, res_old)
+lm(temp~t, res)
+
+
+sst_all_flat <- plyr::ddply(sst_ALL_repl, c("site", "rep"), detrend)
 
 # Save and clear
 save(sst_ALL_flat, file = "data/sst_ALL_flat.Rdata")
-rm(sst_ALL_0, sst_ALL_repl); gc()
+rm(sst_ALL_repl, sst_ALL_flat); gc()
 
 # Then create a de-trended version
 # sst_ALL_detrend <- sst_ALL %>% 
@@ -167,7 +200,7 @@ rm(sst_ALL_0, sst_ALL_repl); gc()
 ```
 
 ```{r re-sample-clims-events, eval=FALSE}
-load("data/sst_ALL_repl.Rdata")
+load("data/sst_ALL_flat.Rdata")
 
 # Calculate climatologies, events, and categories on shrinking time series
 shrinking_results <- function(year_begin){
