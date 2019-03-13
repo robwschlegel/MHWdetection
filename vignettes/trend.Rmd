@@ -44,56 +44,26 @@ library(ggridges)
 The following chunks contain the code used to systematically add increasing decadal trends to the three reference time series.
 
 ```{r trending, eval=FALSE}
-# First load the de-trended data created in the duration vignette
-load("data/sst_ALL_detrend.Rdata")
+# First load the de-trended re-sampled data created in the duration vignette
+load("data/sst_ALL_flat.Rdata")
 
 # Function for adding trends to data
 # rate <- 0.1
 add_trend <- function(rate){
   daily_step <- rate/3652.5
   res <- sst_ALL_detrend %>% 
-    group_by(site) %>%
+    group_by(site, rep) %>%
     mutate(row_index = 1:n(),
-           temp = temp+(row_index*daily_step)) %>% 
+           temp = temp + (row_index*daily_step)) %>% 
     mutate(trend = as.character(rate)) %>% 
     select(-row_index)
   return(res)
 }
 
-## NB: Not repeating these results as there is no variance possible
-# Wrapper function
-# This then allows for easier replication
-# It expects the data passed to it to already be nested
-# trend_repl <- function(rate) {
-#   res <- purrr::rerun(100, add_trend(rate)) %>%
-#     map_df(as.data.frame, .id = "rep") %>% 
-#     select(rate, rep, everything())
-#   return(res)
-# }
-
-# Randomly knockout 0 - 50% of data
-# The knockout_repl() function repeats random_knockout() 100 times
-# for each step in the missing data progression
+# Add the trends and save
 doMC::registerDoMC(cores = 50)
 sst_ALL_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), add_trend, .parallel = T)
 save(sst_ALL_trend, file = "data/sst_ALL_trend.Rdata")
-```
-
-```{r prep-funcs}
-# Calculate decadal trends
-decadal_trend <- function(df) {
-  df2 <- df %>% 
-    ungroup() %>%
-    mutate(date = floor_date(t, "month")) %>% 
-    group_by(date) %>% 
-    summarise(temp = mean(temp,na.rm = T)) %>% 
-    mutate(year = year(date),
-           num = seq(1, n()))
-    dt <- round(as.numeric(coef(gls(
-      temp ~ num, correlation = corARMA(form = ~ 1 | year, p = 2),
-      method = "REML", data = df2, na.action = na.exclude))[2] * 120), 3)
-  return(dt)
-}
 ```
 
 

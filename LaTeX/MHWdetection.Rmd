@@ -113,6 +113,8 @@ The titular question of this section is what this paper seeks to answer. If one 
 
 It must be pointed out that the context of the question of having a suitable amount of data is benchmarked to the category classification system from @Hobday2018. Specifically we wanted to know how the different time series deficiencies affected our ability to detect MHWs of the varying categories. This is because category I MHWs are very common, and it seems from the literature that neither category I or II events are very important ecologically/financially. This means it is not of overwhelming concern if some time series deficiencies prevent the accurate detection of these smaller events. It is therefore the accurate detection of the category III and IV events that we use as a guiding principle for evaluating the severity of the time series deficiencies, and the usefulness of the methods proposed to counteract them.
 
+To more clearly explain the effects that the following variables have on MHWs we have broken up the concept of a MHW into three parts. The first are the climatologies of theMHW, which are the seasonal signal and the 90th percentile threshold. The second part is the event itself, which is defined by the metrics in Table 2 of @Hobday2016. The final part of a MHW is the count of the different categories of events.
+
 
 ## Assessing the effect of time series duration
 

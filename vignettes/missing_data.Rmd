@@ -56,17 +56,17 @@ First up we begin with the random removal of increasing proportions of the data.
 
 ```{r random-knockout, eval=FALSE}
 # First load the de-trended data created in the duration vignette
-load("data/sst_ALL_detrend.Rdata")
+load("data/sst_ALL_flat.Rdata")
 
 # Function for knocking out data but maintaing the time series consistency
 random_knockout <- function(prop){
   # NB: Don't allow samppling of first and last value to ensure
   # all time series are the same length
-  ts_length <- nrow(filter(sst_ALL_detrend, site == "WA"))
+  ts_length <- nrow(filter(sst_ALL_flat, site == "WA"))
   miss_index <- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
   # df$x1[sample(nrow(df),250)] <- NA
-  res <- sst_ALL_detrend %>% 
-    group_by(site) %>%
+  res <- sst_ALL_flat %>% 
+    group_by(site, rep) %>%
     mutate(row_index = 1:n(),
            temp = replace(temp, which(row_index %in% miss_index), NA)) %>% 
     mutate(miss = as.character(prop)) %>% 
@@ -74,21 +74,9 @@ random_knockout <- function(prop){
   return(res)
 }
 
-# Function that knocks out pre-set amounts of data
-# This then allows for easier replication
-# It expects the data passed to it to already be nested
-knockout_repl <- function(prop) {
-  res <- purrr::rerun(100, random_knockout(prop)) %>%
-    map_df(as.data.frame, .id = "rep") %>% 
-    select(miss, rep, everything())
-  return(res)
-}
-
-# Randomly knockout 0 - 50% of data
-# The knockout_repl() function repeats random_knockout() 100 times
-# for each step in the missing data progression
+# Randomly knockout 0 - 50% of each of the 100 re-samples
 doMC::registerDoMC(cores = 26)
-sst_ALL_miss <- plyr::ldply(seq(0.00, 0.50, 0.01), knockout_repl, .parallel = T)
+sst_ALL_miss <- plyr::ldply(seq(0.00, 0.50, 0.01), random_knockout, .parallel = T)
 save(sst_ALL_miss, file = "data/sst_ALL_miss.Rdata")
 ```
 
@@ -123,7 +111,7 @@ save(sst_ALL_con, file = "data/sst_ALL_con.Rdata")
 ```
 
 ```{r con-miss, fig.cap="Dot and line plot showing the average count of consecutive missing days of data as the percentage of missing data increases. The colour scale is log transformed."}
-
+# Load consecutive miss count data
 load("data/sst_ALL_con.Rdata")
 
 # Prep the con results for plotting
@@ -169,6 +157,8 @@ ggplot(sst_ALL_con_plot, aes(x = as.numeric(miss), y = duration, colour = count)
 #   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
 #   scale_fill_viridis(name = "Temp. [F]", option = "C") +
 #   labs(title = 'Temperatures in Lincoln NE in 2016')
+
+rm(sst_ALL_con_plot)
 ```
 
 We see in the figure above that the number of consective missing days increases as the overall proportion of missing days increases. The default in the MHW algorithm is meant to be that one does not by default interpolate over any missing data, but it does accomodate a gap of 2 days or fewer, so one can hypothesise that consecutive missing days of 2 or fewer likely pose little risk to detecting significantly different events. We see that at missing proportions of 9% or lower we exceed this threshold very seldom, while also never having more than 4 consecutive missing days. Linear interpolation is the default method proposed for dealing with missing data, but we will address that in a following section.
@@ -208,13 +198,13 @@ load("data/sst_ALL_miss_clim_event_cat.Rdata")
 # Wrapper function to speed up the extraction of clims
 miss_clim_only <- function(df){
   res <- df %>% 
-      select(-cats) %>% 
-  unnest(events) %>% 
-  filter(row_number() %% 2 == 1) %>% 
-  unnest(events) %>% 
-  select(miss:doy, seas:thresh) %>% 
-  unique() %>% 
-  arrange(doy)
+    select(-cats) %>% 
+    unnest(events) %>% 
+    filter(row_number() %% 2 == 1) %>% 
+    unnest(events) %>% 
+    select(miss:doy, seas:thresh) %>% 
+    unique() %>% 
+    arrange(doy)
 }
 
 # Pull out only seas and thresh for ease of plotting
@@ -225,13 +215,12 @@ save(sst_ALL_miss_clim_only, file = "data/sst_ALL_miss_clim_only.Rdata")
 ```
 
 ```{r clim-miss-seas, fig.cap="The seasonal signals created from time series with increasing percentages of missing data."}
-
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss_clim_only.Rdata")
 
 # visualise
-ggplot(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), 
+ggplot(arrange(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), -as.numeric(miss)), 
        aes(y = seas, x = doy, colour = as.numeric(miss)*100)) +
   geom_line(alpha = 0.3, aes(group = interaction(rep, miss))) +
   scale_colour_viridis_c() +
@@ -305,15 +294,15 @@ clim_aov_tukey <- function(df){
 # One must first run the above code locally to generate and save the file
 load("data/sst_ALL_miss_clim_only.Rdata")
 doMC::registerDoMC(cores = 50)
-sst_ALL_miss_clim_aov_tukey <- plyr::ddply(sst_ALL_miss_clim_only, c("site"), 
+sst_ALL_miss_clim_aov_tukey <- plyr::ddply(sst_ALL_miss_clim_only, c("site", "rep"), 
                                            clim_aov_tukey, .parallel = T)
-save(sst_ALL_miss_clim_aov_tukey, file = "data/sst_ALL_miss_clim_aov_tukey.RData")
+save(sst_ALL_miss_clim_aov_tukey, file = "data/sst_ALL_miss_clim_aov_tukey.Rdata")
 # rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)
 ```
 
 ```{r clim-miss-AOV-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of missing data. The 90th percentile thresholds are significantly different at p < 0.05 but the seasonal signals are not."}
 
-load("data/sst_ALL_miss_clim_aov_tukey.RData")
+load("data/sst_ALL_miss_clim_aov_tukey.Rdata")
 
 sst_ALL_miss_clim_aov <- sst_ALL_miss_clim_aov_tukey %>% 
   select(-tukey) %>% 
