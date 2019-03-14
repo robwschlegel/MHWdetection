@@ -107,7 +107,7 @@
       <h1>Assessing the effects of missing data</h1>
                         <h4 class="author">Robert W Schlegel</h4>
             
-            <h4 class="date">2019-03-07</h4>
+            <h4 class="date">2019-03-14</h4>
       
       
       <div class="hidden name"><code>missing_data.Rmd</code></div>
@@ -150,17 +150,17 @@
 <a href="#random-missing-data" class="anchor"></a>Random missing data</h2>
 <p>First up we begin with the random removal of increasing proportions of the data. We are going to use the full 37 year time series for these missing data experiments. We will randomly remove, 0 – 50% of the data from each of the three times series in 1% steps. This is being repeated 100 times to allow for more reproducible results. It is assumed that the results will begin to break down well before the 50% mark. Should they not then we will extend the missing proportion.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># First load the de-trended data created in the duration vignette</span>
-<span class="kw">load</span>(<span class="st">"data/sst_ALL_detrend.Rdata"</span>)
+<span class="kw">load</span>(<span class="st">"data/sst_ALL_flat.Rdata"</span>)
 
 <span class="co"># Function for knocking out data but maintaing the time series consistency</span>
 random_knockout &lt;-<span class="st"> </span><span class="cf">function</span>(prop){
   <span class="co"># NB: Don't allow samppling of first and last value to ensure</span>
   <span class="co"># all time series are the same length</span>
-  ts_length &lt;-<span class="st"> </span><span class="kw">nrow</span>(<span class="kw">filter</span>(sst_ALL_detrend, site <span class="op">==</span><span class="st"> "WA"</span>))
+  ts_length &lt;-<span class="st"> </span><span class="kw">nrow</span>(<span class="kw">filter</span>(sst_ALL_flat, site <span class="op">==</span><span class="st"> "WA"</span>))
   miss_index &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">seq</span>(<span class="dv">2</span>, ts_length<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>), ts_length<span class="op">*</span>prop, <span class="dt">replace =</span> F)
   <span class="co"># df$x1[sample(nrow(df),250)] &lt;- NA</span>
-  res &lt;-<span class="st"> </span>sst_ALL_detrend <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">group_by</a></span>(site) <span class="op">%&gt;%</span>
+  res &lt;-<span class="st"> </span>sst_ALL_flat <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">group_by</a></span>(site, rep) <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">mutate</a></span>(<span class="dt">row_index =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">n</span>(),
            <span class="dt">temp =</span> <span class="kw">replace</span>(temp, <span class="kw">which</span>(row_index <span class="op">%in%</span><span class="st"> </span>miss_index), <span class="ot">NA</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">mutate</a></span>(<span class="dt">miss =</span> <span class="kw">as.character</span>(prop)) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -168,21 +168,9 @@ random_knockout &lt;-<span class="st"> </span><span class="cf">function</span>(p
   <span class="kw">return</span>(res)
 }
 
-<span class="co"># Function that knocks out pre-set amounts of data</span>
-<span class="co"># This then allows for easier replication</span>
-<span class="co"># It expects the data passed to it to already be nested</span>
-knockout_repl &lt;-<span class="st"> </span><span class="cf">function</span>(prop) {
-  res &lt;-<span class="st"> </span>purrr<span class="op">::</span><span class="kw"><a href="https://purrr.tidyverse.org/reference/rerun.html">rerun</a></span>(<span class="dv">100</span>, <span class="kw">random_knockout</span>(prop)) <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">map_df</span>(as.data.frame, <span class="dt">.id =</span> <span class="st">"rep"</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span><span class="kw">select</span>(miss, rep, <span class="kw">everything</span>())
-  <span class="kw">return</span>(res)
-}
-
-<span class="co"># Randomly knockout 0 - 50% of data</span>
-<span class="co"># The knockout_repl() function repeats random_knockout() 100 times</span>
-<span class="co"># for each step in the missing data progression</span>
+<span class="co"># Randomly knockout 0 - 50% of each of the 100 re-samples</span>
 doMC<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/doMC/topics/registerDoMC">registerDoMC</a></span>(<span class="dt">cores =</span> <span class="dv">26</span>)
-sst_ALL_miss &lt;-<span class="st"> </span>plyr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/ldply">ldply</a></span>(<span class="kw">seq</span>(<span class="fl">0.00</span>, <span class="fl">0.50</span>, <span class="fl">0.01</span>), knockout_repl, <span class="dt">.parallel =</span> T)
+sst_ALL_miss &lt;-<span class="st"> </span>plyr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/ldply">ldply</a></span>(<span class="kw">seq</span>(<span class="fl">0.00</span>, <span class="fl">0.50</span>, <span class="fl">0.01</span>), random_knockout, <span class="dt">.parallel =</span> T)
 <span class="kw">save</span>(sst_ALL_miss, <span class="dt">file =</span> <span class="st">"data/sst_ALL_miss.Rdata"</span>)</code></pre></div>
 </div>
 <div id="consecutive-missing-days" class="section level2">
@@ -212,7 +200,8 @@ doMC<span class="op">::</span><span class="kw"><a href="http://www.rdocumentatio
 sst_ALL_con &lt;-<span class="st"> </span>plyr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/ddply">ddply</a></span>(<span class="kw">filter</span>(sst_ALL_miss, miss <span class="op">!=</span><span class="st"> </span><span class="dv">0</span>), 
                            <span class="kw">c</span>(<span class="st">"site"</span>, <span class="st">"miss"</span>, <span class="st">"rep"</span>), con_miss, <span class="dt">.parallel =</span> T)
 <span class="kw">save</span>(sst_ALL_con, <span class="dt">file =</span> <span class="st">"data/sst_ALL_con.Rdata"</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"data/sst_ALL_con.Rdata"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load consecutive miss count data</span>
+<span class="kw">load</span>(<span class="st">"data/sst_ALL_con.Rdata"</span>)
 
 <span class="co"># Prep the con results for plotting</span>
 sst_ALL_con_plot &lt;-<span class="st"> </span>sst_ALL_con <span class="op">%&gt;%</span><span class="st"> </span>
@@ -260,7 +249,9 @@ Dot and line plot showing the average count of consecutive missing days of data 
 <span class="co"># ggplot(lincoln_weather, aes(x = `Mean Temperature [F]`, y = `Month`, fill = ..x..)) +</span>
 <span class="co">#   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +</span>
 <span class="co">#   scale_fill_viridis(name = "Temp. [F]", option = "C") +</span>
-<span class="co">#   labs(title = 'Temperatures in Lincoln NE in 2016')</span></code></pre></div>
+<span class="co">#   labs(title = 'Temperatures in Lincoln NE in 2016')</span>
+
+<span class="kw">rm</span>(sst_ALL_con_plot)</code></pre></div>
 <p>We see in the figure above that the number of consective missing days increases as the overall proportion of missing days increases. The default in the MHW algorithm is meant to be that one does not by default interpolate over any missing data, but it does accomodate a gap of 2 days or fewer, so one can hypothesise that consecutive missing days of 2 or fewer likely pose little risk to detecting significantly different events. We see that at missing proportions of 9% or lower we exceed this threshold very seldom, while also never having more than 4 consecutive missing days. Linear interpolation is the default method proposed for dealing with missing data, but we will address that in a following section.</p>
 </div>
 <div id="climatology-statistics" class="section level2">
@@ -294,13 +285,13 @@ sst_ALL_miss_clim_event_cat &lt;-<span class="st"> </span>plyr<span class="op">:
 <span class="co"># Wrapper function to speed up the extraction of clims</span>
 miss_clim_only &lt;-<span class="st"> </span><span class="cf">function</span>(df){
   res &lt;-<span class="st"> </span>df <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">      </span><span class="kw">select</span>(<span class="op">-</span>cats) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>(events) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">filter</span>(<span class="kw">row_number</span>() <span class="op">%%</span><span class="st"> </span><span class="dv">2</span> <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unnest</span>(events) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(miss<span class="op">:</span>doy, seas<span class="op">:</span>thresh) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">unique</span>() <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">arrange</span>(doy)
+<span class="st">    </span><span class="kw">select</span>(<span class="op">-</span>cats) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">unnest</span>(events) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">filter</span>(<span class="kw">row_number</span>() <span class="op">%%</span><span class="st"> </span><span class="dv">2</span> <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">unnest</span>(events) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">select</span>(miss<span class="op">:</span>doy, seas<span class="op">:</span>thresh) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">unique</span>() <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">arrange</span>(doy)
 }
 
 <span class="co"># Pull out only seas and thresh for ease of plotting</span>
@@ -313,7 +304,7 @@ sst_ALL_miss_clim_only &lt;-<span class="st"> </span>plyr<span class="op">::</sp
 <span class="kw">load</span>(<span class="st">"data/sst_ALL_miss_clim_only.Rdata"</span>)
 
 <span class="co"># visualise</span>
-<span class="kw">ggplot</span>(<span class="kw">filter</span>(sst_ALL_miss_clim_only, rep <span class="op">%in%</span><span class="st"> </span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)), 
+<span class="kw">ggplot</span>(<span class="kw">arrange</span>(<span class="kw">filter</span>(sst_ALL_miss_clim_only, rep <span class="op">%in%</span><span class="st"> </span><span class="kw">as.character</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>)), <span class="op">-</span><span class="kw">as.numeric</span>(miss)), 
        <span class="kw">aes</span>(<span class="dt">y =</span> seas, <span class="dt">x =</span> doy, <span class="dt">colour =</span> <span class="kw">as.numeric</span>(miss)<span class="op">*</span><span class="dv">100</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> <span class="fl">0.3</span>, <span class="kw">aes</span>(<span class="dt">group =</span> <span class="kw">interaction</span>(rep, miss))) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
@@ -385,11 +376,11 @@ clim_aov_tukey &lt;-<span class="st"> </span><span class="cf">function</span>(df
 <span class="co"># One must first run the above code locally to generate and save the file</span>
 <span class="kw">load</span>(<span class="st">"data/sst_ALL_miss_clim_only.Rdata"</span>)
 doMC<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/doMC/topics/registerDoMC">registerDoMC</a></span>(<span class="dt">cores =</span> <span class="dv">50</span>)
-sst_ALL_miss_clim_aov_tukey &lt;-<span class="st"> </span>plyr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/ddply">ddply</a></span>(sst_ALL_miss_clim_only, <span class="kw">c</span>(<span class="st">"site"</span>), 
+sst_ALL_miss_clim_aov_tukey &lt;-<span class="st"> </span>plyr<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/ddply">ddply</a></span>(sst_ALL_miss_clim_only, <span class="kw">c</span>(<span class="st">"site"</span>, <span class="st">"rep"</span>), 
                                            clim_aov_tukey, <span class="dt">.parallel =</span> T)
-<span class="kw">save</span>(sst_ALL_miss_clim_aov_tukey, <span class="dt">file =</span> <span class="st">"data/sst_ALL_miss_clim_aov_tukey.RData"</span>)
+<span class="kw">save</span>(sst_ALL_miss_clim_aov_tukey, <span class="dt">file =</span> <span class="st">"data/sst_ALL_miss_clim_aov_tukey.Rdata"</span>)
 <span class="co"># rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"data/sst_ALL_miss_clim_aov_tukey.RData"</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">load</span>(<span class="st">"data/sst_ALL_miss_clim_aov_tukey.Rdata"</span>)
 
 sst_ALL_miss_clim_aov &lt;-<span class="st"> </span>sst_ALL_miss_clim_aov_tukey <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>tukey) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -565,8 +556,8 @@ KS_sig &lt;-<span class="st"> </span><span class="kw">rbind</span>(KS_sig, <span
 KS_sig &lt;-<span class="st"> </span><span class="kw">rbind</span>(KS_sig, <span class="kw">data.frame</span>(<span class="dt">site =</span> <span class="st">"WA"</span>, <span class="dt">metric =</span> <span class="st">"thresh"</span>, 
                                    <span class="dt">miss =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">0.08</span>, <span class="fl">0.01</span>), <span class="dt">count =</span> <span class="ot">NA</span>))
 
-<span class="kw">ggplot</span>(KS_sig, <span class="kw">aes</span>(<span class="dt">x =</span> miss, <span class="dt">y =</span> site)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> count, <span class="dt">group =</span> site)) <span class="op">+</span>
+<span class="kw">ggplot</span>(KS_sig, <span class="kw">aes</span>(<span class="dt">x =</span> miss<span class="op">*</span><span class="dv">100</span>, <span class="dt">y =</span> site)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> count, <span class="dt">group =</span> site), <span class="dt">size =</span> <span class="dv">3</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
 <span class="st">  </span><span class="co"># scale_x_reverse(breaks = seq(5, 35, 5)) +</span>
@@ -695,7 +686,7 @@ event_tukey_summary &lt;-<span class="st"> </span>sst_ALL_miss_event_tukey <span
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggpubr/topics/reexports">group_by</a></span>(site, metric, comp_dif) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())
 
-<span class="kw">ggplot</span>(event_tukey_summary, <span class="kw">aes</span>(<span class="dt">x =</span> comp_dif, <span class="dt">y =</span> site)) <span class="op">+</span>
+<span class="kw">ggplot</span>(event_tukey_summary, <span class="kw">aes</span>(<span class="dt">x =</span> comp_dif<span class="op">*</span><span class="dv">100</span>, <span class="dt">y =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> count)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> count), <span class="dt">size =</span> <span class="fl">0.5</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>metric, <span class="dt">ncol =</span> <span class="dv">1</span>) <span class="op">+</span>
@@ -901,11 +892,11 @@ chi_sig &lt;-<span class="st"> </span>sst_ALL_miss_cat_chi <span class="op">%&gt
 <span class="st">  </span><span class="kw">unique</span>() <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>())
 
-<span class="kw">ggplot</span>(chi_sig, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as.numeric</span>(miss), <span class="dt">y =</span> site)) <span class="op">+</span>
+<span class="kw">ggplot</span>(chi_sig, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">as.numeric</span>(miss)<span class="op">*</span><span class="dv">100</span>, <span class="dt">y =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">colour =</span> count, <span class="dt">group =</span> site)) <span class="op">+</span>
 <span class="st">  </span><span class="co"># facet_wrap(~metric, ncol = 1) +</span>
 <span class="st">  </span><span class="kw">scale_colour_viridis_c</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">breaks =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.05</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_continuous</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">"Missing data (%)"</span>, <span class="dt">y =</span> <span class="ot">NULL</span>,
        <span class="dt">colour =</span> <span class="st">"Sig. dif.</span><span class="ch">\n</span><span class="st">out of 100"</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">20</span>))</code></pre></div>

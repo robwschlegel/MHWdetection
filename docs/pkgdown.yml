@@ -1,18 +1,7 @@
-pandoc: 2.3.1
-pkgdown: 1.3.0
+pandoc: 1.19.2.1
+pkgdown: 1.1.0
 pkgdown_sha: ~
-articles:
-  Climatologies_and_baselines: Climatologies_and_baselines.html
-  Short_climatologies: Short_climatologies.html
-  best_practices: best_practices.html
-  gridded_products: gridded_products.html
-  missing_data: missing_data.html
-  r_vs_python: r_vs_python.html
-  r_vs_python_additional: r_vs_python_additional.html
-  r_vs_python_arguments: r_vs_python_arguments.html
-  time_series_duration: time_series_duration.html
-  trend: trend.html
-  variance: variance.html
+articles: []
 urls:
   reference: https://robwschlegel.github.io/MHWdetection/index.html/reference
   article: https://robwschlegel.github.io/MHWdetection/index.html/articles
