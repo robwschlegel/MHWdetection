@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Robert W Schlegel" />
+
+<meta name="date" content="2019-03-19" />
+
+<title>Additional functionality for MHW outputs in R and Python</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">MHWdetection</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Additional functionality for MHW outputs in R and Python</h1>
+<h4 class="author"><em>Robert W Schlegel</em></h4>
+<h4 class="date"><em>2019-03-19</em></h4>
+
+</div>
+
+
+<p><strong>Last updated:</strong> 2019-03-19</p>
+<strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
+<ul>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20190319)</code> </summary></p>
+<p>The command <code>set.seed(20190319)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/64ac134076a04088c834291ce86c6405eedaf672" target="_blank">64ac134</a> </summary></p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    vignettes/data/sst_ALL_clim_only.Rdata
+    Ignored:    vignettes/data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    vignettes/data/sst_ALL_flat.Rdata
+    Ignored:    vignettes/data/sst_ALL_miss.Rdata
+    Ignored:    vignettes/data/sst_ALL_miss_cat_chi.Rdata
+    Ignored:    vignettes/data/sst_ALL_miss_clim_event_cat.Rdata
+    Ignored:    vignettes/data/sst_ALL_miss_clim_only.Rdata
+    Ignored:    vignettes/data/sst_ALL_repl.Rdata
+    Ignored:    vignettes/data/sst_ALL_smooth.Rdata
+    Ignored:    vignettes/data/sst_ALL_smooth_aov_tukey.Rdata
+    Ignored:    vignettes/data/sst_ALL_smooth_event.Rdata
+    Ignored:    vignettes/data/sst_ALL_trend.Rdata
+    Ignored:    vignettes/data/sst_ALL_trend_clim_event_cat.Rdata
+
+Untracked files:
+    Untracked:  analysis/bibliography.bib
+    Untracked:  analysis/data/
+    Untracked:  code/functions.R
+    Untracked:  code/workflow.R
+    Untracked:  data/sst_WA.csv
+    Untracked:  docs/figure/
+
+Unstaged changes:
+    Modified:   NEWS.md
+
+</code></pre>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+</li>
+</ul>
+<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<ul>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+File
+</th>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+<th style="text-align:left;">
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/64ac134076a04088c834291ce86c6405eedaf672/analysis/r_vs_python_additional.Rmd" target="_blank">64ac134</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Publish analysis files
+</td>
+</tr>
+</tbody>
+</table>
+</ul>
+<p></details></p>
+<hr />
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>In this last comparison vignette between the two languages we will look at the additional functions that they come with. Slightly different approaches have been taken to provide the user with the ability to calculate block averages from the detection outputs as well as categorising the ‘extremeness’ of events. We will compare these different workflows/outputs below.</p>
+<pre class="r"><code>library(tidyverse)
+library(ggpubr)
+library(heatwaveR)</code></pre>
+<pre class="r"><code>compare_event &lt;- function(res_event_R, res_event_Python){
+  # Remove non-numeric columns
+  res_event_num &lt;- res_event_R %&gt;% 
+    select_if(is.numeric)
+  # Run the loop
+  res_event &lt;- data.frame()
+  for(i in 1:length(colnames(res_event_num))){
+    if(colnames(res_event_num)[i] %in% colnames(res_event_Python)){
+      x1 &lt;- res_event_R[colnames(res_event_R) == colnames(res_event_num)[i]]
+      x2 &lt;- res_event_Python[colnames(res_event_Python) == colnames(res_event_num)[i]]
+      x &lt;- data.frame(r = round(cor(x1, x2, use = &quot;complete.obs&quot;), 4),
+                      sum = round(sum(x1, na.rm = T) - sum(x2, na.rm = T), 4),
+                      var = colnames(res_event_num)[i])
+      colnames(x)[1] &lt;- &quot;r&quot;
+      rownames(x) &lt;- NULL
+      } else {
+        x &lt;- data.frame(r = NA, sum = NA, var = colnames(res_event_num)[i])
+        }
+    res_event &lt;- rbind(res_event, x)
+    }
+  return(res_event)
+  }</code></pre>
+<pre class="r"><code>library(reticulate)
+use_condaenv(&quot;py27&quot;)</code></pre>
+<pre class="python"><code>import numpy as np
+from datetime import date
+import pandas as pd
+import marineHeatWaves as mhw
+# The date values
+t = np.arange(date(1982,1,1).toordinal(),date(2014,12,31).toordinal()+1)
+# The temperature values
+sst = np.loadtxt(open(&quot;data/sst_WA.csv&quot;, &quot;r&quot;), delimiter = &#39;,&#39;, skiprows = 1)
+# The event metrics
+mhws, clim = mhw.detect(t, sst)</code></pre>
+</div>
+<div id="block_average-comparisons" class="section level2">
+<h2><code>block_average()</code> comparisons</h2>
+<p>First up we take a peak at the <code>block_average()</code> functions and the outputs they produce.</p>
+<pre class="python"><code>mhwBlock = mhw.blockAverage(t, mhws, clim)
+mhwsBlock_df = pd.DataFrame.from_dict(mhwBlock)
+mhwsBlock_df.to_csv(&#39;data/mhwBlock.csv&#39;, sep = &#39;,&#39;, index = False)</code></pre>
+<pre class="r"><code>default_r &lt;- detect_event(ts2clm(data = sst_WA, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2014-12-31&quot;)))
+block_r &lt;- block_average(default_r)
+block_py &lt;- read_csv(&quot;data/mhwBlock.csv&quot;)</code></pre>
+<div id="overlapping-column-names" class="section level3">
+<h3>Overlapping column names</h3>
+<p>Initially we want to see how well the naming conventions for the columns hold up.</p>
+<pre class="r"><code>cols_r &lt;- colnames(block_r)[!(colnames(block_r) %in% colnames(block_py))]
+cols_r
+cols_py &lt;- colnames(block_py)[!(colnames(block_py) %in% colnames(block_r))]
+cols_py</code></pre>
+<p>The two columns that the R code outputs that the Python code lacks is <code>year</code> and <code>duration_max</code>. We may see that the Python code creates <code>years_centre</code>, <code>years_end</code>, and <code>years_start</code>. The difference for this is that the Python version is set up to allow for block averages to be calculated for units of time other than single years, whereas the R version only outputs single annual means. I don’t know that this needs to be expanded upon in the R code. I don’t see this functions as terribly useful, to be honest. Surely if a user has gotten to this point, they can calculate block averages on their own to their own preferences.</p>
+<p>The variable <code>duration_max</code> shows the maximum duration of an event detected in a given year, and was added to <strong><code>heatwaveR</code></strong> v0.3.5 at the request of a user. There is talk of including it in Python, too.</p>
+</div>
+<div id="comparison-of-outputs" class="section level3">
+<h3>Comparison of outputs</h3>
+<p>Up next we look at how well the outputs correlate and sum up. As we saw in the previous vignette, correlation values are useful for showing how consistently similar the results are, but not for if they are exact. For that we will compare sums as well.</p>
+<pre class="r"><code>compare_event(block_r, block_py)</code></pre>
+<p>As expected, the results correlate and sum up to nearly identical values. The mismatch being a product of rounding differences between the languages.</p>
+</div>
+</div>
+<div id="trend-comparisons" class="section level2">
+<h2>Trend comparisons</h2>
+<p>There is no comparable R functions that performs these calculations. One could be created if the desire exists…</p>
+<pre class="python"><code>mean, trend, dtrend = mhw.meanTrend(mhwBlock)
+#print(mean)
+#print(trend)
+#print(dtrend)</code></pre>
+<pre class="r"><code># Print out results in R as desired
+#py$mean
+#py$trend
+#py$dtrend</code></pre>
+</div>
+<div id="category-comparisons" class="section level2">
+<h2>Category comparisons</h2>
+<p>The final bit of extra functionality that must be compared between the two languages is the newest addition for both. This is the calculation of categories for MHWs as seen in <span class="citation">Hobday et al. (2018)</span>. The two languages go about the calculation of these events in rather different ways. And produce different outputs. This is however intentional and so it must be decided if this is to be made more consistent, or be left as it is.</p>
+<pre class="r"><code># Load Python category results
+category_py &lt;- read_csv(&quot;data/mhws_py.csv&quot;) %&gt;% 
+  select(date_peak, category, intensity_max, duration, 
+         duration_moderate, duration_strong, duration_severe, duration_extreme)
+category_py
+
+# Calculate categories in R
+category_r &lt;- category(default_r, name = &quot;WA&quot;)
+category_r</code></pre>
+<p>I won’t go about comparing the outputs of these functions the same as I have for the other functions because, as stated above, they show different information. The R output is specifically tailored to match the information style of Table 2 in <span class="citation">Hobday et al. (2018)</span>. This is one final point on which a decision must be made about whether or not the extra functionality of the languages should be brought to be the exact same, or allowed to differ. I think it is fine the way it is now.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>Two questions still beg an answer:</p>
+<ol style="list-style-type: decimal">
+<li>Do we want to have a built in trend detecting function in the R code, <em>a la</em> <code>meanTrend</code> in the Python package? I don’t think so. We have posted a vignette on the <code>heatwaveR</code> site showing users how to <a href="https://robwschlegel.github.io/heatwaveR/articles/gridded_event_detection.html">perform this calculation</a> themselves, so I don’t think it needs to be included as a function. It would be simple to do should the desire exist.</li>
+<li>The output of the category information between the two languages is quite different. The Python code provides, as part of the base <code>detect</code> output, the days spent within each category, as well as the maximum category reached. The R output rather provides the proportion of time spent in each category, as well as the maximum category. The R code has additional columns added in to better match Table 2 in <span class="citation">Hobday et al. (2018)</span>. I think this is useful as a user would probably want a summary output of the category information. But I could be convinced that it is the days, rather than proportions, that should be provided without the additional columns as well.</li>
+</ol>
+<p>That wraps up the comparisons of the languages. It can be said that where small rounding differences persist between the languages, the base outputs are comparable and the languages may be used interchangeably. The extra functionality also matches up, minus a couple of issues that probably don’t need to be addressed. There are some difference, but these are stylistic and it is not clear that they should be changed/addressed.</p>
+<p>One persistent problem is the impact that missing data have on the calculation of the 90th percentile threshold. THis must still be investigated at depth in the source code of both languages to nail down just exactly where they handle missing data differently.</p>
+<p>It is now time to get started on looking at how to be go about consistently and reliably detecting thermal events in time series given a range of potential sub-optimal conditions.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<div id="refs">
+<div id="ref-Hobday2018">
+<p>Hobday, Alistair J., Eric C.J. Oliver, Alex Sen Gupta, Jessica A. Benthysen, Michael T. Burrows, Markus G. Donat, Neil J. Holbrook, et al. 2018. “Categorizing and naming marine heatwaves.” <em>Oceanography</em> 31 (2). doi:<a href="https://doi.org/10.5670/oceanog.2018.205">10.5670/oceanog.2018.205</a>.</p>
+</div>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+</div>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+<hr>
+<p>
+  This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+  analysis was created with
+  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.1
+</p>
+<hr>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

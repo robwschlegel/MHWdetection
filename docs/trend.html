@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Robert W Schlegel" />
+
+<meta name="date" content="2019-03-19" />
+
+<title>Assessing the effects of long-term trends</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">MHWdetection</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Assessing the effects of long-term trends</h1>
+<h4 class="author"><em>Robert W Schlegel</em></h4>
+<h4 class="date"><em>2019-03-19</em></h4>
+
+</div>
+
+
+<p><strong>Last updated:</strong> 2019-03-19</p>
+<strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
+<ul>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20190319)</code> </summary></p>
+<p>The command <code>set.seed(20190319)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/64ac134076a04088c834291ce86c6405eedaf672" target="_blank">64ac134</a> </summary></p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    vignettes/data/sst_ALL_clim_only.Rdata
+    Ignored:    vignettes/data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    vignettes/data/sst_ALL_flat.Rdata
+    Ignored:    vignettes/data/sst_ALL_miss.Rdata
+    Ignored:    vignettes/data/sst_ALL_miss_cat_chi.Rdata
+    Ignored:    vignettes/data/sst_ALL_miss_clim_event_cat.Rdata
+    Ignored:    vignettes/data/sst_ALL_miss_clim_only.Rdata
+    Ignored:    vignettes/data/sst_ALL_repl.Rdata
+    Ignored:    vignettes/data/sst_ALL_smooth.Rdata
+    Ignored:    vignettes/data/sst_ALL_smooth_aov_tukey.Rdata
+    Ignored:    vignettes/data/sst_ALL_smooth_event.Rdata
+    Ignored:    vignettes/data/sst_ALL_trend.Rdata
+    Ignored:    vignettes/data/sst_ALL_trend_clim_event_cat.Rdata
+
+Untracked files:
+    Untracked:  analysis/bibliography.bib
+    Untracked:  analysis/data/
+    Untracked:  code/functions.R
+    Untracked:  code/workflow.R
+    Untracked:  data/sst_WA.csv
+    Untracked:  docs/figure/
+
+Unstaged changes:
+    Modified:   NEWS.md
+
+</code></pre>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+</li>
+</ul>
+<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<ul>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+File
+</th>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+<th style="text-align:left;">
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/64ac134076a04088c834291ce86c6405eedaf672/analysis/trend.Rmd" target="_blank">64ac134</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Publish analysis files
+</td>
+</tr>
+</tbody>
+</table>
+</ul>
+<p></details></p>
+<hr />
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>The last major variable we want to look at that could potentially affect accurate MHW detection is the long-term (secular) trend present in a time series. To do so we will be using the same de-trended data from the previous two vignettes and slowly adding in decadal trends from 0.01 to 0.30 °C/dec in 0.0.1 °C/dec steps.</p>
+<pre class="r"><code>library(tidyverse)
+library(broom)
+library(heatwaveR, lib.loc = &quot;~/R-packages/&quot;)
+# cat(paste0(&quot;heatwaveR version = &quot;,packageDescription(&quot;heatwaveR&quot;)$Version))
+library(lubridate) # This is intentionally activated after data.table
+library(fasttime)
+library(ggpubr)
+library(boot)
+library(FNN)
+library(mgcv)
+# library(padr)
+library(ggridges)</code></pre>
+</div>
+<div id="trending" class="section level2">
+<h2>Trending</h2>
+<p>The following chunks contain the code used to systematically add increasing decadal trends to the three reference time series.</p>
+<pre class="r"><code># First load the de-trended re-sampled data created in the duration vignette
+load(&quot;data/sst_ALL_flat.Rdata&quot;)
+
+# Function for adding trends to data
+# rate &lt;- 0.1
+add_trend &lt;- function(rate){
+  daily_step &lt;- rate/3652.5
+  res &lt;- sst_ALL_detrend %&gt;% 
+    group_by(site, rep) %&gt;%
+    mutate(row_index = 1:n(),
+           temp = temp + (row_index*daily_step)) %&gt;% 
+    mutate(trend = as.character(rate)) %&gt;% 
+    select(-row_index)
+  return(res)
+}
+
+# Add the trends and save
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend &lt;- plyr::ldply(seq(0.00, 0.30, 0.01), add_trend, .parallel = T)
+save(sst_ALL_trend, file = &quot;data/sst_ALL_trend.Rdata&quot;)</code></pre>
+</div>
+<div id="climatology-statistics" class="section level2">
+<h2>Climatology statistics</h2>
+<pre class="r"><code># This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load(&quot;data/sst_ALL_trend.Rdata&quot;)
+
+# Calculate climatologies, events, and categories on shrinking time series
+clim_event_cat_calc &lt;- function(df){
+  res &lt;- df %&gt;% 
+    nest() %&gt;% 
+    mutate(clims = map(data, ts2clm, 
+                       climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2011-12-31&quot;)),
+           events = map(clims, detect_event),
+           cats = map(events, category)) %&gt;% 
+    select(-data, -clims)
+  return(res)
+}
+
+# Calculate all of the MHW related results
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend_clim_event_cat &lt;- plyr::ddply(sst_ALL_trend, c(&quot;trend&quot;, &quot;site&quot;), 
+                                           clim_event_cat_calc, .parallel = T)
+save(sst_ALL_trend_clim_event_cat, file = &quot;data/sst_ALL_trend_clim_event_cat.Rdata&quot;)</code></pre>
+<pre class="r"><code># This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load(&quot;data/sst_ALL_trend_clim_event_cat.Rdata&quot;)
+
+# Wrapper function to speed up the extraction of clims
+trend_clim_only &lt;- function(df){
+  res &lt;- df %&gt;% 
+      select(-cats) %&gt;% 
+  unnest(events) %&gt;% 
+  filter(row_number() %% 2 == 1) %&gt;% 
+  unnest(events) %&gt;% 
+  select(trend:doy, seas:thresh) %&gt;% 
+  unique() %&gt;% 
+  arrange(doy)
+}
+
+# Pull out only seas and thresh for ease of plotting
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend_clim_only &lt;- plyr::ddply(sst_ALL_trend_clim_event_cat, c(&quot;trend&quot;, &quot;site&quot;), 
+                                      trend_clim_only, .parallel = T)
+save(sst_ALL_trend_clim_only, file = &quot;data/sst_ALL_trend_clim_only.Rdata&quot;)</code></pre>
+<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_clim_only.Rdata&quot;)</code></pre>
+<pre class="r"><code>ggplot(sst_ALL_trend_clim_only, 
+       aes(y = seas, x = doy, colour = as.numeric(trend))) +
+  geom_line(alpha = 0.3, aes(group = trend)) +
+  scale_colour_viridis_c() +
+  facet_wrap(~site, ncol = 1, scales = &quot;free_y&quot;) +
+  labs(x = &quot;Calendar day of year&quot;, y = &quot;Temp. (°C)&quot;, colour = &quot;trend (°C/dec)&quot;)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="figure/trend.Rmd/clim-trend-seas-1.png" alt="The seasonal signals created from time series with increasingly large decadal trends added." width="768" />
+<p class="caption">
+The seasonal signals created from time series with increasingly large decadal trends added.
+</p>
+</div>
+<p>Looking at the range of seasonal signals we see how pronounced the effect of adding a decadal trend is to <code>WA</code> over the other two time series. This is because the proportionate to the overall range of the seasonal signal, we are adding much more to the <code>WA</code> time series than the others.</p>
+<pre class="r"><code>ggplot(sst_ALL_trend_clim_only, 
+       aes(y = thresh, x = doy, colour = as.numeric(trend))) +
+  geom_line(alpha = 0.3, aes(group = trend)) +
+  scale_colour_viridis_c() +
+  facet_wrap(~site, ncol = 1, scales = &quot;free_y&quot;) +
+  labs(x = &quot;Calendar day of year&quot;, y = &quot;Temp. (°C)&quot;, colour = &quot;trend (°C/dec)&quot;)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="figure/trend.Rmd/clim-trend-thresh-1.png" alt="The 90th percentile thresholds created from time series with increasingly large decadal trends added." width="768" />
+<p class="caption">
+The 90th percentile thresholds created from time series with increasingly large decadal trends added.
+</p>
+</div>
+<p>Interestingly the increase in the 90th percentile threshold appears to be similar for the 90th percentile threshold as it is for the seasonal signal. This implies that the upcoming results are likely to vary from the previous two vignettes.</p>
+<div id="anova-p-values" class="section level3">
+<h3>ANOVA <em>p</em>-values</h3>
+<p>Given that there are perceptible differences in the seasonal signals as decadal trends increase, an ANOVA will almost certainly determine these differences to be significant.</p>
+<pre class="r"><code># Run an ANOVA on each metric of the event results from 
+# the same amount of trending data and get the p-value
+aov_p &lt;- function(df){
+  aov_models &lt;- df[ , -grep(&quot;trend&quot;, names(df))] %&gt;%
+    map(~ aov(.x ~ df$trend)) %&gt;% 
+    map_dfr(~ broom::tidy(.), .id = &#39;metric&#39;) %&gt;%
+    mutate(p.value = round(p.value, 4)) %&gt;%
+    filter(term != &quot;Residuals&quot;) %&gt;%
+    select(metric, p.value)
+  return(aov_models)
+  }
+
+# Run an ANOVA on each metric and then a Tukey test
+aov_tukey &lt;- function(df){
+  aov_tukey &lt;- df[ , -grep(&quot;trend&quot;, names(df))] %&gt;%
+    map(~ TukeyHSD(aov(.x ~ df$trend))) %&gt;% 
+    map_dfr(~ broom::tidy(.), .id = &#39;metric&#39;) %&gt;%
+    mutate(p.value = round(adj.p.value, 4)) %&gt;%
+    # filter(term != &quot;Residuals&quot;) %&gt;%
+    select(metric, comparison, adj.p.value) %&gt;% 
+    # filter(adj.p.value &lt;= 0.05) %&gt;% 
+    arrange(metric, adj.p.value)
+  return(aov_tukey)
+}
+
+# Quick wrapper for getting results for ANOVA and Tukey on clims
+# df &lt;- sst_ALL_trend_clim_only %&gt;%
+#   filter(site == &quot;WA&quot;) %&gt;%
+#   select(-site)
+clim_aov_tukey &lt;- function(df){
+  res &lt;- df %&gt;% 
+    # filter(trend != &quot;0.00&quot;) %&gt;% 
+    select(trend, seas, thresh) %&gt;% 
+    mutate(trend = as.factor(trend)) %&gt;% 
+    nest() %&gt;% 
+    mutate(aov = map(data, aov_p),
+           tukey = map(data, aov_tukey)) %&gt;% 
+    select(-data)
+  return(res)
+}</code></pre>
+<pre class="r"><code># This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load(&quot;data/sst_ALL_trend_clim_only.Rdata&quot;)
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend_clim_aov_tukey &lt;- plyr::ddply(sst_ALL_trend_clim_only, c(&quot;site&quot;), 
+                                            clim_aov_tukey, .parallel = T)
+save(sst_ALL_trend_clim_aov_tukey, file = &quot;data/sst_ALL_trend_clim_aov_tukey.Rdata&quot;)
+# rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</code></pre>
+<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_clim_aov_tukey.Rdata&quot;)
+
+sst_ALL_trend_clim_aov &lt;- sst_ALL_trend_clim_aov_tukey %&gt;% 
+  select(-tukey) %&gt;% 
+  unnest()
+
+ggplot(sst_ALL_trend_clim_aov, aes(x = site, y = metric)) +
+  geom_tile(aes(fill = p.value)) +
+  geom_text(aes(label = round(p.value, 2))) +
+  scale_fill_gradient2(midpoint = 0.1)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="figure/trend.Rmd/clim-trend-AOV-p-1.png" alt="Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of trending data. The 90th percentile thresholds are significantly different at p &lt; 0.05 but the seasonal signals are not." width="768" />
+<p class="caption">
+Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of trending data. The 90th percentile thresholds are significantly different at p &lt; 0.05 but the seasonal signals are not.
+</p>
+</div>
+<p>We may see in the figure above that the climatologies do not differ appreciably across all of the decadal trends used for the <code>Med</code> and <code>NW_Atl</code>. The climatologies do however differ significantly for the <code>WA</code> time series.</p>
+</div>
+<div id="post-hoc-tukey-test" class="section level3">
+<h3>Post-hoc Tukey test</h3>
+<p>And now to see where exactly the <code>WA</code> climatologies begin to diverge.</p>
+<pre class="r"><code>sst_ALL_trend_clim_tukey &lt;- sst_ALL_trend_clim_aov_tukey %&gt;% 
+  select(-aov) %&gt;% 
+  unnest()
+
+# Create a summary for better plotting
+clim_tukey_summary &lt;- sst_ALL_trend_clim_tukey %&gt;% 
+  separate(comparison, into = c(&quot;comp_left&quot;, &quot;comp_right&quot;), sep = &quot;-&quot;) %&gt;% 
+  mutate(comp_left = as.numeric(comp_left),
+         comp_right = as.numeric(comp_right)) %&gt;% 
+  filter(comp_left == 0 | comp_right == 0) %&gt;%
+  mutate(comp_dif = abs(round(comp_right - comp_left, 2))) %&gt;% 
+  filter(adj.p.value &lt;= 0.05) %&gt;% 
+  group_by(site, metric, comp_dif)
+
+ggplot(clim_tukey_summary, aes(x = comp_dif, y = site)) +
+  geom_line() +
+  geom_point(size = 0.5) +
+  facet_wrap(~metric, ncol = 1) +
+  scale_x_continuous(limits = c(0, 0.3)) +
+  labs(x = &quot;Trend (°C/dec)&quot;, y = NULL,
+       colour = &quot;Sig. dif.\nout of 100&quot;)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="figure/trend.Rmd/clim-tukey-line-1.png" alt="Segments showing the range of decadal trends added to the data when climatologies were significantly different." width="768" />
+<p class="caption">
+Segments showing the range of decadal trends added to the data when climatologies were significantly different.
+</p>
+</div>
+<p>In the figure above we see that the <code>WA</code> seasonal signals become significantly different at a decadal trend of 0.25°C/dec, and the 90th percentile threshold becomes sig. dif. at 0.24°C/dec.</p>
+</div>
+<div id="kolmogorov-smirnov-tests" class="section level3">
+<h3>Kolmogorov-Smirnov tests</h3>
+<p>Now knowing that the daily values that make up the climatologies tend to differ based on the decadal trend added, as seen with the ANOVA and Tukey results, we want to check where the distributions of the climatologies themselves begin to differ. We will do this through a series of pair-wise two-sample KS tests.</p>
+<pre class="r"><code># Extract the true climatologies
+sst_ALL_trend_clim_only_0 &lt;- sst_ALL_trend_clim_only %&gt;% 
+  filter(trend == 0)
+
+# KS function
+# Takes one rep of trending data and compares it against the complete signal
+clim_KS_p &lt;- function(df){
+  df_comp &lt;- sst_ALL_trend_clim_only_0 %&gt;% 
+    filter(site == df$site[1])
+  res &lt;- data.frame(site = df$site[1],
+                    seas = round(ks.test(df$seas, df_comp$seas)$p.value, 4),
+                    thresh = round(ks.test(df$thresh, df_comp$thresh)$p.value, 4))
+  return(res)
+}
+
+# The KS results
+suppressWarnings( # Suppress perfect match warnings
+sst_ALL_trend_clim_KS_p &lt;- sst_ALL_trend_clim_only %&gt;% 
+  filter(trend != 0) %&gt;% 
+  mutate(trend = as.factor(trend)) %&gt;%
+  mutate(site2 = site) %&gt;% 
+  group_by(site2, trend) %&gt;% 
+  nest() %&gt;% 
+  mutate(res = map(data, clim_KS_p)) %&gt;% 
+  select(-data) %&gt;% 
+  unnest() %&gt;% 
+  select(site, trend, seas, thresh) %&gt;%
+  gather(key = metric, value = p.value, -site, - trend)
+)
+save(sst_ALL_trend_clim_KS_p, file = &quot;data/sst_ALL_trend_clim_KS_p.Rdata&quot;)</code></pre>
+<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_clim_KS_p.Rdata&quot;)
+
+# Filter non-significant results
+KS_sig &lt;- sst_ALL_trend_clim_KS_p %&gt;% 
+  filter(p.value &lt;= 0.05) %&gt;% 
+  group_by(site, trend, metric) %&gt;% 
+  summarise(count = n()) %&gt;%
+  ungroup()
+
+# Manually pad in NA for trending percentages with no significant differences
+# KS_sig &lt;- rbind(KS_sig, data.frame(site = &quot;Med&quot;, metric = &quot;thresh&quot;, perc = 100:74, count = NA))
+# KS_sig &lt;- rbind(KS_sig, data.frame(site = &quot;NW_Atl&quot;, metric = &quot;thresh&quot;, perc = 100:79, count = NA))
+# KS_sig &lt;- rbind(KS_sig, data.frame(site = &quot;WA&quot;, metric = &quot;thresh&quot;, perc = 100:92, count = NA))
+
+ggplot(KS_sig, aes(x = as.numeric(trend), y = site)) +
+  geom_line(aes(group = site)) +
+  geom_point() +
+  facet_wrap(~metric, ncol = 1) +
+  # scale_x_reverse(breaks = seq(5, 35, 5)) +
+  labs(x = &quot;Added decadal trend (°C)&quot;, y = NULL)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="figure/trend.Rmd/KS-clims-1.png" alt="Dot and line plot showing the _p_-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series." width="768" />
+<p class="caption">
+Dot and line plot showing the <em>p</em>-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series.
+</p>
+</div>
+<p>Surprisingly the above figure shows that the seasonal signal is much more sensitive than the 90th percentile threshold to the addition of decadal trends. The <code>WA</code> time series remains the most sensitive with sig. dif. occurring at an added decadal trend of 0.05°C. The interesting thing here is that the <code>NW_Atl</code> threshold never had a significantly different distribution regardless of the amount added.</p>
+<p>Thinking about this more I have alighted upon the idea that because the threshold is determined by the largest values detected on any given <em>calendar day</em>, the size of the deadal trend present in the data could be deminished by the fact that some of the values creating the threshold will be from the earlier portion of the time series before the decadal trend realy starts having an effect.</p>
+</div>
+</div>
+<div id="mhw-metrics" class="section level2">
+<h2>MHW metrics</h2>
+<div id="anova" class="section level3">
+<h3>ANOVA</h3>
+<pre class="r"><code># Quick wrapper for getting results for ANOVA and Tukey on event metrics
+# df &lt;- sst_ALL_trend_clim_event_cat %&gt;%
+#   filter(site == &quot;WA&quot;) %&gt;%
+#   select(-site)
+event_aov_tukey &lt;- function(df){
+  res &lt;- df %&gt;% 
+    select(-cats) %&gt;% 
+    unnest(events) %&gt;% 
+    filter(row_number() %% 2 == 0) %&gt;% 
+    unnest(events) %&gt;% 
+    # select(trend) %&gt;% 
+    # filter(trend != &quot;0.00&quot;) %&gt;% 
+    select(trend, duration, intensity_mean, intensity_max, intensity_cumulative) %&gt;% 
+    mutate(trend = as.factor(trend)) %&gt;% 
+    nest() %&gt;% 
+    mutate(aov = map(data, aov_p),
+           tukey = map(data, aov_tukey)) %&gt;% 
+    select(-data)
+  return(res)
+}
+
+# This file is not uploaded to GitHub as it is too large
+# One must first run the above code locally to generate and save the file
+load(&quot;data/sst_ALL_trend_clim_event_cat.Rdata&quot;)
+doMC::registerDoMC(cores = 50)
+sst_ALL_trend_event_aov_tukey &lt;- plyr::ddply(sst_ALL_trend_clim_event_cat, c(&quot;site&quot;), 
+                                             event_aov_tukey, .parallel = T)
+save(sst_ALL_trend_event_aov_tukey, file = &quot;data/sst_ALL_trend_event_aov_tukey.Rdata&quot;)
+# rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</code></pre>
+<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_event_aov_tukey.Rdata&quot;)
+
+# ANOVA p
+sst_ALL_trend_event_aov_p &lt;- sst_ALL_trend_event_aov_tukey %&gt;% 
+  select(-tukey) %&gt;% 
+  unnest()
+
+event_aov_plot &lt;- sst_ALL_trend_event_aov_p %&gt;% 
+  group_by(site, metric) %&gt;% 
+  filter(p.value &lt;= 0.05) %&gt;% 
+  summarise(count = n())
+
+# visualise
+# ggplot(event_aov_plot, aes(x = site, y = metric)) +
+#   geom_tile(aes(fill = count)) +
+#   geom_text(aes(label = count)) +
+#   scale_fill_viridis_c() +
+#   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))</code></pre>
+<p>There is no figure here because there is nothing to show. None of the metrics for any of the time series were significantly different.</p>
+</div>
+<div id="post-hoc-tukey-test-1" class="section level3">
+<h3>Post-hoc Tukey test</h3>
+<pre class="r"><code>sst_ALL_trend_event_tukey &lt;- sst_ALL_trend_event_aov_tukey %&gt;% 
+  select(-aov) %&gt;% 
+  unnest()
+
+# Create a summary for better plotting
+event_tukey_summary &lt;- sst_ALL_trend_event_tukey %&gt;% 
+  separate(comparison, into = c(&quot;comp_left&quot;, &quot;comp_right&quot;), sep = &quot;-&quot;) %&gt;% 
+  mutate(comp_left = as.numeric(comp_left),
+         comp_right = as.numeric(comp_right)) %&gt;% 
+  filter(comp_left == 0 | comp_right == 0) %&gt;%
+  mutate(comp_dif = abs(round(comp_right - comp_left, 2))) %&gt;% 
+  filter(adj.p.value &lt;= 0.05) %&gt;% 
+  group_by(site, metric, comp_dif)
+
+# ggplot(event_tukey_summary, aes(x = comp_dif, y = site)) +
+#   geom_line(aes(colour = count)) +
+#   geom_point(aes(colour = count), size = 0.5) +
+#   facet_wrap(~metric, ncol = 1) +
+#   scale_colour_viridis_c() +
+#   # scale_x_reverse(breaks = seq(5, 35, 5)) +
+#   labs(x = &quot;trending data (%)&quot;, y = NULL,
+#        colour = &quot;Sig. dif.\nout of 100&quot;)</code></pre>
+<p>Nope, no differences on a pair-wise basis. How could there be when the ANOVAs weren’t significant.</p>
+</div>
+<div id="confidence-intervals" class="section level3">
+<h3>Confidence intervals</h3>
+<pre class="r"><code># Calculate CIs using a bootstrapping technique to deal with the non-normal small sample sizes
+
+# df &lt;- sst_ALL_both_event %&gt;%
+#   filter(lubridate::year(date_peak) &gt;= 2012,
+#          site == &quot;WA&quot;,
+#          trend == &quot;detrended&quot;) %&gt;%
+#   select(year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%&gt;%
+  # select(site, trend, year_index, duration, intensity_mean, intensity_max, intensity_cumulative) #%&gt;%   
+  # nest(-site, -trend)
+Bmean &lt;- function(data, indices) {
+  d &lt;- data[indices] # allows boot to select sample 
+    return(mean(d))
+} 
+
+event_CI &lt;- function(df){
+  df_conf &lt;- gather(df, key = &quot;metric&quot;, value = &quot;value&quot;) %&gt;% 
+    group_by(metric) %&gt;% 
+    # ggplot(aes(x = value)) +
+    # geom_histogram(aes(fill = metric)) +
+    # facet_wrap(~metric, scales = &quot;free_x&quot;)
+    summarise(lower = boot.ci(boot(data=value, statistic=Bmean, R=1000), type = &quot;basic&quot;)$basic[4],
+              mid = mean(value),
+              upper = boot.ci(boot(data=value, statistic=Bmean, R=1000), type = &quot;basic&quot;)$basic[5],
+              n = n()) %&gt;% 
+    mutate_if(is.numeric, round, 4)
+  return(df_conf)
+}
+
+sst_ALL_trend_event_CI &lt;- sst_ALL_trend_clim_event_cat %&gt;%
+  select(-cats) %&gt;% 
+  unnest(events) %&gt;% 
+  filter(row_number() %% 2 == 0) %&gt;% 
+  unnest(events) %&gt;% 
+  select(site, trend, duration, intensity_mean, intensity_max, intensity_cumulative) %&gt;% 
+  nest(-site, -trend) %&gt;%
+  mutate(res = map(data, event_CI)) %&gt;% 
+  select(-data) %&gt;% 
+  unnest()
+
+save(sst_ALL_trend_event_CI, file = &quot;data/sst_ALL_trend_event_CI.Rdata&quot;)</code></pre>
+<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_event_CI.Rdata&quot;)
+
+ggplot(sst_ALL_trend_event_CI, aes(x = trend)) +
+  geom_errorbar(width = 1, alpha = 0.8,
+                aes(ymin = lower, ymax = upper)) +
+  # geom_text(aes(label = n, y = upper*1.3, colour = trend), size = 3) +
+  geom_point(aes(y = mid), size = 1, alpha = 0.7) +
+  facet_grid(metric~site, scales = &quot;free_y&quot;) +
+  labs(x = &quot;Trend (°C)&quot;, y = NULL)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="figure/trend.Rmd/event-CI-plot1-1.png" alt="Confidence intervals of the MHW metrics when increasing decadal trends were added." width="768" />
+<p class="caption">
+Confidence intervals of the MHW metrics when increasing decadal trends were added.
+</p>
+</div>
+<pre class="r"><code># CI_plot_1</code></pre>
+<p>Because this set of data is smaller than the previous two vignettes I have used basic bootstrapping to create the CIs above. From these we see that the duration and int. cum. of all of the time series tend to increase as the decadal trend increase, but this is never significant. The patterns for mean and max int. are different for each time series. The <code>Med</code> remains relatively flat regardless of decadal trend, <code>WA</code> increases, and <code>NW_Atl</code> decreases. This is likely due to the distribution of MHWs throughout the time series.</p>
+</div>
+</div>
+<div id="categories" class="section level2">
+<h2>Categories</h2>
+<div id="chi-squared" class="section level3">
+<h3><em>chi</em>-squared</h3>
+<p>In order to detemine if the count of MHWs, both total and individual categories, differs based on the decadal trends present in the data, we will be performing a series of <em>chi</em>-squared tests for each site.</p>
+<pre class="r"><code># Simple wrapper for nesting
+# df &lt;- sst_ALL_trend_cat_all %&gt;% 
+#   filter(site == &quot;WA&quot;)
+chi_p &lt;- function(df){
+  res &lt;- chisq.test(table(df$trend, df$category), correct = FALSE)
+  res_tidy &lt;- broom::tidy(res)
+  return(res_tidy$p.value)
+}
+
+# Load and extract category data
+load(&quot;data/sst_ALL_trend_clim_event_cat.Rdata&quot;)
+suppressWarnings( # Suppress warning about category levels not all being present
+sst_ALL_trend_cat &lt;- sst_ALL_trend_clim_event_cat %&gt;%
+  select(-events) %&gt;%
+  unnest()
+)
+
+# Get data into the expected format
+sst_ALL_trend_cat_total &lt;- sst_ALL_trend_cat %&gt;% 
+  select(trend, site, category) %&gt;% 
+  mutate(category = &quot;total&quot;)
+
+sst_ALL_trend_cat_all &lt;- sst_ALL_trend_cat %&gt;% 
+  select(trend, site, category) %&gt;% 
+  rbind(sst_ALL_trend_cat_total)
+
+# Calculate chi-squared p-value 
+sst_ALL_trend_cat_chi &lt;- sst_ALL_trend_cat_all %&gt;% 
+  group_by(site) %&gt;% 
+  nest() %&gt;% 
+  mutate(p.value = map(data, chi_p)) %&gt;% 
+  select(-data) %&gt;% 
+  unnest()
+
+save(sst_ALL_trend_cat_chi, file = &quot;data/sst_ALL_trend_cat_chi.Rdata&quot;)</code></pre>
+<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_cat_chi.Rdata&quot;)
+
+knitr::kable(sst_ALL_trend_cat_chi, caption = &quot;Table showing the significant difference (_p_-value) for the count of different categories of events for each site based on the trends introduced into the data. No differences were found.&quot;)</code></pre>
+<table>
+<caption>Table showing the significant difference (<em>p</em>-value) for the count of different categories of events for each site based on the trends introduced into the data. No differences were found.</caption>
+<thead>
+<tr class="header">
+<th align="left">site</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Med</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">NW_Atl</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">WA</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<div id="refs">
+
+</div>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.5.3 (2019-03-11)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 16.04.5 LTS
+
+Matrix products: default
+BLAS: /usr/lib/openblas-base/libblas.so.3
+LAPACK: /usr/lib/libopenblasp-r0.2.18.so
+
+locale:
+ [1] LC_CTYPE=en_CA.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_CA.UTF-8        LC_COLLATE=en_CA.UTF-8    
+ [5] LC_MONETARY=en_CA.UTF-8    LC_MESSAGES=en_CA.UTF-8   
+ [7] LC_PAPER=en_CA.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] bindrcpp_0.2.2       ggridges_0.5.0       mgcv_1.8-24         
+ [4] nlme_3.1-137         FNN_1.1.2.1          boot_1.3-20         
+ [7] ggpubr_0.1.8         magrittr_1.5         fasttime_1.0-2      
+[10] lubridate_1.7.4      heatwaveR_0.3.6.9003 data.table_1.11.6   
+[13] broom_0.5.0          forcats_0.3.0        stringr_1.3.1       
+[16] dplyr_0.7.6          purrr_0.2.5          readr_1.1.1         
+[19] tidyr_0.8.1          tibble_1.4.2         ggplot2_3.0.0       
+[22] tidyverse_1.2.1     
+
+loaded via a namespace (and not attached):
+ [1] tidyselect_0.2.4  reshape2_1.4.3    haven_1.1.2      
+ [4] lattice_0.20-35   colorspace_1.3-2  viridisLite_0.3.0
+ [7] htmltools_0.3.6   yaml_2.2.0        plotly_4.8.0     
+[10] rlang_0.2.2       R.oo_1.22.0       pillar_1.3.0     
+[13] glue_1.3.0        withr_2.1.2       R.utils_2.7.0    
+[16] modelr_0.1.2      readxl_1.1.0      bindr_0.1.1      
+[19] plyr_1.8.4        munsell_0.5.0     gtable_0.2.0     
+[22] workflowr_1.1.1   cellranger_1.1.0  rvest_0.3.2      
+[25] R.methodsS3_1.7.1 htmlwidgets_1.2   evaluate_0.11    
+[28] labeling_0.3      knitr_1.20        highr_0.7        
+[31] Rcpp_0.12.18      scales_1.0.0      backports_1.1.2  
+[34] jsonlite_1.5      hms_0.4.2         digest_0.6.16    
+[37] stringi_1.2.4     grid_3.5.3        rprojroot_1.3-2  
+[40] cli_1.0.0         tools_3.5.3       lazyeval_0.2.1   
+[43] crayon_1.3.4      whisker_0.3-2     pkgconfig_2.0.2  
+[46] Matrix_1.2-14     xml2_1.2.0        assertthat_0.2.0 
+[49] rmarkdown_1.10    httr_1.3.1        rstudioapi_0.7   
+[52] R6_2.2.2          git2r_0.23.0      compiler_3.5.3   </code></pre>
+</div>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+<hr>
+<p>
+  This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+  analysis was created with
+  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.1
+</p>
+<hr>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

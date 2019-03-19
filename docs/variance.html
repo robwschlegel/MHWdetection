@@ -9,9 +9,11 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="Robert W Schlegel" />
 
+<meta name="date" content="2019-03-19" />
 
-<title>Home</title>
+<title>Assessing the effects of variance</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +21,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -169,6 +174,101 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
@@ -216,7 +316,9 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">Assessing the effects of variance</h1>
+<h4 class="author"><em>Robert W Schlegel</em></h4>
+<h4 class="date"><em>2019-03-19</em></h4>
 
 </div>
 
@@ -227,6 +329,21 @@ div.section {
 <li>
 <p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
 <p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20190319)</code> </summary></p>
+<p>The command <code>set.seed(20190319)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</details>
+</li>
+<li>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
 </details>
 </li>
 <li>
@@ -267,7 +384,7 @@ Note that any generated files, e.g. HTML, png, CSS, etc., are not included in t
 </ul>
 <details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
 <ul>
-<table style = "border-collapse:separate; border-spacing:5px;">
+<table style="border-collapse:separate; border-spacing:5px;">
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -293,7 +410,7 @@ Message
 Rmd
 </td>
 <td style="text-align:left;">
-<a href="https://github.com/robwschlegel/MHWdetection/blob/31cee231b60a1f9212c0114aa599e0a4780551e5/analysis/index.Rmd" target="_blank">31cee23</a>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/64ac134076a04088c834291ce86c6405eedaf672/analysis/variance.Rmd" target="_blank">64ac134</a>
 </td>
 <td style="text-align:left;">
 robwschlegel
@@ -302,136 +419,31 @@ robwschlegel
 2019-03-19
 </td>
 <td style="text-align:left;">
-Start workflowr project.
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/1285d3a2bc672a2f52dbb7b9709ff3ef63886cc2/docs/index.html" target="_blank">1285d3a</a>
-</td>
-<td style="text-align:left;">
-robwschlegel
-</td>
-<td style="text-align:left;">
-2019-03-14
-</td>
-<td style="text-align:left;">
-Last push before switching from pkgdown to workflowr for organising the research project
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/6076e2df9295a8f383e0cd94b49c88f23d493e9c/docs/index.html" target="_blank">6076e2d</a>
-</td>
-<td style="text-align:left;">
-Robert William Schlegel
-</td>
-<td style="text-align:left;">
-2019-01-23
-</td>
-<td style="text-align:left;">
-Rebuilt site to show large updates to language comparisons
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/f077587d609e004a6452b44b6daa08bdbf85e7cc/docs/index.html" target="_blank">f077587</a>
-</td>
-<td style="text-align:left;">
-Robert William Schlegel
-</td>
-<td style="text-align:left;">
-2018-09-13
-</td>
-<td style="text-align:left;">
-Rebuilt site to reflect upversion to v0.0.3
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/63438f8cd51c371dff4b2d145db8e6ca08dbbecd/docs/index.html" target="_blank">63438f8</a>
-</td>
-<td style="text-align:left;">
-Robert William Schlegel
-</td>
-<td style="text-align:left;">
-2018-09-05
-</td>
-<td style="text-align:left;">
-<ul>
-<li>Further editing to <code>time_series_duration.Rmd</code>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/4f43d086b2b3794b9f0c411887602d8b7121713e/docs/index.html" target="_blank">4f43d08</a>
-</td>
-<td style="text-align:left;">
-Robert William Schlegel
-</td>
-<td style="text-align:left;">
-2018-05-29
-</td>
-<td style="text-align:left;">
-Skeletons for methodology vignettes added
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/4fa74a7b5383d62020887e8b431eaad02ba4c7d0/docs/index.html" target="_blank">4fa74a7</a>
-</td>
-<td style="text-align:left;">
-Robert William Schlegel
-</td>
-<td style="text-align:left;">
-2018-05-25
-</td>
-<td style="text-align:left;">
-Regenerated site to reflect fixes in site structure
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-html
-</td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/12d5e4b4a890a08b6d290e5575c05c74d1876f25/docs/index.html" target="_blank">12d5e4b</a>
-</td>
-<td style="text-align:left;">
-Robert William Schlegel
-</td>
-<td style="text-align:left;">
-2018-05-24
-</td>
-<td style="text-align:left;">
-FIrst main push
+Publish analysis files
 </td>
 </tr>
 </tbody>
-</table></li>
-</ul>
+</table>
 </ul>
 <p></details></p>
 <hr />
-<p>Welcome to my research website.</p>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>The variance in a time series does not tend to have a linear relationship with whatever results one may be hoping to extract from said time series, other than to make the results less clear. It is also my opinion that one should not alter the variance of a time series artificially as this is not something that can be done in an entirely controlled manner that does not affect the “flavour” of the time series. For this reason I propose here a different methodology from the <a href="https://robwschlegel.github.io/MHWdetection/articles/time_series_duration.html">time series duration</a>, <a href="https://robwschlegel.github.io/MHWdetection/articles/missing_data.html">missing data</a>, and <a href="https://robwschlegel.github.io/MHWdetection/articles/trend.html">trend</a> vignettes.</p>
+<p>What I propose be done to measure the effects that time series variance may have on climatology and event estimation is that all of the normal steps be taken for calculating MHWs over the entire NOAA OISST dataset, and then R^2 values be calculated between the standard deviation at each pixel and the relevant climatology/MHW metrics that have been looked at elsewhere in this paper. In this way one has an organic/real-world tool to draw on for advising about how the variance one sees in ones time series may be affecting the detected events.</p>
+<p>This proposed methodology does however not control for any number of other important oceanographic features that will change regionally. But it is a good first step towards seeing if this is a useful thing to do. Should it be useful it can become part of the advice in the best practices section.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>This proposed step in the overall methodology was abandoned as it was determined not to be of enough importance to include in the paper.</p>
+<div id="refs">
+
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+</div>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
 TeX fonts only; see
@@ -454,6 +466,8 @@ footer is added to webpages before the MathJax javascript. -->
 <hr>
 
 
+</div>
+</div>
 
 </div>
 
