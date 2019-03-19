@@ -1,3 +1,7 @@
+# MHWdetection 0.0.6  (2019-03-19)
+
+* Switching from `pkgdown` to `workflowr` for project management/visualisation
+
 # MHWdetection 0.0.5  (2019-03-12)
 
 * Incorporated first round of edits from AJH

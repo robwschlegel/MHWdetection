@@ -1,8 +1,0 @@
-pandoc: 1.19.2.1
-pkgdown: 1.1.0
-pkgdown_sha: ~
-articles: []
-urls:
-  reference: https://robwschlegel.github.io/MHWdetection/index.html/reference
-  article: https://robwschlegel.github.io/MHWdetection/index.html/articles
-

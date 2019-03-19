@@ -1,7 +1,7 @@
 name: "MHWdetection"
 output_dir: "../docs"
 navbar:
-  title: "MHWdetection"
+  title: "Detecting marine heatwaves from imperfect data"
   left:
     - text: "Home"
       href: index.html
@@ -9,9 +9,29 @@ navbar:
       href: about.html
     - text: "License"
       href: license.html
+    - text: "Vignettes"
+      menu:
+      - text: "Python vs. R - default outputs"
+        href: r_vs_python.html
+      - text: "Python vs. R - default arguments"
+        href: r_vs_python_arguments.html
+      - text: "Python vs. R - additional functions"
+        href: r_vs_python_additional.html
+      - text: "Short climatologies"
+        href: Short_climatologies.html
+      - text: "Alternative climatologies and baselines"
+        href: Climatologies_and_baselines.html
+      - text: "Effects of short time series"
+        href: time_series_duration.html
+      - text: "Effects of missing data"
+        href: missing_data.html
+      - text: "Difference between gridded products"
+        href: gridded_products.html
+      - text: "Best practices"
+        href: best_practices.html
   right:
     - icon: fa-github
-      href: https://github.com/jdblischak/workflowr
+      href: https://github.com/robwschlegel/MHWdetection
 output:
   workflowr::wflow_html:
     toc: true
