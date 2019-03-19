@@ -279,7 +279,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHWdetection</a>
+      <a class="navbar-brand" href="index.html">Detecting marine heatwaves from imperfect data</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -292,10 +292,46 @@ div.tocify {
 <li>
   <a href="license.html">License</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    </li>
+    <li>
+      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+    </li>
+    <li>
+      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+    </li>
+    <li>
+      <a href="Short_climatologies.html">Short climatologies</a>
+    </li>
+    <li>
+      <a href="Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
+    </li>
+    <li>
+      <a href="time_series_duration.html">Effects of short time series</a>
+    </li>
+    <li>
+      <a href="missing_data.html">Effects of missing data</a>
+    </li>
+    <li>
+      <a href="gridded_products.html">Difference between gridded products</a>
+    </li>
+    <li>
+      <a href="best_practices.html">Best practices</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/jdblischak/workflowr">
+  <a href="https://github.com/robwschlegel/MHWdetection">
     <span class="fa fa-github"></span>
      
   </a>
@@ -337,8 +373,8 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20190319)</code> </summary></p>
-<p>The command <code>set.seed(20190319)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
+<p>The command <code>set.seed(666)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
 </details>
 </li>
 <li>
@@ -347,36 +383,184 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/64ac134076a04088c834291ce86c6405eedaf672" target="_blank">64ac134</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/970b22c7c2cae4e09824722f8bf1d87fb5118a73" target="_blank">970b22c</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    vignettes/data/sst_ALL_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_event_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_flat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_cat_chi.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_event_cat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_repl.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_event.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_clim_only.Rdata
+    Ignored:    data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_flat.Rdata
+    Ignored:    data/sst_ALL_miss.Rdata
+    Ignored:    data/sst_ALL_miss_cat_chi.Rdata
+    Ignored:    data/sst_ALL_miss_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_miss_clim_only.Rdata
+    Ignored:    data/sst_ALL_miss_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_repl.Rdata
+    Ignored:    data/sst_ALL_smooth.Rdata
+    Ignored:    data/sst_ALL_smooth_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_smooth_event.Rdata
+    Ignored:    data/sst_ALL_trend.Rdata
+    Ignored:    data/sst_ALL_trend_clim_event_cat.Rdata
 
 Untracked files:
     Untracked:  analysis/bibliography.bib
-    Untracked:  analysis/data/
     Untracked:  code/functions.R
     Untracked:  code/workflow.R
+    Untracked:  data/.gitignore
+    Untracked:  data/clim_py.csv
+    Untracked:  data/clim_py_joinAG_1.csv
+    Untracked:  data/clim_py_joinAG_5.csv
+    Untracked:  data/clim_py_joinAG_no.csv
+    Untracked:  data/clim_py_minD_3.csv
+    Untracked:  data/clim_py_minD_7.csv
+    Untracked:  data/clim_py_pctile_80.csv
+    Untracked:  data/clim_py_pctile_95.csv
+    Untracked:  data/clim_py_pctile_99.csv
+    Untracked:  data/clim_py_random.csv
+    Untracked:  data/clim_py_spw_11.csv
+    Untracked:  data/clim_py_spw_51.csv
+    Untracked:  data/clim_py_spw_no.csv
+    Untracked:  data/clim_py_whw_3.csv
+    Untracked:  data/clim_py_whw_7.csv
+    Untracked:  data/mhwBlock.csv
+    Untracked:  data/mhws_py.csv
+    Untracked:  data/mhws_py_joinAG_1.csv
+    Untracked:  data/mhws_py_joinAG_5.csv
+    Untracked:  data/mhws_py_joinAG_no.csv
+    Untracked:  data/mhws_py_minD_3.csv
+    Untracked:  data/mhws_py_minD_7.csv
+    Untracked:  data/mhws_py_pctile_80.csv
+    Untracked:  data/mhws_py_pctile_95.csv
+    Untracked:  data/mhws_py_pctile_99.csv
+    Untracked:  data/mhws_py_random.csv
+    Untracked:  data/mhws_py_spw_11.csv
+    Untracked:  data/mhws_py_spw_51.csv
+    Untracked:  data/mhws_py_spw_no.csv
+    Untracked:  data/mhws_py_whw_3.csv
+    Untracked:  data/mhws_py_whw_7.csv
+    Untracked:  data/sst_ALL.Rdata
+    Untracked:  data/sst_ALL_KS.Rdata
+    Untracked:  data/sst_ALL_cat_chi.Rdata
+    Untracked:  data/sst_ALL_clim_category_count.Rdata
+    Untracked:  data/sst_ALL_con.Rdata
+    Untracked:  data/sst_ALL_detrend.Rdata
+    Untracked:  data/sst_ALL_event_cor.Rdata
+    Untracked:  data/sst_ALL_miss_clim_KS_p.Rdata
+    Untracked:  data/sst_ALL_miss_clim_aov_p.Rdata
+    Untracked:  data/sst_ALL_miss_clim_aov_tukey.Rdata
+    Untracked:  data/sst_ALL_miss_event_CI.Rdata
+    Untracked:  data/sst_ALL_smooth_R2.Rdata
+    Untracked:  data/sst_ALL_smooth_R2_base.Rdata
+    Untracked:  data/sst_ALL_smooth_cor_base.Rdata
+    Untracked:  data/sst_ALL_smooth_real_category.Rdata
+    Untracked:  data/sst_ALL_trend_cat_chi.Rdata
+    Untracked:  data/sst_ALL_trend_clim_KS_p.Rdata
+    Untracked:  data/sst_ALL_trend_clim_aov_tukey.Rdata
+    Untracked:  data/sst_ALL_trend_clim_only.Rdata
+    Untracked:  data/sst_ALL_trend_event_CI.Rdata
+    Untracked:  data/sst_ALL_trend_event_aov_tukey.Rdata
     Untracked:  data/sst_WA.csv
-    Untracked:  docs/figure/
+    Untracked:  data/sst_WA_miss_ice.csv
+    Untracked:  data/sst_WA_miss_random.csv
 
 Unstaged changes:
+    Deleted:    .Rbuildignore
+    Modified:   .gitignore
+    Deleted:    DESCRIPTION
+    Deleted:    NAMESPACE
     Modified:   NEWS.md
+    Deleted:    R/MHWdetection-package.R
+    Deleted:    R/placeholder.R
+    Modified:   README.md
+    Deleted:    _pkgdown.yml
+    Modified:   _workflowr.yml
+    Modified:   analysis/_site.yml
+    Deleted:    docs/articles/fig/heatwaveR_v3.svg
+    Deleted:    docs/docsearch.css
+    Deleted:    docs/docsearch.js
+    Deleted:    docs/link.svg
+    Deleted:    docs/pkgdown.css
+    Deleted:    docs/pkgdown.js
+    Deleted:    docs/pkgdown.yml
+    Deleted:    docs/sitemap.xml
+    Deleted:    man/MHWdetection-package.Rd
+    Deleted:    man/placeholder.Rd
+    Deleted:    tests/testthat.R
+    Deleted:    tests/testthat/test-placeholder.R
+    Deleted:    vignettes/.gitignore
+    Deleted:    vignettes/Climatologies_and_baselines.Rmd
+    Deleted:    vignettes/Short_climatologies.Rmd
+    Deleted:    vignettes/best_practices.Rmd
+    Deleted:    vignettes/bibliography.bib
+    Deleted:    vignettes/data/.gitignore
+    Deleted:    vignettes/data/clim_py.csv
+    Deleted:    vignettes/data/clim_py_joinAG_1.csv
+    Deleted:    vignettes/data/clim_py_joinAG_5.csv
+    Deleted:    vignettes/data/clim_py_joinAG_no.csv
+    Deleted:    vignettes/data/clim_py_minD_3.csv
+    Deleted:    vignettes/data/clim_py_minD_7.csv
+    Deleted:    vignettes/data/clim_py_pctile_80.csv
+    Deleted:    vignettes/data/clim_py_pctile_95.csv
+    Deleted:    vignettes/data/clim_py_pctile_99.csv
+    Deleted:    vignettes/data/clim_py_random.csv
+    Deleted:    vignettes/data/clim_py_spw_11.csv
+    Deleted:    vignettes/data/clim_py_spw_51.csv
+    Deleted:    vignettes/data/clim_py_spw_no.csv
+    Deleted:    vignettes/data/clim_py_whw_3.csv
+    Deleted:    vignettes/data/clim_py_whw_7.csv
+    Deleted:    vignettes/data/mhwBlock.csv
+    Deleted:    vignettes/data/mhws_py.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_1.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_5.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_no.csv
+    Deleted:    vignettes/data/mhws_py_minD_3.csv
+    Deleted:    vignettes/data/mhws_py_minD_7.csv
+    Deleted:    vignettes/data/mhws_py_pctile_80.csv
+    Deleted:    vignettes/data/mhws_py_pctile_95.csv
+    Deleted:    vignettes/data/mhws_py_pctile_99.csv
+    Deleted:    vignettes/data/mhws_py_random.csv
+    Deleted:    vignettes/data/mhws_py_spw_11.csv
+    Deleted:    vignettes/data/mhws_py_spw_51.csv
+    Deleted:    vignettes/data/mhws_py_spw_no.csv
+    Deleted:    vignettes/data/mhws_py_whw_3.csv
+    Deleted:    vignettes/data/mhws_py_whw_7.csv
+    Deleted:    vignettes/data/sst_ALL.Rdata
+    Deleted:    vignettes/data/sst_ALL_KS.Rdata
+    Deleted:    vignettes/data/sst_ALL_cat_chi.Rdata
+    Deleted:    vignettes/data/sst_ALL_clim_category_count.Rdata
+    Deleted:    vignettes/data/sst_ALL_con.Rdata
+    Deleted:    vignettes/data/sst_ALL_detrend.Rdata
+    Deleted:    vignettes/data/sst_ALL_event_cor.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_KS_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_event_CI.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_event_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_R2.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_R2_base.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_cor_base.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_real_category.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_cat_chi.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_KS_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_only.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_event_CI.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_event_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_WA.csv
+    Deleted:    vignettes/data/sst_WA_miss_ice.csv
+    Deleted:    vignettes/data/sst_WA_miss_random.csv
+    Deleted:    vignettes/fig/detect_diagram.svg
+    Deleted:    vignettes/fig/heatwaveR_v3.svg
+    Deleted:    vignettes/gridded_products.Rmd
+    Deleted:    vignettes/missing_data.Rmd
+    Deleted:    vignettes/r_vs_python.Rmd
+    Deleted:    vignettes/r_vs_python_additional.Rmd
+    Deleted:    vignettes/r_vs_python_arguments.Rmd
+    Deleted:    vignettes/time_series_duration.Rmd
+    Deleted:    vignettes/trend.Rmd
+    Deleted:    vignettes/variance.Rmd
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -405,6 +589,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/970b22c7c2cae4e09824722f8bf1d87fb5118a73/analysis/missing_data.Rmd" target="_blank">970b22c</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Publish the vignettes from when this was a pkgdown framework
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/missing_data.html" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -508,7 +726,7 @@ sst_ALL_con &lt;- plyr::ddply(filter(sst_ALL_miss, miss != 0),
                            c(&quot;site&quot;, &quot;miss&quot;, &quot;rep&quot;), con_miss, .parallel = T)
 save(sst_ALL_con, file = &quot;data/sst_ALL_con.Rdata&quot;)</code></pre>
 <pre class="r"><code># Load consecutive miss count data
-load(&quot;~/MHWdetection/analysis/data/sst_ALL_con.Rdata&quot;)
+load(&quot;data/sst_ALL_con.Rdata&quot;)
 
 # Prep the con results for plotting
 sst_ALL_con_plot &lt;- sst_ALL_con %&gt;% 
@@ -542,6 +760,36 @@ ggplot(sst_ALL_con_plot, aes(x = as.numeric(miss), y = duration, colour = count)
 Dot and line plot showing the average count of consecutive missing days of data as the percentage of missing data increases. The colour scale is log transformed.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of con-miss-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/con-miss-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code># Ridgeline plot
 # ggplot(sst_ALL_con_plot_sub, aes(x = duration, y = as.factor(prop), fill = ..x..)) +
 #   # geom_density_ridges() +
@@ -608,7 +856,7 @@ sst_ALL_miss_clim_only &lt;- plyr::ddply(sst_ALL_miss_clim_event_cat, c(&quot;mi
 save(sst_ALL_miss_clim_only, file = &quot;data/sst_ALL_miss_clim_only.Rdata&quot;)</code></pre>
 <pre class="r"><code># This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
-load(&quot;~/MHWdetection/analysis/data/sst_ALL_miss_clim_only.Rdata&quot;)
+load(&quot;data/sst_ALL_miss_clim_only.Rdata&quot;)
 
 # visualise
 ggplot(arrange(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), -as.numeric(miss)), 
@@ -623,6 +871,36 @@ ggplot(arrange(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), -as.
 The seasonal signals created from time series with increasing percentages of missing data.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-miss-seas-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/clim-miss-seas-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediterranean (<code>Med</code>) and North West Atlantic (<code>NW_Atl</code>) times series. The signal does appear to vary both above and below the real signal after approaching the ~40% missing data mark for the Western Australia (<code>WA</code>) time series.</p>
 <pre class="r"><code>ggplot(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), 
        aes(y = thresh, x = doy, colour = as.numeric(miss)*100)) +
@@ -636,6 +914,36 @@ The seasonal signals created from time series with increasing percentages of mis
 The 90th percentile thresholds created from time series with increasing percentages of missing data.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-miss-thresh-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/clim-miss-thresh-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>We see above that the 90th percentile threshold appears to decrease linearly the larger the percentage of missing data becomes. This is most pronounced for the Western Australia (<code>WA</code>) time series. This will likely have a significant impact on the size of the MHWs detected.</p>
 <div id="anova-p-values" class="section level3">
 <h3>ANOVA <em>p</em>-values</h3>
@@ -688,7 +996,7 @@ sst_ALL_miss_clim_aov_tukey &lt;- plyr::ddply(sst_ALL_miss_clim_only, c(&quot;si
                                            clim_aov_tukey, .parallel = T)
 save(sst_ALL_miss_clim_aov_tukey, file = &quot;data/sst_ALL_miss_clim_aov_tukey.Rdata&quot;)
 # rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_miss_clim_aov_tukey.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_miss_clim_aov_tukey.Rdata&quot;)
 
 sst_ALL_miss_clim_aov &lt;- sst_ALL_miss_clim_aov_tukey %&gt;% 
   select(-tukey) %&gt;% 
@@ -704,6 +1012,36 @@ ggplot(sst_ALL_miss_clim_aov, aes(x = site, y = metric)) +
 Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of missing data. The 90th percentile thresholds are significantly different at p &lt; 0.05 but the seasonal signals are not.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-miss-AOV-p-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/clim-miss-AOV-p-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The difference for the 90th percentile thresholds from missing data significant, but the seasonal signals do not differ. At first the extreme contrast here seems odd, but if you think about it this is what we should expect, on average. Randomly removing data from a fixed sample we are just as likely to remove data above and below the mean, so the sample mean will not change. However, as we remove data we will reduce the size of the tails (on average) i.e. they will contract towards the median of the distribution. This will lead to an under-estimate of the 90th percentile, and an over-estimate of the 10th percentile. This means that as more data are missing in a time series, the more the threshold for what is considered a MHW will be lowered. Ideally we could come up with a recommended correction to the threshold given a proportion of missing data.</p>
 </div>
 <div id="post-hoc-tukey-test" class="section level3">
@@ -764,6 +1102,36 @@ ggplot(clim_tukey_summary, aes(x = miss_small)) +
 Segments showing the range of the percent of missing data present when climatologies were significantly different. The x and y axes show the percent of missing data.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-tukey-heat-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/clim-tukey-heat-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The above figure shows the results of all possible pairwise comparisons from the ANOVA looking at the difference in threshold climatologies for different percentages of missing data. Curiously the time series missing no data do not seem to be significantly different from any of the missing data time series. I’m not convinced by this and will need to re-examine the results (a third time). Otherwise this figure shows us that the thresholds diverge from each other very quickly.</p>
 <p>Ultimately I don’t think this is very useful.</p>
 </div>
@@ -807,6 +1175,36 @@ ggplot(filter(sst_ALL_miss_clim_CI, metric != &quot;seas&quot;),
 Confidence intervals of the MHW metrics for each missing data step for all three time series.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-miss-CI-plot-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/clim-miss-CI-plot-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Whereas <em>p</em>-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. The seasonal signal is not included in the above figure as any changes caused by missing data are nearly imperceptible. With the 90th percentile threshold (thresh) however, the more data are missing the lower the 90th percentile threshold tends to become. This appears to be because the seasonal signal is a smooth composite of the available data whereas the 90th percentile threshold is affected by large amounts of missing data because that prevents the accurate creation of the 90th percentile thresholds due to the many large (outlier-like, but real) values that are not included in the calculation, which by necessity requires large values to be calculated accurately.</p>
 <p>Overall this analysis/figure is not very helpful.</p>
 </div>
@@ -842,7 +1240,7 @@ sst_ALL_miss_clim_KS_p &lt;- sst_ALL_miss_clim_only %&gt;%
   gather(key = metric, value = p.value, -site, - miss, -rep)
 )
 save(sst_ALL_miss_clim_KS_p, file = &quot;data/sst_ALL_miss_clim_KS_p.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_miss_clim_KS_p.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_miss_clim_KS_p.Rdata&quot;)
 
 # Filter non-significant results
 KS_sig &lt;- sst_ALL_miss_clim_KS_p %&gt;% 
@@ -877,6 +1275,36 @@ ggplot(KS_sig, aes(x = miss*100, y = site)) +
 Line plot showing the <em>p</em>-value results from KS tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three reference time series.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of KS-clims-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/KS-clims-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>As we se in the line graph above, it is the Western Australia (<code>WA</code>) time series that most quickly deviate from the real signal when missing data are introduced. I think this is due to a combination of two things. The first is that the smaller the seasonal signal is, the more sensitive the data are when trying to create an accurate climatology. The second reason is that the more variance there is in a time series, apart from the seasonal signal, the more sensitive the data are to accurate climatology creation. The <code>WA</code> time series hits both of these problems and so this comes through clearly in the results.</p>
 </div>
 <div id="correlations" class="section level3">
@@ -912,6 +1340,36 @@ ggplot(sst_ALL_miss_cor, aes(x = duration, y = r)) +
 Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests. Consecutive missing days are a much better predictor for thresholds than for seasonal signals.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-cor-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/clim-cor-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>This plot shows the count of consecutive days of missing data is a very good indicator of whether or not the 90th percentile threshold will be significantly different from the control time series. This works best for counts of consecutive days below 5, and works a bit more poorly for the <code>WA</code> time series.</p>
 <p>It must now be seen what the relationship is between count of consecutive missing days at each day step and the corresponding <em>p</em>-values.</p>
 </div>
@@ -950,7 +1408,7 @@ sst_ALL_miss_event_aov_tukey &lt;- plyr::ddply(sst_ALL_miss_clim_event_cat, c(&q
                                             event_aov_tukey, .parallel = T)
 save(sst_ALL_miss_event_aov_tukey, file = &quot;data/sst_ALL_miss_event_aov_tukey.Rdata&quot;)
 # rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_miss_event_aov_tukey.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_miss_event_aov_tukey.Rdata&quot;)
 
 # ANOVA p
 sst_ALL_miss_event_aov_p &lt;- sst_ALL_miss_event_aov_tukey %&gt;% 
@@ -974,6 +1432,36 @@ ggplot(event_aov_plot, aes(x = site, y = metric)) +
 Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for all proportions of missing data per reference time series. The differences are significant (<em>p</em> &lt;0.05) for all of the metrics.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of event-aov-plot-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/event-aov-plot-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>As we may see in the figure above, the duration (and likely therefore cummulative intensity) of events always differed significantly when missing data were introduced into a time series. For the <code>NW_Atl</code> time series all of the metrics were always significantly different, with mean and max intensities occassionally being different for <code>Med</code>, and never for <code>WA</code>. To see where these differences materialise we will visualise the post-hoc Tukey test results.</p>
 </div>
 <div id="post-hoc-tukey-test-1" class="section level3">
@@ -1007,6 +1495,36 @@ ggplot(event_tukey_summary, aes(x = comp_dif*100, y = site)) +
 Segments showing the range of the percent of missing data present when climatologies were significantly different.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of event-tukey-line-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/event-tukey-line-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The figure above shows that significant differences in the duration (and therefore cummulative intensity) of events begins occurring as soon as 9% of data are missing in the <code>NW_Atl</code> time series, 15% in <code>Med</code>, and 18% in <code>WA</code>. Only the <code>NW_Atl</code> showed any real signs of significant differences for max and mean intensities and these don’t begin until 31%.</p>
 </div>
 <div id="confidence-intervals-1" class="section level3">
@@ -1048,7 +1566,7 @@ sst_ALL_miss_event_CI &lt;- sst_ALL_miss_clim_event_cat %&gt;%
   unnest()
 
 save(sst_ALL_miss_event_CI, file = &quot;data/sst_ALL_miss_event_CI.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_miss_event_CI.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_miss_event_CI.Rdata&quot;)
 
 ggplot(sst_ALL_miss_event_CI, aes(x = as.factor(miss))) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5,
@@ -1062,6 +1580,36 @@ ggplot(sst_ALL_miss_event_CI, aes(x = as.factor(miss))) +
 Confidence intervals of the different metrics for the different proportions of missing data. Note that the <em>y</em>-axes are not the same.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of event-miss-CI-plot-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/event-miss-CI-plot-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>There is generally a slight decrease in the max and mean intensity of events as one increases the amounts of missing data, but the range of these values also tends to increase. This is important to note as it means that one may not say with certainty that the more data are missing from a time series, the less intense the MHWs detected will be. We see however that the median duration and cum. intensity are rather similar for all missing data steps.</p>
 <p>As the proportion of missing data are increased, the climatological means stay the same (so anomalies are unchanged) but the thresholds are reduced. Therefore, events will start and end at smaller temperature anomalies thus bringing down the mean intensity but raising the duration. We do not howeversee this increase in duration due to the fact that all of these missing days start dividing up the events into multiple shorter events. More on this in the categories section.</p>
 </div>
@@ -1104,6 +1652,36 @@ ggplot(sst_ALL_miss_event_cor, aes(x = duration, y = r)) +
 Dot plot showing the relationship between number of consecutive missing days and the significant difference of the MHW metric from the control.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of event-cor-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/event-cor-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The correlations shown above as dot plots tell us that the count of consecutive missing days from 1 – 3 are a very good indicator of whether or not the duration (and int. cum.) will be significantly different from a time series with no missing data. For intensity max and mean it looks like the count of consecutive missing days from 4 – 6 is the best indicator, with no real pattern emerging for the <code>WA</code> time series.</p>
 <pre class="r"><code>ggplot(filter(sst_ALL_miss_event_joined, duration &lt;= 8), 
        aes(x = count, y = adj.p.value, colour = as.factor(duration))) +
@@ -1118,6 +1696,36 @@ Dot plot showing the relationship between number of consecutive missing days and
 Linear models showing the relationship between count of consecutive missing days in a time series and the probability (<em>p</em>-value) that the time series will be different from the control.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of event-cor-linear-plot-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/event-cor-linear-plot-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The figure above shows that the relationships between the count of consecutive missing days and the <em>p</em>-value comparing that time series against the control is srongest for duration (and int. cum.) at lower consecutive missing day, but that the strength of this relationship is due to the tails at the top and bottom of the distribution of results and so this isn’t necessarily as good of a predictor as it may have initially looked. This is more a case of large sample sizes producing sexy results. That being said, coount of consecutive missing days at 2 and 3 may be useful later on in the best practices.</p>
 </div>
 </div>
@@ -1127,7 +1735,7 @@ Linear models showing the relationship between count of consecutive missing days
 <h3><em>chi</em>-squared</h3>
 <p>In order to detemine if the count of MHW categories differs based on the percent of missing data, we will be performing a series of <em>chi</em>-squared tests for each site and rep. We will combine category 3 and 4 events together as this will make the resuls more robust and we are interested specifically in how these two categories differ more so than the other smaller two categories.</p>
 <pre class="r"><code># Load and extract category data
-load(&quot;~/MHWdetection/analysis/data/sst_ALL_miss_clim_event_cat.Rdata&quot;)
+load(&quot;data/sst_ALL_miss_clim_event_cat.Rdata&quot;)
 suppressWarnings( # Suppress warning about category levels not all being present
 sst_ALL_miss_cat &lt;- sst_ALL_miss_clim_event_cat %&gt;%
   select(-events) %&gt;%
@@ -1179,7 +1787,7 @@ sst_ALL_miss_cat_chi &lt;- sst_ALL_miss_cat_prep %&gt;%
                 miss_comp = Var1, category = Var2)
 )
 save(sst_ALL_miss_cat_chi, file = &quot;data/sst_ALL_miss_cat_chi.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_miss_cat_chi.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_miss_cat_chi.Rdata&quot;)
 
 sst_ALL_miss_cat_chi_sig &lt;- sst_ALL_miss_cat_chi %&gt;% 
   filter(p.value &lt;= 0.05) %&gt;% 
@@ -1189,7 +1797,7 @@ sst_ALL_miss_cat_chi_sig &lt;- sst_ALL_miss_cat_chi %&gt;%
   summarise(count = n())
 
 knitr::kable(sst_ALL_miss_cat_chi_sig, caption = &quot;Table showing the count out of 100 for significant differences (_p_-value) for the count of different categories of events for each site based on the amount of missing data present.&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_miss_cat_chi.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_miss_cat_chi.Rdata&quot;)
 
 # Prep data for plotting
 chi_sig &lt;- sst_ALL_miss_cat_chi %&gt;% 
@@ -1213,6 +1821,36 @@ ggplot(chi_sig, aes(x = as.numeric(miss)*100, y = site)) +
 Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a <em>chi</em>-squared test.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of chi-pair-plot-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/chi-pair-plot-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The line plot above shows at what point the category counts begin to differ significantly from time series with no missing data. The difference in count appears to be realted to the variance in the time series, with the <code>WA</code> becoming different the quickest, and the <code>Med</code> the slowest.</p>
 </div>
 <div id="post-hoc-chi-squared" class="section level3">
@@ -1231,7 +1869,7 @@ Line graph showing the count of times out of 100 random replicates when a given 
 <div id="ice-coverage" class="section level3">
 <h3>Ice coverage</h3>
 <p>To simulate ice cover we will remove the three winter months from each time series. Because two of the three time series are from the northern hemisphere, the times removed will not be the same for all time series.</p>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_detrend.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_detrend.Rdata&quot;)
 # Knock-out ice coverage
 sst_WA_ice &lt;- sst_ALL_detrend %&gt;% 
   filter(site == &quot;WA&quot;) %&gt;% 
@@ -1263,6 +1901,36 @@ ggplot(sst_ALL_ice, aes(x = t, y = temp)) +
 The three time series with artificial ice cover in the winter months removed. The missing data may be seen as a faint grey line filling in the winter months.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of ice-cover-line-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/ice-cover-line-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>In the figure above we see that removing the winter months for the Mediterranean and Northwest Atlantic time series produces relatively even missing gaps near the bottom of each seasonal cycle. The Western Australia time series appears to have a much less regular seasonal signal and so the missing data periods vary somewhat more.</p>
 <pre class="r"><code># Calculate the thresholds for all of the created time series
 sst_ALL_ice_clim &lt;- sst_ALL_ice %&gt;% 
@@ -1294,6 +1962,36 @@ ggplot(sst_ALL_ice_clim_only, aes(x = doy, y = seas)) +
 Line graph showing the seasonal signal calculated from time series with a simulated 3 months of ice coverage. The seasonal signal based on the complete time series is shown in grey behind.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of ice-seas-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/ice-seas-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>We may see in the figure above that the calculated seasonal climatologies from the ‘ice coverage’ time series appear to be nearly identical to those from complete time series. The <code>WA</code> does however look to be slightly different.</p>
 <div id="t-test-p-values" class="section level5">
 <h5>t-test <em>p</em>-values</h5>
@@ -1334,6 +2032,36 @@ ggplot(sst_ALL_ice_clim_ttest_p, aes(x = site, y = stat)) +
 Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those with ice coverage.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of ice-ttest-p-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/ice-ttest-p-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>From the heatmap above we see that there is no difference in the climatologies calculated when there is ice coverage.</p>
 </div>
 <div id="kolmogorov-smirnov-1" class="section level5">
@@ -1372,6 +2100,36 @@ ggplot(sst_ALL_ice_clim_KS_p, aes(x = site, y = stat)) +
 Heatmap showing the Kolmogorov-Smirnov <em>p</em>-values from comparing the climatology distributions for complete against ice coverage time series.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of ice-KS-clims-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/ice-KS-clims-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Here we see that the overall shape of the climatologies for the <code>WA</code> time series do differ significantly when ice coverage is present. It should be pointed out that ann earlier version of this analysis used time series with the original decadal trends left in (rather than using the de-trended time series here) and no significant differences were found.</p>
 </div>
 </div>
@@ -1453,6 +2211,36 @@ ggplot(sst_ALL_2_day, aes(x = t, y = temp)) +
 The three time series when weekend days have been removed. The complete time series is shown behind as a faint grey line.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of 2-day-line-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/2-day-line-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code># Calculate the thresholds for all of the created time series
 sst_ALL_2_day_clim &lt;- sst_ALL_2_day %&gt;% 
   group_by(site) %&gt;% 
@@ -1503,6 +2291,36 @@ ggplot(sst_ALL_2_day_clim_ttest_p, aes(x = site, y = stat)) +
 Heatmap showing the t-test results for the comparisons of the clim values for complete time series vs. those missing weekend days.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of 2-day-ttest-p-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/2-day-ttest-p-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The seasonal signals and 90th percentile thresholds do not differ appreciably.</p>
 <p>As I’ve run a t-test here and not an ANOVA, I am not going to manually generate CI’s. Also, there are only two time series being compared here so CI’s aren’t as meaningful.</p>
 </div>
@@ -1538,6 +2356,36 @@ ggplot(sst_ALL_2_day_clim_KS_p, aes(x = site, y = stat)) +
 Heatmap showing the Kolmogorov-Smirnov <em>p</em>-values from comparing the climatology distributions for complete against missing weekend time series.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of 2-day-KS-clims-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/missing_data.Rmd/2-day-KS-clims-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Jip, differences.</p>
 </div>
 </div>

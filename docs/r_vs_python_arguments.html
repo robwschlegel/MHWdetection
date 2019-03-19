@@ -279,7 +279,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHWdetection</a>
+      <a class="navbar-brand" href="index.html">Detecting marine heatwaves from imperfect data</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -292,10 +292,46 @@ div.tocify {
 <li>
   <a href="license.html">License</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    </li>
+    <li>
+      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+    </li>
+    <li>
+      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+    </li>
+    <li>
+      <a href="Short_climatologies.html">Short climatologies</a>
+    </li>
+    <li>
+      <a href="Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
+    </li>
+    <li>
+      <a href="time_series_duration.html">Effects of short time series</a>
+    </li>
+    <li>
+      <a href="missing_data.html">Effects of missing data</a>
+    </li>
+    <li>
+      <a href="gridded_products.html">Difference between gridded products</a>
+    </li>
+    <li>
+      <a href="best_practices.html">Best practices</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/jdblischak/workflowr">
+  <a href="https://github.com/robwschlegel/MHWdetection">
     <span class="fa fa-github"></span>
      
   </a>
@@ -337,8 +373,8 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20190319)</code> </summary></p>
-<p>The command <code>set.seed(20190319)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
+<p>The command <code>set.seed(666)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
 </details>
 </li>
 <li>
@@ -347,36 +383,184 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/64ac134076a04088c834291ce86c6405eedaf672" target="_blank">64ac134</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/970b22c7c2cae4e09824722f8bf1d87fb5118a73" target="_blank">970b22c</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    vignettes/data/sst_ALL_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_event_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_flat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_cat_chi.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_event_cat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_repl.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_event.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_clim_only.Rdata
+    Ignored:    data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_flat.Rdata
+    Ignored:    data/sst_ALL_miss.Rdata
+    Ignored:    data/sst_ALL_miss_cat_chi.Rdata
+    Ignored:    data/sst_ALL_miss_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_miss_clim_only.Rdata
+    Ignored:    data/sst_ALL_miss_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_repl.Rdata
+    Ignored:    data/sst_ALL_smooth.Rdata
+    Ignored:    data/sst_ALL_smooth_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_smooth_event.Rdata
+    Ignored:    data/sst_ALL_trend.Rdata
+    Ignored:    data/sst_ALL_trend_clim_event_cat.Rdata
 
 Untracked files:
     Untracked:  analysis/bibliography.bib
-    Untracked:  analysis/data/
     Untracked:  code/functions.R
     Untracked:  code/workflow.R
+    Untracked:  data/.gitignore
+    Untracked:  data/clim_py.csv
+    Untracked:  data/clim_py_joinAG_1.csv
+    Untracked:  data/clim_py_joinAG_5.csv
+    Untracked:  data/clim_py_joinAG_no.csv
+    Untracked:  data/clim_py_minD_3.csv
+    Untracked:  data/clim_py_minD_7.csv
+    Untracked:  data/clim_py_pctile_80.csv
+    Untracked:  data/clim_py_pctile_95.csv
+    Untracked:  data/clim_py_pctile_99.csv
+    Untracked:  data/clim_py_random.csv
+    Untracked:  data/clim_py_spw_11.csv
+    Untracked:  data/clim_py_spw_51.csv
+    Untracked:  data/clim_py_spw_no.csv
+    Untracked:  data/clim_py_whw_3.csv
+    Untracked:  data/clim_py_whw_7.csv
+    Untracked:  data/mhwBlock.csv
+    Untracked:  data/mhws_py.csv
+    Untracked:  data/mhws_py_joinAG_1.csv
+    Untracked:  data/mhws_py_joinAG_5.csv
+    Untracked:  data/mhws_py_joinAG_no.csv
+    Untracked:  data/mhws_py_minD_3.csv
+    Untracked:  data/mhws_py_minD_7.csv
+    Untracked:  data/mhws_py_pctile_80.csv
+    Untracked:  data/mhws_py_pctile_95.csv
+    Untracked:  data/mhws_py_pctile_99.csv
+    Untracked:  data/mhws_py_random.csv
+    Untracked:  data/mhws_py_spw_11.csv
+    Untracked:  data/mhws_py_spw_51.csv
+    Untracked:  data/mhws_py_spw_no.csv
+    Untracked:  data/mhws_py_whw_3.csv
+    Untracked:  data/mhws_py_whw_7.csv
+    Untracked:  data/sst_ALL.Rdata
+    Untracked:  data/sst_ALL_KS.Rdata
+    Untracked:  data/sst_ALL_cat_chi.Rdata
+    Untracked:  data/sst_ALL_clim_category_count.Rdata
+    Untracked:  data/sst_ALL_con.Rdata
+    Untracked:  data/sst_ALL_detrend.Rdata
+    Untracked:  data/sst_ALL_event_cor.Rdata
+    Untracked:  data/sst_ALL_miss_clim_KS_p.Rdata
+    Untracked:  data/sst_ALL_miss_clim_aov_p.Rdata
+    Untracked:  data/sst_ALL_miss_clim_aov_tukey.Rdata
+    Untracked:  data/sst_ALL_miss_event_CI.Rdata
+    Untracked:  data/sst_ALL_smooth_R2.Rdata
+    Untracked:  data/sst_ALL_smooth_R2_base.Rdata
+    Untracked:  data/sst_ALL_smooth_cor_base.Rdata
+    Untracked:  data/sst_ALL_smooth_real_category.Rdata
+    Untracked:  data/sst_ALL_trend_cat_chi.Rdata
+    Untracked:  data/sst_ALL_trend_clim_KS_p.Rdata
+    Untracked:  data/sst_ALL_trend_clim_aov_tukey.Rdata
+    Untracked:  data/sst_ALL_trend_clim_only.Rdata
+    Untracked:  data/sst_ALL_trend_event_CI.Rdata
+    Untracked:  data/sst_ALL_trend_event_aov_tukey.Rdata
     Untracked:  data/sst_WA.csv
-    Untracked:  docs/figure/
+    Untracked:  data/sst_WA_miss_ice.csv
+    Untracked:  data/sst_WA_miss_random.csv
 
 Unstaged changes:
+    Deleted:    .Rbuildignore
+    Modified:   .gitignore
+    Deleted:    DESCRIPTION
+    Deleted:    NAMESPACE
     Modified:   NEWS.md
+    Deleted:    R/MHWdetection-package.R
+    Deleted:    R/placeholder.R
+    Modified:   README.md
+    Deleted:    _pkgdown.yml
+    Modified:   _workflowr.yml
+    Modified:   analysis/_site.yml
+    Deleted:    docs/articles/fig/heatwaveR_v3.svg
+    Deleted:    docs/docsearch.css
+    Deleted:    docs/docsearch.js
+    Deleted:    docs/link.svg
+    Deleted:    docs/pkgdown.css
+    Deleted:    docs/pkgdown.js
+    Deleted:    docs/pkgdown.yml
+    Deleted:    docs/sitemap.xml
+    Deleted:    man/MHWdetection-package.Rd
+    Deleted:    man/placeholder.Rd
+    Deleted:    tests/testthat.R
+    Deleted:    tests/testthat/test-placeholder.R
+    Deleted:    vignettes/.gitignore
+    Deleted:    vignettes/Climatologies_and_baselines.Rmd
+    Deleted:    vignettes/Short_climatologies.Rmd
+    Deleted:    vignettes/best_practices.Rmd
+    Deleted:    vignettes/bibliography.bib
+    Deleted:    vignettes/data/.gitignore
+    Deleted:    vignettes/data/clim_py.csv
+    Deleted:    vignettes/data/clim_py_joinAG_1.csv
+    Deleted:    vignettes/data/clim_py_joinAG_5.csv
+    Deleted:    vignettes/data/clim_py_joinAG_no.csv
+    Deleted:    vignettes/data/clim_py_minD_3.csv
+    Deleted:    vignettes/data/clim_py_minD_7.csv
+    Deleted:    vignettes/data/clim_py_pctile_80.csv
+    Deleted:    vignettes/data/clim_py_pctile_95.csv
+    Deleted:    vignettes/data/clim_py_pctile_99.csv
+    Deleted:    vignettes/data/clim_py_random.csv
+    Deleted:    vignettes/data/clim_py_spw_11.csv
+    Deleted:    vignettes/data/clim_py_spw_51.csv
+    Deleted:    vignettes/data/clim_py_spw_no.csv
+    Deleted:    vignettes/data/clim_py_whw_3.csv
+    Deleted:    vignettes/data/clim_py_whw_7.csv
+    Deleted:    vignettes/data/mhwBlock.csv
+    Deleted:    vignettes/data/mhws_py.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_1.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_5.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_no.csv
+    Deleted:    vignettes/data/mhws_py_minD_3.csv
+    Deleted:    vignettes/data/mhws_py_minD_7.csv
+    Deleted:    vignettes/data/mhws_py_pctile_80.csv
+    Deleted:    vignettes/data/mhws_py_pctile_95.csv
+    Deleted:    vignettes/data/mhws_py_pctile_99.csv
+    Deleted:    vignettes/data/mhws_py_random.csv
+    Deleted:    vignettes/data/mhws_py_spw_11.csv
+    Deleted:    vignettes/data/mhws_py_spw_51.csv
+    Deleted:    vignettes/data/mhws_py_spw_no.csv
+    Deleted:    vignettes/data/mhws_py_whw_3.csv
+    Deleted:    vignettes/data/mhws_py_whw_7.csv
+    Deleted:    vignettes/data/sst_ALL.Rdata
+    Deleted:    vignettes/data/sst_ALL_KS.Rdata
+    Deleted:    vignettes/data/sst_ALL_cat_chi.Rdata
+    Deleted:    vignettes/data/sst_ALL_clim_category_count.Rdata
+    Deleted:    vignettes/data/sst_ALL_con.Rdata
+    Deleted:    vignettes/data/sst_ALL_detrend.Rdata
+    Deleted:    vignettes/data/sst_ALL_event_cor.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_KS_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_event_CI.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_event_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_R2.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_R2_base.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_cor_base.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_real_category.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_cat_chi.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_KS_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_only.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_event_CI.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_event_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_WA.csv
+    Deleted:    vignettes/data/sst_WA_miss_ice.csv
+    Deleted:    vignettes/data/sst_WA_miss_random.csv
+    Deleted:    vignettes/fig/detect_diagram.svg
+    Deleted:    vignettes/fig/heatwaveR_v3.svg
+    Deleted:    vignettes/gridded_products.Rmd
+    Deleted:    vignettes/missing_data.Rmd
+    Deleted:    vignettes/r_vs_python.Rmd
+    Deleted:    vignettes/r_vs_python_additional.Rmd
+    Deleted:    vignettes/r_vs_python_arguments.Rmd
+    Deleted:    vignettes/time_series_duration.Rmd
+    Deleted:    vignettes/trend.Rmd
+    Deleted:    vignettes/variance.Rmd
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -405,6 +589,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/970b22c7c2cae4e09824722f8bf1d87fb5118a73/analysis/r_vs_python_arguments.Rmd" target="_blank">970b22c</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Publish the vignettes from when this was a pkgdown framework
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/r_vs_python_arguments.html" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -445,8 +663,8 @@ t = np.arange(date(1982,1,1).toordinal(),date(2014,12,31).toordinal()+1)
 # The temperature values
 sst = np.loadtxt(open(&quot;data/sst_WA.csv&quot;, &quot;r&quot;), delimiter = &#39;,&#39;, skiprows = 1)</code></pre>
 <pre class="r"><code># The default python output from the previous comparison vignette
-default_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py.csv&quot;)
-default_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py.csv&quot;)</code></pre>
+default_py_event &lt;- read_csv(&quot;data/mhws_py.csv&quot;)
+default_py_clim &lt;- read_csv(&quot;data/clim_py.csv&quot;)</code></pre>
 <pre class="r"><code># The default R output
 default_r &lt;- detect_event(ts2clm(data = sst_WA,
                                  climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2014-12-31&quot;)))</code></pre>
@@ -538,12 +756,12 @@ pctile_99_r &lt;- detect_event(ts2clm(data = sst_WA, pctile = 99,
                                    climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2014-12-31&quot;)))</code></pre>
 <p>Lastly load the Python output and compare the two.</p>
 <pre class="r"><code># Load Python
-pctile_80_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_pctile_80.csv&quot;)
-pctile_80_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_pctile_80.csv&quot;)
-pctile_95_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_pctile_95.csv&quot;)
-pctile_95_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_pctile_95.csv&quot;)
-pctile_99_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_pctile_99.csv&quot;)
-pctile_99_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_pctile_99.csv&quot;)
+pctile_80_py_event &lt;- read_csv(&quot;data/mhws_py_pctile_80.csv&quot;)
+pctile_80_py_clim &lt;- read_csv(&quot;data/clim_py_pctile_80.csv&quot;)
+pctile_95_py_event &lt;- read_csv(&quot;data/mhws_py_pctile_95.csv&quot;)
+pctile_95_py_clim &lt;- read_csv(&quot;data/clim_py_pctile_95.csv&quot;)
+pctile_99_py_event &lt;- read_csv(&quot;data/mhws_py_pctile_99.csv&quot;)
+pctile_99_py_clim &lt;- read_csv(&quot;data/clim_py_pctile_99.csv&quot;)
 
 # Compare clims and intensities
 # 80
@@ -657,6 +875,36 @@ py_fig &lt;- ggplot(pctile_80_py_clim_sub,
 
 ggarrange(r_fig, py_fig, ncol = 1, nrow = 2)</code></pre>
 <p><img src="figure/r_vs_python_arguments.Rmd/unnamed-chunk-4-1.png" width="384" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-4-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/r_vs_python_arguments.Rmd/unnamed-chunk-4-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>As we may see in the figure above, the difference is not perceptible to the human eye. Looking very closely at the clim outputs manually one may see that in the R code, the threshold on <code>2013-12-29</code> is just below the temperature value due to a rounding difference from the Python code at the third decimal place.</p>
 <p>Also above one may see that even though the values correlate nearly perfectly, the sum of the seasonal climatology value output by R are <code>1.98122</code> less than the Python output. Considering that there are 12053 values, the average difference is only <code>0.00016</code>, which is not terribly much at all. The issue appears to be in the calculation of the threshold climatology. This value is not consistently different based on the <code>pctile</code> value used. It varies quite a bit. With the sum difference at <code>pctile = 80</code> being <code>-13.86432</code>, the default of <code>pctile = 90</code> being <code>-6.563516</code>, <code>pctile = 95</code> being <code>-3.382435</code>, and <code>pctile = 99</code> being <code>28.37769</code>. This is strong evidence that the threshold values are being calculated using some different method that needs to be addressed. That being said, even at the largest difference of <code>28.37769</code>, that is still only an average difference per row of <code>0.002354409</code></p>
 <p>Digging deeper still, let’s pull up the old <code>RmarineHeatWaves</code> code and run another comparison with that to see if this difference is due to newer changes in the development of the <code>heatwaveR</code> package.</p>
@@ -768,12 +1016,12 @@ mhws_df.to_csv(&#39;data/mhws_py_spw_51.csv&#39;, sep = &#39;,&#39;, index = Fal
 clim_df = pd.DataFrame.from_dict(clim)
 clim_df.to_csv(&#39;data/clim_py_spw_51.csv&#39;, sep = &#39;,&#39;, index = False)</code></pre>
 <pre class="r"><code># Load Python
-spw_no_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_spw_no.csv&quot;)
-spw_no_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_spw_no.csv&quot;)
-spw_11_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_spw_11.csv&quot;)
-spw_11_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_spw_11.csv&quot;)
-spw_51_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_spw_51.csv&quot;)
-spw_51_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_spw_51.csv&quot;)
+spw_no_py_event &lt;- read_csv(&quot;data/mhws_py_spw_no.csv&quot;)
+spw_no_py_clim &lt;- read_csv(&quot;data/clim_py_spw_no.csv&quot;)
+spw_11_py_event &lt;- read_csv(&quot;data/mhws_py_spw_11.csv&quot;)
+spw_11_py_clim &lt;- read_csv(&quot;data/clim_py_spw_11.csv&quot;)
+spw_51_py_event &lt;- read_csv(&quot;data/mhws_py_spw_51.csv&quot;)
+spw_51_py_clim &lt;- read_csv(&quot;data/clim_py_spw_51.csv&quot;)
 
 # Compare clims and intensities
 # no smoothing
@@ -924,10 +1172,10 @@ mhws_df.to_csv(&#39;data/mhws_py_whw_7.csv&#39;, sep = &#39;,&#39;, index = Fals
 clim_df = pd.DataFrame.from_dict(clim)
 clim_df.to_csv(&#39;data/clim_py_whw_7.csv&#39;, sep = &#39;,&#39;, index = False)</code></pre>
 <pre class="r"><code># Load Python
-whw_3_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_whw_3.csv&quot;)
-whw_3_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_whw_3.csv&quot;)
-whw_7_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_whw_7.csv&quot;)
-whw_7_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_whw_7.csv&quot;)
+whw_3_py_event &lt;- read_csv(&quot;data/mhws_py_whw_3.csv&quot;)
+whw_3_py_clim &lt;- read_csv(&quot;data/clim_py_whw_3.csv&quot;)
+whw_7_py_event &lt;- read_csv(&quot;data/mhws_py_whw_7.csv&quot;)
+whw_7_py_clim &lt;- read_csv(&quot;data/clim_py_whw_7.csv&quot;)
 
 # Compare clims and intensities
 # 3 days
@@ -1021,10 +1269,10 @@ mhws_df.to_csv(&#39;data/mhws_py_minD_7.csv&#39;, sep = &#39;,&#39;, index = Fal
 clim_df = pd.DataFrame.from_dict(clim)
 clim_df.to_csv(&#39;data/clim_py_minD_7.csv&#39;, sep = &#39;,&#39;, index = False)</code></pre>
 <pre class="r"><code># Load Python
-minD_3_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_minD_3.csv&quot;)
-minD_3_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_minD_3.csv&quot;)
-minD_7_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_minD_7.csv&quot;)
-minD_7_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_minD_7.csv&quot;)
+minD_3_py_event &lt;- read_csv(&quot;data/mhws_py_minD_3.csv&quot;)
+minD_3_py_clim &lt;- read_csv(&quot;data/clim_py_minD_3.csv&quot;)
+minD_7_py_event &lt;- read_csv(&quot;data/mhws_py_minD_7.csv&quot;)
+minD_7_py_clim &lt;- read_csv(&quot;data/clim_py_minD_7.csv&quot;)
 
 # Compare clims and intensities
 # 3 days
@@ -1128,12 +1376,12 @@ mhws_df.to_csv(&#39;data/mhws_py_joinAG_5.csv&#39;, sep = &#39;,&#39;, index = F
 clim_df = pd.DataFrame.from_dict(clim)
 clim_df.to_csv(&#39;data/clim_py_joinAG_5.csv&#39;, sep = &#39;,&#39;, index = False)</code></pre>
 <pre class="r"><code># Load Python
-joinAG_no_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_joinAG_no.csv&quot;)
-joinAG_no_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_joinAG_no.csv&quot;)
-joinAG_1_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_joinAG_1.csv&quot;)
-joinAG_1_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_joinAG_1.csv&quot;)
-joinAG_5_py_event &lt;- read_csv(&quot;~/MHWdetection/analysis/data/mhws_py_joinAG_5.csv&quot;)
-joinAG_5_py_clim &lt;- read_csv(&quot;~/MHWdetection/analysis/data/clim_py_joinAG_5.csv&quot;)
+joinAG_no_py_event &lt;- read_csv(&quot;data/mhws_py_joinAG_no.csv&quot;)
+joinAG_no_py_clim &lt;- read_csv(&quot;data/clim_py_joinAG_no.csv&quot;)
+joinAG_1_py_event &lt;- read_csv(&quot;data/mhws_py_joinAG_1.csv&quot;)
+joinAG_1_py_clim &lt;- read_csv(&quot;data/clim_py_joinAG_1.csv&quot;)
+joinAG_5_py_event &lt;- read_csv(&quot;data/mhws_py_joinAG_5.csv&quot;)
+joinAG_5_py_clim &lt;- read_csv(&quot;data/clim_py_joinAG_5.csv&quot;)
 
 # Compare clims and intensities
 # no days

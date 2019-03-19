@@ -279,7 +279,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHWdetection</a>
+      <a class="navbar-brand" href="index.html">Detecting marine heatwaves from imperfect data</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -292,10 +292,46 @@ div.tocify {
 <li>
   <a href="license.html">License</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    </li>
+    <li>
+      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+    </li>
+    <li>
+      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+    </li>
+    <li>
+      <a href="Short_climatologies.html">Short climatologies</a>
+    </li>
+    <li>
+      <a href="Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
+    </li>
+    <li>
+      <a href="time_series_duration.html">Effects of short time series</a>
+    </li>
+    <li>
+      <a href="missing_data.html">Effects of missing data</a>
+    </li>
+    <li>
+      <a href="gridded_products.html">Difference between gridded products</a>
+    </li>
+    <li>
+      <a href="best_practices.html">Best practices</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/jdblischak/workflowr">
+  <a href="https://github.com/robwschlegel/MHWdetection">
     <span class="fa fa-github"></span>
      
   </a>
@@ -337,8 +373,8 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20190319)</code> </summary></p>
-<p>The command <code>set.seed(20190319)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
+<p>The command <code>set.seed(666)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
 </details>
 </li>
 <li>
@@ -347,36 +383,184 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/64ac134076a04088c834291ce86c6405eedaf672" target="_blank">64ac134</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/970b22c7c2cae4e09824722f8bf1d87fb5118a73" target="_blank">970b22c</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    vignettes/data/sst_ALL_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_event_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_flat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_cat_chi.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_event_cat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_repl.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_event.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_clim_only.Rdata
+    Ignored:    data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_flat.Rdata
+    Ignored:    data/sst_ALL_miss.Rdata
+    Ignored:    data/sst_ALL_miss_cat_chi.Rdata
+    Ignored:    data/sst_ALL_miss_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_miss_clim_only.Rdata
+    Ignored:    data/sst_ALL_miss_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_repl.Rdata
+    Ignored:    data/sst_ALL_smooth.Rdata
+    Ignored:    data/sst_ALL_smooth_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_smooth_event.Rdata
+    Ignored:    data/sst_ALL_trend.Rdata
+    Ignored:    data/sst_ALL_trend_clim_event_cat.Rdata
 
 Untracked files:
     Untracked:  analysis/bibliography.bib
-    Untracked:  analysis/data/
     Untracked:  code/functions.R
     Untracked:  code/workflow.R
+    Untracked:  data/.gitignore
+    Untracked:  data/clim_py.csv
+    Untracked:  data/clim_py_joinAG_1.csv
+    Untracked:  data/clim_py_joinAG_5.csv
+    Untracked:  data/clim_py_joinAG_no.csv
+    Untracked:  data/clim_py_minD_3.csv
+    Untracked:  data/clim_py_minD_7.csv
+    Untracked:  data/clim_py_pctile_80.csv
+    Untracked:  data/clim_py_pctile_95.csv
+    Untracked:  data/clim_py_pctile_99.csv
+    Untracked:  data/clim_py_random.csv
+    Untracked:  data/clim_py_spw_11.csv
+    Untracked:  data/clim_py_spw_51.csv
+    Untracked:  data/clim_py_spw_no.csv
+    Untracked:  data/clim_py_whw_3.csv
+    Untracked:  data/clim_py_whw_7.csv
+    Untracked:  data/mhwBlock.csv
+    Untracked:  data/mhws_py.csv
+    Untracked:  data/mhws_py_joinAG_1.csv
+    Untracked:  data/mhws_py_joinAG_5.csv
+    Untracked:  data/mhws_py_joinAG_no.csv
+    Untracked:  data/mhws_py_minD_3.csv
+    Untracked:  data/mhws_py_minD_7.csv
+    Untracked:  data/mhws_py_pctile_80.csv
+    Untracked:  data/mhws_py_pctile_95.csv
+    Untracked:  data/mhws_py_pctile_99.csv
+    Untracked:  data/mhws_py_random.csv
+    Untracked:  data/mhws_py_spw_11.csv
+    Untracked:  data/mhws_py_spw_51.csv
+    Untracked:  data/mhws_py_spw_no.csv
+    Untracked:  data/mhws_py_whw_3.csv
+    Untracked:  data/mhws_py_whw_7.csv
+    Untracked:  data/sst_ALL.Rdata
+    Untracked:  data/sst_ALL_KS.Rdata
+    Untracked:  data/sst_ALL_cat_chi.Rdata
+    Untracked:  data/sst_ALL_clim_category_count.Rdata
+    Untracked:  data/sst_ALL_con.Rdata
+    Untracked:  data/sst_ALL_detrend.Rdata
+    Untracked:  data/sst_ALL_event_cor.Rdata
+    Untracked:  data/sst_ALL_miss_clim_KS_p.Rdata
+    Untracked:  data/sst_ALL_miss_clim_aov_p.Rdata
+    Untracked:  data/sst_ALL_miss_clim_aov_tukey.Rdata
+    Untracked:  data/sst_ALL_miss_event_CI.Rdata
+    Untracked:  data/sst_ALL_smooth_R2.Rdata
+    Untracked:  data/sst_ALL_smooth_R2_base.Rdata
+    Untracked:  data/sst_ALL_smooth_cor_base.Rdata
+    Untracked:  data/sst_ALL_smooth_real_category.Rdata
+    Untracked:  data/sst_ALL_trend_cat_chi.Rdata
+    Untracked:  data/sst_ALL_trend_clim_KS_p.Rdata
+    Untracked:  data/sst_ALL_trend_clim_aov_tukey.Rdata
+    Untracked:  data/sst_ALL_trend_clim_only.Rdata
+    Untracked:  data/sst_ALL_trend_event_CI.Rdata
+    Untracked:  data/sst_ALL_trend_event_aov_tukey.Rdata
     Untracked:  data/sst_WA.csv
-    Untracked:  docs/figure/
+    Untracked:  data/sst_WA_miss_ice.csv
+    Untracked:  data/sst_WA_miss_random.csv
 
 Unstaged changes:
+    Deleted:    .Rbuildignore
+    Modified:   .gitignore
+    Deleted:    DESCRIPTION
+    Deleted:    NAMESPACE
     Modified:   NEWS.md
+    Deleted:    R/MHWdetection-package.R
+    Deleted:    R/placeholder.R
+    Modified:   README.md
+    Deleted:    _pkgdown.yml
+    Modified:   _workflowr.yml
+    Modified:   analysis/_site.yml
+    Deleted:    docs/articles/fig/heatwaveR_v3.svg
+    Deleted:    docs/docsearch.css
+    Deleted:    docs/docsearch.js
+    Deleted:    docs/link.svg
+    Deleted:    docs/pkgdown.css
+    Deleted:    docs/pkgdown.js
+    Deleted:    docs/pkgdown.yml
+    Deleted:    docs/sitemap.xml
+    Deleted:    man/MHWdetection-package.Rd
+    Deleted:    man/placeholder.Rd
+    Deleted:    tests/testthat.R
+    Deleted:    tests/testthat/test-placeholder.R
+    Deleted:    vignettes/.gitignore
+    Deleted:    vignettes/Climatologies_and_baselines.Rmd
+    Deleted:    vignettes/Short_climatologies.Rmd
+    Deleted:    vignettes/best_practices.Rmd
+    Deleted:    vignettes/bibliography.bib
+    Deleted:    vignettes/data/.gitignore
+    Deleted:    vignettes/data/clim_py.csv
+    Deleted:    vignettes/data/clim_py_joinAG_1.csv
+    Deleted:    vignettes/data/clim_py_joinAG_5.csv
+    Deleted:    vignettes/data/clim_py_joinAG_no.csv
+    Deleted:    vignettes/data/clim_py_minD_3.csv
+    Deleted:    vignettes/data/clim_py_minD_7.csv
+    Deleted:    vignettes/data/clim_py_pctile_80.csv
+    Deleted:    vignettes/data/clim_py_pctile_95.csv
+    Deleted:    vignettes/data/clim_py_pctile_99.csv
+    Deleted:    vignettes/data/clim_py_random.csv
+    Deleted:    vignettes/data/clim_py_spw_11.csv
+    Deleted:    vignettes/data/clim_py_spw_51.csv
+    Deleted:    vignettes/data/clim_py_spw_no.csv
+    Deleted:    vignettes/data/clim_py_whw_3.csv
+    Deleted:    vignettes/data/clim_py_whw_7.csv
+    Deleted:    vignettes/data/mhwBlock.csv
+    Deleted:    vignettes/data/mhws_py.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_1.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_5.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_no.csv
+    Deleted:    vignettes/data/mhws_py_minD_3.csv
+    Deleted:    vignettes/data/mhws_py_minD_7.csv
+    Deleted:    vignettes/data/mhws_py_pctile_80.csv
+    Deleted:    vignettes/data/mhws_py_pctile_95.csv
+    Deleted:    vignettes/data/mhws_py_pctile_99.csv
+    Deleted:    vignettes/data/mhws_py_random.csv
+    Deleted:    vignettes/data/mhws_py_spw_11.csv
+    Deleted:    vignettes/data/mhws_py_spw_51.csv
+    Deleted:    vignettes/data/mhws_py_spw_no.csv
+    Deleted:    vignettes/data/mhws_py_whw_3.csv
+    Deleted:    vignettes/data/mhws_py_whw_7.csv
+    Deleted:    vignettes/data/sst_ALL.Rdata
+    Deleted:    vignettes/data/sst_ALL_KS.Rdata
+    Deleted:    vignettes/data/sst_ALL_cat_chi.Rdata
+    Deleted:    vignettes/data/sst_ALL_clim_category_count.Rdata
+    Deleted:    vignettes/data/sst_ALL_con.Rdata
+    Deleted:    vignettes/data/sst_ALL_detrend.Rdata
+    Deleted:    vignettes/data/sst_ALL_event_cor.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_KS_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_event_CI.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_event_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_R2.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_R2_base.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_cor_base.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_real_category.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_cat_chi.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_KS_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_only.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_event_CI.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_event_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_WA.csv
+    Deleted:    vignettes/data/sst_WA_miss_ice.csv
+    Deleted:    vignettes/data/sst_WA_miss_random.csv
+    Deleted:    vignettes/fig/detect_diagram.svg
+    Deleted:    vignettes/fig/heatwaveR_v3.svg
+    Deleted:    vignettes/gridded_products.Rmd
+    Deleted:    vignettes/missing_data.Rmd
+    Deleted:    vignettes/r_vs_python.Rmd
+    Deleted:    vignettes/r_vs_python_additional.Rmd
+    Deleted:    vignettes/r_vs_python_arguments.Rmd
+    Deleted:    vignettes/time_series_duration.Rmd
+    Deleted:    vignettes/trend.Rmd
+    Deleted:    vignettes/variance.Rmd
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -405,6 +589,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/970b22c7c2cae4e09824722f8bf1d87fb5118a73/analysis/trend.Rmd" target="_blank">970b22c</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Publish the vignettes from when this was a pkgdown framework
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/trend.html" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -511,7 +729,7 @@ doMC::registerDoMC(cores = 50)
 sst_ALL_trend_clim_only &lt;- plyr::ddply(sst_ALL_trend_clim_event_cat, c(&quot;trend&quot;, &quot;site&quot;), 
                                       trend_clim_only, .parallel = T)
 save(sst_ALL_trend_clim_only, file = &quot;data/sst_ALL_trend_clim_only.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_clim_only.Rdata&quot;)</code></pre>
+<pre class="r"><code>load(&quot;data/sst_ALL_trend_clim_only.Rdata&quot;)</code></pre>
 <pre class="r"><code>ggplot(sst_ALL_trend_clim_only, 
        aes(y = seas, x = doy, colour = as.numeric(trend))) +
   geom_line(alpha = 0.3, aes(group = trend)) +
@@ -524,6 +742,36 @@ save(sst_ALL_trend_clim_only, file = &quot;data/sst_ALL_trend_clim_only.Rdata&qu
 The seasonal signals created from time series with increasingly large decadal trends added.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-trend-seas-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/trend.Rmd/clim-trend-seas-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Looking at the range of seasonal signals we see how pronounced the effect of adding a decadal trend is to <code>WA</code> over the other two time series. This is because the proportionate to the overall range of the seasonal signal, we are adding much more to the <code>WA</code> time series than the others.</p>
 <pre class="r"><code>ggplot(sst_ALL_trend_clim_only, 
        aes(y = thresh, x = doy, colour = as.numeric(trend))) +
@@ -537,6 +785,36 @@ The seasonal signals created from time series with increasingly large decadal tr
 The 90th percentile thresholds created from time series with increasingly large decadal trends added.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-trend-thresh-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/trend.Rmd/clim-trend-thresh-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Interestingly the increase in the 90th percentile threshold appears to be similar for the 90th percentile threshold as it is for the seasonal signal. This implies that the upcoming results are likely to vary from the previous two vignettes.</p>
 <div id="anova-p-values" class="section level3">
 <h3>ANOVA <em>p</em>-values</h3>
@@ -589,7 +867,7 @@ sst_ALL_trend_clim_aov_tukey &lt;- plyr::ddply(sst_ALL_trend_clim_only, c(&quot;
                                             clim_aov_tukey, .parallel = T)
 save(sst_ALL_trend_clim_aov_tukey, file = &quot;data/sst_ALL_trend_clim_aov_tukey.Rdata&quot;)
 # rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_clim_aov_tukey.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_trend_clim_aov_tukey.Rdata&quot;)
 
 sst_ALL_trend_clim_aov &lt;- sst_ALL_trend_clim_aov_tukey %&gt;% 
   select(-tukey) %&gt;% 
@@ -605,6 +883,36 @@ ggplot(sst_ALL_trend_clim_aov, aes(x = site, y = metric)) +
 Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of trending data. The 90th percentile thresholds are significantly different at p &lt; 0.05 but the seasonal signals are not.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-trend-AOV-p-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/trend.Rmd/clim-trend-AOV-p-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>We may see in the figure above that the climatologies do not differ appreciably across all of the decadal trends used for the <code>Med</code> and <code>NW_Atl</code>. The climatologies do however differ significantly for the <code>WA</code> time series.</p>
 </div>
 <div id="post-hoc-tukey-test" class="section level3">
@@ -637,6 +945,36 @@ ggplot(clim_tukey_summary, aes(x = comp_dif, y = site)) +
 Segments showing the range of decadal trends added to the data when climatologies were significantly different.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-tukey-line-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/trend.Rmd/clim-tukey-line-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>In the figure above we see that the <code>WA</code> seasonal signals become significantly different at a decadal trend of 0.25°C/dec, and the 90th percentile threshold becomes sig. dif. at 0.24°C/dec.</p>
 </div>
 <div id="kolmogorov-smirnov-tests" class="section level3">
@@ -672,7 +1010,7 @@ sst_ALL_trend_clim_KS_p &lt;- sst_ALL_trend_clim_only %&gt;%
   gather(key = metric, value = p.value, -site, - trend)
 )
 save(sst_ALL_trend_clim_KS_p, file = &quot;data/sst_ALL_trend_clim_KS_p.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_clim_KS_p.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_trend_clim_KS_p.Rdata&quot;)
 
 # Filter non-significant results
 KS_sig &lt;- sst_ALL_trend_clim_KS_p %&gt;% 
@@ -698,6 +1036,36 @@ ggplot(KS_sig, aes(x = as.numeric(trend), y = site)) +
 Dot and line plot showing the <em>p</em>-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of KS-clims-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/trend.Rmd/KS-clims-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Surprisingly the above figure shows that the seasonal signal is much more sensitive than the 90th percentile threshold to the addition of decadal trends. The <code>WA</code> time series remains the most sensitive with sig. dif. occurring at an added decadal trend of 0.05°C. The interesting thing here is that the <code>NW_Atl</code> threshold never had a significantly different distribution regardless of the amount added.</p>
 <p>Thinking about this more I have alighted upon the idea that because the threshold is determined by the largest values detected on any given <em>calendar day</em>, the size of the deadal trend present in the data could be deminished by the fact that some of the values creating the threshold will be from the earlier portion of the time series before the decadal trend realy starts having an effect.</p>
 </div>
@@ -735,7 +1103,7 @@ sst_ALL_trend_event_aov_tukey &lt;- plyr::ddply(sst_ALL_trend_clim_event_cat, c(
                                              event_aov_tukey, .parallel = T)
 save(sst_ALL_trend_event_aov_tukey, file = &quot;data/sst_ALL_trend_event_aov_tukey.Rdata&quot;)
 # rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_event_aov_tukey.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_trend_event_aov_tukey.Rdata&quot;)
 
 # ANOVA p
 sst_ALL_trend_event_aov_p &lt;- sst_ALL_trend_event_aov_tukey %&gt;% 
@@ -823,7 +1191,7 @@ sst_ALL_trend_event_CI &lt;- sst_ALL_trend_clim_event_cat %&gt;%
   unnest()
 
 save(sst_ALL_trend_event_CI, file = &quot;data/sst_ALL_trend_event_CI.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_event_CI.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_trend_event_CI.Rdata&quot;)
 
 ggplot(sst_ALL_trend_event_CI, aes(x = trend)) +
   geom_errorbar(width = 1, alpha = 0.8,
@@ -838,6 +1206,36 @@ ggplot(sst_ALL_trend_event_CI, aes(x = trend)) +
 Confidence intervals of the MHW metrics when increasing decadal trends were added.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of event-CI-plot1-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/trend.Rmd/event-CI-plot1-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code># CI_plot_1</code></pre>
 <p>Because this set of data is smaller than the previous two vignettes I have used basic bootstrapping to create the CIs above. From these we see that the duration and int. cum. of all of the time series tend to increase as the decadal trend increase, but this is never significant. The patterns for mean and max int. are different for each time series. The <code>Med</code> remains relatively flat regardless of decadal trend, <code>WA</code> increases, and <code>NW_Atl</code> decreases. This is likely due to the distribution of MHWs throughout the time series.</p>
 </div>
@@ -882,7 +1280,7 @@ sst_ALL_trend_cat_chi &lt;- sst_ALL_trend_cat_all %&gt;%
   unnest()
 
 save(sst_ALL_trend_cat_chi, file = &quot;data/sst_ALL_trend_cat_chi.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_trend_cat_chi.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_trend_cat_chi.Rdata&quot;)
 
 knitr::kable(sst_ALL_trend_cat_chi, caption = &quot;Table showing the significant difference (_p_-value) for the count of different categories of events for each site based on the trends introduced into the data. No differences were found.&quot;)</code></pre>
 <table>

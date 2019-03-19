@@ -279,7 +279,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHWdetection</a>
+      <a class="navbar-brand" href="index.html">Detecting marine heatwaves from imperfect data</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -292,10 +292,46 @@ div.tocify {
 <li>
   <a href="license.html">License</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    </li>
+    <li>
+      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+    </li>
+    <li>
+      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+    </li>
+    <li>
+      <a href="Short_climatologies.html">Short climatologies</a>
+    </li>
+    <li>
+      <a href="Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
+    </li>
+    <li>
+      <a href="time_series_duration.html">Effects of short time series</a>
+    </li>
+    <li>
+      <a href="missing_data.html">Effects of missing data</a>
+    </li>
+    <li>
+      <a href="gridded_products.html">Difference between gridded products</a>
+    </li>
+    <li>
+      <a href="best_practices.html">Best practices</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/jdblischak/workflowr">
+  <a href="https://github.com/robwschlegel/MHWdetection">
     <span class="fa fa-github"></span>
      
   </a>
@@ -337,8 +373,8 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20190319)</code> </summary></p>
-<p>The command <code>set.seed(20190319)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
+<p>The command <code>set.seed(666)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
 </details>
 </li>
 <li>
@@ -347,36 +383,184 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/64ac134076a04088c834291ce86c6405eedaf672" target="_blank">64ac134</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/970b22c7c2cae4e09824722f8bf1d87fb5118a73" target="_blank">970b22c</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    vignettes/data/sst_ALL_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_event_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_flat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_cat_chi.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_event_cat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_repl.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_event.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_clim_only.Rdata
+    Ignored:    data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_flat.Rdata
+    Ignored:    data/sst_ALL_miss.Rdata
+    Ignored:    data/sst_ALL_miss_cat_chi.Rdata
+    Ignored:    data/sst_ALL_miss_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_miss_clim_only.Rdata
+    Ignored:    data/sst_ALL_miss_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_repl.Rdata
+    Ignored:    data/sst_ALL_smooth.Rdata
+    Ignored:    data/sst_ALL_smooth_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_smooth_event.Rdata
+    Ignored:    data/sst_ALL_trend.Rdata
+    Ignored:    data/sst_ALL_trend_clim_event_cat.Rdata
 
 Untracked files:
     Untracked:  analysis/bibliography.bib
-    Untracked:  analysis/data/
     Untracked:  code/functions.R
     Untracked:  code/workflow.R
+    Untracked:  data/.gitignore
+    Untracked:  data/clim_py.csv
+    Untracked:  data/clim_py_joinAG_1.csv
+    Untracked:  data/clim_py_joinAG_5.csv
+    Untracked:  data/clim_py_joinAG_no.csv
+    Untracked:  data/clim_py_minD_3.csv
+    Untracked:  data/clim_py_minD_7.csv
+    Untracked:  data/clim_py_pctile_80.csv
+    Untracked:  data/clim_py_pctile_95.csv
+    Untracked:  data/clim_py_pctile_99.csv
+    Untracked:  data/clim_py_random.csv
+    Untracked:  data/clim_py_spw_11.csv
+    Untracked:  data/clim_py_spw_51.csv
+    Untracked:  data/clim_py_spw_no.csv
+    Untracked:  data/clim_py_whw_3.csv
+    Untracked:  data/clim_py_whw_7.csv
+    Untracked:  data/mhwBlock.csv
+    Untracked:  data/mhws_py.csv
+    Untracked:  data/mhws_py_joinAG_1.csv
+    Untracked:  data/mhws_py_joinAG_5.csv
+    Untracked:  data/mhws_py_joinAG_no.csv
+    Untracked:  data/mhws_py_minD_3.csv
+    Untracked:  data/mhws_py_minD_7.csv
+    Untracked:  data/mhws_py_pctile_80.csv
+    Untracked:  data/mhws_py_pctile_95.csv
+    Untracked:  data/mhws_py_pctile_99.csv
+    Untracked:  data/mhws_py_random.csv
+    Untracked:  data/mhws_py_spw_11.csv
+    Untracked:  data/mhws_py_spw_51.csv
+    Untracked:  data/mhws_py_spw_no.csv
+    Untracked:  data/mhws_py_whw_3.csv
+    Untracked:  data/mhws_py_whw_7.csv
+    Untracked:  data/sst_ALL.Rdata
+    Untracked:  data/sst_ALL_KS.Rdata
+    Untracked:  data/sst_ALL_cat_chi.Rdata
+    Untracked:  data/sst_ALL_clim_category_count.Rdata
+    Untracked:  data/sst_ALL_con.Rdata
+    Untracked:  data/sst_ALL_detrend.Rdata
+    Untracked:  data/sst_ALL_event_cor.Rdata
+    Untracked:  data/sst_ALL_miss_clim_KS_p.Rdata
+    Untracked:  data/sst_ALL_miss_clim_aov_p.Rdata
+    Untracked:  data/sst_ALL_miss_clim_aov_tukey.Rdata
+    Untracked:  data/sst_ALL_miss_event_CI.Rdata
+    Untracked:  data/sst_ALL_smooth_R2.Rdata
+    Untracked:  data/sst_ALL_smooth_R2_base.Rdata
+    Untracked:  data/sst_ALL_smooth_cor_base.Rdata
+    Untracked:  data/sst_ALL_smooth_real_category.Rdata
+    Untracked:  data/sst_ALL_trend_cat_chi.Rdata
+    Untracked:  data/sst_ALL_trend_clim_KS_p.Rdata
+    Untracked:  data/sst_ALL_trend_clim_aov_tukey.Rdata
+    Untracked:  data/sst_ALL_trend_clim_only.Rdata
+    Untracked:  data/sst_ALL_trend_event_CI.Rdata
+    Untracked:  data/sst_ALL_trend_event_aov_tukey.Rdata
     Untracked:  data/sst_WA.csv
-    Untracked:  docs/figure/
+    Untracked:  data/sst_WA_miss_ice.csv
+    Untracked:  data/sst_WA_miss_random.csv
 
 Unstaged changes:
+    Deleted:    .Rbuildignore
+    Modified:   .gitignore
+    Deleted:    DESCRIPTION
+    Deleted:    NAMESPACE
     Modified:   NEWS.md
+    Deleted:    R/MHWdetection-package.R
+    Deleted:    R/placeholder.R
+    Modified:   README.md
+    Deleted:    _pkgdown.yml
+    Modified:   _workflowr.yml
+    Modified:   analysis/_site.yml
+    Deleted:    docs/articles/fig/heatwaveR_v3.svg
+    Deleted:    docs/docsearch.css
+    Deleted:    docs/docsearch.js
+    Deleted:    docs/link.svg
+    Deleted:    docs/pkgdown.css
+    Deleted:    docs/pkgdown.js
+    Deleted:    docs/pkgdown.yml
+    Deleted:    docs/sitemap.xml
+    Deleted:    man/MHWdetection-package.Rd
+    Deleted:    man/placeholder.Rd
+    Deleted:    tests/testthat.R
+    Deleted:    tests/testthat/test-placeholder.R
+    Deleted:    vignettes/.gitignore
+    Deleted:    vignettes/Climatologies_and_baselines.Rmd
+    Deleted:    vignettes/Short_climatologies.Rmd
+    Deleted:    vignettes/best_practices.Rmd
+    Deleted:    vignettes/bibliography.bib
+    Deleted:    vignettes/data/.gitignore
+    Deleted:    vignettes/data/clim_py.csv
+    Deleted:    vignettes/data/clim_py_joinAG_1.csv
+    Deleted:    vignettes/data/clim_py_joinAG_5.csv
+    Deleted:    vignettes/data/clim_py_joinAG_no.csv
+    Deleted:    vignettes/data/clim_py_minD_3.csv
+    Deleted:    vignettes/data/clim_py_minD_7.csv
+    Deleted:    vignettes/data/clim_py_pctile_80.csv
+    Deleted:    vignettes/data/clim_py_pctile_95.csv
+    Deleted:    vignettes/data/clim_py_pctile_99.csv
+    Deleted:    vignettes/data/clim_py_random.csv
+    Deleted:    vignettes/data/clim_py_spw_11.csv
+    Deleted:    vignettes/data/clim_py_spw_51.csv
+    Deleted:    vignettes/data/clim_py_spw_no.csv
+    Deleted:    vignettes/data/clim_py_whw_3.csv
+    Deleted:    vignettes/data/clim_py_whw_7.csv
+    Deleted:    vignettes/data/mhwBlock.csv
+    Deleted:    vignettes/data/mhws_py.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_1.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_5.csv
+    Deleted:    vignettes/data/mhws_py_joinAG_no.csv
+    Deleted:    vignettes/data/mhws_py_minD_3.csv
+    Deleted:    vignettes/data/mhws_py_minD_7.csv
+    Deleted:    vignettes/data/mhws_py_pctile_80.csv
+    Deleted:    vignettes/data/mhws_py_pctile_95.csv
+    Deleted:    vignettes/data/mhws_py_pctile_99.csv
+    Deleted:    vignettes/data/mhws_py_random.csv
+    Deleted:    vignettes/data/mhws_py_spw_11.csv
+    Deleted:    vignettes/data/mhws_py_spw_51.csv
+    Deleted:    vignettes/data/mhws_py_spw_no.csv
+    Deleted:    vignettes/data/mhws_py_whw_3.csv
+    Deleted:    vignettes/data/mhws_py_whw_7.csv
+    Deleted:    vignettes/data/sst_ALL.Rdata
+    Deleted:    vignettes/data/sst_ALL_KS.Rdata
+    Deleted:    vignettes/data/sst_ALL_cat_chi.Rdata
+    Deleted:    vignettes/data/sst_ALL_clim_category_count.Rdata
+    Deleted:    vignettes/data/sst_ALL_con.Rdata
+    Deleted:    vignettes/data/sst_ALL_detrend.Rdata
+    Deleted:    vignettes/data/sst_ALL_event_cor.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_KS_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_event_CI.Rdata
+    Deleted:    vignettes/data/sst_ALL_miss_event_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_R2.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_R2_base.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_cor_base.Rdata
+    Deleted:    vignettes/data/sst_ALL_smooth_real_category.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_cat_chi.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_KS_p.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_clim_only.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_event_CI.Rdata
+    Deleted:    vignettes/data/sst_ALL_trend_event_aov_tukey.Rdata
+    Deleted:    vignettes/data/sst_WA.csv
+    Deleted:    vignettes/data/sst_WA_miss_ice.csv
+    Deleted:    vignettes/data/sst_WA_miss_random.csv
+    Deleted:    vignettes/fig/detect_diagram.svg
+    Deleted:    vignettes/fig/heatwaveR_v3.svg
+    Deleted:    vignettes/gridded_products.Rmd
+    Deleted:    vignettes/missing_data.Rmd
+    Deleted:    vignettes/r_vs_python.Rmd
+    Deleted:    vignettes/r_vs_python_additional.Rmd
+    Deleted:    vignettes/r_vs_python_arguments.Rmd
+    Deleted:    vignettes/time_series_duration.Rmd
+    Deleted:    vignettes/trend.Rmd
+    Deleted:    vignettes/variance.Rmd
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
@@ -405,6 +589,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/970b22c7c2cae4e09824722f8bf1d87fb5118a73/analysis/time_series_duration.Rmd" target="_blank">970b22c</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Publish the vignettes from when this was a pkgdown framework
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/time_series_duration.html" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -626,7 +844,7 @@ sst_ALL_smooth_aov_tukey &lt;- plyr::ddply(sst_ALL_clim_only, c(&quot;site&quot;
                                         clim_aov_tukey, .parallel = T)
 save(sst_ALL_smooth_aov_tukey, file = &quot;data/sst_ALL_smooth_aov_tukey.Rdata&quot;)
 rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey); gc()</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_smooth_aov_tukey.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_smooth_aov_tukey.Rdata&quot;)
 
 sst_ALL_smooth_aov &lt;- sst_ALL_smooth_aov_tukey %&gt;% 
   select(-tukey) %&gt;% 
@@ -679,8 +897,8 @@ knitr::kable(label_count_aov_p,
 </table>
 <pre class="r"><code>rm(sst_ALL_smooth_aov, label_count_aov_p); gc()</code></pre>
 <pre><code>          used  (Mb) gc trigger  (Mb) max used  (Mb)
-Ncells 1943008 103.8    3969330 212.0  2487694 132.9
-Vcells 4457481  34.1   10146329  77.5  5920704  45.2</code></pre>
+Ncells 1943162 103.8    3944070 210.7  2441957 130.5
+Vcells 4460738  34.1   10146329  77.5  6602844  50.4</code></pre>
 <p>The above table shows that there are no significant differences in the climatologies for the Mediterannean and relatively few for the North West Atlantic time series. We do however see that of the 100 re-samples for the Western Australia time series, 52 of the seasonal signals and 75 of the thresholds did differ significantly at some point during the shortening.</p>
 </div>
 <div id="post-hoc-tukey-test" class="section level3">
@@ -721,10 +939,40 @@ ggplot(clim_tukey_sig, aes(x = year_long, y = year_short)) +
 Heatmap showing the distribution of the difference in years for climatologies that were significantly different within the same time series when different lengths of the time series were used to calculate the thresholds. The y axis shows the range of shorter time series lengths that produced significant results when compared to longer time series lengths, which are shown on the x axis. The fill at each pixel shows the count out of 100 re-samples in which the comparison of these two time series lengths were significantly different.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-tukey-heat-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/time_series_duration.Rmd/clim-tukey-heat-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code>rm(sst_ALL_smooth_aov_tukey, sst_ALL_smooth_tukey, clim_tukey_sig); gc()</code></pre>
 <pre><code>          used  (Mb) gc trigger  (Mb) max used  (Mb)
-Ncells 2080314 111.2    3969330 212.0  3969330 212.0
-Vcells 3876957  29.6   10146329  77.5 10146085  77.5</code></pre>
+Ncells 2080465 111.2    3944070 210.7  3944070 210.7
+Vcells 3880214  29.7   10146329  77.5 10146143  77.5</code></pre>
 <p>The above figure shows us that as few as a four year difference in time series length was able to create significantly different thresholds, but that the most common difference was 14 – 17 years with the distribution left-skewed.</p>
 </div>
 <div id="kolmogorov-smirnov-tests" class="section level3">
@@ -769,7 +1017,7 @@ sst_ALL_KS &lt;- plyr::ddply(sst_ALL_clim_only, KS_all,
                           .variables = c(&quot;rep&quot;, &quot;site&quot;), .parallel = T)
 save(sst_ALL_KS, file = &quot;data/sst_ALL_KS.Rdata&quot;)
 rm(sst_ALL_clim_only, sst_ALL_KS); gc()</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_KS.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_KS.Rdata&quot;)
 
 # Filter non-significant results
 KS_sig &lt;- sst_ALL_KS %&gt;% 
@@ -798,12 +1046,42 @@ ggplot(KS_sig, aes(x = year_2, y = site)) +
 Line plots showing the results of pairwise Kolmogorov-Smirnoff tests for the seasonal signals (top panel) and 90th percentile thresholds (bottom panel) from the same time series at differing lengths. The colour of the line shows how many times out of 100 re-samples that the climatologies were significantly different from the control. The dotted verticle line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of KS-clims-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/time_series_duration.Rmd/KS-clims-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code>rm(sst_ALL_KS, KS_sig); gc()</code></pre>
 <pre><code>          used  (Mb) gc trigger  (Mb) max used  (Mb)
-Ncells 2102663 112.3    3969330 212.0  3969330 212.0
-Vcells 3891511  29.7   10146329  77.5 10146085  77.5</code></pre>
+Ncells 2102814 112.4    3944070 210.7  3944070 210.7
+Vcells 3894847  29.8   10146329  77.5 10146143  77.5</code></pre>
 <p>The above figure shows that the results of the KS tests were more often significantly different than the ANOVAs. This means that the actual shape of the distributions changes rather quickly, as shown by how it only takes a few years for the KS test to show the results as being different. The ANOVAs report fewer significant differences because that is a test of central tendency. Meaning that the shape of the climatologies changes rather quickly depending on the climatology period used, but the overall range of values within a climatology does not differ significantly as quickly.</p>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_clim_only.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_clim_only.Rdata&quot;)
 
 sst_ALL_clim_1 &lt;- sst_ALL_clim_only %&gt;% 
   filter(rep == &quot;1&quot;) %&gt;% 
@@ -819,6 +1097,36 @@ ggplot(data = sst_ALL_clim_1, aes(x = doy, y = thresh)) +
 Time series of each of climatology period used from the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-ts-all-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/time_series_duration.Rmd/clim-ts-all-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The above figure shows us that the larger the seasonal signal is, the less effect deviations away from it will likely have.</p>
 </div>
 <div id="linear-relationships-r2" class="section level3">
@@ -836,7 +1144,7 @@ sst_ALL_smooth_R2_base &lt;- sst_ALL_clim_only %&gt;%
   group_by(rep, site)
 save(sst_ALL_smooth_R2_base, file = &quot;data/sst_ALL_smooth_R2_base.Rdata&quot;)
 rm(sst_ALL_clim_only, sst_ALL_smooth_R2_base); gc()</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_smooth_R2_base.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_smooth_R2_base.Rdata&quot;)
 
 sst_ALL_smooth_R2_base_long &lt;- sst_ALL_smooth_R2_base %&gt;% 
   gather(key = metric, value = val, -year_index, -site, -rep)
@@ -851,6 +1159,36 @@ ggplot(sst_ALL_smooth_R2_base_long, aes(x = year_index, y = val)) +
 Scatterplot showing the relationship between time series length (x-axis) and a range of metrics (y-axis). The clear pattern is that the variance of the resulting relationships diminishes rapidly after at least 10 years of data are being used to determine the seasonal signal and threshold. The data shown here are all 100 re-samples.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-R2-base-scatter-plot-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/time_series_duration.Rmd/clim-R2-base-scatter-plot-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code># Load base data
 load(&quot;data/sst_ALL_smooth_R2_base.Rdata&quot;)
 
@@ -889,7 +1227,7 @@ sst_ALL_smooth_R2 &lt;- sst_ALL_smooth_R2_base %&gt;%
 
 # Save and clear
 save(sst_ALL_smooth_R2, file = &quot;data/sst_ALL_smooth_R2.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_smooth_R2.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_smooth_R2.Rdata&quot;)
 
 ggplot(sst_ALL_smooth_R2, aes(x = metric, y = adj.r.squared, fill = metric)) +
   geom_boxplot() +
@@ -901,6 +1239,36 @@ ggplot(sst_ALL_smooth_R2, aes(x = metric, y = adj.r.squared, fill = metric)) +
 Boxplots showing the distribution of coefficients of determination (R2) for the linear relationship between the mean and SD of the climatologies for all the varying lengths of the 100 re-samples of each of the three reference time series.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of clim-R2-fig-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/time_series_duration.Rmd/clim-R2-fig-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <pre class="r"><code>rm(sst_ALL_smooth_R2)</code></pre>
 <!-- The above figure shows us that all three reference time series respond relatively similarly with regards to the correlations of their climatology means and SD to the length and SD of the base temperatures from which the climatologies were derived. Though the patterns observed otherwise tell us little, it is an important finding to know that this dud pattern is consistent across the different reference time series. The other important pattern this figure shows is that the length of a time series appears to not have a consistent relationship with the resultant climatologies. Instead we see that it is the variance in the time series that tends to have a positive relationship with the variance, and to a lesser extent the means, in the climatologies. -->
 <!-- The pattern that is beginning to emerge from the results for the climatologies is that what matters most for the difference in the results is how much variance is present in the base time series, meaning how large is the seasonal signal relative to the temperatures in the time series. This variance could also be a representation of the presence of extreme temperature differences. Relating to the reseach question here this means large MHWs. It must therefore be investigated what the relationship is between categories of MHWs and the significant differences detected in the thresholds in the WA time series. It should also be taken into consideration that whenever the re-sampled time series have the year 2011, the massive MHW, these will likely be the ones producing significantly different results. -->
@@ -937,7 +1305,7 @@ sst_ALL_event_aov_tukey &lt;- plyr::ddply(sst_ALL_smooth, c(&quot;rep&quot;, &qu
 save(sst_ALL_event_aov_tukey, file = &quot;data/sst_ALL_event_aov_tukey.Rdata&quot;)</code></pre>
 <pre class="r"><code># This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
-load(&quot;~/MHWdetection/analysis/data/sst_ALL_event_aov_tukey.Rdata&quot;)
+load(&quot;data/sst_ALL_event_aov_tukey.Rdata&quot;)
 
 sst_ALL_event_aov &lt;- sst_ALL_event_aov_tukey %&gt;% 
   select(-tukey) %&gt;% 
@@ -1107,7 +1475,7 @@ sst_ALL_clim_category_count &lt;- sst_ALL_category %&gt;%
                            levels = c(&quot;I Moderate&quot;, &quot;II Strong&quot;,
                                       &quot;III Severe&quot;, &quot;IV Extreme&quot;)))
 save(sst_ALL_clim_category_count, file = &quot;data/sst_ALL_clim_category_count.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_clim_category_count.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_clim_category_count.Rdata&quot;)
 
 # total_category_count &lt;- sst_ALL_clim_category_count %&gt;% 
 #   ungroup() %&gt;% 
@@ -1129,6 +1497,36 @@ ggplot(sst_ALL_clim_category_count, aes(x = year_index, y = count, fill = catego
 Bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more ‘smaller’ events are detected with a 10 year clim period, and more ‘larger’ events detected with the 30 year clim. The 20 year clim tends to rest in the middle.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of cat-compare-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/time_series_duration.Rmd/cat-compare-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The results in the figure above show that we see more larger events when the climatologies are based on 30 years of data, rather than 10, but that we tend to see more events overall when we use only 10 years of data. This is about what would be expected if there were a trend present in the data. SO it is interesting that it still comes through.</p>
 </div>
 <div id="chi-squared" class="section level3">
@@ -1201,7 +1599,7 @@ sst_ALL_cat_chi_sig &lt;- sst_ALL_cat_chi %&gt;%
   summarise(count = n())
 
 knitr::kable(sst_ALL_cat_chi_sig, caption = &quot;Table showing the count out of 100 for significant differences (_p_-value) for the count of different categories of events for each site based on the amount of missing data present.&quot;)</code></pre>
-<pre class="r"><code>load(&quot;~/MHWdetection/analysis/data/sst_ALL_cat_chi.Rdata&quot;)
+<pre class="r"><code>load(&quot;data/sst_ALL_cat_chi.Rdata&quot;)
 
 # Prep data for plotting
 chi_sig &lt;- sst_ALL_cat_chi %&gt;% 
@@ -1226,6 +1624,36 @@ ggplot(chi_sig, aes(x = as.numeric(year_index), y = site)) +
 Line graph showing the count of times out of 100 random replicates when a given time series length led to significant differences in the count of categories of MHWs as determined by a <em>chi</em>-squared test.
 </p>
 </div>
+<details> <summary><em>Expand here to see past versions of chi-pair-plot-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/time_series_duration.Rmd/chi-pair-plot-1.png" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>The line plot above shows at what point the category counts begin to differ significantly from the matching 30 year time series. It was expected that the <code>WA</code> time series would show sig. dif. more quickly than the other two, though I had expected the <code>Med</code> to be the slowest to change, not the <code>NW_Atl</code>. Over a sample of 100, there were never more than five replicates showing significant differences in count of categories though so it is relatively safe to say that the length of a time series has little effect on the count of events.</p>
 </div>
 <div id="post-hoc-chi-squared" class="section level3">
