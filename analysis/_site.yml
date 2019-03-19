@@ -1,14 +1,10 @@
 name: "MHWdetection"
 output_dir: "../docs"
 navbar:
-  title: "Detecting marine heatwaves from imperfect data"
+  title: "MHW detection"
   left:
-    - text: "Home"
+    - text: "Overview"
       href: index.html
-    - text: "About"
-      href: about.html
-    - text: "License"
-      href: license.html
     - text: "Vignettes"
       menu:
       - text: "Python vs. R - default outputs"
@@ -17,18 +13,18 @@ navbar:
         href: r_vs_python_arguments.html
       - text: "Python vs. R - additional functions"
         href: r_vs_python_additional.html
-      - text: "Short climatologies"
-        href: Short_climatologies.html
-      - text: "Alternative climatologies and baselines"
-        href: Climatologies_and_baselines.html
       - text: "Effects of short time series"
         href: time_series_duration.html
       - text: "Effects of missing data"
         href: missing_data.html
-      - text: "Difference between gridded products"
-        href: gridded_products.html
+      - text: "Effects of long-term trends"
+        href: trend.html
       - text: "Best practices"
         href: best_practices.html
+    - text: "License"
+      href: license.html
+    - text: News
+      href: news.html
   right:
     - icon: fa-github
       href: https://github.com/robwschlegel/MHWdetection
