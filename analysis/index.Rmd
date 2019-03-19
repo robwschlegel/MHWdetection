@@ -1,9 +1,11 @@
 ---
-title: "Home"
+title: "Overview"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
     toc: false
 ---
 
-Welcome to my research website.
+Welcome to the research website for the paper _Detecting marine heatwaves from imperfect data_.
+
+Please click on the 'Vignettes' tab above to view particular aspects of the research explained in more detail. This includes all of the code that was used for each individual step.

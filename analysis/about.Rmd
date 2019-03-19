@@ -5,4 +5,5 @@ output:
     toc: false
 ---
 
-Describe your project.
+This site contains all of the code used in the 'Detecting marine heatwaves from imperfect data' paper.   
+It is set up using the package `workflowr` to ensure openness and reproducibility standards.
