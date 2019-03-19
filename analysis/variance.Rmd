@@ -1,0 +1,32 @@
+---
+title: "Assessing the effects of variance"
+author: "Robert W Schlegel"
+date: "`r Sys.Date()`"
+description: "This vignette investigates the effects of variance in a time series on the detection of MHWs."
+# output: word_document
+output: rmarkdown::html_vignette
+vignette: >
+ %\VignetteIndexEntry{Assessing the effects of variance}
+ %\VignetteEngine{knitr::rmarkdown}
+ %\VignetteEncoding{UTF-8}
+bibliography: bibliography.bib
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
+                      echo = TRUE, warning = FALSE, message = FALSE, 
+                      eval = FALSE, tidy = FALSE)
+options(scipen=999)
+```
+
+## Overview
+
+The variance in a time series does not tend to have a linear relationship with whatever results one may be hoping to extract from said time series, other than to make the results less clear. It is also my opinion that one should not alter the variance of a time series artificially as this is not something that can be done in an entirely controlled manner that does not affect the "flavour" of the time series. For this reason I propose here a different methodology from the [time series duration](https://robwschlegel.github.io/MHWdetection/articles/time_series_duration.html), [missing data](https://robwschlegel.github.io/MHWdetection/articles/missing_data.html), and [trend](https://robwschlegel.github.io/MHWdetection/articles/trend.html) vignettes.
+
+What I propose be done to measure the effects that time series variance may have on climatology and event estimation is that all of the normal steps be taken for calculating MHWs over the entire NOAA OISST dataset, and then R^2 values be calculated between the standard deviation at each pixel and the relevant climatology/MHW metrics that have been looked at elsewhere in this paper. In this way one has an organic/real-world tool to draw on for advising about how the variance one sees in ones time series may be affecting the detected events.
+
+This proposed methodology does however not control for any number of other important oceanographic features that will change regionally. But it is a good first step towards seeing if this is a useful thing to do. Should it be useful it can become part of the advice in the best practices section.
+
+## Conclusion
+
+This proposed step in the overall methodology was abandoned as it was determined not to be of enough importance to include in the paper.

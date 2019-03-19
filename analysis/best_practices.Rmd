@@ -1,0 +1,60 @@
+---
+title: "Best practices"
+author: "Robert Schlegel"
+date: "`r Sys.Date()`"
+description: "This vignette goes over the outcomes of the other vignettes to itemise best practices."
+output: html_document
+bibliography: bibliography.bib
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 6, fig.align = 'center',
+                      warning = FALSE, message = FALSE, 
+                      tidy = FALSE)
+```
+
+## Overview
+
+In this vignette the results from the main three vignettes are combined in order to visualise them simultaneously. Following this are individual sections on how to address the challenges presented by length, missing data, and decadal trends respectively.
+
+
+## Overview of reference time series
+
+```{r ref-ts-overview}
+# A multi-panel summary figure with images and tables
+load("~/MHWdetection/analysis/data/sst_ALL.Rdata")
+
+# sst_ALL_summary <- sst_ALL %>% 
+
+# Poential panels
+# 1) The base time series
+#   1.1) Rug pplot showing events
+#   1.2) Events filled in with flames
+#   1.3) Overlay thresholds
+#   1.4) Overlay category thresholds
+# 2) Mini map showing pixel location
+# 3) Stats table (showing relevant stats for/from best practices)
+# 4) The climatolgies/categories as there own doy x-axis panel
+# 5) Lolli plot showing events
+
+# ggplot(sst_ALL_summary)
+
+```
+
+
+## Overview of results
+
+The following figures show the combined results from time series length, missing data, and decadal trends side by side for each of the three components of the results. This helps to create a more complete pictures of the importance of the different variables.
+
+
+### Climatologies
+
+
+### Event metrics
+
+
+### Category counts
+
+
+
+
