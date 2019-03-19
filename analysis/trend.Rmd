@@ -114,7 +114,7 @@ save(sst_ALL_trend_clim_only, file = "data/sst_ALL_trend_clim_only.Rdata")
 ```
 
 ```{r load-trend-clim-only}
-load("~/MHWdetection/analysis/data/sst_ALL_trend_clim_only.Rdata")
+load("data/sst_ALL_trend_clim_only.Rdata")
 ```
 
 ```{r clim-trend-seas, fig.cap="The seasonal signals created from time series with increasingly large decadal trends added."}
@@ -200,7 +200,7 @@ save(sst_ALL_trend_clim_aov_tukey, file = "data/sst_ALL_trend_clim_aov_tukey.Rda
 
 ```{r clim-trend-AOV-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of trending data. The 90th percentile thresholds are significantly different at p < 0.05 but the seasonal signals are not."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_trend_clim_aov_tukey.Rdata")
+load("data/sst_ALL_trend_clim_aov_tukey.Rdata")
 
 sst_ALL_trend_clim_aov <- sst_ALL_trend_clim_aov_tukey %>% 
   select(-tukey) %>% 
@@ -286,7 +286,7 @@ save(sst_ALL_trend_clim_KS_p, file = "data/sst_ALL_trend_clim_KS_p.Rdata")
 
 ```{r KS-clims, fig.cap="Dot and line plot showing the _p_-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_trend_clim_KS_p.Rdata")
+load("data/sst_ALL_trend_clim_KS_p.Rdata")
 
 # Filter non-significant results
 KS_sig <- sst_ALL_trend_clim_KS_p %>% 
@@ -352,7 +352,7 @@ save(sst_ALL_trend_event_aov_tukey, file = "data/sst_ALL_trend_event_aov_tukey.R
 
 ```{r event-aov-plot}
 
-load("~/MHWdetection/analysis/data/sst_ALL_trend_event_aov_tukey.Rdata")
+load("data/sst_ALL_trend_event_aov_tukey.Rdata")
 
 # ANOVA p
 sst_ALL_trend_event_aov_p <- sst_ALL_trend_event_aov_tukey %>% 
@@ -453,7 +453,7 @@ save(sst_ALL_trend_event_CI, file = "data/sst_ALL_trend_event_CI.Rdata")
 
 ```{r event-CI-plot1, fig.cap="Confidence intervals of the MHW metrics when increasing decadal trends were added."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_trend_event_CI.Rdata")
+load("data/sst_ALL_trend_event_CI.Rdata")
 
 ggplot(sst_ALL_trend_event_CI, aes(x = trend)) +
   geom_errorbar(width = 1, alpha = 0.8,
@@ -513,7 +513,7 @@ save(sst_ALL_trend_cat_chi, file = "data/sst_ALL_trend_cat_chi.Rdata")
 ```
 
 ```{r cat-chi-res}
-load("~/MHWdetection/analysis/data/sst_ALL_trend_cat_chi.Rdata")
+load("data/sst_ALL_trend_cat_chi.Rdata")
 
 knitr::kable(sst_ALL_trend_cat_chi, caption = "Table showing the significant difference (_p_-value) for the count of different categories of events for each site based on the trends introduced into the data. No differences were found.")
 ```

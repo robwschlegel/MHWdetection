@@ -108,7 +108,7 @@ save(sst_ALL_con, file = "data/sst_ALL_con.Rdata")
 
 ```{r con-miss, fig.cap="Dot and line plot showing the average count of consecutive missing days of data as the percentage of missing data increases. The colour scale is log transformed."}
 # Load consecutive miss count data
-load("~/MHWdetection/analysis/data/sst_ALL_con.Rdata")
+load("data/sst_ALL_con.Rdata")
 
 # Prep the con results for plotting
 sst_ALL_con_plot <- sst_ALL_con %>% 
@@ -213,7 +213,7 @@ save(sst_ALL_miss_clim_only, file = "data/sst_ALL_miss_clim_only.Rdata")
 ```{r clim-miss-seas, fig.cap="The seasonal signals created from time series with increasing percentages of missing data."}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
-load("~/MHWdetection/analysis/data/sst_ALL_miss_clim_only.Rdata")
+load("data/sst_ALL_miss_clim_only.Rdata")
 
 # visualise
 ggplot(arrange(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), -as.numeric(miss)), 
@@ -298,7 +298,7 @@ save(sst_ALL_miss_clim_aov_tukey, file = "data/sst_ALL_miss_clim_aov_tukey.Rdata
 
 ```{r clim-miss-AOV-p, fig.cap="Heatmap showing the ANOVA results for the comparisons of the clim values for the different proportions of missing data. The 90th percentile thresholds are significantly different at p < 0.05 but the seasonal signals are not."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_miss_clim_aov_tukey.Rdata")
+load("data/sst_ALL_miss_clim_aov_tukey.Rdata")
 
 sst_ALL_miss_clim_aov <- sst_ALL_miss_clim_aov_tukey %>% 
   select(-tukey) %>% 
@@ -455,7 +455,7 @@ save(sst_ALL_miss_clim_KS_p, file = "data/sst_ALL_miss_clim_KS_p.Rdata")
 
 ```{r KS-clims, fig.height=2, fig.width=8, fig.cap="Line plot showing the _p_-value results from KS tests comparing the distributions of each of the 100 replicated climatology statistics against the true (no missing data) climatologies for each of the three reference time series."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_miss_clim_KS_p.Rdata")
+load("data/sst_ALL_miss_clim_KS_p.Rdata")
 
 # Filter non-significant results
 KS_sig <- sst_ALL_miss_clim_KS_p %>% 
@@ -570,7 +570,7 @@ save(sst_ALL_miss_event_aov_tukey, file = "data/sst_ALL_miss_event_aov_tukey.Rda
 
 ```{r event-aov-plot, fig.cap="Heatmap showing the ANOVA results for the comparisons of the main four MHW metrics for all proportions of missing data per reference time series. The differences are significant (_p_ <0.05) for all of the metrics."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_miss_event_aov_tukey.Rdata")
+load("data/sst_ALL_miss_event_aov_tukey.Rdata")
 
 # ANOVA p
 sst_ALL_miss_event_aov_p <- sst_ALL_miss_event_aov_tukey %>% 
@@ -674,7 +674,7 @@ save(sst_ALL_miss_event_CI, file = "data/sst_ALL_miss_event_CI.Rdata")
 
 ```{r event-miss-CI-plot, fig.cap="Confidence intervals of the different metrics for the different proportions of missing data. Note that the _y_-axes are not the same."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_miss_event_CI.Rdata")
+load("data/sst_ALL_miss_event_CI.Rdata")
 
 ggplot(sst_ALL_miss_event_CI, aes(x = as.factor(miss))) +
   geom_errorbar(position = position_dodge(0.9), width = 0.5,
@@ -750,7 +750,7 @@ In order to detemine if the count of MHW categories differs based on the percent
 
 ```{r cat-chi-post, eval=FALSE}
 # Load and extract category data
-load("~/MHWdetection/analysis/data/sst_ALL_miss_clim_event_cat.Rdata")
+load("data/sst_ALL_miss_clim_event_cat.Rdata")
 suppressWarnings( # Suppress warning about category levels not all being present
 sst_ALL_miss_cat <- sst_ALL_miss_clim_event_cat %>%
   select(-events) %>%
@@ -805,7 +805,7 @@ save(sst_ALL_miss_cat_chi, file = "data/sst_ALL_miss_cat_chi.Rdata")
 ```
 
 ```{r cat-chi-table, eval=FALSE}
-load("~/MHWdetection/analysis/data/sst_ALL_miss_cat_chi.Rdata")
+load("data/sst_ALL_miss_cat_chi.Rdata")
 
 sst_ALL_miss_cat_chi_sig <- sst_ALL_miss_cat_chi %>% 
   filter(p.value <= 0.05) %>% 
@@ -818,7 +818,7 @@ knitr::kable(sst_ALL_miss_cat_chi_sig, caption = "Table showing the count out of
 ```
 
 ```{r chi-pair-plot, fig.cap="Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test."}
-load("~/MHWdetection/analysis/data/sst_ALL_miss_cat_chi.Rdata")
+load("data/sst_ALL_miss_cat_chi.Rdata")
 
 # Prep data for plotting
 chi_sig <- sst_ALL_miss_cat_chi %>% 
@@ -863,7 +863,7 @@ There are two realistic instances of consistent missing data in SST time series.
 To simulate ice cover we will remove the three winter months from each time series. Because two of the three time series are from the northern hemisphere, the times removed will not be the same for all time series.
 
 ```{r ice-cover-line, fig.cap="The three time series with artificial ice cover in the winter months removed. The missing data may be seen as a faint grey line filling in the winter months."}
-load("~/MHWdetection/analysis/data/sst_ALL_detrend.Rdata")
+load("data/sst_ALL_detrend.Rdata")
 # Knock-out ice coverage
 sst_WA_ice <- sst_ALL_detrend %>% 
   filter(site == "WA") %>% 

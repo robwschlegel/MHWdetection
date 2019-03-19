@@ -22,7 +22,7 @@ In this vignette the results from the main three vignettes are combined in order
 
 ```{r ref-ts-overview}
 # A multi-panel summary figure with images and tables
-load("~/MHWdetection/analysis/data/sst_ALL.Rdata")
+load("data/sst_ALL.Rdata")
 
 # sst_ALL_summary <- sst_ALL %>% 
 

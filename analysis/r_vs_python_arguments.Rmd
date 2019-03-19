@@ -49,8 +49,8 @@ sst = np.loadtxt(open("data/sst_WA.csv", "r"), delimiter = ',', skiprows = 1)
 
 ```{r py-default}
 # The default python output from the previous comparison vignette
-default_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py.csv")
-default_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py.csv")
+default_py_event <- read_csv("data/mhws_py.csv")
+default_py_clim <- read_csv("data/clim_py.csv")
 ```
 
 ```{r r-default}
@@ -138,12 +138,12 @@ Lastly load the Python output and compare the two.
 
 ```{r pctile-compare}
 # Load Python
-pctile_80_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_pctile_80.csv")
-pctile_80_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_pctile_80.csv")
-pctile_95_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_pctile_95.csv")
-pctile_95_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_pctile_95.csv")
-pctile_99_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_pctile_99.csv")
-pctile_99_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_pctile_99.csv")
+pctile_80_py_event <- read_csv("data/mhws_py_pctile_80.csv")
+pctile_80_py_clim <- read_csv("data/clim_py_pctile_80.csv")
+pctile_95_py_event <- read_csv("data/mhws_py_pctile_95.csv")
+pctile_95_py_clim <- read_csv("data/clim_py_pctile_95.csv")
+pctile_99_py_event <- read_csv("data/mhws_py_pctile_99.csv")
+pctile_99_py_clim <- read_csv("data/clim_py_pctile_99.csv")
 
 # Compare clims and intensities
 # 80
@@ -283,12 +283,12 @@ clim_df.to_csv('data/clim_py_spw_51.csv', sep = ',', index = False)
 
 ```{r}
 # Load Python
-spw_no_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_spw_no.csv")
-spw_no_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_spw_no.csv")
-spw_11_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_spw_11.csv")
-spw_11_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_spw_11.csv")
-spw_51_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_spw_51.csv")
-spw_51_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_spw_51.csv")
+spw_no_py_event <- read_csv("data/mhws_py_spw_no.csv")
+spw_no_py_clim <- read_csv("data/clim_py_spw_no.csv")
+spw_11_py_event <- read_csv("data/mhws_py_spw_11.csv")
+spw_11_py_clim <- read_csv("data/clim_py_spw_11.csv")
+spw_51_py_event <- read_csv("data/mhws_py_spw_51.csv")
+spw_51_py_clim <- read_csv("data/clim_py_spw_51.csv")
 
 # Compare clims and intensities
 # no smoothing
@@ -371,10 +371,10 @@ clim_df.to_csv('data/clim_py_whw_7.csv', sep = ',', index = False)
 
 ```{r}
 # Load Python
-whw_3_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_whw_3.csv")
-whw_3_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_whw_3.csv")
-whw_7_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_whw_7.csv")
-whw_7_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_whw_7.csv")
+whw_3_py_event <- read_csv("data/mhws_py_whw_3.csv")
+whw_3_py_clim <- read_csv("data/clim_py_whw_3.csv")
+whw_7_py_event <- read_csv("data/mhws_py_whw_7.csv")
+whw_7_py_clim <- read_csv("data/clim_py_whw_7.csv")
 
 # Compare clims and intensities
 # 3 days
@@ -451,10 +451,10 @@ clim_df.to_csv('data/clim_py_minD_7.csv', sep = ',', index = False)
 
 ```{r}
 # Load Python
-minD_3_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_minD_3.csv")
-minD_3_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_minD_3.csv")
-minD_7_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_minD_7.csv")
-minD_7_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_minD_7.csv")
+minD_3_py_event <- read_csv("data/mhws_py_minD_3.csv")
+minD_3_py_clim <- read_csv("data/clim_py_minD_3.csv")
+minD_7_py_event <- read_csv("data/mhws_py_minD_7.csv")
+minD_7_py_clim <- read_csv("data/clim_py_minD_7.csv")
 
 # Compare clims and intensities
 # 3 days
@@ -517,12 +517,12 @@ clim_df.to_csv('data/clim_py_joinAG_5.csv', sep = ',', index = False)
 
 ```{r}
 # Load Python
-joinAG_no_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_joinAG_no.csv")
-joinAG_no_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_joinAG_no.csv")
-joinAG_1_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_joinAG_1.csv")
-joinAG_1_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_joinAG_1.csv")
-joinAG_5_py_event <- read_csv("~/MHWdetection/analysis/data/mhws_py_joinAG_5.csv")
-joinAG_5_py_clim <- read_csv("~/MHWdetection/analysis/data/clim_py_joinAG_5.csv")
+joinAG_no_py_event <- read_csv("data/mhws_py_joinAG_no.csv")
+joinAG_no_py_clim <- read_csv("data/clim_py_joinAG_no.csv")
+joinAG_1_py_event <- read_csv("data/mhws_py_joinAG_1.csv")
+joinAG_1_py_clim <- read_csv("data/clim_py_joinAG_1.csv")
+joinAG_5_py_event <- read_csv("data/mhws_py_joinAG_5.csv")
+joinAG_5_py_clim <- read_csv("data/clim_py_joinAG_5.csv")
 
 # Compare clims and intensities
 # no days

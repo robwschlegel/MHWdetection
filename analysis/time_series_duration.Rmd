@@ -245,7 +245,7 @@ rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey); gc()
 ```
 
 ```{r clim-aov-table}
-load("~/MHWdetection/analysis/data/sst_ALL_smooth_aov_tukey.Rdata")
+load("data/sst_ALL_smooth_aov_tukey.Rdata")
 
 sst_ALL_smooth_aov <- sst_ALL_smooth_aov_tukey %>% 
   select(-tukey) %>% 
@@ -356,7 +356,7 @@ rm(sst_ALL_clim_only, sst_ALL_KS); gc()
 
 ```{r KS-clims, fig.cap="Line plots showing the results of pairwise Kolmogorov-Smirnoff tests for the seasonal signals (top panel) and 90th percentile thresholds (bottom panel) from the same time series at differing lengths. The colour of the line shows how many times out of 100 re-samples that the climatologies were significantly different from the control. The dotted verticle line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_KS.Rdata")
+load("data/sst_ALL_KS.Rdata")
 
 # Filter non-significant results
 KS_sig <- sst_ALL_KS %>% 
@@ -387,7 +387,7 @@ The above figure shows that the results of the KS tests were more often signific
 
 ```{r clim-ts-all, fig.cap="Time series of each of climatology period used from the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_clim_only.Rdata")
+load("data/sst_ALL_clim_only.Rdata")
 
 sst_ALL_clim_1 <- sst_ALL_clim_only %>% 
   filter(rep == "1") %>% 
@@ -422,7 +422,7 @@ rm(sst_ALL_clim_only, sst_ALL_smooth_R2_base); gc()
 ```
 
 ```{r clim-R2-base-scatter-plot, fig.cap="Scatterplot showing the relationship between time series length (x-axis) and a range of metrics (y-axis). The clear pattern is that the variance of the resulting relationships diminishes rapidly after at least 10 years of data are being used to determine the seasonal signal and threshold. The data shown here are all 100 re-samples."}
-load("~/MHWdetection/analysis/data/sst_ALL_smooth_R2_base.Rdata")
+load("data/sst_ALL_smooth_R2_base.Rdata")
 
 sst_ALL_smooth_R2_base_long <- sst_ALL_smooth_R2_base %>% 
   gather(key = metric, value = val, -year_index, -site, -rep)
@@ -477,7 +477,7 @@ save(sst_ALL_smooth_R2, file = "data/sst_ALL_smooth_R2.Rdata")
 
 ```{r clim-R2-fig, fig.cap="Boxplots showing the distribution of coefficients of determination (R2) for the linear relationship between the mean and SD of the climatologies for all the varying lengths of the 100 re-samples of each of the three reference time series."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_smooth_R2.Rdata")
+load("data/sst_ALL_smooth_R2.Rdata")
 
 ggplot(sst_ALL_smooth_R2, aes(x = metric, y = adj.r.squared, fill = metric)) +
   geom_boxplot() +
@@ -532,7 +532,7 @@ save(sst_ALL_event_aov_tukey, file = "data/sst_ALL_event_aov_tukey.Rdata")
 ```{r event-aov-table}
 # This file is not uploaded to GitHub as it is too large
 # One must first run the above code locally to generate and save the file
-load("~/MHWdetection/analysis/data/sst_ALL_event_aov_tukey.Rdata")
+load("data/sst_ALL_event_aov_tukey.Rdata")
 
 sst_ALL_event_aov <- sst_ALL_event_aov_tukey %>% 
   select(-tukey) %>% 
@@ -697,7 +697,7 @@ save(sst_ALL_clim_category_count, file = "data/sst_ALL_clim_category_count.Rdata
 
 ```{r cat-compare, fig.cap="Bar plots showing the counts of the different categories of events faceted in a grid with different sites along the top and the different category classifications down the side. The colours of the bars denote the different climatology periods used. Note that the general trend is that more 'smaller' events are detected with a 10 year clim period, and more 'larger' events detected with the 30 year clim. The 20 year clim tends to rest in the middle."}
 
-load("~/MHWdetection/analysis/data/sst_ALL_clim_category_count.Rdata")
+load("data/sst_ALL_clim_category_count.Rdata")
 
 # total_category_count <- sst_ALL_clim_category_count %>% 
 #   ungroup() %>% 
@@ -796,7 +796,7 @@ knitr::kable(sst_ALL_cat_chi_sig, caption = "Table showing the count out of 100 
 ```
 
 ```{r chi-pair-plot, fig.cap="Line graph showing the count of times out of 100 random replicates when a given time series length led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test."}
-load("~/MHWdetection/analysis/data/sst_ALL_cat_chi.Rdata")
+load("data/sst_ALL_cat_chi.Rdata")
 
 # Prep data for plotting
 chi_sig <- sst_ALL_cat_chi %>% 
