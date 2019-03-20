@@ -84,6 +84,10 @@ save(sst_ALL_add_trend, file = "data/sst_ALL_add_trend.Rdata")
 
 # Calculate clims, events, and categories ---------------------------------
 
+# NB: These are to large to be run as one command
+  # They must be manually selected and run
+  # Wait for each to finish before running the next
+
 # Begin fresh here if desired
 load("data/sst_ALL_flat.Rdata")
 # unique(sst_ALL_flat$rep)
@@ -99,7 +103,7 @@ load("data/sst_ALL_add_trend.Rdata")
 # Run this preferably with 35 cores for speed, RAM allowing
 doMC::registerDoMC(cores = 35)
 sst_ALL_length <- plyr::ldply(1982:2016, shrinking_results, .parallel = T) %>%
-  mutate(test = "length")
+  mutate(test = as.factor("length"))
 # test that it ran correctly
 # names(sst_ALL_length)
 # unnest(slice(sst_ALL_length, 1), clim)
@@ -110,17 +114,16 @@ sst_ALL_length <- plyr::ldply(1982:2016, shrinking_results, .parallel = T) %>%
 doMC::registerDoMC(cores = 50)
 sst_ALL_miss <- plyr::ddply(sst_ALL_knockout, c("site", "rep", "index_vals"),
                             clim_event_cat_calc, .parallel = T) %>%
-  mutate(test = "missing")
+  mutate(test = as.factor("missing"))
 
 ## Trended data
 doMC::registerDoMC(cores = 50)
 sst_ALL_trend <- plyr::ddply(sst_ALL_add_trend, c("site", "rep", "index_vals"),
                              clim_event_cat_calc, .parallel = T) %>%
-  mutate(test = "trended")
+  mutate(test = as.factor("trended"))
 
 ## Combine all results
-sst_ALL_clim_event_cat <- rbind(sst_ALL_length, sst_ALL_miss, sst_ALL_trend) %>%
-  mutate(test = as.factor(test))
+sst_ALL_clim_event_cat <- rbind(sst_ALL_length, sst_ALL_miss, sst_ALL_trend)
 
 ## Save and clear
 save(sst_ALL_clim_event_cat, file = "data/sst_ALL_clim_event_cat.Rdata")
