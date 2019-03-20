@@ -1,3 +1,7 @@
+# 2019-03-20
+
+* Working on the consolidated workflow script
+
 # 2019-03-19
 
 * Switching from `pkgdown` to `workflowr` for project management/visualisation
