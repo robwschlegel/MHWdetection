@@ -474,7 +474,6 @@ sst_ALL_smooth_R2 <- sst_ALL_smooth_R2_base %>%
 save(sst_ALL_smooth_R2, file = "data/sst_ALL_smooth_R2.Rdata")
 ```
 
-
 ```{r clim-R2-fig, fig.cap="Boxplots showing the distribution of coefficients of determination (R2) for the linear relationship between the mean and SD of the climatologies for all the varying lengths of the 100 re-samples of each of the three reference time series."}
 
 load("data/sst_ALL_smooth_R2.Rdata")
