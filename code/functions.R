@@ -188,25 +188,67 @@ shrinking_results <- function(year_begin, df = sst_ALL_flat){
 
 # KS tests ----------------------------------------------------------------
 
+# The problem with running KS tests on category data is that it doesn't appear
+# to be bothered by differences in sample sizes
+# Meaning that a comparison across the count of events matters more on what
+# counts are present, rather than the difference in total counts
+
 # Function for running a pairwise KS test against the index_standard
+# Lazily I have it run on chosen columns by name given certain tests
+# as getting it to do this programmatically was becoming annoying
+# testers...
+# df_2 <- filter(res, index_vals == 20)
+# df_1 <- df_standard
 KS_sub <- function(df_2, df_1){
-  suppressWarnings( # Suppress warnings about perfect matches
+  if("seas" %in% names(df_1)){
+    suppressWarnings( # Suppress warnings about ties
     res <- data.frame(seas = round(ks.test(df_1$seas, df_2$seas)$p.value, 4),
                       thresh = round(ks.test(df_1$thresh, df_2$thresh)$p.value, 4))
-  )
+    )
+  }
+  if("intensity_mean" %in% names(df_1)){
+    suppressWarnings( # Suppress warnings about ties
+      res <- data.frame(duration = round(ks.test(df_1$duration, df_2$duration)$p.value, 4),
+                        intensity_mean = round(ks.test(df_1$intensity_mean, df_2$intensity_mean)$p.value, 4),
+                        intensity_max = round(ks.test(df_1$intensity_max, df_2$intensity_max)$p.value, 4),
+                        intensity_cumulative = round(ks.test(df_1$intensity_cumulative, df_2$intensity_cumulative)$p.value, 4))
+    )
+  }
+  if("category" %in% names(df_1)){
+    df_1$category <- factor(df_1$category, levels = c("I Moderate", "II Strong", "III Severe", "IV Extreme"))
+    df_2$category <- factor(df_2$category, levels = c("I Moderate", "II Strong", "III Severe", "IV Extreme"))
+    suppressWarnings( # Suppress warnings about ties
+      res <- data.frame(category = round(ks.test(as.numeric(df_1$category), as.numeric(df_2$category))$p.value, 4))
+    )
+  }
   return(res)
 }
 
-# # Wrapper function to run all pairwise KS tests
+# Wrapper function to run all pairwise KS tests
+# df <- sst_ALL_clim_event_cat[ ,c(1:4,6)] %>%
+#   filter(test == "missing", site == "WA", rep == "1") %>%
+#   select(-test, -rep, -site)
 KS_p <- function(df){
   # Unnest the clim data
+  suppressWarnings( # Suppress warning about different factor levels for cat data
   df_long <- df %>%
-    select(-event, -cat) %>%
+    # select(-event, -cat) %>%
     unnest()
+  )
   # This determines if the data are from the length test or not
   # It then sets the benchmark value (30 years length or 0% missing/ 0C-dec)
   if(max(df_long$index_vals) > 1){
     index_filter <- 30
+    if("intensity_mean" %in% names(df_long)){
+      df_long <- df_long %>%
+        filter(index_vals >= 10,
+               date_start >= "2009-01-02", date_end <= "2018-12-31")
+    }
+    if("category" %in% names(df_long)){
+      df_long <- df_long %>%
+        filter(index_vals >= 10,
+               peak_date >= "2009-01-01", peak_date <= "2018-12-31")
+    }
   } else {
     index_filter <- 0
   }
@@ -221,38 +263,6 @@ KS_p <- function(df){
     unnest()
   return(res)
 }
-
-
-# T-tests -----------------------------------------------------------------
-
-# Function for running a pairwise t-test against the index_standard
-# df <- prep
-# t_test_sub <- function(df){
-#   res <- pairwise.t.test(df$duration, df$index_vals, p.adj = "bonf", pool.SD=FALSE)
-#
-#
-#     res <- data.frame(seas = round(ks.test(df_1$seas, df_2$seas)$p.value, 4),
-#                       thresh = round(ks.test(df_1$thresh, df_2$thresh)$p.value, 4))
-#   return(res)
-# }
-
-# df <- sst_ALL_clim_event_cat %>%
-  # filter(test == "length", site == "WA", rep == "1") %>%
-  # select(-test, -rep, -site)
-# t_test_p <- function(df){
-#   prep <- df %>%
-#     select(index_vals, event) %>%
-#     unnest()
-#   # Filter out results not from the most recent decade for equal comparison
-#   # when looking at the changing lengtths test
-#   if(max(prep$index_vals) > 1){
-#     prep <- prep %>%
-#       filter(index_vals >= 10) %>%
-#       # 2009-01-02 is intentional
-#       filter(date_start >= "2009-01-02", date_end <= "2018-12-31")
-#   }
-#
-# }
 
 
 # AOV and Tukey tests -----------------------------------------------------
@@ -314,33 +324,39 @@ aov_tukey <- function(df){
 # chi-squared pairwise function
 # Takes one rep of missing data and compares it against the complete data
 # testers...
-# df <- filter(res, index_vals == 20)
+# df <- unnest(slice(select(res, data), 1))
 # df_comp <- df_standard
-chi_pair <- function(df){
+chi_pair <- function(df, df_comp){
   # Prep data
-  df <- ungroup(df)
-  df_joint <- rbind(df_standard, df)
+  df_joint <- table(rbind(df_comp, df))
+  if(ncol(df_joint == 1)){
+    df_joint <- as.table(cbind(df_joint, 'III & IV' = c(0,0)))
+  }
   # Run tests
-  res <- chisq.test(table(df_joint$index_vals, df_joint$category), correct = FALSE)
-  res_broom <- broom::augment(res) #%>%
-    # mutate(p.value = broom::tidy(res)$p.value)
-  return(res_broom)
+  res <- round(fisher.test(df_joint)$p.value, 4)
+  return(res)
+  # This only works to unpack chi-squared tests
+  # res <- fisher.test(table(df_joint$index_vals, df_joint$category))
+  # res_broom <- broom::augment(res) %>%
+  #   mutate(p.value = broom::tidy(res)$p.value) %>%
+  #   mutate_if(is.numeric, round, 4)
+  # return(res_broom)
 }
 
 # Wrapper to get data ready for pair-wise chi-squared tests
 # testers...
-df <- sst_ALL_clim_event_cat %>%
-  filter(test == "length", site == "WA", rep == "1") %>%
-  select(-test, -rep, -site)
+# df <- sst_ALL_clim_event_cat %>%
+  # filter(test == "length", site == "Med", rep == "1") %>%
+  # select(-test, -rep, -site)
 chi_test <- function(df){
   suppressWarnings( # Suppress warning about category levels not all being present
     df_long <- df %>%
       select(index_vals, cat) %>%
       unnest() %>%
       # select(index_vals, category) %>%
-      mutate(category = ifelse(category == "III Severe", "III & IV", category),
-             category = ifelse(category == "IV Extreme", "III & IV", category),
-             category = factor(category, levels = c("I Moderate", "II Strong", "III & IV")))
+      mutate(category = ifelse(category %in% c("I Moderate","II Strong"), "I & II", category),
+             category = ifelse(category %in% c("III Severe","IV Extreme"), "III & IV", category),
+             category = as.character(category))
   )
   # This determines if the data are from the length test or not
   # It then sets the benchmark value (30 years length or 0% missing/ 0C-dec)
@@ -356,19 +372,20 @@ chi_test <- function(df){
     filter(index_vals == index_filter) %>%
     select(index_vals, category)
   # The pairwise chai-squared results
-  # suppressWarnings( # Suppress poor match warnings
+  suppressWarnings( # Suppress warnings from small sample sizes and factor combining
     res <- df_long %>%
       filter(index_vals != index_filter) %>%
       select(index_vals, category) %>%
       # mutate(index_vals = as.factor(as.character(index_vals))) %>%
-      group_by(index_vals) %>%
+      mutate(index_vals2 = index_vals) %>%
+      group_by(index_vals2) %>%
       nest() %>%
-      mutate(chi = map(data, chi_pair)) %>%
+      mutate(chi = map(data, chi_pair, df_standard)) %>%
       select(-data) %>%
-      unnest() #%>%
-      # dplyr::rename(miss_comp = Var1, category = Var2)
-  # )
-
+      unnest() %>%
+      dplyr::rename(index_vals = index_vals2)
+      # dplyr::rename(index_vals = index_vals2, miss_comp = Var1, category = Var2)
+  )
 }
 
 

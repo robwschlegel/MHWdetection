@@ -126,7 +126,8 @@ sst_ALL_trended <- plyr::ddply(sst_ALL_add_trend, c("site", "rep", "index_vals")
 # save(sst_ALL_trended, file = "data/sst_ALL_trended.Rdata")
 
 ## Combine all results
-sst_ALL_clim_event_cat <- rbind(sst_ALL_length, sst_ALL_missing, sst_ALL_trended)
+sst_ALL_clim_event_cat <- rbind(sst_ALL_length, sst_ALL_missing, sst_ALL_trended) %>%
+  select(test, site, rep, index_vals, clim, event, cat)
 
 ## Save and clear
 save(sst_ALL_clim_event_cat, file = "data/sst_ALL_clim_event_cat.Rdata")
@@ -137,22 +138,27 @@ save(sst_ALL_clim_event_cat, file = "data/sst_ALL_clim_event_cat.Rdata")
 
 # Kolmogorov-Smirnov tests for similarity of climatologies
 doMC::registerDoMC(cores = 50)
-sst_ALL_KS <- plyr::ddply(sst_ALL_clim_event_cat, c("test", "site", "rep"), KS_p, .parallel = T)
+sst_ALL_KS_clim <- plyr::ddply(sst_ALL_clim_event_cat[ ,c(1:5)],
+                               c("test", "site", "rep"), KS_p, .parallel = T)
 
 # Save and clear
-save(sst_ALL_KS, file = "data/sst_ALL_KS.Rdata")
-# rm(sst_ALL_KS); gc()
+save(sst_ALL_KS_clim, file = "data/sst_ALL_KS_clim.Rdata")
+# rm(sst_ALL_KS_clim); gc()
 
 
 # Event metric results ----------------------------------------------------
 
+# Kolmogorov-Smirnov tests for similarity of climatologies
+doMC::registerDoMC(cores = 50)
+sst_ALL_KS_event <- plyr::ddply(sst_ALL_clim_event_cat[ ,c(1:4,6)],
+                               c("test", "site", "rep"), KS_p, .parallel = T)
+
+# Save and clear
+save(sst_ALL_KS_event, file = "data/sst_ALL_KS_event.Rdata")
+# rm(sst_ALL_KS_event); gc()
+
 # AOV and Tukey
 doMC::registerDoMC(cores = 50)
-
-# test_df <- sst_ALL_clim_event_cat %>%
-  # filter(test == "missing", site == "WA", rep == "1") #%>%
-  # slice(1)
-
 sst_ALL_aov_tukey <- plyr::ddply(sst_ALL_clim_event_cat, c("test", "site", "rep"),
                                  aov_tukey, .parallel = T)
 
@@ -169,8 +175,13 @@ save(sst_ALL_aov_tukey, file = "data/sst_ALL_aov_tukey.Rdata")
 # Category count results --------------------------------------------------
 
 # Chi-squared
+doMC::registerDoMC(cores = 50)
+sst_ALL_chi <- plyr::ddply(sst_ALL_clim_event_cat,
+                           c("test", "site", "rep"), chi_test, .parallel = T)
 
-
+# Save and clear
+save(sst_ALL_chi, file = "data/sst_ALL_KS_event.Rdata")
+# rm(sst_ALL_KS_event); gc()
 
 # Post-hoc
 

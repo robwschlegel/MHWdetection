@@ -120,6 +120,9 @@ To more clearly explain the effects that the following variables have on MHWs we
 
 ## Assessing the effect of time series length
 
+(RWS: A bit in here about why we used Tukey rather than pairwise t-test because Tukey pulls from the collective variance, whereas paired t-tests do not, which makes the results more robust even if more comparisons are being made than we need.
+Thinking about this now however it seems as though KS tests may be better for the event metrics than a Tukey because we are interested in the differences in distributions of values and not central tendencies.)
+
 The length of a time series may affect the detection of marine heatwaves by negatively affecting the creation of an accurate daily climatology relative to which the events can be detected. A climatology serves two main roles (WMO, 2017); 1) it serves as a ‘benchmark’ relative to which past and future measurements can be compared, and against which anomalies can be calculated, 2) it reflects the typical conditions likely to be experienced at a particular place at a particular time. The WMO technical guidelines (WMO, 2016) stipulate that daily climatologies (which they call ‘climate normals’) must be based on the most recent 30-year period that ends on an even decade (currently 1981-2010). 
 
 What we aim to determine here is at what number of years do the detected MHWs in shortened time series become significantly different from an assumed truth, based on a standard 30-year record. This is done by first removing the long-term linear trends in the data before systematically shortening the reference time series one year at a time, down to a minimum of ten years, before comparing the results.
