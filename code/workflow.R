@@ -89,11 +89,11 @@ save(sst_ALL_add_trend, file = "data/sst_ALL_add_trend.Rdata")
   # Wait for each to finish before running the next
 
 # Begin fresh here if desired
-load("data/sst_ALL_flat.Rdata")
+# load("data/sst_ALL_flat.Rdata")
 # unique(sst_ALL_flat$rep)
-load("data/sst_ALL_knockout.Rdata")
+# load("data/sst_ALL_knockout.Rdata")
 # unique(sst_ALL_knockout$index_vals)
-load("data/sst_ALL_add_trend.Rdata")
+# load("data/sst_ALL_add_trend.Rdata")
 # unique(sst_ALL_add_trend$index_vals)
 
 ## Duration
@@ -109,51 +109,35 @@ sst_ALL_length <- plyr::ldply(1982:2016, shrinking_results, .parallel = T) %>%
 # unnest(slice(sst_ALL_length, 1), clim)
 # unnest(slice(sst_ALL_length, 1), event)
 # unnest(slice(sst_ALL_length, 1), cat)
+# save(sst_ALL_length, file = "data/sst_ALL_length.Rdata")
 
 ## Missing data
 doMC::registerDoMC(cores = 50)
-sst_ALL_miss <- plyr::ddply(sst_ALL_knockout, c("site", "rep", "index_vals"),
-                            clim_event_cat_calc, .parallel = T) %>%
+sst_ALL_missing <- plyr::ddply(sst_ALL_knockout, c("site", "rep", "index_vals"),
+                               clim_event_cat_calc, .parallel = T) %>%
   mutate(test = as.factor("missing"))
+# save(sst_ALL_missing, file = "data/sst_ALL_length.Rdata")
 
 ## Trended data
 doMC::registerDoMC(cores = 50)
-sst_ALL_trend <- plyr::ddply(sst_ALL_add_trend, c("site", "rep", "index_vals"),
+sst_ALL_trended <- plyr::ddply(sst_ALL_add_trend, c("site", "rep", "index_vals"),
                              clim_event_cat_calc, .parallel = T) %>%
   mutate(test = as.factor("trended"))
+# save(sst_ALL_trended, file = "data/sst_ALL_trended.Rdata")
 
 ## Combine all results
-sst_ALL_clim_event_cat <- rbind(sst_ALL_length, sst_ALL_miss, sst_ALL_trend)
+sst_ALL_clim_event_cat <- rbind(sst_ALL_length, sst_ALL_missing, sst_ALL_trended)
 
 ## Save and clear
 save(sst_ALL_clim_event_cat, file = "data/sst_ALL_clim_event_cat.Rdata")
 # rm(sst_ALL_length, sst_ALL_miss, sst_ALL_trend, sst_ALL_clim_event_cat); gc()
 
 
-# Pull out climatologies only ---------------------------------------------
-
-# Extract only the 366 day climatologies for all tests, sites, rep, and index_vals
-# doMC::registerDoMC(cores = 50)
-# sst_ALL_clim_only <- plyr::ddply(sst_ALL_clim_event_cat, c("test", "site", "rep", "index_vals"),
-#                                  clim_only, .parallel = T)
-
-# Save and clear
-# save(sst_ALL_clim_only, file = "data/sst_ALL_clim_only.Rdata")
-# rm(sst_ALL_clim_only); gc()
-
-
 # Climatology results -----------------------------------------------------
 
 # Kolmogorov-Smirnov tests for similarity of climatologies
 doMC::registerDoMC(cores = 50)
-# testers...
-# working
-
-# broken
-# test_df <- filter(sst_ALL_clim_event_cat, site == "WA", test == "trended", rep == "1")
-
-sst_ALL_KS <- plyr::ddply(test_df, c("test", "site", "rep"),
-                          KS_p, .parallel = T)
+sst_ALL_KS <- plyr::ddply(sst_ALL_clim_event_cat, c("test", "site", "rep"), KS_p, .parallel = T)
 
 # Save and clear
 save(sst_ALL_KS, file = "data/sst_ALL_KS.Rdata")
@@ -164,8 +148,18 @@ save(sst_ALL_KS, file = "data/sst_ALL_KS.Rdata")
 
 # AOV and Tukey
 doMC::registerDoMC(cores = 50)
+
+# test_df <- sst_ALL_clim_event_cat %>%
+  # filter(test == "missing", site == "WA", rep == "1") #%>%
+  # slice(1)
+
 sst_ALL_aov_tukey <- plyr::ddply(sst_ALL_clim_event_cat, c("test", "site", "rep"),
                                  aov_tukey, .parallel = T)
+
+# test that it ran correctly
+# names(sst_ALL_aov_tukey)
+# unnest(slice(sst_ALL_aov_tukey, 1), aov)
+# unnest(slice(sst_ALL_aov_tukey, 1), tukey)
 
 # Save and clear
 save(sst_ALL_aov_tukey, file = "data/sst_ALL_aov_tukey.Rdata")

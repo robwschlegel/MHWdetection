@@ -46,3 +46,12 @@
 # of consecutive missing days depending on the percent of missing data
 
 
+# Figure 6 ----------------------------------------------------------------
+
+# A sixth figure would be a bit much, but it may be useful to show some sort
+# of meta-analysis here
+# Such as the relationships between increasing tests and aspects of the time series
+# To that end though if such a thing is to be investiagated it would be better
+# to run the glbal analysis and show that
+
+

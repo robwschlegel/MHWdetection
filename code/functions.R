@@ -128,6 +128,7 @@ clim_only <- function(df){
   res <- df$climatology %>%
     select(doy, seas:thresh) %>%
     unique() %>%
+    mutate_if(is.numeric, round, 3) %>%
     arrange(doy)
   return(res)
 }
@@ -135,7 +136,8 @@ clim_only <- function(df){
 # Likewise we want to grab only the event values we are interested in
 event_only <- function(df){
   res <- df$event %>%
-    select(duration, intensity_mean, intensity_max, intensity_cumulative)
+    select(date_start, date_peak, date_end, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
+    mutate_if(is.numeric, round, 3)
   return(res)
 }
 
@@ -196,11 +198,6 @@ KS_sub <- function(df_2, df_1){
 }
 
 # # Wrapper function to run all pairwise KS tests
-# # testers...
-# df <- sst_ALL_flat %>%
-#   filter(site == "WA", rep == "1")
-# df <- sst_ALL_clim_only %>%
-#   filter(site == "WA", test == "trended", rep == "1")
 KS_p <- function(df){
   # Unnest the clim data
   df_long <- df %>%
@@ -215,7 +212,7 @@ KS_p <- function(df){
   }
   df_standard <- df_long %>%
     filter(index_vals == index_filter)
-  res <- df %>%
+  res <- df_long %>%
     filter(index_vals != index_filter) %>%
     group_by(index_vals) %>%
     nest() %>%
@@ -224,6 +221,38 @@ KS_p <- function(df){
     unnest()
   return(res)
 }
+
+
+# T-tests -----------------------------------------------------------------
+
+# Function for running a pairwise t-test against the index_standard
+# df <- prep
+# t_test_sub <- function(df){
+#   res <- pairwise.t.test(df$duration, df$index_vals, p.adj = "bonf", pool.SD=FALSE)
+#
+#
+#     res <- data.frame(seas = round(ks.test(df_1$seas, df_2$seas)$p.value, 4),
+#                       thresh = round(ks.test(df_1$thresh, df_2$thresh)$p.value, 4))
+#   return(res)
+# }
+
+# df <- sst_ALL_clim_event_cat %>%
+  # filter(test == "length", site == "WA", rep == "1") %>%
+  # select(-test, -rep, -site)
+# t_test_p <- function(df){
+#   prep <- df %>%
+#     select(index_vals, event) %>%
+#     unnest()
+#   # Filter out results not from the most recent decade for equal comparison
+#   # when looking at the changing lengtths test
+#   if(max(prep$index_vals) > 1){
+#     prep <- prep %>%
+#       filter(index_vals >= 10) %>%
+#       # 2009-01-02 is intentional
+#       filter(date_start >= "2009-01-02", date_end <= "2018-12-31")
+#   }
+#
+# }
 
 
 # AOV and Tukey tests -----------------------------------------------------
@@ -242,36 +271,36 @@ aov_p <- function(df){
 
 # Run an ANOVA on each metric and then a Tukey test
 tukey_p <- function(df){
-  aov_tukey <- df[ , -grep("index_vals", names(df))] %>%
+  tukey_models <- df[ , -grep("index_vals", names(df))] %>%
     map(~ TukeyHSD(aov(.x ~ df$index_vals))) %>%
     map_dfr(~ broom::tidy(.), .id = 'metric') %>%
-    mutate(p.value = round(adj.p.value, 4)) %>%
+    mutate(adj.p.value = round(adj.p.value, 4)) %>%
     select(metric, comparison, adj.p.value) %>%
     arrange(metric, adj.p.value)
-  return(aov_tukey)
+  return(tukey_models)
 }
 
 # Quick wrapper for getting results for ANOVA and Tukey on clims
-# df <- sst_ALL_clim_only %>%
-#   filter(test == "length" rep == "1", site == "WA") #%>%
-  # select(-rep, -site)
+# df <- sst_ALL_clim_event_cat %>%
+  # filter(test == "length", site == "WA", rep == "1") %>%
+  # select(-test, -rep, -site)
 aov_tukey <- function(df){
   # Extract MHW event data
   prep <- df %>%
-    select(-cats) %>%
-    unnest(events) %>%
-    filter(row_number() %% 2 == 0) %>%
-    unnest(events) %>%
-    select(index_vals, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
-    mutate(index_vals = as.factor(index_vals))
+    select(index_vals, event) %>%
+    unnest()
   # Filter out results not from the most recent decade for equal comparison
   # when looking at the changing lengtths test
-  if(df$test[1] == "length")
+  if(max(prep$index_vals) > 1){
     prep <- prep %>%
       filter(index_vals >= 10) %>%
+      # 2009-01-02 is intentional
       filter(date_start >= "2009-01-02", date_end <= "2018-12-31")
-  # Calculate the ANVA and Tukey p values
+  }
+  # Calculate the ANOVA and Tukey p values
   res <- prep %>%
+    select(-date_start, -date_peak, -date_end) %>%
+    mutate(index_vals = as.factor(as.character(index_vals))) %>%
     nest() %>%
     mutate(aov = map(data, aov_p),
            tukey = map(data, tukey_p)) %>%
@@ -282,54 +311,65 @@ aov_tukey <- function(df){
 
 # Chi-squared category counting -------------------------------------------
 
-# Prep the data for better chi-squared use
-# suppressWarnings( # Suppress warning about category levels not all being present
-# sst_ALL_cat_prep <- sst_ALL_clim_event_cat %>%
-#   select(-events) %>%
-#   unnest() %>%
-#   select(test:index_vals, category) %>%
-#   mutate(category = ifelse(category == "III Severe", "III & IV", category),
-#          category = ifelse(category == "IV Extreme", "III & IV", category))
-# )
-
-# Extract the true climatologies
-# sst_ALL_miss_cat_only_0 <- sst_ALL_miss_cat_prep %>%
-#   filter(miss == 0, rep == "1") %>%
-#   select(site, miss, category)
-
 # chi-squared pairwise function
 # Takes one rep of missing data and compares it against the complete data
-# df <- sst_ALL_miss_cat_prep %>%
-# filter(site == "WA", rep == "20", miss == 0.1)
-# df <- unnest(slice(sst_ALL_miss_cat_chi,1)) %>%
-# select(-site2, -rep, -miss2)
-# chi_pair <- function(df){
-#   # Prep data
-#   df_comp <- sst_ALL_miss_cat_only_0 %>%
-#     filter(site == df$site[1])
-#   df_joint <- rbind(df, df_comp)
-#   # Run tests
-#   res <- chisq.test(table(df_joint$index_vals, df_joint$category), correct = FALSE)
-#   res_broom <- broom::augment(res) %>%
-#     mutate(p.value = broom::tidy(res)$p.value)
-#   return(res_broom)
-# }
+# testers...
+# df <- filter(res, index_vals == 20)
+# df_comp <- df_standard
+chi_pair <- function(df){
+  # Prep data
+  df <- ungroup(df)
+  df_joint <- rbind(df_standard, df)
+  # Run tests
+  res <- chisq.test(table(df_joint$index_vals, df_joint$category), correct = FALSE)
+  res_broom <- broom::augment(res) #%>%
+    # mutate(p.value = broom::tidy(res)$p.value)
+  return(res_broom)
+}
 
-# The pairwise chai-squared results
-# suppressWarnings( # Suppress poor match warnings
-#   sst_ALL_miss_cat_chi <- sst_ALL_miss_cat_prep %>%
-#     filter(miss != 0) %>%
-#     # mutate(miss = as.factor(miss)) %>%
-#     mutate(site2 = site,
-#            miss2 = miss) %>%
-#     group_by(site2, miss2, rep) %>%
-#     nest() %>%
-#     mutate(chi = map(data, chi_pair)) %>%
-#     select(-data) %>%
-#     unnest() %>%
-#     dplyr::rename(site = site2, miss = miss2,
-#                   miss_comp = Var1, category = Var2)
-# )
+# Wrapper to get data ready for pair-wise chi-squared tests
+# testers...
+df <- sst_ALL_clim_event_cat %>%
+  filter(test == "length", site == "WA", rep == "1") %>%
+  select(-test, -rep, -site)
+chi_test <- function(df){
+  suppressWarnings( # Suppress warning about category levels not all being present
+    df_long <- df %>%
+      select(index_vals, cat) %>%
+      unnest() %>%
+      # select(index_vals, category) %>%
+      mutate(category = ifelse(category == "III Severe", "III & IV", category),
+             category = ifelse(category == "IV Extreme", "III & IV", category),
+             category = factor(category, levels = c("I Moderate", "II Strong", "III & IV")))
+  )
+  # This determines if the data are from the length test or not
+  # It then sets the benchmark value (30 years length or 0% missing/ 0C-dec)
+  if(max(df_long$index_vals) > 1){
+    index_filter <- 30
+    df_long <- df_long %>%
+      filter(index_vals >= 10,
+             peak_date >= "2009-01-01", peak_date <= "2018-12-31")
+  } else {
+    index_filter <- 0
+  }
+  df_standard <- df_long %>%
+    filter(index_vals == index_filter) %>%
+    select(index_vals, category)
+  # The pairwise chai-squared results
+  # suppressWarnings( # Suppress poor match warnings
+    res <- df_long %>%
+      filter(index_vals != index_filter) %>%
+      select(index_vals, category) %>%
+      # mutate(index_vals = as.factor(as.character(index_vals))) %>%
+      group_by(index_vals) %>%
+      nest() %>%
+      mutate(chi = map(data, chi_pair)) %>%
+      select(-data) %>%
+      unnest() #%>%
+      # dplyr::rename(miss_comp = Var1, category = Var2)
+  # )
+
+}
 
 
 # Global functions --------------------------------------------------------
