@@ -42,6 +42,16 @@ sst_ALL_clim <- sst_ALL_res %>%
   filter(row_number() %% 2 == 1) %>%
   unnest(events)
 
+# Climatologies doy
+sst_ALL_clim_only <- sst_ALL_res %>%
+  select(-cats) %>%
+  unnest(events) %>%
+  filter(row_number() %% 2 == 1) %>%
+  unnest(events) %>%
+  select(site, doy, seas, thresh) %>%
+  unique() %>%
+  arrange(site, doy)
+
 # Events
 sst_ALL_event <- sst_ALL_res %>%
   select(-cats) %>%
@@ -69,6 +79,7 @@ focus_WA <- MHW_focus[3,] %>%
 focus_NW_Atl <- MHW_focus[2,] %>%
   left_join(sst_ALL_coords, by = "site")
 
+
 # Time series with rug plot showing events
 ts_clim_rug <- ggplot(data = sst_ALL, aes(x = t, y = temp)) +
   geom_line(colour = "grey20") +
@@ -84,20 +95,30 @@ ts_clim_rug
 
 
 # Lolliplots
-lolli_WA <- lolli_plot(detect_event(ts2clm(filter(sst_ALL, site == "WA"),
-                                           climatologyPeriod = c("1982-01-01", "2011-12-31"))))
+lolli_WA <- lolli_plot(sst_WA_event)
 lolli_WA
-lolli_NW_Atl <- lolli_plot(detect_event(ts2clm(filter(sst_ALL, site == "NW_Atl"),
-                                           climatologyPeriod = c("1982-01-01", "2011-12-31"))))
+lolli_NW_Atl <- lolli_plot(sst_NW_Atl_event)
 lolli_NW_Atl
-lolli_Med <- lolli_plot(detect_event(ts2clm(filter(sst_ALL, site == "Med"),
-                                           climatologyPeriod = c("1982-01-01", "2011-12-31"))))
+lolli_Med <- lolli_plot(sst_Med_event)
 lolli_Med
 
+
 # The main event
+event_WA <- event_line(sst_WA_event)
+event_WA
+event_NW_Atl <- event_line(sst_NW_Atl_event)
+event_NW_Atl
+event_Med <- event_line(sst_Med_event)
+event_Med
 
 
 # The clims only
+clim_only <- ggplot(data = sst_ALL_clim_only, aes(x = doy)) +
+  geom_line(aes(y = seas), colour = "steelblue3") +
+  geom_line(aes(y = thresh), colour = "tomato3") +
+  facet_wrap(~site, ncol = 1, scales = "free_y") +
+  labs(x = NULL, y = "Temperature (°C)")
+clim_only
 
 
 # Map/location point
@@ -110,6 +131,14 @@ map_Med
 
 
 # Summary/stats table
+# Ideas for table:
+  # Count of events
+  # Mean/ max duration
+  # mean/ max intensity
+  # Seasonal range
+  # Threshold range
+  # Category count
+# table_WA <- tableGrob(summary_WA, rows = NULL, theme = tt)
 
 
 # Figure 2 ----------------------------------------------------------------

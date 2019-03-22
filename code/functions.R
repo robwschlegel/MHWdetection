@@ -16,7 +16,7 @@ library(FNN)
 library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(ggridges)
-library(rcompanion)
+# library(rcompanion)
 
 
 # Meta-data ---------------------------------------------------------------
@@ -397,7 +397,7 @@ fisher_test <- function(df){
   if(ncol(res_table) == 1){
     res_table <- as.table(cbind(res_table, 'III & IV' = rep(0, nrow(res_table))))
   }
-  res <- pairwiseNominalIndependence(res_table, fisher = TRUE, gtest = FALSE,
+  res <- rcompanion::pairwiseNominalIndependence(res_table, fisher = TRUE, gtest = FALSE,
                                      chisq = FALSE, method = "bonferroni",
                                      digits = 3)
   res_tidy <- separate(res, col = "Comparison", into = c("group_1", "group_2"), sep = " : ") %>%
@@ -424,7 +424,7 @@ map_point <- function(df){
   map_out <- ggplot(data = df, aes(x = lon, y = lat)) +
     geom_tile(data = category_data, aes(fill = category)) +
     borders(fill = "grey80", colour = "black") +
-    geom_point(colour = "hotpink", size = 2) +
+    geom_point(shape = 21, colour = "white", fill = "hotpink", size = 2) +
     scale_fill_manual("Category",
                       values = c("#ffc866", "#ff6900", "#9e0000", "#2d0000"),
                       labels = c("I Moderate", "II Strong",
@@ -433,6 +433,33 @@ map_point <- function(df){
                     ylim = c(df$lat[1]-20, df$lat[1]+20)) +
     labs(x = NULL, y = NULL)
   return(map_out)
+}
+
+# This function expects the output of the clim, event, cat pipe
+# df <- filter(sst_ALL_res, site == "WA")
+summary_site <- function(df){
+  # Seasonal min/mean/max
+  # Threshold min/mean/max
+  summary_clim <- df %>%
+    select(clims) %>%
+    unnest() %>%
+    select(doy, seas, thresh) %>%
+    unique() %>%
+    summarise(seas_min = min(seas),
+              seas_mean = mean(seas),
+              seas_max = max(seas),
+              thresh_min = min(thresh),
+              thresh_mean = mean(thresh),
+              thresh_max = max(thresh))
+
+  # Count of events
+  # Min/ mean/ max duration
+  # Min/ mean/ max intensity
+  # Min/ mean/ max cum
+  # Min/ mean/ max duration
+
+  # Category counts
+
 }
 
 
