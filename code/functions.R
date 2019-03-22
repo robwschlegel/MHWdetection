@@ -28,7 +28,14 @@ MHW_colours <- c(
   "IV Extreme" = "#2d0000"
 )
 
-OISST_files <- dir(path = "../data/OISST", full.names = T)
+OISST_files <- dir(path = "~/data/OISST", full.names = T)
+
+category_files <- as.character(dir(path = "~/data/cat_clim", pattern = "cat.clim",
+                                   full.names = TRUE, recursive = TRUE))
+
+sst_ALL_coords <- data.frame(site = c("WA", "NW_Atl", "Med"),
+                             lon = c(112.5, -67, 9),
+                             lat = c(-29.5, 43, 43.5))
 
 
 # Re-sampling -------------------------------------------------------------
@@ -368,33 +375,66 @@ fisher_test <- function(df){
   } else {
     index_filter <- 0
   }
-  df_standard <- df_long %>%
-    filter(index_vals == index_filter) %>%
-    select(index_vals, category)
+  # df_standard <- df_long %>%
+  #   filter(index_vals == index_filter) %>%
+  #   select(index_vals, category)
   # The pairwise chai-squared results
-  suppressWarnings( # Suppress warnings from small sample sizes and factor combining
-    res <- df_long %>%
-      filter(index_vals != index_filter) %>%
-      select(index_vals, category) %>%
-      # mutate(index_vals = as.factor(as.character(index_vals))) %>%
-      mutate(index_vals2 = index_vals) %>%
-      group_by(index_vals2) %>%
-      nest() %>%
-      mutate(chi = map(data, fisher_pair, df_standard)) %>%
-      select(-data) %>%
-      unnest() %>%
-      dplyr::rename(index_vals = index_vals2)
-      # dplyr::rename(index_vals = index_vals2, miss_comp = Var1, category = Var2)
-  )
+  # suppressWarnings( # Suppress warnings from small sample sizes and factor combining
+    # res <- df_long %>%
+    #   filter(index_vals != index_filter) %>%
+    #   select(index_vals, category) %>%
+    #   # mutate(index_vals = as.factor(as.character(index_vals))) %>%
+    #   mutate(index_vals2 = index_vals) %>%
+    #   group_by(index_vals2) %>%
+    #   nest() %>%
+    #   mutate(chi = map(data, fisher_pair, df_standard)) %>%
+    #   select(-data) %>%
+    #   unnest() %>%
+    #   dplyr::rename(index_vals = index_vals2)
+    #   # dplyr::rename(index_vals = index_vals2, miss_comp = Var1, category = Var2)
+  # )
+  res_table <- table(select(df_long, index_vals, category))
+  if(ncol(res_table) == 1){
+    res_table <- as.table(cbind(res_table, 'III & IV' = rep(0, nrow(res_table))))
+  }
+  res <- pairwiseNominalIndependence(res_table, fisher = TRUE, gtest = FALSE,
+                                     chisq = FALSE, method = "bonferroni",
+                                     digits = 3)
+  res_tidy <- separate(res, col = "Comparison", into = c("group_1", "group_2"), sep = " : ") %>%
+    filter(group_1 == index_filter | group_2 == index_filter) %>%
+    mutate(index_vals = ifelse(group_1 == index_filter, group_2, group_1),
+           p.adj.Fisher = p.Fisher* n(),
+           p.adj.Fisher = ifelse(p.adj.Fisher > 1, 1, p.adj.Fisher)) %>%
+    select(index_vals, p.Fisher, p.adj.Fisher)
+  return(res_tidy)
 }
 
 
-test <- table(select(df_long, index_vals, category))
-test <- pairwiseNominalIndependence(test, fisher = TRUE,
-                                    gtest = FALSE,
-                                    chisq = FALSE,
-                                    method = "bonferroni",
-                                    digits = 3)
+# Model linear relationships ----------------------------------------------
+
+
+
+# Figure convenience functions --------------------------------------------
+
+# Expects a one row data.frame with a 'lon' and 'lat' column
+# df <- focus_WA
+map_point <- function(df){
+  category_data <- readRDS(category_files[grepl(pattern = as.character(df$date_peak),
+                                                x = category_files)])
+  map_out <- ggplot(data = df, aes(x = lon, y = lat)) +
+    geom_tile(data = category_data, aes(fill = category)) +
+    borders(fill = "grey80", colour = "black") +
+    geom_point(colour = "hotpink", size = 2) +
+    scale_fill_manual("Category",
+                      values = c("#ffc866", "#ff6900", "#9e0000", "#2d0000"),
+                      labels = c("I Moderate", "II Strong",
+                                 "III Severe", "IV Extreme")) +
+    coord_cartesian(xlim = c(df$lon[1]-20, df$lon[1]+20),
+                    ylim = c(df$lat[1]-20, df$lat[1]+20)) +
+    labs(x = NULL, y = NULL)
+  return(map_out)
+}
+
 
 # Global functions --------------------------------------------------------
 
