@@ -16,6 +16,7 @@ library(FNN)
 library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(ggridges)
+library(rcompanion)
 
 
 # Meta-data ---------------------------------------------------------------
@@ -319,36 +320,35 @@ aov_tukey <- function(df){
 }
 
 
-# Chi-squared category counting -------------------------------------------
 
-# chi-squared pairwise function
+# Fisher test for category counting ---------------------------------------
+
+
+# Fisher pairwise function
 # Takes one rep of missing data and compares it against the complete data
 # testers...
 # df <- unnest(slice(select(res, data), 1))
 # df_comp <- df_standard
-chi_pair <- function(df, df_comp){
+fisher_pair <- function(df, df_comp){
   # Prep data
   df_joint <- table(rbind(df_comp, df))
-  if(ncol(df_joint == 1)){
+  if(ncol(df_joint) == 1){
     df_joint <- as.table(cbind(df_joint, 'III & IV' = c(0,0)))
   }
   # Run tests
-  res <- round(fisher.test(df_joint)$p.value, 4)
+  # res <- round(fisher.test(df_joint)$p.value, 4)
+  res <- fisher.test(df_joint)
+  # res_broom <- broom::augment(res) #%>%
+    # mutate_if(is.numeric, round, 4)
   return(res)
-  # This only works to unpack chi-squared tests
-  # res <- fisher.test(table(df_joint$index_vals, df_joint$category))
-  # res_broom <- broom::augment(res) %>%
-  #   mutate(p.value = broom::tidy(res)$p.value) %>%
-  #   mutate_if(is.numeric, round, 4)
-  # return(res_broom)
 }
 
 # Wrapper to get data ready for pair-wise chi-squared tests
 # testers...
 # df <- sst_ALL_clim_event_cat %>%
-  # filter(test == "length", site == "Med", rep == "1") %>%
+  # filter(test == "length", site == "WA", rep == "1") %>%
   # select(-test, -rep, -site)
-chi_test <- function(df){
+fisher_test <- function(df){
   suppressWarnings( # Suppress warning about category levels not all being present
     df_long <- df %>%
       select(index_vals, cat) %>%
@@ -380,7 +380,7 @@ chi_test <- function(df){
       mutate(index_vals2 = index_vals) %>%
       group_by(index_vals2) %>%
       nest() %>%
-      mutate(chi = map(data, chi_pair, df_standard)) %>%
+      mutate(chi = map(data, fisher_pair, df_standard)) %>%
       select(-data) %>%
       unnest() %>%
       dplyr::rename(index_vals = index_vals2)
@@ -388,6 +388,13 @@ chi_test <- function(df){
   )
 }
 
+
+test <- table(select(df_long, index_vals, category))
+test <- pairwiseNominalIndependence(test, fisher = TRUE,
+                                    gtest = FALSE,
+                                    chisq = FALSE,
+                                    method = "bonferroni",
+                                    digits = 3)
 
 # Global functions --------------------------------------------------------
 

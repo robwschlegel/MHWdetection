@@ -174,14 +174,14 @@ save(sst_ALL_aov_tukey, file = "data/sst_ALL_aov_tukey.Rdata")
 
 # Category count results --------------------------------------------------
 
-# Chi-squared
+# Fisher
 doMC::registerDoMC(cores = 50)
-sst_ALL_chi <- plyr::ddply(sst_ALL_clim_event_cat,
-                           c("test", "site", "rep"), chi_test, .parallel = T)
+sst_ALL_fisher <- plyr::ddply(sst_ALL_clim_event_cat,
+                              c("test", "site", "rep"), fisher_test, .parallel = T)
 
 # Save and clear
-save(sst_ALL_chi, file = "data/sst_ALL_KS_event.Rdata")
-# rm(sst_ALL_KS_event); gc()
+save(sst_ALL_fisher, file = "data/sst_ALL_fisher.Rdata")
+# rm(sst_ALL_fisher); gc()
 
 # Post-hoc
 
