@@ -1,5 +1,9 @@
 # 2019-03-20
 
+* Basic figures for the re-sample workflow complete
+
+# 2019-03-20
+
 * Working on the consolidated workflow script
 
 # 2019-03-19

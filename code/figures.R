@@ -172,21 +172,46 @@ load("data/sst_ALL_fisher.Rdata")
 # how much more rapidly this effects the results than the other tests
 # Currently this is being shown with line plots but they aren't popular...
 
-# This figure would likely be the climatology results only
-
+# Climatology results
 sst_ALL_KS_clim_long <- sst_ALL_KS_clim %>%
   gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
   group_by(test, site, metric, index_vals) %>%
   summarise(p.value.mean = mean(p.value))# %>%
   # mutate(index_col = paste(site, test, sep = "-"))
-
 sst_ALL_KS_clim_long_sig <- sst_ALL_KS_clim_long %>%
   filter(p.value.mean <= 0.05)
 
-ggplot(sst_ALL_KS_clim_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
+# Event results
+sst_ALL_KS_event_long <- sst_ALL_KS_event %>%
+  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
+  group_by(test, site, metric, index_vals) %>%
+  summarise(p.value.mean = mean(p.value)) #%>%
+# mutate(index_col = paste(test, site, metric, sep = "-"))
+sst_ALL_KS_event_long_sig <- sst_ALL_KS_event_long %>%
+  filter(p.value.mean <= 0.05)
+
+# Cagtegory results
+sst_ALL_fisher_long <- sst_ALL_fisher %>%
+  mutate(index_vals = as.numeric(index_vals),
+         metric = "category") %>%
+  select(-p.adj.Fisher) %>%
+  # dplyr::rename(val = p.Fisher) %>%
+  # gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
+  group_by(test, site, metric, index_vals) %>%
+  summarise(p.value.mean = mean(p.Fisher)) #%>%
+# mutate(index_col = paste(test, site, metric, sep = "-"))
+sst_ALL_fisher_long_sig <- sst_ALL_fisher_long %>%
+  filter(p.value.mean <= 0.05)
+
+# Combine for plotting
+sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long, sst_ALL_fisher_long)
+sst_ALL_plot_long_sig <- rbind(sst_ALL_KS_clim_long_sig, sst_ALL_KS_event_long_sig, sst_ALL_fisher_long_sig)
+
+# Plot them all together
+ggplot(sst_ALL_plot_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
   geom_point() +
   geom_line() +
-  geom_point(data = sst_ALL_KS_clim_long_sig, shape = 13, colour = "red") +
+  geom_point(data = sst_ALL_plot_long_sig, shape = 13, colour = "red") +
   # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
   facet_grid(site~test, scales = "free_x") +
   theme(legend.position = "bottom")
@@ -194,53 +219,25 @@ ggplot(sst_ALL_KS_clim_long, aes(x = index_vals, y = p.value.mean, colour = metr
 
 # Figure 3 ----------------------------------------------------------------
 
-# This figure would likely be the event results only
-sst_ALL_KS_event_long <- sst_ALL_KS_event %>%
-  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
-  group_by(test, site, metric, index_vals) %>%
-  summarise(p.value.mean = mean(p.value)) #%>%
-  # mutate(index_col = paste(test, site, metric, sep = "-"))
-
-sst_ALL_KS_event_long_sig <- sst_ALL_KS_event_long %>%
-  filter(p.value.mean <= 0.05)
-
-ggplot(sst_ALL_KS_event_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
-  geom_point() +
-  geom_line() +
-  geom_point(data = sst_ALL_KS_event_long_sig, shape = 13, colour = "red") +
-  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-  facet_grid(site~test, scales = "free_x") +
-  theme(legend.position = "bottom")
+# A table here showing the R2 values from Figure 2 would be good
+sst_ALL_R2_long <- sst_ALL_plot_long %>%
+  group_by(test, site, metric) %>%
+  filter(index_vals <= 30) %>%
+  nest() %>%
+  mutate(R2 = map(data, lm_p_R2)) %>%
+  select(-data) %>%
+  unnest()
 
 
 # Figure 4 ----------------------------------------------------------------
-
-# This figure would likely be the cagtegory results only
-sst_ALL_fisher_long <- sst_ALL_fisher %>%
-  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
-  group_by(test, site, index_vals) %>%
-  summarise(p.value.mean = mean(p.value)) #%>%
-# mutate(index_col = paste(test, site, metric, sep = "-"))
-
-sst_ALL_fisher_long_sig <- sst_ALL_fisher_long %>%
-  filter(p.value.mean <= 0.05)
-
-ggplot(sst_ALL_fisher_long, aes(x = index_vals, y = p.value.mean)) +
-  geom_point() +
-  geom_line(aes(group = site)) +
-  # geom_point(data = sst_ALL_fisher_long_sig, shape = 13, colour = "red") +
-  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-  scale_y_continuous(limits = c(0,1)) +
-  facet_grid(site~test, scales = "free_x") +
-  theme(legend.position = "bottom")
-
-
-# Figure 5 ----------------------------------------------------------------
 
 # I imagine this figure being something that supports an argument that follows
 # on from one of the above results
 # Specifically I think this figure will be the one that shows the average count
 # of consecutive missing days depending on the percent of missing data
+
+
+# Figure 5 ----------------------------------------------------------------
 
 
 # Figure 6 ----------------------------------------------------------------
@@ -249,6 +246,6 @@ ggplot(sst_ALL_fisher_long, aes(x = index_vals, y = p.value.mean)) +
 # of meta-analysis here
 # Such as the relationships between increasing tests and aspects of the time series
 # To that end though if such a thing is to be investiagated it would be better
-# to run the glbal analysis and show that
+# to run the global analysis and show that
 
 

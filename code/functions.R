@@ -376,24 +376,6 @@ fisher_test <- function(df){
   } else {
     index_filter <- 0
   }
-  # df_standard <- df_long %>%
-  #   filter(index_vals == index_filter) %>%
-  #   select(index_vals, category)
-  # The pairwise chai-squared results
-  # suppressWarnings( # Suppress warnings from small sample sizes and factor combining
-    # res <- df_long %>%
-    #   filter(index_vals != index_filter) %>%
-    #   select(index_vals, category) %>%
-    #   # mutate(index_vals = as.factor(as.character(index_vals))) %>%
-    #   mutate(index_vals2 = index_vals) %>%
-    #   group_by(index_vals2) %>%
-    #   nest() %>%
-    #   mutate(chi = map(data, fisher_pair, df_standard)) %>%
-    #   select(-data) %>%
-    #   unnest() %>%
-    #   dplyr::rename(index_vals = index_vals2)
-    #   # dplyr::rename(index_vals = index_vals2, miss_comp = Var1, category = Var2)
-  # )
   res_table <- table(select(df_long, index_vals, category))
   if(ncol(res_table) == 1){
     res_table <- as.table(cbind(res_table, 'III & IV' = rep(0, nrow(res_table))))
@@ -413,6 +395,15 @@ fisher_test <- function(df){
 
 # Model linear relationships ----------------------------------------------
 
+# Wrapper function for nesting
+# testers...
+# df <- slice(sst_ALL_R2_long, 1) %>%
+  # unnest()
+lm_p_R2 <- function(df){
+  res <- lm(p.value.mean~index_vals, data = df)
+  res_broom <- broom::glance(res)
+  return(res_broom)
+}
 
 
 # Figure convenience functions --------------------------------------------
