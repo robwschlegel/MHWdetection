@@ -81,17 +81,12 @@ focus_NW_Atl <- MHW_focus[2,] %>%
 
 
 # Time series with rug plot showing events
-ts_clim_rug <- ggplot(data = sst_ALL, aes(x = t, y = temp)) +
-  geom_line(colour = "grey20") +
-  geom_line(data = sst_ALL_clim, aes(y = seas),
-            linetype = "dashed", colour = "steelblue3") +
-  geom_line(data = sst_ALL_clim, linetype = "dotted", colour = "tomato3",
-            aes(x = t, y = thresh)) +
-  geom_rug(data = sst_ALL_event, sides = "b", colour = "red3", size = 2,
-           aes(x = date_peak, y = min(sst_ALL$temp))) +
-  facet_wrap(~site, ncol = 1) +
-  labs(x = NULL, y = "Temperature (°C)")
-ts_clim_rug
+ts_clim_rug_WA <- ts_clim_rug("WA")
+ts_clim_rug_WA
+ts_clim_rug_NW_Atl <- ts_clim_rug("NW_Atl")
+ts_clim_rug_NW_Atl
+ts_clim_rug_Med <- ts_clim_rug("Med")
+ts_clim_rug_Med
 
 
 # Lolliplots
@@ -104,21 +99,21 @@ lolli_Med
 
 
 # The main event
-event_WA <- event_line(sst_WA_event)
+event_WA <- event_line(sst_WA_event, category = T)
 event_WA
-event_NW_Atl <- event_line(sst_NW_Atl_event)
+event_NW_Atl <- event_line(sst_NW_Atl_event, category = T)
 event_NW_Atl
-event_Med <- event_line(sst_Med_event)
+event_Med <- event_line(sst_Med_event, category = T)
 event_Med
 
 
 # The clims only
-clim_only <- ggplot(data = sst_ALL_clim_only, aes(x = doy)) +
-  geom_line(aes(y = seas), colour = "steelblue3") +
-  geom_line(aes(y = thresh), colour = "tomato3") +
-  facet_wrap(~site, ncol = 1, scales = "free_y") +
-  labs(x = NULL, y = "Temperature (°C)")
-clim_only
+clim_WA <- clim_line("WA")
+clim_WA
+clim_NW_Atl <- clim_line("NW_Atl")
+clim_NW_Atl
+clim_Med <- clim_line("Med")
+clim_Med
 
 
 # Map/location point
@@ -138,7 +133,27 @@ map_Med
   # Seasonal range
   # Threshold range
   # Category count
-# table_WA <- tableGrob(summary_WA, rows = NULL, theme = tt)
+table_summary_WA <- table_summary("WA")
+# table_summary_WA
+table_summary_NW_Atl <- table_summary("NW_Atl")
+# table_summary_NW_Atl
+table_summary_Med <- table_summary("Med")
+# table_summary_Med
+
+
+## Stitch all of the figures together
+# Time series with rug plot showing events
+# Lolliplots
+# The clims only
+# The main event
+# Map/location point
+# Summary/stats table
+stitch_plot_WA <- ggpubr::ggarrange(ts_clim_rug_WA, clim_WA, lolli_WA, event_WA, map_WA, table_summary_WA, labels = "AUTO")
+stitch_plot_WA
+stitch_plot_NW_Atl <- ggpubr::ggarrange(ts_clim_rug_NW_Atl, clim_NW_Atl, lolli_NW_Atl, event_NW_Atl, map_NW_Atl, table_summary_NW_Atl, labels = "AUTO")
+stitch_plot_NW_Atl
+stitch_plot_Med <- ggpubr::ggarrange(ts_clim_rug_Med, clim_Med, lolli_Med, event_Med, map_Med, table_summary_Med, labels = "AUTO")
+stitch_plot_Med
 
 
 # Figure 2 ----------------------------------------------------------------
@@ -146,8 +161,12 @@ map_Med
 # A synthesis of the three tests: length, missing, trended
 # The tests are all the same and the three things investigated were
   # climatologies: KS tests
-  # event metrics: ANOVA/Tukey
-  # category count: chi-squared/residuals
+load("data/sst_ALL_KS_clim.Rdata")
+  # event metrics: ANOVA/Tukey OR KS tests
+load("data/sst_ALL_aov_tukey.Rdata")
+load("data/sst_ALL_KS_event.Rdata")
+  # category count: fisher test
+load("data/sst_ALL_fisher.Rdata")
 # I envision here some sort of figure that compares the results side by side
 # while highlighting how as the degridation of the three tests increases
 # how much more rapidly this effects the results than the other tests
@@ -155,15 +174,65 @@ map_Med
 
 # This figure would likely be the climatology results only
 
+sst_ALL_KS_clim_long <- sst_ALL_KS_clim %>%
+  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
+  group_by(test, site, metric, index_vals) %>%
+  summarise(p.value.mean = mean(p.value))# %>%
+  # mutate(index_col = paste(site, test, sep = "-"))
+
+sst_ALL_KS_clim_long_sig <- sst_ALL_KS_clim_long %>%
+  filter(p.value.mean <= 0.05)
+
+ggplot(sst_ALL_KS_clim_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
+  geom_point() +
+  geom_line() +
+  geom_point(data = sst_ALL_KS_clim_long_sig, shape = 13, colour = "red") +
+  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
+  facet_grid(site~test, scales = "free_x") +
+  theme(legend.position = "bottom")
+
 
 # Figure 3 ----------------------------------------------------------------
 
 # This figure would likely be the event results only
+sst_ALL_KS_event_long <- sst_ALL_KS_event %>%
+  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
+  group_by(test, site, metric, index_vals) %>%
+  summarise(p.value.mean = mean(p.value)) #%>%
+  # mutate(index_col = paste(test, site, metric, sep = "-"))
+
+sst_ALL_KS_event_long_sig <- sst_ALL_KS_event_long %>%
+  filter(p.value.mean <= 0.05)
+
+ggplot(sst_ALL_KS_event_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
+  geom_point() +
+  geom_line() +
+  geom_point(data = sst_ALL_KS_event_long_sig, shape = 13, colour = "red") +
+  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
+  facet_grid(site~test, scales = "free_x") +
+  theme(legend.position = "bottom")
 
 
 # Figure 4 ----------------------------------------------------------------
 
 # This figure would likely be the cagtegory results only
+sst_ALL_fisher_long <- sst_ALL_fisher %>%
+  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
+  group_by(test, site, index_vals) %>%
+  summarise(p.value.mean = mean(p.value)) #%>%
+# mutate(index_col = paste(test, site, metric, sep = "-"))
+
+sst_ALL_fisher_long_sig <- sst_ALL_fisher_long %>%
+  filter(p.value.mean <= 0.05)
+
+ggplot(sst_ALL_fisher_long, aes(x = index_vals, y = p.value.mean)) +
+  geom_point() +
+  geom_line(aes(group = site)) +
+  # geom_point(data = sst_ALL_fisher_long_sig, shape = 13, colour = "red") +
+  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
+  scale_y_continuous(limits = c(0,1)) +
+  facet_grid(site~test, scales = "free_x") +
+  theme(legend.position = "bottom")
 
 
 # Figure 5 ----------------------------------------------------------------

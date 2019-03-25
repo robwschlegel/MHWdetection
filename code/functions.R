@@ -16,6 +16,7 @@ library(FNN)
 library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(ggridges)
+library(ggpubr)
 # library(rcompanion)
 
 
@@ -431,35 +432,92 @@ map_point <- function(df){
                                  "III Severe", "IV Extreme")) +
     coord_cartesian(xlim = c(df$lon[1]-20, df$lon[1]+20),
                     ylim = c(df$lat[1]-20, df$lat[1]+20)) +
-    labs(x = NULL, y = NULL)
+    labs(x = NULL, y = NULL) +
+    theme(legend.position = "bottom")
   return(map_out)
 }
 
 # This function expects the output of the clim, event, cat pipe
-# df <- filter(sst_ALL_res, site == "WA")
-summary_site <- function(df){
+# df <- filter(sst_ALL_res, site == "NW_Atl")
+table_summary <- function(site_1){
+
+  df <- filter(sst_ALL_res, site == site_1)
+
   # Seasonal min/mean/max
   # Threshold min/mean/max
-  summary_clim <- df %>%
+  clim_long <- df %>%
     select(clims) %>%
     unnest() %>%
     select(doy, seas, thresh) %>%
     unique() %>%
-    summarise(seas_min = min(seas),
-              seas_mean = mean(seas),
-              seas_max = max(seas),
-              thresh_min = min(thresh),
-              thresh_mean = mean(thresh),
-              thresh_max = max(thresh))
+    select(seas, thresh) %>%
+    gather(key = "metric", value = "val")
 
-  # Count of events
-  # Min/ mean/ max duration
-  # Min/ mean/ max intensity
-  # Min/ mean/ max cum
-  # Min/ mean/ max duration
+  event_long <- df %>%
+    select(events) %>%
+    unnest() %>%
+    filter(row_number() %% 2 == 0) %>%
+    unnest() %>%
+    select(duration, intensity_mean, intensity_max, intensity_cumulative) %>%
+    gather(key = "metric", value = "val")
 
-  # Category counts
+  event_count <- df %>%
+    select(cats) %>%
+    unnest() %>%
+    select(category) %>%
+    group_by(category) %>%
+    summarise(val = n()) %>%
+    mutate(metric = "count") %>%
+    spread(key = category, value = val)
+  if(!"IV Extreme" %in% colnames(event_count)){
+    event_count <- cbind(event_count, tibble('IV Extreme' = 0))
+  }
+  event_count <- event_count %>%
+    select(metric, 'I Moderate', 'II Strong', 'III Severe', 'IV Extreme') %>%
+    dplyr::rename(' ' = metric)
 
+  summary_res <- rbind(clim_long, event_long) %>%
+    group_by(metric) %>%
+    summarise_all(.funs = c("min", "mean", "max", "sd")) %>%
+    mutate_if(is.numeric, round, 2) %>%
+    arrange(metric)
+
+  tbl_1 <- gridExtra::tableGrob(summary_res, rows = NULL)
+  tbl_2 <- gridExtra::tableGrob(event_count, rows = NULL)
+
+  tbl_all <- gridExtra::grid.arrange(tbl_1, tbl_2,
+                                     nrow = 2, as.table = TRUE)
+
+  return(tbl_all)
+  # res_list <- list(summary_res = summary_res,
+                   # event_count = event_count)
+  # return(res_list)
+}
+
+# Wrapper for time series + clims + event rug
+ts_clim_rug <- function(site_1){
+  ts_data <- filter(sst_ALL, site == site_1)
+  clim_data <- filter(sst_ALL_clim, site == site_1)
+  event_data <- filter(sst_ALL_event, site == site_1)
+  fig <- ggplot(data = ts_data, aes(x = t, y = temp)) +
+    geom_line(colour = "grey20") +
+    geom_line(data = clim_data, aes(y = seas),
+              linetype = "dashed", colour = "steelblue3") +
+    geom_line(data = clim_data, linetype = "dotted", colour = "tomato3",
+              aes(x = t, y = thresh)) +
+    geom_rug(data = event_data, sides = "b", colour = "red3", size = 2,
+             aes(x = date_peak, y = min(ts_data$temp))) +
+    labs(x = NULL, y = "Temperature (°C)")
+  return(fig)
+}
+
+# Wrapper for clim only line plot
+clim_line <-function(site_1){
+  clim_data <- filter(sst_ALL_clim_only, site == site_1)
+  ggplot(data = clim_data, aes(x = doy)) +
+    geom_line(aes(y = seas), colour = "steelblue3") +
+    geom_line(aes(y = thresh), colour = "tomato3") +
+    labs(x = NULL, y = "Temperature (°C)")
 }
 
 
