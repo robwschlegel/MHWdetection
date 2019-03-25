@@ -1,12 +1,12 @@
 ---
 title: "Detecting marine heatwaves from sub-optimal data"
-author: "Robert W. Schlegel(1,2), Eric C. J. Oliver(1), Alistair J. Hobday(3), Albertus J. Smit(2)"
+author: Robert W. Schlegel(1,2), Eric C. J. Oliver(1), Alistair J. Hobday(3), Albertus
+  J. Smit(2)
 date: "March 15th, 2018"
 output:
+  pdf_document: default
   word_document:
     reference_docx: Frontiers_Template.docx
-csl: frontiersSCNS.cls
-bibliography: MHWdetection.bib
 ---
 
 ```{r global_options, include = FALSE}
@@ -170,9 +170,9 @@ The difference this caused in the results was quantified with the same tests as 
 - Thresholds differ with fewer than 25 years
 - This occurs much more quickly in the `WA` time series
 
-![Figure 1: Time series of each of climatology period used from the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used.](../docs/articles/time_series_duration_files/figure-html/clim-ts-all-1.png)
+![Figure 1: Time series of each of climatology period used from the original data shown overlapping one another to visualise how the climatologies differ depending on the length of the climatology period used.](../docs/figure/time_series_duration.Rmd/clim-ts-all-1.png)
 
-![Figure 2: Line plots showing the results of pairwise Kolmogorov-Smirnoff tests for the seasonal signals (top panel) and 90th percentile thresholds (bottom panel) from the same time series at differing lengths. The colour of the line shows how many times out of 100 re-samples that the climatologies were significantly different from the control. The dotted vertical line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line.](../docs/articles/time_series_duration_files/figure-html/KS-clims-1.png)
+![Figure 2: Line plots showing the results of pairwise Kolmogorov-Smirnoff tests for the seasonal signals (top panel) and 90th percentile thresholds (bottom panel) from the same time series at differing lengths. The colour of the line shows how many times out of 100 re-samples that the climatologies were significantly different from the control. The dotted vertical line denotes the 30 year climatology mark, against which all othe climatologies were compared. If no re-samplings were significantly different this is shown with a grey line.](../docs/figure/time_series_duration.Rmd/KS-clims-1.png)
 
 - _It may be better to show these results with a table as it would be easier to see when exactly the climatologies begin to differ._
 
@@ -201,7 +201,7 @@ The difference this caused in the results was quantified with the same tests as 
 - The length of a time series had little effect on the count of categories
     - The largest count was for the `WA` at a time series length of 10 being significantly different from 30 years only 5 times out of 100.
 
-![Figure 3: Line graph showing the count of times out of 100 random replicates when a given time series length led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test.](../docs/articles/time_series_duration_files/figure-html/chi-pair-plot-1.png)
+![Figure 3: Line graph showing the count of times out of 100 random replicates when a given time series length led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test.](../docs/figure/time_series_duration.Rmd/chi-pair-plot-1.png)
 
 
 ## Missing data
@@ -213,29 +213,29 @@ The difference this caused in the results was quantified with the same tests as 
 - The count of consecutive missing days increased with greater percentages of random missing data
     - The proportion of smaller consecutive missing days was logarithmic to the larger consecutive missing days
 
-![Figure 4: Dot and line plot showing the average count of consecutive missing days of data as the percentage of missing data increases. The colour scale is log transformed.](../docs/articles/missing_data_files/figure-html/con-miss-1.png)
+![Figure 4: Dot and line plot showing the average count of consecutive missing days of data as the percentage of missing data increases. The colour scale is log transformed.](../docs/figure/missing_data.Rmd/con-miss-1.png)
 
 
 ### Climatologies
 
 - Missing data had little perceptible effect on seasonal signals and produced only a few random significant differences with no clear pattern
 
-![Figure 5: The seasonal signals created from time series with increasing percentages of missing data.](../docs/articles/missing_data_files/figure-html/clim-miss-seas-1.png)
+![Figure 5: The seasonal signals created from time series with increasing percentages of missing data.](../docs/figure/missing_data.Rmd/clim-miss-seas-1.png)
 
 - The effect of missing data on the threshold was obvious and usually significant
 
-![Figure 6: The thresholds created from time series with increasing percentages of missing data.](../docs/articles/missing_data_files/figure-html/clim-miss-thresh-1.png)
+![Figure 6: The thresholds created from time series with increasing percentages of missing data.](../docs/figure/missing_data.Rmd/clim-miss-thresh-1.png)
 
 - Significant differences in thresholds from missing data differed
 - `WA` different at only 10% missing data
 - `NW_Atl` different at ~23%
 - `Med` not different until ~29%
 
-![Figure 7: Line plot showing the _p_-value results from KS tests comparing the distributions of each of the 100 replicated 90th percentile thrsholds against the true (no missing data) climatologies for each of the three reference time series.](../docs/articles/missing_data_files/figure-html/KS-clims-1.png)
+![Figure 7: Line plot showing the _p_-value results from KS tests comparing the distributions of each of the 100 replicated 90th percentile thrsholds against the true (no missing data) climatologies for each of the three reference time series.](../docs/figure/missing_data.Rmd/KS-clims-1.png)
 
 - The count of 1 -- 3 consecutive missing days is a possible predictor of the threshold being significantly different from control
 
-![Figure 8: Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests. Consecutive missing days are a much better predictor for thresholds than for seasonal signals. ](../docs/articles/missing_data_files/figure-html/clim-cor-1.png)
+![Figure 8: Dot plot showing the relationship between number of consecutive missing days and the significant difference of that climatology as determined by KS tests. Consecutive missing days are a much better predictor for thresholds than for seasonal signals. ](../docs/figure/missing_data.Rmd/clim-cor-1.png)
 
 ### Events
 
@@ -245,11 +245,11 @@ The difference this caused in the results was quantified with the same tests as 
 - The `NW_Atl` was the most sensitive
 - Duration (and therefore cumulative intensity) became significantly different with as little as 10 -- 20% missing data
 
-![Figure 9: Segments showing the range of the percent of missing data present when climatologies were significantly different.](../docs/articles/missing_data_files/figure-html/event-tukey-line-1.png)
+![Figure 9: Segments showing the range of the percent of missing data present when climatologies were significantly different.](../docs/figure/missing_data.Rmd/event-tukey-line-1.png)
 
 - Consecutive missing days appear to be a decent predictor for duration (and int. cum.) but not mean/max intensity
 
-![Figure 10: Dot plot showing the relationship between number of consecutive missing days and the significant difference of the MHW metric from the control.](../docs/articles/missing_data_files/figure-html/event-cor-1.png)
+![Figure 10: Dot plot showing the relationship between number of consecutive missing days and the significant difference of the MHW metric from the control.](../docs/figure/missing_data.Rmd/event-cor-1.png)
 
 
 ### Categories
@@ -257,7 +257,7 @@ The difference this caused in the results was quantified with the same tests as 
 - The `WA` was the most sensitive to missing data affecting category count, with the `Med` least sensitive
 - The range of missing data leading to significant differences in category count was ~15 -- 25%
 
-![Figure 11: Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test.](../docs/articles/missing_data_files/figure-html/chi-pair-plot-1.png)
+![Figure 11: Line graph showing the count of times out of 100 random replicates when a given percentage of missing data led to significant differences in the count of categories of MHWs as determined by a _chi_-squared test.](../docs/figure/missing_data.Rmd/chi-pair-plot-1.png)
 
 - _Currently not showing the results of non-random missing data here._
     - _My thinking is to bring it up in the best practices section when the use of linear interpolation to deal with missing data is show cased._
@@ -272,15 +272,15 @@ The difference this caused in the results was quantified with the same tests as 
 
 - Adding decadal trends had a large effect on the `WA` seasonal signal
 
-![Figure 12: The seasonal signals created from time series with increasingly large decadal trends added.](../docs/articles/trend_files/figure-html/clim-trend-seas-1.png)
+![Figure 12: The seasonal signals created from time series with increasingly large decadal trends added.](../docs/figure/trend.Rmd/clim-trend-seas-1.png)
 
 - Adding decadal trends had a smaller effect on the thresholds, which is interesting
 
-![Figure 13: The thresholds created from time series with increasingly large decadal trends added.](../docs/articles/trend_files/figure-html/clim-trend-thresh-1.png)
+![Figure 13: The thresholds created from time series with increasingly large decadal trends added.](../docs/figure/trend.Rmd/clim-trend-thresh-1.png)
 
 - Depending on the time series, no amount of added decadal trend may make a difference
 
-![Figure 14: Dot and line plot showing the _p_-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series.](../docs/articles/trend_files/figure-html/KS-clims-1.png)
+![Figure 14: Dot and line plot showing the _p_-value results from KS tests comparing the climatology statistics for increasingly large decadal trends against the de-trended climatologies for each of the three reference time series.](../docs/figure/trend.Rmd/KS-clims-1.png)
 
 
 ### Events

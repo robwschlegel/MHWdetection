@@ -1,0 +1,1263 @@
+This is XeTeX, Version 3.14159265-2.6-0.99999 (TeX Live 2019/dev/Debian) (preloaded format=xelatex 2019.3.25)  25 MAR 2019 20:16
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**frontiersSCNS.cls
+(./frontiersSCNS.cls
+LaTeX2e <2018-04-01> patch level 5
+
+! LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.6 \newif\if@
+              cropmarkson \@cropmarksontrue
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Missing character: There is no @ in font nullfont!
+Missing character: There is no c in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no k in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no n in font nullfont!
+Missing character: There is no c in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no k in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no n in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no e in font nullfont!
+
+Overfull \hbox (20.0pt too wide) in paragraph at lines 6--7
+[]
+ []
+
+
+LaTeX Warning: You have requested package `',
+               but the package provides `frontiersSCNS'.
+
+Package: frontiersSCNS 2016/11/10 2.6
+
+! LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.14 \newif\if@
+               final
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Missing character: There is no @ in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no n in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no l in font nullfont!
+
+Overfull \hbox (20.0pt too wide) in paragraph at lines 14--15
+[] 
+ []
+
+! You can't use `\spacefactor' in vertical mode.
+\@->\spacefactor 
+                 \@m {}
+l.27 ...eOptions{a4paper,nocrop,centre,info,paper}
+                                                  
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.27 ...eOptions{a4paper,nocrop,centre,info,paper}
+                                                  
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+
+! LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.27 ...eOptions{a4paper,nocrop,centre,info,paper}
+                                                  
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Runaway argument?
+@nnil ifx external@font @empty @latex@error {Font expandafter string ETC.
+! Paragraph ended before reserved@f was complete.
+<to be read again> 
+                   par 
+l.28 
+     
+I suspect you've forgotten a `}', causing me to apply this
+control sequence to too much text. How can we recover?
+My plan is to forget the whole thing and hope for the best.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.28 
+     
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing endgroup inserted.
+<inserted text> 
+                endgroup 
+l.28 
+     
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+! Missing endgroup inserted.
+<inserted text> 
+                endgroup 
+l.28 
+     
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+! Math formula deleted: Insufficient symbol fonts.
+<recently read> $
+                 
+l.28 
+     
+Sorry, but I can't typeset math unless \textfont 2
+and \scriptfont 2 and \scriptscriptfont 2 have all
+the \fontdimen values needed in math symbol fonts.
+
+
+Overfull \hbox (20.0pt too wide) in paragraph at lines 27--28
+[]$$ 
+ []
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
+Package: inputenc 2018/04/06 v1.3b Input encoding file
+\inpenc@prehook=\toks14
+\inpenc@posthook=\toks15
+)
+(/usr/share/texlive/texmf-dist/tex/latex/crop/crop.sty
+Package: crop 2003/05/20 v1.9 crop marks (mf)
+\stockwidth=\dimen102
+\stockheight=\dimen103
+\CROP@index=\count80
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/color.sty
+Package: color 2016/07/10 v1.1e Standard LaTeX Color (DPC)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package color Info: Driver file: xetex.def on input line 147.
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/xetex.def
+File: xetex.def 2017/06/24 v5.0h Graphics/color driver for xetex
+))
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: xetex.def on input line 99.
+)
+\CROP@offset=\count81
+Package crop Info: Local config file crop.cfg used on input line 605.
+
+(/usr/share/texlive/texmf-dist/tex/xelatex/xetexconfig/crop.cfg))
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2017/06/01 v1.1a Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks16
+)
+\Gin@req@height=\dimen104
+\Gin@req@width=\dimen105
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2017/09/02 v2.17a AMS math features
+\@mathmargin=\skip41
+
+For additional information on amsmath, use the `?' option.
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01 AMS text
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks17
+\ex@=\dimen106
+))
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen107
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count82
+LaTeX Info: Redefining \frac on input line 213.
+\uproot@=\count83
+\leftroot@=\count84
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varGamma 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varGamma 
+                          
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varDelta 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varDelta 
+                          
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varTheta 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varTheta 
+                          
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varLambda 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varLambda 
+                           
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varXi 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varXi 
+                       
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varPi 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varPi 
+                       
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varSigma 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varSigma 
+                          
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varUpsilon 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varUpsilon 
+                            
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varPhi 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varPhi 
+                        
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varPsi 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varPsi 
+                        
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \varOmega 
+l.373 }{}
+         
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \varOmega 
+                          
+l.373 }{}
+         
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+LaTeX Info: Redefining \overline on input line 375.
+\classnum@=\count85
+\DOTSCASE@=\count86
+LaTeX Info: Redefining \ldots on input line 472.
+LaTeX Info: Redefining \dots on input line 475.
+LaTeX Info: Redefining \cdots on input line 596.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen108
+LaTeX Font Info:    Redeclaring font encoding OML on input line 712.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 713.
+\macc@depth=\count87
+\c@MaxMatrixCols=\count88
+\dotsspace@=\muskip10
+\c@parentequation=\count89
+\dspbrk@lvl=\count90
+\tag@help=\toks18
+\row@=\count91
+\column@=\count92
+\maxfields@=\count93
+\andhelp@=\toks19
+\eqnshift@=\dimen109
+\alignsep@=\dimen110
+\tagshift@=\dimen111
+\tagwidth@=\dimen112
+\totwidth@=\dimen113
+\lineht@=\dimen114
+\@envbody=\toks20
+\multlinegap=\skip42
+\multlinetaggap=\skip43
+\mathdisplay@stack=\toks21
+LaTeX Info: Redefining \[ on input line 2817.
+LaTeX Info: Redefining \] on input line 2818.
+) (/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty
+Package: array 2018/04/30 v2.4h Tabular extension package (FMi)
+\col@sep=\dimen115
+\ar@mcellbox=\box28
+\extrarowheight=\dimen116
+\NC@list=\toks22
+\extratabsurround=\skip44
+\backup@length=\skip45
+\ar@cellbox=\box29
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \ulcorner 
+l.74 ...elimiter{\ulcorner}{\mathopen} {AMSa}{"70}
+                                                  {AMSa}{"70}
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \ulcorner 
+                          
+l.74 ...elimiter{\ulcorner}{\mathopen} {AMSa}{"70}
+                                                  {AMSa}{"70}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \ulcorner 
+l.74 ...lcorner}{\mathopen} {AMSa}{"70}{AMSa}{"70}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \ulcorner 
+                          
+l.74 ...lcorner}{\mathopen} {AMSa}{"70}{AMSa}{"70}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \urcorner 
+l.75 ...elimiter{\urcorner}{\mathclose}{AMSa}{"71}
+                                                  {AMSa}{"71}
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \urcorner 
+                          
+l.75 ...elimiter{\urcorner}{\mathclose}{AMSa}{"71}
+                                                  {AMSa}{"71}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \urcorner 
+l.75 ...rcorner}{\mathclose}{AMSa}{"71}{AMSa}{"71}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \urcorner 
+                          
+l.75 ...rcorner}{\mathclose}{AMSa}{"71}{AMSa}{"71}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \llcorner 
+l.76 ...elimiter{\llcorner}{\mathopen} {AMSa}{"78}
+                                                  {AMSa}{"78}
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \llcorner 
+                          
+l.76 ...elimiter{\llcorner}{\mathopen} {AMSa}{"78}
+                                                  {AMSa}{"78}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \llcorner 
+l.76 ...lcorner}{\mathopen} {AMSa}{"78}{AMSa}{"78}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \llcorner 
+                          
+l.76 ...lcorner}{\mathopen} {AMSa}{"78}{AMSa}{"78}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \lrcorner 
+l.77 ...elimiter{\lrcorner}{\mathclose}{AMSa}{"79}
+                                                  {AMSa}{"79}
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \lrcorner 
+                          
+l.77 ...elimiter{\lrcorner}{\mathclose}{AMSa}{"79}
+                                                  {AMSa}{"79}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \lrcorner 
+l.77 ...rcorner}{\mathclose}{AMSa}{"79}{AMSa}{"79}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \lrcorner 
+                          
+l.77 ...rcorner}{\mathclose}{AMSa}{"79}{AMSa}{"79}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \dabar@ 
+l.95 }
+      
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \dabar@ 
+                        
+l.95 }
+      
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+<argument> ... \dashrightarrow {\mathrel {\dabar@ 
+                                                  \dabar@ \mathchar "0\hexnu...
+l.95 }
+      
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+<argument> ...ghtarrow {\mathrel {\dabar@ \dabar@ 
+                                                  \mathchar "0\hexnumber@ \s...
+l.95 }
+      
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+<argument> ...ar "0\hexnumber@ \symAMSa 4C\dabar@ 
+                                                  \dabar@ }}\global \let \da...
+l.95 }
+      
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+<argument> ...xnumber@ \symAMSa 4C\dabar@ \dabar@ 
+                                                  }}\global \let \dasharrow ...
+l.95 }
+      
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \rightleftharpoons 
+l.96 ...l{\rightleftharpoons}{\mathrel}{AMSa}{"0A}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \rightleftharpoons 
+                                   
+l.96 ...l{\rightleftharpoons}{\mathrel}{AMSa}{"0A}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \angle 
+l.97 ...l{\angle}            {\mathord}{AMSa}{"5C}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \angle 
+                       
+l.97 ...l{\angle}            {\mathord}{AMSa}{"5C}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \hbar 
+l.98 ...l{\hbar}             {\mathord}{AMSb}{"7E}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \hbar 
+                      
+l.98 ...l{\hbar}             {\mathord}{AMSb}{"7E}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \sqsubset 
+l.99 ...l{\sqsubset}         {\mathrel}{AMSa}{"40}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \sqsubset 
+                          
+l.99 ...l{\sqsubset}         {\mathrel}{AMSa}{"40}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \sqsupset 
+l.100 ...{\sqsupset}         {\mathrel}{AMSa}{"41}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \sqsupset 
+                          
+l.100 ...{\sqsupset}         {\mathrel}{AMSa}{"41}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \mho 
+l.101 ...{\mho}              {\mathord}{AMSb}{"66}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \mho 
+                     
+l.101 ...{\mho}              {\mathord}{AMSb}{"66}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+! Improper alphabetic constant.
+<to be read again> 
+                   \square 
+l.141 ...{\square}           {\mathord}{AMSa}{"03}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \square 
+                        
+l.141 ...{\square}           {\mathord}{AMSa}{"03}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \lozenge 
+l.142 ...{\lozenge}          {\mathord}{AMSa}{"06}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \lozenge 
+                         
+l.142 ...{\lozenge}          {\mathord}{AMSa}{"06}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \vartriangleright 
+l.143 ...{\vartriangleright} {\mathrel}{AMSa}{"42}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \vartriangleright 
+                                  
+l.143 ...{\vartriangleright} {\mathrel}{AMSa}{"42}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \vartriangleleft 
+l.144 ...{\vartriangleleft}  {\mathrel}{AMSa}{"43}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \vartriangleleft 
+                                 
+l.144 ...{\vartriangleleft}  {\mathrel}{AMSa}{"43}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \trianglerighteq 
+l.145 ...{\trianglerighteq}  {\mathrel}{AMSa}{"44}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \trianglerighteq 
+                                 
+l.145 ...{\trianglerighteq}  {\mathrel}{AMSa}{"44}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \trianglelefteq 
+l.146 ...{\trianglelefteq}   {\mathrel}{AMSa}{"45}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \trianglelefteq 
+                                
+l.146 ...{\trianglelefteq}   {\mathrel}{AMSa}{"45}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \rightsquigarrow 
+l.147 ...{\rightsquigarrow}  {\mathrel}{AMSa}{"20}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \rightsquigarrow 
+                                 
+l.147 ...{\rightsquigarrow}  {\mathrel}{AMSa}{"20}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \lhd 
+l.157 ...athSymbol{\lhd}     {\mathbin}{AMSa}{"43}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \lhd 
+                     
+l.157 ...athSymbol{\lhd}     {\mathbin}{AMSa}{"43}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \unlhd 
+l.158 ...athSymbol{\unlhd}   {\mathbin}{AMSa}{"45}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \unlhd 
+                       
+l.158 ...athSymbol{\unlhd}   {\mathbin}{AMSa}{"45}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \rhd 
+l.159 ...athSymbol{\rhd}     {\mathbin}{AMSa}{"42}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \rhd 
+                     
+l.159 ...athSymbol{\rhd}     {\mathbin}{AMSa}{"42}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \unrhd 
+l.160 ...athSymbol{\unrhd}   {\mathbin}{AMSa}{"44}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \unrhd 
+                       
+l.160 ...athSymbol{\unrhd}   {\mathbin}{AMSa}{"44}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+)
+! Improper alphabetic constant.
+<to be read again> 
+                   \boxdot 
+l.44 ...ymbol{\boxdot}       {\mathbin}{AMSa}{"00}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \boxdot 
+                        
+l.44 ...ymbol{\boxdot}       {\mathbin}{AMSa}{"00}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \boxplus 
+l.45 ...ymbol{\boxplus}      {\mathbin}{AMSa}{"01}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \boxplus 
+                         
+l.45 ...ymbol{\boxplus}      {\mathbin}{AMSa}{"01}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \boxtimes 
+l.46 ...ymbol{\boxtimes}     {\mathbin}{AMSa}{"02}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \boxtimes 
+                          
+l.46 ...ymbol{\boxtimes}     {\mathbin}{AMSa}{"02}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \square 
+l.47 ...ymbol{\square}       {\mathord}{AMSa}{"03}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Missing number, treated as zero.
+<to be read again> 
+                   \square 
+l.47 ...ymbol{\square}       {\mathord}{AMSa}{"03}
+                                                  
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+
+! LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.47 ...ymbol{\square}       {\mathord}{AMSa}{"03}
+                                                  
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Missing character: There is no = in font nullfont!
+Missing character: There is no " in font nullfont!
+Missing character: There is no 0 in font nullfont!
+Missing character: There is no 4 in font nullfont!
+Missing character: There is no 0 in font nullfont!
+Missing character: There is no 3 in font nullfont!
+! Improper alphabetic constant.
+<to be read again> 
+                   \blacksquare 
+l.48 ...ymbol{\blacksquare}  {\mathord}{AMSa}{"04}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \blacksquare 
+                             
+l.48 ...ymbol{\blacksquare}  {\mathord}{AMSa}{"04}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \centerdot 
+l.49 ...ymbol{\centerdot}    {\mathbin}{AMSa}{"05}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \centerdot 
+                           
+l.49 ...ymbol{\centerdot}    {\mathbin}{AMSa}{"05}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \lozenge 
+l.50 ...ymbol{\lozenge}      {\mathord}{AMSa}{"06}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Missing number, treated as zero.
+<to be read again> 
+                   \lozenge 
+l.50 ...ymbol{\lozenge}      {\mathord}{AMSa}{"06}
+                                                  
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+Missing character: There is no = in font nullfont!
+Missing character: There is no " in font nullfont!
+Missing character: There is no 0 in font nullfont!
+Missing character: There is no 4 in font nullfont!
+Missing character: There is no 0 in font nullfont!
+Missing character: There is no 6 in font nullfont!
+! Improper alphabetic constant.
+<to be read again> 
+                   \blacklozenge 
+l.51 ...ymbol{\blacklozenge} {\mathord}{AMSa}{"07}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \blacklozenge 
+                              
+l.51 ...ymbol{\blacklozenge} {\mathord}{AMSa}{"07}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \circlearrowright 
+l.52 ...\circlearrowright}   {\mathrel}{AMSa}{"08}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \circlearrowright 
+                                  
+l.52 ...\circlearrowright}   {\mathrel}{AMSa}{"08}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \circlearrowleft 
+l.53 ...\circlearrowleft}    {\mathrel}{AMSa}{"09}
+                                                  
+A one-character control sequence belongs after a ` mark.
+So I'm essentially inserting \0 here.
+
+! Undefined control sequence.
+<recently read> \circlearrowleft 
+                                 
+l.53 ...\circlearrowleft}    {\mathrel}{AMSa}{"09}
+                                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Improper alphabetic constant.
+<to be read again> 
+                   \leftrightharpoons 
+l.56 ...\leftrightharpoons}  {\mathrel}{AMSa}{"0B}
+                                                  
+(That makes 100 errors; please try again.) 
+Here is how much of TeX's memory you used:
+ 1339 strings out of 492962
+ 16622 string characters out of 6135709
+ 84232 words of memory out of 5000000
+ 5387 multiletter control sequences out of 15000+600000
+ 3640 words of font info for 14 fonts, out of 8000000 for 9000
+ 1348 hyphenation exceptions out of 8191
+ 27i,1n,27p,252b,35s stack positions out of 5000i,500n,10000p,200000b,80000s
+
+No pages of output.

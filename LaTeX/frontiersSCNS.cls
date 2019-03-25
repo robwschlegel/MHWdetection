@@ -865,7 +865,7 @@
 % **********
 % Appendix *
 % **********
-\newif\ifappend 
+\newif\ifappend
 \def\appendix{\par
         \setcounter{section}{0}
         \setcounter{subsection}{0}
