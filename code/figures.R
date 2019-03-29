@@ -206,34 +206,33 @@ sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long, sst_ALL_
   ungroup() %>%
   mutate(metric = factor(metric, levels = c("seas", "thresh",
                                             "duration", "intensity_max",
-                                            "p_moderate", "p_strong", "p_severe", "p_extreme")))
-sst_ALL_plot_long_sig <- rbind(sst_ALL_KS_clim_long_sig, sst_ALL_KS_event_long_sig, sst_ALL_KS_cat_long_sig) %>%
-  filter(!metric %in% c("intensity_mean", "intensity_cumulative")) %>%
-  ungroup() %>%
-  mutate(metric = factor(metric, levels = c("seas", "thresh",
-                                            "duration", "intensity_max",
-                                            "p_moderate", "p_strong", "p_severe", "p_extreme")))
+                                            "p_moderate", "p_strong", "p_severe", "p_extreme")),
+         test = case_when(test == "length" ~ "length (years)",
+                          test == "missing" ~ "missing data (proportion)" ,
+                          test == "trended" ~ "added trend (°C/dec)"),
+         test = as.factor(test),
+         test = factor(test, levels = levels(test)[c(2,3,1)]))
 
 # Plot them all together
-ggplot(sst_ALL_plot_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
-  geom_point() +
+fig_2 <- ggplot(sst_ALL_plot_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
   geom_line() +
-  geom_point(data = filter(sst_ALL_plot_long, p.value.mean <= 0.05), shape = 13, colour = "red") +
+  geom_point() +
+  geom_point(data = filter(sst_ALL_plot_long, p.value.mean <= 0.05), shape = 15, colour = "red", size = 2) +
+  geom_hline(yintercept = 0.05, colour = "red", linetype = "dashed") +
   scale_colour_manual(name = "Metric",
                       values = c("skyblue", "navy",
                                  "springgreen", "forestgreen",
                                  "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
-                      breaks = c("seas", "thresh",
-                                 "duration", "intensity_max",
-                                 "p_moderate", "p_strong", "p_severe", "p_extreme"),
                       labels = c("Seasonal climatology", "Threshold climatology",
                                  "Duration (days)", "Max. intensity (°C)",
                                  "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
   # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-  labs(x = "length (years) / missing data (% total) / added trend (°C/dec)",
-       y = "Mean p-value (n = 100)") +
-  facet_grid(site~test, scales = "free_x") +
+  guides(colour = guide_legend(override.aes = list(shape = 15, linetype = NA, size = 3))) +
+  labs(y = "Mean p-value (n = 100)", x = NULL) +
+  facet_grid(site~test, scales = "free_x", switch = "x") +
   theme(legend.position = "bottom")
+fig_2
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 8, width = 12)
 
 
 # Figure 3 ----------------------------------------------------------------

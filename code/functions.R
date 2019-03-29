@@ -411,7 +411,8 @@ fisher_test <- function(df){
   # unnest()
 lm_p_R2 <- function(df){
   res <- lm(p.value.mean~index_vals, data = df)
-  res_broom <- broom::glance(res)
+  res_broom <- broom::glance(res) %>%
+    mutate_if(is.numeric, round, 4)
   return(res_broom)
 }
 
