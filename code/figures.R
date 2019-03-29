@@ -163,9 +163,10 @@ stitch_plot_Med
   # climatologies: KS tests
 load("data/sst_ALL_KS_clim.Rdata")
   # event metrics: ANOVA/Tukey OR KS tests
-load("data/sst_ALL_aov_tukey.Rdata")
 load("data/sst_ALL_KS_event.Rdata")
+load("data/sst_ALL_aov_tukey.Rdata")
   # category count: fisher test
+load("data/sst_ALL_KS_clim.Rdata")
 load("data/sst_ALL_fisher.Rdata")
 # I envision here some sort of figure that compares the results side by side
 # while highlighting how as the degridation of the three tests increases
@@ -191,28 +192,46 @@ sst_ALL_KS_event_long_sig <- sst_ALL_KS_event_long %>%
   filter(p.value.mean <= 0.05)
 
 # Cagtegory results
-sst_ALL_fisher_long <- sst_ALL_fisher %>%
-  mutate(index_vals = as.numeric(index_vals),
-         metric = "category") %>%
-  select(-p.adj.Fisher) %>%
-  # dplyr::rename(val = p.Fisher) %>%
-  # gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
+sst_ALL_KS_cat_long <- sst_ALL_KS_cat %>%
+  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
   group_by(test, site, metric, index_vals) %>%
-  summarise(p.value.mean = mean(p.Fisher)) #%>%
+  summarise(p.value.mean = mean(p.value)) #%>%
 # mutate(index_col = paste(test, site, metric, sep = "-"))
-sst_ALL_fisher_long_sig <- sst_ALL_fisher_long %>%
+sst_ALL_KS_cat_long_sig <- sst_ALL_KS_cat_long %>%
   filter(p.value.mean <= 0.05)
 
 # Combine for plotting
-sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long, sst_ALL_fisher_long)
-sst_ALL_plot_long_sig <- rbind(sst_ALL_KS_clim_long_sig, sst_ALL_KS_event_long_sig, sst_ALL_fisher_long_sig)
+sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long, sst_ALL_KS_cat_long) %>%
+  filter(!metric %in% c("intensity_mean", "intensity_cumulative")) %>%
+  ungroup() %>%
+  mutate(metric = factor(metric, levels = c("seas", "thresh",
+                                            "duration", "intensity_max",
+                                            "p_moderate", "p_strong", "p_severe", "p_extreme")))
+sst_ALL_plot_long_sig <- rbind(sst_ALL_KS_clim_long_sig, sst_ALL_KS_event_long_sig, sst_ALL_KS_cat_long_sig) %>%
+  filter(!metric %in% c("intensity_mean", "intensity_cumulative")) %>%
+  ungroup() %>%
+  mutate(metric = factor(metric, levels = c("seas", "thresh",
+                                            "duration", "intensity_max",
+                                            "p_moderate", "p_strong", "p_severe", "p_extreme")))
 
 # Plot them all together
 ggplot(sst_ALL_plot_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
   geom_point() +
   geom_line() +
-  geom_point(data = sst_ALL_plot_long_sig, shape = 13, colour = "red") +
+  geom_point(data = filter(sst_ALL_plot_long, p.value.mean <= 0.05), shape = 13, colour = "red") +
+  scale_colour_manual(name = "Metric",
+                      values = c("skyblue", "navy",
+                                 "springgreen", "forestgreen",
+                                 "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
+                      breaks = c("seas", "thresh",
+                                 "duration", "intensity_max",
+                                 "p_moderate", "p_strong", "p_severe", "p_extreme"),
+                      labels = c("Seasonal climatology", "Threshold climatology",
+                                 "Duration (days)", "Max. intensity (°C)",
+                                 "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
   # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
+  labs(x = "length (years) / missing data (% total) / added trend (°C/dec)",
+       y = "Mean p-value (n = 100)") +
   facet_grid(site~test, scales = "free_x") +
   theme(legend.position = "bottom")
 

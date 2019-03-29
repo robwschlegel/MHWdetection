@@ -9,14 +9,13 @@ library(broom)
 library(heatwaveR, lib.loc = "~/R-packages/")
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
 library(lubridate) # This is intentionally activated after data.table
-library(fasttime)
+# library(fasttime)
 library(ggpubr)
 library(boot)
 library(FNN)
 library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(ggridges)
-library(ggpubr)
 # library(rcompanion)
 
 
@@ -206,7 +205,7 @@ shrinking_results <- function(year_begin, df = sst_ALL_flat){
 # Lazily I have it run on chosen columns by name given certain tests
 # as getting it to do this programmatically was becoming annoying
 # testers...
-# df_2 <- filter(res, index_vals == 20)
+# df_2 <- filter(df_long, index_vals == 0.2)
 # df_1 <- df_standard
 KS_sub <- function(df_2, df_1){
   if("seas" %in% names(df_1)){
@@ -224,19 +223,20 @@ KS_sub <- function(df_2, df_1){
     )
   }
   if("category" %in% names(df_1)){
-    df_1$category <- factor(df_1$category, levels = c("I Moderate", "II Strong", "III Severe", "IV Extreme"))
-    df_2$category <- factor(df_2$category, levels = c("I Moderate", "II Strong", "III Severe", "IV Extreme"))
     suppressWarnings( # Suppress warnings about ties
-      res <- data.frame(category = round(ks.test(as.numeric(df_1$category), as.numeric(df_2$category))$p.value, 4))
+    res <- data.frame(p_moderate = round(ks.test(df_1$p_moderate, df_2$p_moderate)$p.value, 4),
+                      p_strong = round(ks.test(df_1$p_strong, df_2$p_strong)$p.value, 4),
+                      p_severe = round(ks.test(df_1$p_severe, df_2$p_severe)$p.value, 4),
+                      p_extreme = round(ks.test(df_1$p_extreme, df_2$p_extreme)$p.value, 4))
     )
   }
   return(res)
 }
 
 # Wrapper function to run all pairwise KS tests
-# df <- sst_ALL_clim_event_cat[ ,c(1:4,6)] %>%
-#   filter(test == "missing", site == "WA", rep == "1") %>%
-#   select(-test, -rep, -site)
+# df <- sst_ALL_clim_event_cat[ ,c(1:4,7)] %>%
+  # filter(test == "trended", site == "WA", rep == "1") %>%
+  # select(-test, -rep, -site)
 KS_p <- function(df){
   # Unnest the clim data
   suppressWarnings( # Suppress warning about different factor levels for cat data
@@ -248,21 +248,31 @@ KS_p <- function(df){
   # It then sets the benchmark value (30 years length or 0% missing/ 0C-dec)
   if(max(df_long$index_vals) > 1){
     index_filter <- 30
-    if("intensity_mean" %in% names(df_long)){
-      df_long <- df_long %>%
-        filter(index_vals >= 10,
-               date_start >= "2009-01-02", date_end <= "2018-12-31")
-    }
-    if("category" %in% names(df_long)){
-      df_long <- df_long %>%
-        filter(index_vals >= 10,
-               peak_date >= "2009-01-01", peak_date <= "2018-12-31")
-    }
+
   } else {
     index_filter <- 0
   }
+  # We then must screen out events only for the last decade for the length and trend tests
+  if(max(df_long$index_vals) != 0.5){
+    if("intensity_mean" %in% names(df_long)){
+      df_long <- df_long %>%
+        filter(date_start >= "2009-01-02", date_end <= "2018-12-31")
+    }
+    if("category" %in% names(df_long)){
+      df_long <- df_long %>%
+        filter(peak_date >= "2009-01-01", peak_date <= "2018-12-31")
+    }
+  }
+  # Lastly remove events from time series calculated with fewer than 10 years of data
+  # to ensire equitable sample sizes
+  if(max(df_long$index_vals) > 1){
+    df_long <- df_long %>%
+      filter(index_vals >= 10)
+  }
+  # Set the standard results for comparison
   df_standard <- df_long %>%
     filter(index_vals == index_filter)
+  # Run the KS tests
   res <- df_long %>%
     filter(index_vals != index_filter) %>%
     group_by(index_vals) %>%

@@ -121,7 +121,7 @@ sst_ALL_missing <- plyr::ddply(sst_ALL_knockout, c("site", "rep", "index_vals"),
 ## Trended data
 doMC::registerDoMC(cores = 50)
 sst_ALL_trended <- plyr::ddply(sst_ALL_add_trend, c("site", "rep", "index_vals"),
-                             clim_event_cat_calc, .parallel = T) %>%
+                               clim_event_cat_calc, .parallel = T) %>%
   mutate(test = as.factor("trended"))
 # save(sst_ALL_trended, file = "data/sst_ALL_trended.Rdata")
 
@@ -173,6 +173,15 @@ save(sst_ALL_aov_tukey, file = "data/sst_ALL_aov_tukey.Rdata")
 
 
 # Category count results --------------------------------------------------
+
+# KS test for proportion of days within each category
+doMC::registerDoMC(cores = 50)
+sst_ALL_KS_cat <- plyr::ddply(sst_ALL_clim_event_cat[ ,c(1:4,7)],
+                                c("test", "site", "rep"), KS_p, .parallel = T)
+
+# Save and clear
+save(sst_ALL_KS_cat, file = "data/sst_ALL_KS_cat.Rdata")
+# rm(sst_ALL_KS_event); gc()
 
 # Fisher
 doMC::registerDoMC(cores = 50)
