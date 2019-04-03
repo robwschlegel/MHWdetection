@@ -150,10 +150,16 @@ table_summary_Med <- table_summary("Med")
 # Summary/stats table
 stitch_plot_WA <- ggpubr::ggarrange(ts_clim_rug_WA, clim_WA, lolli_WA, event_WA, map_WA, table_summary_WA, labels = "AUTO")
 stitch_plot_WA
+# ggsave(plot = stitch_plot_WA, filename = "output/stitch_plot_WA.pdf", height = 8, width = 14)
 stitch_plot_NW_Atl <- ggpubr::ggarrange(ts_clim_rug_NW_Atl, clim_NW_Atl, lolli_NW_Atl, event_NW_Atl, map_NW_Atl, table_summary_NW_Atl, labels = "AUTO")
 stitch_plot_NW_Atl
 stitch_plot_Med <- ggpubr::ggarrange(ts_clim_rug_Med, clim_Med, lolli_Med, event_Med, map_Med, table_summary_Med, labels = "AUTO")
 stitch_plot_Med
+
+## A more paired down figure
+stitch_sub_plot_WA <- ggpubr::ggarrange(event_WA, map_WA, labels = "AUTO")
+stitch_sub_plot_WA
+ggsave(plot = stitch_sub_plot_WA, filename = "output/stitch_sub_plot_WA.pdf", height = 4, width = 8)
 
 
 # Figure 2 ----------------------------------------------------------------
@@ -166,7 +172,7 @@ load("data/sst_ALL_KS_clim.Rdata")
 load("data/sst_ALL_KS_event.Rdata")
 load("data/sst_ALL_aov_tukey.Rdata")
   # category count: fisher test
-load("data/sst_ALL_KS_clim.Rdata")
+load("data/sst_ALL_KS_cat.Rdata")
 load("data/sst_ALL_fisher.Rdata")
 # I envision here some sort of figure that compares the results side by side
 # while highlighting how as the degridation of the three tests increases
@@ -179,8 +185,8 @@ sst_ALL_KS_clim_long <- sst_ALL_KS_clim %>%
   group_by(test, site, metric, index_vals) %>%
   summarise(p.value.mean = mean(p.value))# %>%
   # mutate(index_col = paste(site, test, sep = "-"))
-sst_ALL_KS_clim_long_sig <- sst_ALL_KS_clim_long %>%
-  filter(p.value.mean <= 0.05)
+# sst_ALL_KS_clim_long_sig <- sst_ALL_KS_clim_long %>%
+#   filter(p.value.mean <= 0.05)
 
 # Event results
 sst_ALL_KS_event_long <- sst_ALL_KS_event %>%
@@ -188,8 +194,8 @@ sst_ALL_KS_event_long <- sst_ALL_KS_event %>%
   group_by(test, site, metric, index_vals) %>%
   summarise(p.value.mean = mean(p.value)) #%>%
 # mutate(index_col = paste(test, site, metric, sep = "-"))
-sst_ALL_KS_event_long_sig <- sst_ALL_KS_event_long %>%
-  filter(p.value.mean <= 0.05)
+# sst_ALL_KS_event_long_sig <- sst_ALL_KS_event_long %>%
+#   filter(p.value.mean <= 0.05)
 
 # Cagtegory results
 sst_ALL_KS_cat_long <- sst_ALL_KS_cat %>%
@@ -197,8 +203,8 @@ sst_ALL_KS_cat_long <- sst_ALL_KS_cat %>%
   group_by(test, site, metric, index_vals) %>%
   summarise(p.value.mean = mean(p.value)) #%>%
 # mutate(index_col = paste(test, site, metric, sep = "-"))
-sst_ALL_KS_cat_long_sig <- sst_ALL_KS_cat_long %>%
-  filter(p.value.mean <= 0.05)
+# sst_ALL_KS_cat_long_sig <- sst_ALL_KS_cat_long %>%
+#   filter(p.value.mean <= 0.05)
 
 # Combine for plotting
 sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long, sst_ALL_KS_cat_long) %>%

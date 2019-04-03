@@ -30,6 +30,8 @@ It is now known that marine heatwaves (MHWs) have been increasing in duration an
 
 The idea of hot seawater being problematic is not a novel concept. We have known for decades, perhaps millennia, that seemingly transient hot water occurrences in the ocean could result in major impacts [e.g. @Salinger2016]. It was perhaps due to our lack of ability to track and record ocean temperatures globally that researchers did not begin to quantify the effects of anomalously warm seawater temperatures until the early 1980s when research into ENSO began [e.g. @Philander1983]. It was not until the 2000's that much work began to be done on the direct consequences of this hot water on ecosystems [e.g. @Garrabou2009]. Later still was the development of a globally utilised definition for these events that enjoyed wide-spread use. 
 
+MHWs are now known to have had negative impacts on ecosystems in the 80's[@Smale2019]
+
 - Marine heatwaves occur
 - Global observations allow a definition to be used, requiring good data
     - Some regions not well observed
