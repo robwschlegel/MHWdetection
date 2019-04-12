@@ -1,3 +1,7 @@
+# 2019-04-11
+
+* Working towards Question 2
+
 # 2019-03-20
 
 * Basic figures for the re-sample workflow complete

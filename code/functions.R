@@ -417,6 +417,32 @@ lm_p_R2 <- function(df){
 }
 
 
+
+# Event effect functions --------------------------------------------------
+
+# The effect that the three tests have on the climatologies
+# This is basic enough not to require a function
+# effect_clim <- function(df){
+#   # min, median, mean, max
+#   summarise_if
+#
+# }
+
+effect_event <- function(){
+
+}
+
+effect_cat <- function(){
+
+}
+
+
+# Global functions --------------------------------------------------------
+
+# The following wrapper functions use the above functions,
+# but allow them to be used on the NOAA OISST NetCDF file structure
+
+
 # Figure convenience functions --------------------------------------------
 
 # Expects a one row data.frame with a 'lon' and 'lat' column
@@ -522,8 +548,3 @@ clim_line <-function(site_1){
     labs(x = NULL, y = "Temperature (°C)")
 }
 
-
-# Global functions --------------------------------------------------------
-
-# The following wrapper functions use the above functions,
-# but allow them to be used on the NOAA OISST NetCDF file structure
