@@ -96,34 +96,44 @@ save(sst_ALL_add_trend, file = "data/sst_ALL_add_trend.Rdata")
 # load("data/sst_ALL_add_trend.Rdata")
 # unique(sst_ALL_add_trend$index_vals)
 
-## Duration
-# NB: The time series duration results need to be calculated with a different
+## Length data
+# NB: The time series length results need to be calculated with a different
 # function because the climatology period needs to adjust to the length
 # of the shortened time series
 # Run this preferably with 35 cores for speed, RAM allowing
 doMC::registerDoMC(cores = 35)
-sst_ALL_length <- plyr::ldply(1982:2016, shrinking_results, .parallel = T) %>%
-  mutate(test = as.factor("length"))
+system.time(
+sst_ALL_length <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results, .parallel = T)
+)  # ~92 seconds
+# NB: Adding the test column in a pipe seems to make ldply sad...
+sst_ALL_length$test <- as.factor("length")
 # test that it ran correctly
 # names(sst_ALL_length)
 # unnest(slice(sst_ALL_length, 1), clim)
 # unnest(slice(sst_ALL_length, 1), event)
 # unnest(slice(sst_ALL_length, 1), cat)
 # save(sst_ALL_length, file = "data/sst_ALL_length.Rdata")
+# load("data/sst_ALL_length.Rdata")
 
 ## Missing data
 doMC::registerDoMC(cores = 50)
+system.time(
 sst_ALL_missing <- plyr::ddply(sst_ALL_knockout, c("site", "rep", "index_vals"),
                                clim_event_cat_calc, .parallel = T) %>%
   mutate(test = as.factor("missing"))
-# save(sst_ALL_missing, file = "data/sst_ALL_length.Rdata")
+) # ~235 seconds
+save(sst_ALL_missing, file = "data/sst_ALL_missing.Rdata")
+# load("data/sst_ALL_missing.Rdata")
 
 ## Trended data
 doMC::registerDoMC(cores = 50)
+system.time(
 sst_ALL_trended <- plyr::ddply(sst_ALL_add_trend, c("site", "rep", "index_vals"),
                                clim_event_cat_calc, .parallel = T) %>%
   mutate(test = as.factor("trended"))
-# save(sst_ALL_trended, file = "data/sst_ALL_trended.Rdata")
+) # 140 seconds
+save(sst_ALL_trended, file = "data/sst_ALL_trended.Rdata")
+# load("data/sst_ALL_trended.Rdata")
 
 ## Combine all results
 sst_ALL_clim_event_cat <- rbind(sst_ALL_length, sst_ALL_missing, sst_ALL_trended) %>%
@@ -134,33 +144,100 @@ save(sst_ALL_clim_event_cat, file = "data/sst_ALL_clim_event_cat.Rdata")
 # rm(sst_ALL_length, sst_ALL_miss, sst_ALL_trend, sst_ALL_clim_event_cat); gc()
 
 
+# Calculate clim, event, and cats with fixes ------------------------------
+
+## Length data
+doMC::registerDoMC(cores = 35)
+system.time(
+sst_ALL_length_width_10 <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results,
+                                       .parallel = T, set_width = 10) %>%
+  mutate(test = as.factor("length_width_10"))
+) # ~105 seconds
+# save(sst_ALL_length_width_10, file = "data/sst_ALL_length_width_10.Rdata")
+# load("data/sst_ALL_length_width_10.Rdata")
+doMC::registerDoMC(cores = 35)
+system.time(
+sst_ALL_length_width_20 <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results,
+                                       .parallel = T, set_width = 20) %>%
+  mutate(test = as.factor("length_width_20"))
+) # ~104 seconds
+# save(sst_ALL_length_width_20, file = "data/sst_ALL_length_width_20.Rdata")
+# load("data/sst_ALL_length_width_20.Rdata")
+doMC::registerDoMC(cores = 35)
+system.time(
+sst_ALL_length_width_30 <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results,
+                                       .parallel = T, set_width = 30) %>%
+  mutate(test = as.factor("length_width_30"))
+) # ~104 seconds
+# save(sst_ALL_length_width_30, file = "data/sst_ALL_length_width_30.Rdata")
+# load("data/sst_ALL_length_width_30.Rdata")
+
+## Missing data
+doMC::registerDoMC(cores = 50)
+system.time(
+sst_ALL_missing_fix <- plyr::ddply(sst_ALL_knockout, c("site", "rep", "index_vals"),
+                                   clim_event_cat_calc, .parallel = T, fix = "missing") %>%
+  mutate(test = as.factor("missing_fix"))
+) # ~xxx seconds
+save(sst_ALL_missing, file = "data/sst_ALL_missing_fix.Rdata")
+# load("data/sst_ALL_missing_fix.Rdata")
+
+## Combine all results
+sst_ALL_clim_event_cat_fix <- rbind(sst_ALL_length_width_10, sst_ALL_length_width_20,
+                                    sst_ALL_length_width_30, sst_ALL_missing_fix) %>%
+  select(test, site, rep, index_vals, clim, event, cat)
+
+## Save and clear
+save(sst_ALL_clim_event_cat_fix, file = "data/sst_ALL_clim_event_cat_fix.Rdata")
+# rm(sst_ALL_length_width_10, sst_ALL_length_width_15,
+#    sst_ALL_length_width_20, sst_ALL_missing_fix); gc()
+
+
 # Climatology results -----------------------------------------------------
 
-# Kolmogorov-Smirnov tests for similarity of climatologies
+## Kolmogorov-Smirnov tests for similarity of climatologies
+# sub-optimal data
 doMC::registerDoMC(cores = 50)
 sst_ALL_KS_clim <- plyr::ddply(sst_ALL_clim_event_cat[ ,c(1:5)],
                                c("test", "site", "rep"), KS_p, .parallel = T)
-
 # Save and clear
 save(sst_ALL_KS_clim, file = "data/sst_ALL_KS_clim.Rdata")
+# rm(sst_ALL_KS_clim); gc()
+
+# Fixed data
+doMC::registerDoMC(cores = 50)
+sst_ALL_KS_clim_fix <- plyr::ddply(sst_ALL_clim_event_cat_fix[ ,c(1:5)],
+                                   c("test", "site", "rep"), KS_p, .parallel = T)
+# Save and clear
+save(sst_ALL_KS_clim_fix, file = "data/sst_ALL_KS_clim_fix.Rdata")
 # rm(sst_ALL_KS_clim); gc()
 
 
 # Event metric results ----------------------------------------------------
 
-# Kolmogorov-Smirnov tests for similarity of climatologies
+## Kolmogorov-Smirnov tests for similarity of climatologies
+# sub-optimal data
 doMC::registerDoMC(cores = 50)
 sst_ALL_KS_event <- plyr::ddply(sst_ALL_clim_event_cat[ ,c(1:4,6)],
                                c("test", "site", "rep"), KS_p, .parallel = T)
-
 # Save and clear
 save(sst_ALL_KS_event, file = "data/sst_ALL_KS_event.Rdata")
 # rm(sst_ALL_KS_event); gc()
 
-# AOV and Tukey
+# Fixed data
 doMC::registerDoMC(cores = 50)
-sst_ALL_aov_tukey <- plyr::ddply(sst_ALL_clim_event_cat, c("test", "site", "rep"),
-                                 aov_tukey, .parallel = T)
+sst_ALL_KS_event_fix <- plyr::ddply(sst_ALL_clim_event_cat_fix[ ,c(1:4,6)],
+                                    c("test", "site", "rep"), KS_p, .parallel = T)
+# Save and clear
+save(sst_ALL_KS_event_fix, file = "data/sst_ALL_KS_event_fix.Rdata")
+# rm(sst_ALL_KS_event); gc()
+
+
+## AOV and Tukey
+## NB: Decided against tests for central tendency
+# doMC::registerDoMC(cores = 50)
+# sst_ALL_aov_tukey <- plyr::ddply(sst_ALL_clim_event_cat, c("test", "site", "rep"),
+#                                  aov_tukey, .parallel = T)
 
 # test that it ran correctly
 # names(sst_ALL_aov_tukey)
@@ -168,38 +245,48 @@ sst_ALL_aov_tukey <- plyr::ddply(sst_ALL_clim_event_cat, c("test", "site", "rep"
 # unnest(slice(sst_ALL_aov_tukey, 1), tukey)
 
 # Save and clear
-save(sst_ALL_aov_tukey, file = "data/sst_ALL_aov_tukey.Rdata")
+# save(sst_ALL_aov_tukey, file = "data/sst_ALL_aov_tukey.Rdata")
 # rm(sst_ALL_aov_tukey); gc()
 
 
 # Category count results --------------------------------------------------
 
-# KS test for proportion of days within each category
+## KS test for proportion of days within each category
+# Sub-optimal data
 doMC::registerDoMC(cores = 50)
 sst_ALL_KS_cat <- plyr::ddply(sst_ALL_clim_event_cat[ ,c(1:4,7)],
-                                c("test", "site", "rep"), KS_p, .parallel = T)
-
+                              c("test", "site", "rep"), KS_p, .parallel = T)
 # Save and clear
 save(sst_ALL_KS_cat, file = "data/sst_ALL_KS_cat.Rdata")
 # rm(sst_ALL_KS_event); gc()
 
-# Fisher
+# Sub-optimal data
 doMC::registerDoMC(cores = 50)
-sst_ALL_fisher <- plyr::ddply(sst_ALL_clim_event_cat,
-                              c("test", "site", "rep"), fisher_test, .parallel = T)
-
+sst_ALL_KS_cat_fix <- plyr::ddply(sst_ALL_clim_event_cat_fix[ ,c(1:4,7)],
+                                  c("test", "site", "rep"), KS_p, .parallel = T)
 # Save and clear
-save(sst_ALL_fisher, file = "data/sst_ALL_fisher.Rdata")
+save(sst_ALL_KS_cat_fix, file = "data/sst_ALL_KS_cat_fix.Rdata")
+# rm(sst_ALL_KS_event); gc()
+
+
+## Fisher
+## NB: Decided against testing for probability due to sample size constraints
+# doMC::registerDoMC(cores = 50)
+# sst_ALL_fisher <- plyr::ddply(sst_ALL_clim_event_cat,
+#                               c("test", "site", "rep"), fisher_test, .parallel = T)
+# Save and clear
+# save(sst_ALL_fisher, file = "data/sst_ALL_fisher.Rdata")
 # rm(sst_ALL_fisher); gc()
 
 # Post-hoc
-
+## Nothing at the moment
 
 
 # Individual event effect -------------------------------------------------
 
 # Load the results from above
 load("data/sst_ALL_clim_event_cat.Rdata")
+load("data/sst_ALL_clim_event_cat_fix.Rdata")
 
 # Filter out the re-sampled data
 sst_ALL_clim_event_cat_rep_1 <- sst_ALL_clim_event_cat %>%
@@ -269,27 +356,88 @@ effect_clim <- sst_ALL_clim_rep_1 %>%
 effect_event <- sst_ALL_event_rep_1 %>%
   left_join(focus_ALL, by = "site") %>%
   filter(date_peak >= date_start_control,
-         date_peak <= date_end_control)
-
+         date_peak <= date_end_control) %>%
+  group_by(site, test, index_vals) %>%
+  #
+  # Not sure what to do with this information
+  mutate(date_start_change = date_start_control - date_start,
+         date_peak_change = date_peak_control - date_peak,
+         date_end_change = date_end_control - date_end) %>%
+  #
+  summarise(count = n(),
+            duration = sum(duration),
+            intensity_mean = mean(intensity_mean),
+            intensity_max = max(intensity_max),
+            intensity_cumulative = sum(intensity_cumulative)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
+  ungroup() %>%
+  filter(metric %in% c("count", "duration", "intensity_max"),
+         !index_vals %in% seq(1, 9)) %>%
+  mutate(metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
+                            metric == "duration" ~ "duration (days)",
+                            metric == "count" ~ "count (event)"),
+         test = case_when(test == "length" ~ "length (years)",
+                          test == "missing" ~ "missing data (proportion)" ,
+                          test == "trended" ~ "added trend (°C/dec)"),
+         test = as.factor(test),
+         test = factor(test, levels = levels(test)[c(2,3,1)]))
 
 ## Categories
 effect_cat <- sst_ALL_cat_rep_1 %>%
   left_join(focus_ALL, by = "site") %>%
   filter(peak_date >= date_start_control,
-         peak_date <= date_end_control)
+         peak_date <= date_end_control) %>%
+  group_by(site, test, index_vals) %>%
+  summarise(count = n(),
+            duration = sum(duration),
+            i_max = max(i_max),
+            p_moderate = mean(p_moderate),
+            p_strong = mean(p_strong),
+            p_severe = mean(p_severe),
+            p_extreme = mean(p_extreme)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  gather(key = "metric", value = "val", -site, -test, -index_vals)
+
 
 # Visualise
 ## Climatologies
 ggplot(effect_clim, aes(x = index_vals)) +
-  geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-  geom_line(aes(y = mean, colour = metric)) +
+  # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
+  # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
+  geom_line(aes(y = mean, colour = site)) +
   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-  facet_grid(site~test, scales = "free_x")
+  facet_grid(metric~test, scales = "free")
 
 
 ## Event metrics
+plot_event_effect <- ggplot(effect_event, aes(x = index_vals)) +
+  # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
+  geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
+  stat_smooth(aes(y = val, colour = site), geom = "line",
+              method = "lm", alpha = 0.5, size = 1) +
+  geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
+  # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+  facet_grid(metric~test, scales = "free", switch = "both") +
+  labs(x = NULL, y = NULL, colour = "Site") +
+  theme(legend.position = "bottom")
+plot_event_effect
+ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
+
 
 ## Categories
+ggplot(effect_cat, aes(x = index_vals)) +
+  # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
+  geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
+  stat_smooth(aes(y = val, colour = site), geom = "line",
+              method = "lm", alpha = 0.5, size = 1) +
+  geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
+  # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+  facet_grid(metric~test, scales = "free")
+
+# Calculate the slope of the change caused by the test with a linear model
+# Also calculate the slope of the upper and lower SE of the linear model
+
 
 # Global ------------------------------------------------------------------
 

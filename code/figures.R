@@ -148,18 +148,24 @@ table_summary_Med <- table_summary("Med")
 # The main event
 # Map/location point
 # Summary/stats table
-stitch_plot_WA <- ggpubr::ggarrange(ts_clim_rug_WA, clim_WA, lolli_WA, event_WA, map_WA, table_summary_WA, labels = "AUTO")
+stitch_plot_WA <- ggpubr::ggarrange(ts_clim_rug_WA, clim_WA, lolli_WA,
+                                    event_WA, map_WA, table_summary_WA, labels = "AUTO")
 stitch_plot_WA
 # ggsave(plot = stitch_plot_WA, filename = "output/stitch_plot_WA.pdf", height = 8, width = 14)
-stitch_plot_NW_Atl <- ggpubr::ggarrange(ts_clim_rug_NW_Atl, clim_NW_Atl, lolli_NW_Atl, event_NW_Atl, map_NW_Atl, table_summary_NW_Atl, labels = "AUTO")
+stitch_plot_NW_Atl <- ggpubr::ggarrange(ts_clim_rug_NW_Atl, clim_NW_Atl,
+                                        lolli_NW_Atl, event_NW_Atl, map_NW_Atl,
+                                        table_summary_NW_Atl, labels = "AUTO")
 stitch_plot_NW_Atl
-stitch_plot_Med <- ggpubr::ggarrange(ts_clim_rug_Med, clim_Med, lolli_Med, event_Med, map_Med, table_summary_Med, labels = "AUTO")
+stitch_plot_Med <- ggpubr::ggarrange(ts_clim_rug_Med, clim_Med, lolli_Med,
+                                     event_Med, map_Med, table_summary_Med, labels = "AUTO")
 stitch_plot_Med
 
 ## A more paired down figure
 stitch_sub_plot_WA <- ggpubr::ggarrange(event_WA, map_WA, labels = "AUTO")
 stitch_sub_plot_WA
-ggsave(plot = stitch_sub_plot_WA, filename = "output/stitch_sub_plot_WA.pdf", height = 4, width = 8)
+ggsave(plot = stitch_sub_plot_WA,
+       filename = "output/stitch_sub_plot_WA.pdf",
+       height = 4, width = 8)
 
 
 # Figure 2 ----------------------------------------------------------------
@@ -272,4 +278,10 @@ sst_ALL_R2_long <- sst_ALL_plot_long %>%
 # To that end though if such a thing is to be investiagated it would be better
 # to run the global analysis and show that
 
+
+
+###
+# Perhaps some basic representations of what is going on would be best
+# Text book like diagrams with arrows showing the general trends in how
+# the data are affected when the three variables are tweeked
 

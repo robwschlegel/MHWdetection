@@ -1,3 +1,11 @@
+# 2019-04-14
+
+* Implemented and ran code for fixes to sub-optimal data
+
+# 2019-04-12
+
+* Finished first pass on answer to Question 2
+
 # 2019-04-11
 
 * Working towards Question 2

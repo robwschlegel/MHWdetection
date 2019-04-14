@@ -150,17 +150,31 @@ event_only <- function(df){
 }
 
 # Calculate climatologies, events, and categories on full length time series
-# Set `maxPadLength = 1` so that ts2clm() will fill in the missing leap year days
-# caused by the re-sampling step above
 # testers...
 # df <- sst_ALL_knockout %>%
-  # filter(site == "WA", rep == "1", index_vals == 0)
-clim_event_cat_calc <- function(df){
-  res <- df %>%
-    nest() %>%
-    mutate(clims = map(data, ts2clm, maxPadLength = 1,
-                       climatologyPeriod = c("1982-01-01", "2011-12-31")),
-           events = map(clims, detect_event),
+  # filter(site == "WA", rep == "1", index_vals == 0.4)
+# fix <- "none"
+# fix <- "missing"
+clim_event_cat_calc <- function(df, fix = "none"){
+  res_base <- df %>%
+    nest()
+  if(fix == "none"){
+    res_clim <- res_base %>%
+      mutate(clims = map(data, ts2clm,
+                         climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
+      # select(-data) %>%
+      # unnest()
+  } else if(fix == "missing"){
+    res_clim <- res_base %>%
+      mutate(clims = map(data, ts2clm, maxPadLength = 100, # dummy length
+                         climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
+      # select(-data) %>%
+      # unnest()
+  } else{
+    stop("Make sure the argument provided to 'fix' is correct.")
+  }
+  res <- res_clim %>%
+    mutate(events = map(clims, detect_event),
            cat = map(events, category),
            clim = map(events, clim_only),
            event = map(events, event_only)) %>%
@@ -177,19 +191,20 @@ clim_event_cat_calc <- function(df){
 # df <- sst_ALL_flat %>%
   # filter(site == "WA", rep == "1")
 # year_begin <- 2000
-shrinking_results <- function(year_begin, df = sst_ALL_flat){
+# set_width <- 10
+shrinking_results <- function(year_begin, df = sst_ALL_flat, set_width = 5){
   res <- df %>%
     filter(year(t) >= year_begin) %>%
     mutate(index_vals = 2018-year_begin+1) %>%
     group_by(site, rep, index_vals) %>%
     nest() %>%
-    mutate(clims = map(data, ts2clm, maxPadLength = 1,
+    mutate(clims = map(data, ts2clm, maxPadLength = 1, windowHalfWidth = set_width,
                        climatologyPeriod = c(paste0(year_begin,"-01-01"), "2018-12-31")),
            events = map(clims, detect_event),
            cat = map(events, category),
            clim = map(events, clim_only),
            event = map(events, event_only)) %>%
-    select(-data, -clims, -events)
+    select(site, rep, index_vals, clim, event, cat)
   return(res)
 }
 
@@ -417,30 +432,176 @@ lm_p_R2 <- function(df){
 }
 
 
-
 # Event effect functions --------------------------------------------------
 
 # The effect that the three tests have on the climatologies
-# This is basic enough not to require a function
+# These are all basic enough not to require a function
+
 # effect_clim <- function(df){
 #   # min, median, mean, max
 #   summarise_if
 #
 # }
 
-effect_event <- function(){
+# effect_event <- function(){
+#
+# }
 
-}
-
-effect_cat <- function(){
-
-}
+# effect_cat <- function(){
+#
+# }
 
 
 # Global functions --------------------------------------------------------
 
 # The following wrapper functions use the above functions,
 # but allow them to be used on the NOAA OISST NetCDF file structure
+
+# It's not reasonable to run a decadal trend test as well because
+# this value isbeing added in a completely controlled way.
+# Meaning that controlling for it is the same as simply not adding it
+# in the first place.
+# To that end we want to provide a post-hoc correction.
+# Because we have seen that max. intensity is a function of the
+# decadal trend and the peak date of the event we should be able to
+# correct for intensities by subtracting the decadal trend multiplied
+# by the peak date as it relates to the length of the time series.
+# For example, if the decadal trend is 0.3C, and the peak date of an event
+# is in the 25th year of a 30 year time series (0.8333 of the length),
+# then the the impact of the decadal trend on the max. intensity should be
+# 0.3*0.83 = 0.25C
+# So one would subtract this value in order to correct the results to
+# match a de-trended time series.
+# The problem then becomes, why would anyone actually want to do this?
+# No. Rather we must provide a post-hoc fix for the potential impact of
+# a decadal trend on MHWs in conjunction with shot time series.
+# And then on top of that add in the correction for missing data.
+# Mercifully the correction for missing data is very simple and should
+# play nice with the other issues.
+# This is because the linear interpolation of NA gaps will provide
+# data that are matching the temperatures around them so the problem of
+# having more missing data on one end of a time series over the other
+# should not be pronounced.
+
+# One function to rule them all
+clim_event_cat_calc_global <- function(){
+
+}
+
+
+# Load the results from above
+load("data/sst_ALL_clim_event_cat.Rdata")
+
+# Filter out the re-sampled data
+sst_ALL_clim_event_cat_rep_1 <- sst_ALL_clim_event_cat %>%
+  filter(rep == "1")
+rm(sst_ALL_clim_event_cat); gc()
+
+## Climatologies
+sst_ALL_clim_rep_1 <- sst_ALL_clim_event_cat_rep_1 %>%
+  select(-event, -cat) %>%
+  unnest(clim)
+
+## Event metrics
+sst_ALL_event_rep_1 <- sst_ALL_clim_event_cat_rep_1 %>%
+  select(-clim, -cat) %>%
+  unnest(event)
+
+## Categories
+sst_ALL_cat_rep_1 <- sst_ALL_clim_event_cat_rep_1 %>%
+  select(-clim, -event) %>%
+  unnest(cat)
+
+# Extract the control data
+# The 0 trend data are the best choice here
+## Climatologies
+sst_ALL_clim_control <- sst_ALL_clim_rep_1 %>%
+  filter(test == "trended", index_vals == 0)
+
+## Event metrics
+sst_ALL_event_control <- sst_ALL_event_rep_1 %>%
+  filter(test == "trended", index_vals == 0)
+
+## Categories
+sst_ALL_cat_control <- sst_ALL_cat_rep_1 %>%
+  filter(test == "trended", index_vals == 30)
+
+# Specify the infamous event
+focus_Med <- sst_ALL_event_control %>%
+  filter(site == "Med", date_end <= "2005-01-01") %>%
+  filter(intensity_cumulative == max(intensity_cumulative))
+focus_WA <- sst_ALL_event_control %>%
+  filter(site == "WA", date_end >= "2010-01-01") %>%
+  filter(intensity_cumulative == max(intensity_cumulative))
+focus_NW_Atl <- sst_ALL_event_control %>%
+  filter(site == "NW_Atl",
+         date_start >= "2010-01-01", date_start <= "2014-01-01") %>%
+  filter(intensity_cumulative == max(intensity_cumulative))
+
+# Create infamous event index
+focus_ALL <- rbind(focus_Med, focus_NW_Atl, focus_WA) %>%
+  select(site, date_start:date_end) %>%
+  dplyr::rename(date_start_control = date_start,
+                date_peak_control = date_peak,
+                date_end_control = date_end)
+
+# Quantify changes caused by the three tests
+## Climatologies
+effect_clim <- sst_ALL_clim_rep_1 %>%
+  select(-doy, -rep) %>%
+  gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
+  group_by(site, test, index_vals, metric) %>%
+  summarise_if(is.numeric,
+               .funs = c("min", "median", "mean", "max")) %>%
+  # group_by(site, test) %>%
+  mutate_if(is.numeric, round, 3)
+
+## Event metrics
+effect_event <- sst_ALL_event_rep_1 %>%
+  left_join(focus_ALL, by = "site") %>%
+  filter(date_peak >= date_start_control,
+         date_peak <= date_end_control) %>%
+  group_by(site, test, index_vals) %>%
+  #
+  # Not sure what to do with this information
+  mutate(date_start_change = date_start_control - date_start,
+         date_peak_change = date_peak_control - date_peak,
+         date_end_change = date_end_control - date_end) %>%
+  #
+  summarise(count = n(),
+            duration = sum(duration),
+            intensity_mean = mean(intensity_mean),
+            intensity_max = max(intensity_max),
+            intensity_cumulative = sum(intensity_cumulative)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
+  ungroup() %>%
+  filter(metric %in% c("count", "duration", "intensity_max"),
+         !index_vals %in% seq(1, 9)) %>%
+  mutate(metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
+                            metric == "duration" ~ "duration (days)",
+                            metric == "count" ~ "count (event)"),
+         test = case_when(test == "length" ~ "length (years)",
+                          test == "missing" ~ "missing data (proportion)" ,
+                          test == "trended" ~ "added trend (°C/dec)"),
+         test = as.factor(test),
+         test = factor(test, levels = levels(test)[c(2,3,1)]))
+
+## Categories
+effect_cat <- sst_ALL_cat_rep_1 %>%
+  left_join(focus_ALL, by = "site") %>%
+  filter(peak_date >= date_start_control,
+         peak_date <= date_end_control) %>%
+  group_by(site, test, index_vals) %>%
+  summarise(count = n(),
+            duration = sum(duration),
+            i_max = max(i_max),
+            p_moderate = mean(p_moderate),
+            p_strong = mean(p_strong),
+            p_severe = mean(p_severe),
+            p_extreme = mean(p_extreme)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  gather(key = "metric", value = "val", -site, -test, -index_vals)
 
 
 # Figure convenience functions --------------------------------------------
