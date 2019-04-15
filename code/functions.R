@@ -16,6 +16,7 @@ library(FNN)
 library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(ggridges)
+library(ncdf4)
 # library(rcompanion)
 
 
@@ -80,7 +81,7 @@ detrend <- function(df){
 
 # Function for knocking out data but maintaing the time series consistency
 random_knockout <- function(prop, df = sst_ALL_flat){
-  # NB: Don't allow samppling of first and last value to ensure
+  # NB: Don't allow sampling of first and last value to ensure
   # all time series are the same length
   ts_length <- nrow(filter(df, site == "WA"))
   miss_index <- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
@@ -166,7 +167,7 @@ clim_event_cat_calc <- function(df, fix = "none"){
       # unnest()
   } else if(fix == "missing"){
     res_clim <- res_base %>%
-      mutate(clims = map(data, ts2clm, maxPadLength = 100, # dummy length
+      mutate(clims = map(data, ts2clm, maxPadLength = 9999, # dummy length
                          climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
       # select(-data) %>%
       # unnest()
@@ -432,24 +433,85 @@ lm_p_R2 <- function(df){
 }
 
 
+
+# Convenience functions ---------------------------------------------------
+
+# Wrapper function to melt KS results
+KS_long <- function(df){
+  res <- df %>%
+    gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
+    group_by(test, site, metric, index_vals) %>%
+    summarise(p.value.mean = mean(p.value))
+  return(res)
+}
+
+
 # Event effect functions --------------------------------------------------
 
-# The effect that the three tests have on the climatologies
-# These are all basic enough not to require a function
+# The effect that the three tests have the climatologies
+effect_clim_func <- function(df, choice_rep = "1"){
+  res <- df %>%
+    filter(rep == choice_rep) %>%
+    select(-event, -cat) %>%
+    unnest(clim) %>%
+    select(-doy, -rep) %>%
+    gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
+    group_by(site, test, index_vals, metric) %>%
+    summarise_if(is.numeric,
+                 .funs = c("min", "median", "mean", "max")) %>%
+    # group_by(site, test) %>%
+    mutate_if(is.numeric, round, 3)
+  return(res)
+}
 
-# effect_clim <- function(df){
-#   # min, median, mean, max
-#   summarise_if
-#
-# }
+# The effect that the three tests have on the focus event
+effect_event_func <- function(df, date_guide, choice_rep = "1"){
+  res <- df %>%
+    filter(rep == choice_rep) %>%
+    select(-clim, -cat) %>%
+    unnest(event) %>%
+    left_join(date_guide, by = "site") %>%
+    filter(date_peak >= date_start_control,
+           date_peak <= date_end_control) %>%
+    group_by(site, test, index_vals) %>%
+    #
+    # Not sure what to do with this information
+    # mutate(date_start_change = date_start_control - date_start,
+    #        date_peak_change = date_peak_control - date_peak,
+    #        date_end_change = date_end_control - date_end) %>%
+    #
+    summarise(count = n(),
+              duration = sum(duration),
+              intensity_mean = mean(intensity_mean),
+              intensity_max = max(intensity_max),
+              intensity_cumulative = sum(intensity_cumulative)) %>%
+    mutate_if(is.numeric, round, 2) %>%
+    gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
+    ungroup()
+  return(res)
+}
 
-# effect_event <- function(){
-#
-# }
-
-# effect_cat <- function(){
-#
-# }
+# The effect that the three tests have on the categories
+effect_cat_func <- function(df, date_guide, choice_rep = "1"){
+  res <- df %>%
+    filter(rep == choice_rep) %>%
+    select(-clim, -event) %>%
+    unnest(cat) %>%
+    left_join(focus_ALL, by = "site") %>%
+    filter(peak_date >= date_start_control,
+           peak_date <= date_end_control) %>%
+    group_by(site, test, index_vals) %>%
+    summarise(count = n(),
+              duration = sum(duration),
+              i_max = max(i_max),
+              p_moderate = mean(p_moderate),
+              p_strong = mean(p_strong),
+              p_severe = mean(p_severe),
+              p_extreme = mean(p_extreme)) %>%
+    mutate_if(is.numeric, round, 2) %>%
+    gather(key = "metric", value = "val", -site, -test, -index_vals)
+  return(res)
+}
 
 
 # Global functions --------------------------------------------------------
@@ -483,8 +545,113 @@ lm_p_R2 <- function(df){
 # having more missing data on one end of a time series over the other
 # should not be pronounced.
 
+# Function for knocking out data but maintaing the time series consistency
+# df <- sst
+# prop <- 0.1
+random_knockout_global <- function(prop, df){
+  # NB: Don't allow samppling of first and last value to ensure
+  # all time series are the same length
+  ts_length <- nrow(df)
+  miss_index <- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
+  # df$x1[sample(nrow(df),250)] <- NA
+  res <- df %>%
+    # group_by(site, rep) %>%
+    mutate(row_index = 1:n(),
+           temp = replace(temp, which(row_index %in% miss_index), NA)) %>%
+    mutate(index_vals = prop) %>%
+    select(-row_index)
+  return(res)
+}
+
+# Function for calculating shrinking time series from the global data
+shrinking_results_global <- function(year_begin, df){
+  res <- df %>%
+    filter(year(t) >= year_begin) %>%
+    mutate(index_vals = 2018-year_begin+1) %>%
+    group_by(index_vals) %>%
+    nest() %>%
+    mutate(clims = map(data, ts2clm,
+                       climatologyPeriod = c(paste0(year_begin,"-01-01"), "2018-12-31")),
+           events = map(clims, detect_event),
+           cat = map(events, category),
+           clim = map(events, clim_only),
+           event = map(events, event_only)) %>%
+    select(index_vals, clim, event, cat)
+  return(res)
+}
+
+# The function that runs all of the tests on a single pixel
+# lat_step <- 300
+# base_file <- nc_file
+global_analysis_sub <- function(lat_step, base_file){
+
+  # Extract raw SST
+  sst_raw <- ncvar_get(base_file, "sst", start = c(lat_step,1,1), count = c(1,-1,-1))
+  dimnames(sst_raw) <- list(t = base_file$dim$time$vals)
+
+  # Prep SST for further use
+  sst <- as.data.frame(reshape2::melt(sst_raw, value.name = "temp"), row.names = NULL) %>%
+    mutate(t = as.Date(t, origin = "1970-01-01")) %>%
+    na.omit() %>%
+    filter(t <= "2018-12-31")
+  if(nrow(sst) == 0) return()
+
+  # Calculate the secular trend
+  dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, sst))[2,2]*3652.5), 3)
+
+  # Remove random data
+  sst_knockout <- plyr::ldply(.data = c(0.0, 0.10, 0.25, 0.50, 0.75, 0.90),
+                              .fun = random_knockout_global, df = sst)
+
+  # Make base calculations
+  # sst_res_base <- clim_event_cat_calc(sst) %>%
+  #   mutate(index_vals = 0, test = as.factor("base"))
+
+  # Make missing data calculations
+  sst_res_missing <- plyr::ddply(sst_knockout, c("index_vals"),
+                                 clim_event_cat_calc) %>%
+    mutate(test = as.factor("missing"))
+
+  # Make missing data fix calculations
+  sst_res_missing_fix <- plyr::ddply(sst_knockout, c("index_vals"),
+                                     clim_event_cat_calc, fix = "missing") %>%
+    mutate(test = as.factor("missing_fix"))
+
+  # Make shortened time series calculations
+  sst_res_length <- plyr::ldply(.data = c(1989, 1999, 2009),
+                                .fun = shrinking_results_global, df = sst) %>%
+    mutate(test = as.factor("length"))
+
+  # Combine for upcoming tests
+  sst_res <- rbind(sst_res_base, sst_res_missing, sst_res_missing_fix, sst_res_length)
+
+  # Run KS tests
+  sst_KS_clim <- plyr::ddply(sst_res[ ,c(1:5)],
+                             c("test"), KS_p, .parallel = T)
+
+  # Find the focus event
+
+  # Wrap it up
+  # lat = base_file$dim$lat$vals[lat_step]
+
+}
+
 # One function to rule them all
-clim_event_cat_calc_global <- function(){
+# chosen_file <- OISST_slice
+global_analysis <- function(chosen_file){
+
+  # Create link to NetCDF file
+  nc_file <- nc_open(chosen_file)
+
+  # Function that then performs all of the analyses in one ldply call
+    # Run through the latitudes as individual time series
+  res_pixel <- global_analysis_sub(100, nc_file)
+
+
+  # Time series length
+
+  # Missing data
+
 
 }
 
@@ -709,3 +876,23 @@ clim_line <-function(site_1){
     labs(x = NULL, y = "Temperature (°C)")
 }
 
+# The code two create figure 2, which shows the p-values for the KS tests
+fig_2_plot <- function(df){
+  fig_2 <- ggplot(df, aes(x = index_vals, y = p.value.mean, colour = metric)) +
+    geom_line() +
+    geom_point() +
+    geom_point(data = filter(df, p.value.mean <= 0.05), shape = 15, colour = "red", size = 2) +
+    geom_hline(yintercept = 0.05, colour = "red", linetype = "dashed") +
+    scale_colour_manual(name = "Metric",
+                        values = c("skyblue", "navy",
+                                   "springgreen", "forestgreen",
+                                   "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
+                        labels = c("Seasonal climatology", "Threshold climatology",
+                                   "Duration (days)", "Max. intensity (°C)",
+                                   "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
+    # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
+    guides(colour = guide_legend(override.aes = list(shape = 15, linetype = NA, size = 3))) +
+    labs(y = "Mean p-value (n = 100)", x = NULL) +
+    facet_grid(site~test, scales = "free_x", switch = "x") +
+    theme(legend.position = "bottom")
+}

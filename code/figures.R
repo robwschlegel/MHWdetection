@@ -170,49 +170,34 @@ ggsave(plot = stitch_sub_plot_WA,
 
 # Figure 2 ----------------------------------------------------------------
 
-# A synthesis of the three tests: length, missing, trended
-# The tests are all the same and the three things investigated were
-  # climatologies: KS tests
+## A synthesis of the three tests: length, missing, trended
+# Sub-optimal data
 load("data/sst_ALL_KS_clim.Rdata")
-  # event metrics: ANOVA/Tukey OR KS tests
 load("data/sst_ALL_KS_event.Rdata")
-load("data/sst_ALL_aov_tukey.Rdata")
-  # category count: fisher test
 load("data/sst_ALL_KS_cat.Rdata")
-load("data/sst_ALL_fisher.Rdata")
+# Fixed data
+load("data/sst_ALL_KS_clim_fix.Rdata")
+load("data/sst_ALL_KS_event_fix.Rdata")
+load("data/sst_ALL_KS_cat_fix.Rdata")
+
 # I envision here some sort of figure that compares the results side by side
 # while highlighting how as the degridation of the three tests increases
 # how much more rapidly this effects the results than the other tests
-# Currently this is being shown with line plots but they aren't popular...
 
 # Climatology results
-sst_ALL_KS_clim_long <- sst_ALL_KS_clim %>%
-  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
-  group_by(test, site, metric, index_vals) %>%
-  summarise(p.value.mean = mean(p.value))# %>%
-  # mutate(index_col = paste(site, test, sep = "-"))
-# sst_ALL_KS_clim_long_sig <- sst_ALL_KS_clim_long %>%
-#   filter(p.value.mean <= 0.05)
+sst_ALL_KS_clim_long <- KS_long(sst_ALL_KS_clim)
+sst_ALL_KS_clim_fix_long <- KS_long(sst_ALL_KS_clim_fix)
 
 # Event results
-sst_ALL_KS_event_long <- sst_ALL_KS_event %>%
-  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
-  group_by(test, site, metric, index_vals) %>%
-  summarise(p.value.mean = mean(p.value)) #%>%
-# mutate(index_col = paste(test, site, metric, sep = "-"))
-# sst_ALL_KS_event_long_sig <- sst_ALL_KS_event_long %>%
-#   filter(p.value.mean <= 0.05)
+sst_ALL_KS_event_long <- KS_long(sst_ALL_KS_event)
+sst_ALL_KS_event_fix_long <- KS_long(sst_ALL_KS_event_fix)
 
 # Cagtegory results
-sst_ALL_KS_cat_long <- sst_ALL_KS_cat %>%
-  gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
-  group_by(test, site, metric, index_vals) %>%
-  summarise(p.value.mean = mean(p.value)) #%>%
-# mutate(index_col = paste(test, site, metric, sep = "-"))
-# sst_ALL_KS_cat_long_sig <- sst_ALL_KS_cat_long %>%
-#   filter(p.value.mean <= 0.05)
+sst_ALL_KS_cat_long <- KS_long(sst_ALL_KS_cat)
+sst_ALL_KS_cat_fix_long <- KS_long(sst_ALL_KS_cat_fix)
 
-# Combine for plotting
+## Combine for plotting
+# Sub-optimal data
 sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long, sst_ALL_KS_cat_long) %>%
   filter(!metric %in% c("intensity_mean", "intensity_cumulative")) %>%
   ungroup() %>%
@@ -225,26 +210,38 @@ sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long, sst_ALL_
          test = as.factor(test),
          test = factor(test, levels = levels(test)[c(2,3,1)]))
 
-# Plot them all together
-fig_2 <- ggplot(sst_ALL_plot_long, aes(x = index_vals, y = p.value.mean, colour = metric)) +
-  geom_line() +
-  geom_point() +
-  geom_point(data = filter(sst_ALL_plot_long, p.value.mean <= 0.05), shape = 15, colour = "red", size = 2) +
-  geom_hline(yintercept = 0.05, colour = "red", linetype = "dashed") +
-  scale_colour_manual(name = "Metric",
-                      values = c("skyblue", "navy",
-                                 "springgreen", "forestgreen",
-                                 "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
-                      labels = c("Seasonal climatology", "Threshold climatology",
-                                 "Duration (days)", "Max. intensity (°C)",
-                                 "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
-  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-  guides(colour = guide_legend(override.aes = list(shape = 15, linetype = NA, size = 3))) +
-  labs(y = "Mean p-value (n = 100)", x = NULL) +
-  facet_grid(site~test, scales = "free_x", switch = "x") +
-  theme(legend.position = "bottom")
+# Fixed data
+sst_ALL_plot_fix_long <- rbind(sst_ALL_KS_clim_fix_long,
+                               sst_ALL_KS_event_fix_long, sst_ALL_KS_cat_fix_long) %>%
+  filter(!metric %in% c("intensity_mean", "intensity_cumulative")) %>%
+  ungroup() %>%
+  mutate(metric = factor(metric, levels = c("seas", "thresh",
+                                            "duration", "intensity_max",
+                                            "p_moderate", "p_strong", "p_severe", "p_extreme")))
+
+## Plot them all together
+# Sub-optimal data
+fig_2 <- fig_2_plot(sst_ALL_plot_long)
 fig_2
 ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 8, width = 12)
+
+# Fixed data
+fig_2_fix <- fig_2_plot(sst_ALL_plot_fix_long)
+fig_2_fix
+# ggsave(plot = fig_2, filename = "LaTeX/fig_2_fix.pdf", height = 8, width = 12)
+
+# Missing data only
+fig_2_missing_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
+  filter(test %in% c("missing data (proportion)", "missing_fix")) %>%
+  fig_2_plot()
+fig_2_missing_only
+
+# Length tests only
+fig_2_length_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
+  filter(test %in% c("length (years)", "length_width_10",
+                     "length_width_20", "length_width_30", "length_width_40")) %>%
+  fig_2_plot()
+fig_2_length_only
 
 
 # Figure 3 ----------------------------------------------------------------
