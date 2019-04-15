@@ -256,6 +256,9 @@ KS_sub <- function(df_2, df_1){
 # df <- sst_res[ ,c(1:3)] %>%
 #   filter(test == "length") %>%
 #   select(-test)
+# df <- sst_res[ ,c(1:2,4)] %>%
+#   filter(test == "missing") %>%
+#   select(-test)
 KS_p <- function(df){
   # Unnest the clim data
   suppressWarnings( # Suppress warning about different factor levels for cat data
@@ -291,6 +294,11 @@ KS_p <- function(df){
   # Set the standard results for comparison
   df_standard <- df_long %>%
     filter(index_vals == index_filter)
+
+  # Exit if no events occurred in the last decade of data
+    # This is possible in a few icey areas
+  if(nrow(df_standard) == 0) return()
+
   # Run the KS tests
   res <- df_long %>%
     filter(index_vals != index_filter) %>%
@@ -592,7 +600,7 @@ shrinking_results_global <- function(year_begin, df){
 }
 
 # The function that runs all of the tests on a single pixel
-# lat_step <- 94
+# lat_step <- 78
 global_analysis_sub <- function(lat_step, nc_file){
 
   nc <- nc_open(nc_file)

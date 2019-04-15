@@ -1,3 +1,7 @@
+# 2019-04-15
+
+* Global analysis error trapping
+
 # 2019-04-14
 
 * Implemented and ran code for fixes to sub-optimal data
