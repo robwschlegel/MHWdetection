@@ -253,6 +253,9 @@ KS_sub <- function(df_2, df_1){
 # df <- sst_ALL_clim_event_cat[ ,c(1:4,7)] %>%
   # filter(test == "trended", site == "WA", rep == "1") %>%
   # select(-test, -rep, -site)
+# df <- sst_res[ ,c(1:3)] %>%
+#   filter(test == "length") %>%
+#   select(-test)
 KS_p <- function(df){
   # Unnest the clim data
   suppressWarnings( # Suppress warning about different factor levels for cat data
@@ -460,11 +463,15 @@ effect_clim_func <- function(df, choice_rep = "1"){
     summarise_if(is.numeric,
                  .funs = c("min", "median", "mean", "max")) %>%
     # group_by(site, test) %>%
-    mutate_if(is.numeric, round, 3)
+    mutate_if(is.numeric, round, 3) %>%
+    ungroup()
   return(res)
 }
 
 # The effect that the three tests have on the focus event
+# df <- sst_res
+# date_guide <- focus_event
+# choice_rep <- "1"
 effect_event_func <- function(df, date_guide, choice_rep = "1"){
   res <- df %>%
     filter(rep == choice_rep) %>%
@@ -492,12 +499,15 @@ effect_event_func <- function(df, date_guide, choice_rep = "1"){
 }
 
 # The effect that the three tests have on the categories
+# df <- sst_res
+# date_guide <- focus_event
+# choice_rep <- "1"
 effect_cat_func <- function(df, date_guide, choice_rep = "1"){
   res <- df %>%
     filter(rep == choice_rep) %>%
     select(-clim, -event) %>%
     unnest(cat) %>%
-    left_join(focus_ALL, by = "site") %>%
+    left_join(date_guide, by = "site") %>%
     filter(peak_date >= date_start_control,
            peak_date <= date_end_control) %>%
     group_by(site, test, index_vals) %>%
@@ -509,7 +519,8 @@ effect_cat_func <- function(df, date_guide, choice_rep = "1"){
               p_severe = mean(p_severe),
               p_extreme = mean(p_extreme)) %>%
     mutate_if(is.numeric, round, 2) %>%
-    gather(key = "metric", value = "val", -site, -test, -index_vals)
+    gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
+    ungroup()
   return(res)
 }
 
@@ -600,12 +611,14 @@ global_analysis_sub <- function(lat_step, base_file){
   dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, sst))[2,2]*3652.5), 3)
 
   # Remove random data
-  sst_knockout <- plyr::ldply(.data = c(0.0, 0.10, 0.25, 0.50, 0.75, 0.90),
+  sst_knockout <- plyr::ldply(.data = c(0.10, 0.25, 0.50, 0.75, 0.90),
                               .fun = random_knockout_global, df = sst)
 
   # Make base calculations
-  # sst_res_base <- clim_event_cat_calc(sst) %>%
-  #   mutate(index_vals = 0, test = as.factor("base"))
+  sst_res_base <- clim_event_cat_calc(sst) %>%
+    mutate(index_vals = 0, test = as.factor("missing"))
+  sst_res_base_fix <- sst_res_base %>%
+    mutate(test = as.factor("missing_fix"))
 
   # Make missing data calculations
   sst_res_missing <- plyr::ddply(sst_knockout, c("index_vals"),
@@ -623,17 +636,46 @@ global_analysis_sub <- function(lat_step, base_file){
     mutate(test = as.factor("length"))
 
   # Combine for upcoming tests
-  sst_res <- rbind(sst_res_base, sst_res_missing, sst_res_missing_fix, sst_res_length)
+  sst_res <- rbind(sst_res_base, sst_res_missing,
+                   sst_res_base_fix, sst_res_missing_fix,
+                   sst_res_length) %>%
+    select(test, index_vals, clim, event, cat) %>%
+    mutate(site = as.character(base_file$dim$lat$vals[lat_step]), rep = "1")
 
   # Run KS tests
-  sst_KS_clim <- plyr::ddply(sst_res[ ,c(1:5)],
-                             c("test"), KS_p, .parallel = T)
+  sst_KS_clim <- plyr::ddply(.data = sst_res[ ,c(1:3)], .variables = c("test"), .fun = KS_p)
+  sst_KS_event <- plyr::ddply(.data = sst_res[ ,c(1:2,4)], .variables = c("test"), .fun = KS_p)
+  sst_KS_cat <- plyr::ddply(.data = sst_res[ ,c(1:2,5)], .variables = c("test"), .fun = KS_p)
 
   # Find the focus event
+  focus_event <-  sst_res_base %>%
+    select(-clim, -cat) %>%
+    unnest(event) %>%
+    filter(date_start >= "2009-01-01") %>%
+    filter(intensity_cumulative == max(intensity_cumulative)) %>%
+    mutate(site = as.character(base_file$dim$lat$vals[lat_step])) %>%
+    select(site, date_start:date_end) %>%
+    dplyr::rename(date_start_control = date_start,
+                  date_peak_control = date_peak,
+                  date_end_control = date_end)
+
+  # Quantify changes caused by the two tests
+  effect_clim_res <- effect_clim_func(sst_res) %>%
+    select(-site)
+  effect_event_res <- effect_event_func(sst_res, focus_event) %>%
+    select(-site)
+  effect_cat_res <- effect_cat_func(sst_res, focus_event) %>%
+    select(-site)
 
   # Wrap it up
-  # lat = base_file$dim$lat$vals[lat_step]
-
+  res <- list(lon = base_file$dim$lon$vals, lat = base_file$dim$lat$vals[lat_step],
+              KS_clim = sst_KS_clim,
+              KS_event = sst_KS_event,
+              KS_cat = sst_KS_cat,
+              effect_clim = effect_clim_res,
+              effect_event = effect_event_res,
+              effect_cat = effect_cat_res)
+  return(res)
 }
 
 # One function to rule them all
@@ -645,130 +687,14 @@ global_analysis <- function(chosen_file){
 
   # Function that then performs all of the analyses in one ldply call
     # Run through the latitudes as individual time series
-  res_pixel <- global_analysis_sub(100, nc_file)
-
-
-  # Time series length
-
-  # Missing data
+  system.time(
+    suppressWarnings( # Ignore the coercing factor to character messages
+      res_pixel <- global_analysis_sub(100, nc_file)
+    )
+  ) # ~3 seconds for one
 
 
 }
-
-
-# Load the results from above
-load("data/sst_ALL_clim_event_cat.Rdata")
-
-# Filter out the re-sampled data
-sst_ALL_clim_event_cat_rep_1 <- sst_ALL_clim_event_cat %>%
-  filter(rep == "1")
-rm(sst_ALL_clim_event_cat); gc()
-
-## Climatologies
-sst_ALL_clim_rep_1 <- sst_ALL_clim_event_cat_rep_1 %>%
-  select(-event, -cat) %>%
-  unnest(clim)
-
-## Event metrics
-sst_ALL_event_rep_1 <- sst_ALL_clim_event_cat_rep_1 %>%
-  select(-clim, -cat) %>%
-  unnest(event)
-
-## Categories
-sst_ALL_cat_rep_1 <- sst_ALL_clim_event_cat_rep_1 %>%
-  select(-clim, -event) %>%
-  unnest(cat)
-
-# Extract the control data
-# The 0 trend data are the best choice here
-## Climatologies
-sst_ALL_clim_control <- sst_ALL_clim_rep_1 %>%
-  filter(test == "trended", index_vals == 0)
-
-## Event metrics
-sst_ALL_event_control <- sst_ALL_event_rep_1 %>%
-  filter(test == "trended", index_vals == 0)
-
-## Categories
-sst_ALL_cat_control <- sst_ALL_cat_rep_1 %>%
-  filter(test == "trended", index_vals == 30)
-
-# Specify the infamous event
-focus_Med <- sst_ALL_event_control %>%
-  filter(site == "Med", date_end <= "2005-01-01") %>%
-  filter(intensity_cumulative == max(intensity_cumulative))
-focus_WA <- sst_ALL_event_control %>%
-  filter(site == "WA", date_end >= "2010-01-01") %>%
-  filter(intensity_cumulative == max(intensity_cumulative))
-focus_NW_Atl <- sst_ALL_event_control %>%
-  filter(site == "NW_Atl",
-         date_start >= "2010-01-01", date_start <= "2014-01-01") %>%
-  filter(intensity_cumulative == max(intensity_cumulative))
-
-# Create infamous event index
-focus_ALL <- rbind(focus_Med, focus_NW_Atl, focus_WA) %>%
-  select(site, date_start:date_end) %>%
-  dplyr::rename(date_start_control = date_start,
-                date_peak_control = date_peak,
-                date_end_control = date_end)
-
-# Quantify changes caused by the three tests
-## Climatologies
-effect_clim <- sst_ALL_clim_rep_1 %>%
-  select(-doy, -rep) %>%
-  gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
-  group_by(site, test, index_vals, metric) %>%
-  summarise_if(is.numeric,
-               .funs = c("min", "median", "mean", "max")) %>%
-  # group_by(site, test) %>%
-  mutate_if(is.numeric, round, 3)
-
-## Event metrics
-effect_event <- sst_ALL_event_rep_1 %>%
-  left_join(focus_ALL, by = "site") %>%
-  filter(date_peak >= date_start_control,
-         date_peak <= date_end_control) %>%
-  group_by(site, test, index_vals) %>%
-  #
-  # Not sure what to do with this information
-  mutate(date_start_change = date_start_control - date_start,
-         date_peak_change = date_peak_control - date_peak,
-         date_end_change = date_end_control - date_end) %>%
-  #
-  summarise(count = n(),
-            duration = sum(duration),
-            intensity_mean = mean(intensity_mean),
-            intensity_max = max(intensity_max),
-            intensity_cumulative = sum(intensity_cumulative)) %>%
-  mutate_if(is.numeric, round, 2) %>%
-  gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
-  ungroup() %>%
-  filter(metric %in% c("count", "duration", "intensity_max"),
-         !index_vals %in% seq(1, 9)) %>%
-  mutate(metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
-                            metric == "duration" ~ "duration (days)",
-                            metric == "count" ~ "count (event)"),
-         test = case_when(test == "length" ~ "length (years)",
-                          test == "missing" ~ "missing data (proportion)" ,
-                          test == "trended" ~ "added trend (°C/dec)"),
-         test = as.factor(test),
-         test = factor(test, levels = levels(test)[c(2,3,1)]))
-
-## Categories
-effect_cat <- sst_ALL_cat_rep_1 %>%
-  left_join(focus_ALL, by = "site") %>%
-  filter(peak_date >= date_start_control,
-         peak_date <= date_end_control) %>%
-  group_by(site, test, index_vals) %>%
-  summarise(count = n(),
-            duration = sum(duration),
-            i_max = max(i_max),
-            p_moderate = mean(p_moderate),
-            p_strong = mean(p_strong),
-            p_severe = mean(p_severe),
-            p_extreme = mean(p_extreme)) %>%
-  mutate_if(is.numeric, round, 2) %>%
-  gather(key = "metric", value = "val", -site, -test, -index_vals)
 
 
 # Figure convenience functions --------------------------------------------

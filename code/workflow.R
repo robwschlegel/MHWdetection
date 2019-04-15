@@ -402,6 +402,7 @@ doMC::registerDoMC(cores = 50)
 OISST_files <- dir(path = "~/data/OISST", full.names = T)
 
 # Run sequentially so that each lon slice can be saved en route
+# i <- 1
 for(i in 1:length(OISST_files)){
 
   # Determine file
@@ -410,7 +411,9 @@ for(i in 1:length(OISST_files)){
 
   # Calculate tests etc.
      # NB: This runs the MKE and Eddy masks
+  system.time(
   global_analysis(OISST_slice)
+  ) # ~xxx seconds for one
   print(paste0("Finished run on step ",i," at ",Sys.time()))
 
   # Clear up some RAM
