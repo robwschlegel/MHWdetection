@@ -592,29 +592,47 @@ shrinking_results_global <- function(year_begin, df){
 }
 
 # The function that runs all of the tests on a single pixel
-# lat_step <- 300
-# base_file <- nc_file
-global_analysis_sub <- function(lat_step, base_file){
+# lat_step <- 94
+global_analysis_sub <- function(lat_step, nc_file){
+
+  nc <- nc_open(nc_file)
+  lat <- nc$dim$lat$vals[lat_step]
+  lon <- nc$dim$lon$vals[1]
 
   # Extract raw SST
-  sst_raw <- ncvar_get(base_file, "sst", start = c(lat_step,1,1), count = c(1,-1,-1))
-  dimnames(sst_raw) <- list(t = base_file$dim$time$vals)
+  sst_raw <- ncvar_get(nc, "sst", start = c(lat_step,1,1), count = c(1,-1,-1))
+  dimnames(sst_raw) <- list(t = nc$dim$time$vals)
+  nc_close(nc)
 
   # Prep SST for further use
   sst <- as.data.frame(reshape2::melt(sst_raw, value.name = "temp"), row.names = NULL) %>%
     mutate(t = as.Date(t, origin = "1970-01-01")) %>%
     na.omit() %>%
-    filter(t <= "2018-12-31")
+    filter(t <= "2018-12-31") %>%
+      mutate(site = as.character(lat), rep = "1")
   if(nrow(sst) == 0) return()
+
+  # Some icey bits don't start on 1982-01-01, or go until 2018-12-31, which is problematic
+    # So for now we are simply removing them
+  if(min(sst$t) > as.Date("1982-01-01"))  return()
+  if(max(sst$t) < as.Date("2018-12-31"))  return()
 
   # Calculate the secular trend
   dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, sst))[2,2]*3652.5), 3)
 
   # Remove random data
+  set.seed(666)
   sst_knockout <- plyr::ldply(.data = c(0.10, 0.25, 0.50, 0.75, 0.90),
                               .fun = random_knockout_global, df = sst)
 
-  # Make base calculations
+  # Manually force certain key dates to be present
+  sst_knockout$temp[sst_knockout$t == "1982-01-01"] <- sst$temp[sst$t == "1982-01-01"]
+  sst_knockout$temp[sst_knockout$t == "1989-01-01"] <- sst$temp[sst$t == "1989-01-01"]
+  sst_knockout$temp[sst_knockout$t == "1999-01-01"] <- sst$temp[sst$t == "1999-01-01"]
+  sst_knockout$temp[sst_knockout$t == "2009-01-01"] <- sst$temp[sst$t == "2009-01-01"]
+  sst_knockout$temp[sst_knockout$t == "2018-12-31"] <- sst$temp[sst$t == "2018-12-31"]
+
+  # # Make base calculations
   sst_res_base <- clim_event_cat_calc(sst) %>%
     mutate(index_vals = 0, test = as.factor("missing"))
   sst_res_base_fix <- sst_res_base %>%
@@ -631,7 +649,7 @@ global_analysis_sub <- function(lat_step, base_file){
     mutate(test = as.factor("missing_fix"))
 
   # Make shortened time series calculations
-  sst_res_length <- plyr::ldply(.data = c(1989, 1999, 2009),
+  sst_res_length <- plyr::ldply(.data = seq(1989, 2009, by = 10),
                                 .fun = shrinking_results_global, df = sst) %>%
     mutate(test = as.factor("length"))
 
@@ -640,7 +658,7 @@ global_analysis_sub <- function(lat_step, base_file){
                    sst_res_base_fix, sst_res_missing_fix,
                    sst_res_length) %>%
     select(test, index_vals, clim, event, cat) %>%
-    mutate(site = as.character(base_file$dim$lat$vals[lat_step]), rep = "1")
+    mutate(site = as.character(lat), rep = "1")
 
   # Run KS tests
   sst_KS_clim <- plyr::ddply(.data = sst_res[ ,c(1:3)], .variables = c("test"), .fun = KS_p)
@@ -653,7 +671,7 @@ global_analysis_sub <- function(lat_step, base_file){
     unnest(event) %>%
     filter(date_start >= "2009-01-01") %>%
     filter(intensity_cumulative == max(intensity_cumulative)) %>%
-    mutate(site = as.character(base_file$dim$lat$vals[lat_step])) %>%
+    mutate(site = as.character(lat)) %>%
     select(site, date_start:date_end) %>%
     dplyr::rename(date_start_control = date_start,
                   date_peak_control = date_peak,
@@ -668,32 +686,30 @@ global_analysis_sub <- function(lat_step, base_file){
     select(-site)
 
   # Wrap it up
-  res <- list(lon = base_file$dim$lon$vals, lat = base_file$dim$lat$vals[lat_step],
+  res <- list(lat = lat, lon = lon, dec_trend = dec_trend,
               KS_clim = sst_KS_clim,
-              KS_event = sst_KS_event,
-              KS_cat = sst_KS_cat,
-              effect_clim = effect_clim_res,
-              effect_event = effect_event_res,
-              effect_cat = effect_cat_res)
+                 KS_event = sst_KS_event,
+                 KS_cat = sst_KS_cat,
+                 effect_clim = effect_clim_res,
+                 effect_event = effect_event_res,
+                 effect_cat = effect_cat_res)
   return(res)
 }
 
 # One function to rule them all
-# chosen_file <- OISST_slice
-global_analysis <- function(chosen_file){
-
-  # Create link to NetCDF file
-  nc_file <- nc_open(chosen_file)
-
-  # Function that then performs all of the analyses in one ldply call
+# nc_file <- OISST_slice
+global_analysis <- function(nc_file){
+  # Function that performs all of the analyses in one llply call
     # Run through the latitudes as individual time series
-  system.time(
+  # test_run <- global_analysis_sub(100, nc_file)
+  # system.time(
     suppressWarnings( # Ignore the coercing factor to character messages
-      res_pixel <- global_analysis_sub(100, nc_file)
+      res_pixel <- plyr::llply(.data = seq(1, 720),
+                               .fun = global_analysis_sub,
+                               nc_file = nc_file, .parallel = T)
     )
-  ) # ~3 seconds for one
-
-
+  # )  # ~7 seconds for one, ~78 seconds for 720
+  return(res_pixel)
 }
 
 

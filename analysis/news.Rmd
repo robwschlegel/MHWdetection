@@ -1,6 +1,8 @@
 # 2019-04-14
 
 * Implemented and ran code for fixes to sub-optimal data
+* Wrote global analysis code
+* Began running global analysis code
 
 # 2019-04-12
 
