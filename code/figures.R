@@ -238,7 +238,7 @@ fig_2_missing_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
   fig_2_plot()
 fig_2_missing_only
 ggsave(plot = fig_2_missing_only, filename = "output/fig_2_missing_only.pdf", height = 8, width = 8)
-ggsave(plot = fig_2_missing_only, filename = "LaTeX/fig_2_missing_only.png", height = 8, width = 8)
+ggsave(plot = fig_2_missing_only, filename = "output/fig_2_missing_only.png", height = 8, width = 8)
 
 # Length tests only
 fig_2_length_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
