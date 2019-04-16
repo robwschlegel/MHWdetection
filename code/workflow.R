@@ -355,6 +355,8 @@ plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
   theme(legend.position = "bottom")
 plot_event_effect
 ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
+ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
+
 # Fixed data
 ggplot(effect_event_fix, aes(x = index_vals)) +
   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
@@ -366,6 +368,8 @@ ggplot(effect_event_fix, aes(x = index_vals)) +
   facet_grid(metric~test, scales = "free", switch = "both") +
   labs(x = NULL, y = NULL, colour = "Site") +
   theme(legend.position = "bottom")
+
+# Missing data only + fix
 
 ## Categories
 # Sub-optimal data

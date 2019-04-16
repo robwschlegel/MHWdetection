@@ -1,3 +1,8 @@
+# 2019-04-16
+
+* Edited manuscript through to the discussion section
+* First pass at global analysis nearly finished
+
 # 2019-04-15
 
 * Global analysis error trapping

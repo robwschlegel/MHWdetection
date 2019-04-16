@@ -224,6 +224,8 @@ sst_ALL_plot_fix_long <- rbind(sst_ALL_KS_clim_fix_long,
 fig_2 <- fig_2_plot(sst_ALL_plot_long)
 fig_2
 ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 8, width = 12)
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 8, width = 12)
+
 
 # Fixed data
 fig_2_fix <- fig_2_plot(sst_ALL_plot_fix_long)
@@ -235,11 +237,14 @@ fig_2_missing_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
   filter(test %in% c("missing data (proportion)", "missing_fix")) %>%
   fig_2_plot()
 fig_2_missing_only
+ggsave(plot = fig_2_missing_only, filename = "output/fig_2_missing_only.pdf", height = 8, width = 8)
+ggsave(plot = fig_2_missing_only, filename = "LaTeX/fig_2_missing_only.png", height = 8, width = 8)
 
 # Length tests only
 fig_2_length_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
   filter(test %in% c("length (years)", "length_width_10",
-                     "length_width_20", "length_width_30", "length_width_40")) %>%
+                     "length_width_20", "length_width_30", "length_width_40"),
+         index_vals <= 20) %>%
   fig_2_plot()
 fig_2_length_only
 
