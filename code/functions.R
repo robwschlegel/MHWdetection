@@ -71,7 +71,7 @@ sample_37 <- function(rep){
 detrend <- function(df){
   resids <- broom::augment(lm(temp ~ t, df))
   res <- df %>%
-    mutate(temp = temp - resids$.fitted) %>%
+    mutate(temp = round((temp - resids$.fitted),2)) %>%
     select(-year_orig)
   return(res)
 }
@@ -156,6 +156,9 @@ event_only <- function(df){
   # filter(site == "WA", rep == "1", index_vals == 0.4)
 # fix <- "none"
 # fix <- "missing"
+
+# ts2clm(df, climatologyPeriod = c("1982-01-01", "2011-12-31"))
+
 clim_event_cat_calc <- function(df, fix = "none"){
   res_base <- df %>%
     nest()

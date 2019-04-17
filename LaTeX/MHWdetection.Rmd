@@ -139,7 +139,7 @@ The proposed fix to address the issue of short time series is to use a different
 
 ## Assessing the effect of missing data
 
-In order to determine how much random missing data could be accommodated before the MHW results began to differ significantly, we randomly removed 0 -- 50% of the data in 1% steps from the 100 re-sampled de-trended reference time series before performing the standard MHW analysis. This was repeated 100 times to account for the random nature of this process.
+In order to determine how much random missing data could be accommodated before the MHW results began to differ significantly, we randomly removed 0 -- 99% of the data in 1% steps from the 100 re-sampled de-trended reference time series before performing the standard MHW analysis.
 
 The quantification of the effect of missing data on the results was performed with the same statistical tests as for time series length. The difference being that the full 37 years of data were used for each test, and the climatology period used was the recomended standard of 1982 -- 2011. The control time series were those with 0% missing data.
 

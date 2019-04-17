@@ -1,5 +1,9 @@
 # 2019-04-16
 
+* Expanded tests to 0.5C/dec trend and 99% missing data
+
+# 2019-04-16
+
 * Edited manuscript through to the discussion section
 * First pass at global analysis nearly finished
 

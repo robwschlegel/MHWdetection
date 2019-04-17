@@ -40,8 +40,9 @@ save(sst_ALL_repl, file = "data/sst_ALL_repl.Rdata")
 
 # Create de-trended anomaly time series from all re-samples
 doMC::registerDoMC(cores = 50)
+system.time(
 sst_ALL_flat <- plyr::ddply(sst_ALL_repl, c("site", "rep"), detrend)
-
+) # ~30 seconds
 # Save and clear
 save(sst_ALL_flat, file = "data/sst_ALL_flat.Rdata")
 # rm(sst_ALL_flat); gc()
@@ -52,8 +53,9 @@ save(sst_ALL_flat, file = "data/sst_ALL_flat.Rdata")
 # Randomly knockout 0 - 99% of each of the 100 re-samples
 doMC::registerDoMC(cores = 25)
 set.seed(666)
+system.time(
 sst_ALL_knockout <- plyr::ldply(seq(0.00, 0.99, 0.01), random_knockout, .parallel = T)
-
+) # ~194 seconds
 # Save and clear
 save(sst_ALL_knockout, file = "data/sst_ALL_knockout.Rdata")
 # rm(sst_ALL_knockout); gc()
@@ -63,9 +65,10 @@ save(sst_ALL_knockout, file = "data/sst_ALL_knockout.Rdata")
 
 # Calculate the consecutive missing days
 doMC::registerDoMC(cores = 50)
+system.time(
 sst_ALL_consec <- plyr::ddply(filter(sst_ALL_knockout, index_vals != 0),
-                           c("site", "rep", "index_vals"), con_miss, .parallel = T)
-
+                              c("site", "rep", "index_vals"), con_miss, .parallel = T)
+) # ~614 seconds
 # Save and clear
 save(sst_ALL_consec, file = "data/sst_ALL_consec.Rdata")
 # rm(sst_ALL_consec); gc()
@@ -75,8 +78,9 @@ save(sst_ALL_consec, file = "data/sst_ALL_consec.Rdata")
 
 # Add the trends
 doMC::registerDoMC(cores = 50)
-sst_ALL_add_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), add_trend, .parallel = T)
-
+system.time(
+sst_ALL_add_trend <- plyr::ldply(seq(0.00, 0.50, 0.01), add_trend, .parallel = T)
+) # ~74 seconds
 # Save and clear
 save(sst_ALL_add_trend, file = "data/sst_ALL_add_trend.Rdata")
 # rm(sst_ALL_add_trend); gc()
@@ -103,8 +107,9 @@ save(sst_ALL_add_trend, file = "data/sst_ALL_add_trend.Rdata")
 # Run this preferably with 35 cores for speed, RAM allowing
 doMC::registerDoMC(cores = 35)
 system.time(
-sst_ALL_length <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results, .parallel = T)
-)  # ~92 seconds
+sst_ALL_length <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results, .parallel = T) #%>%
+  # mutate(test = as.factor("length"))
+)  # ~101 seconds
 # NB: Adding the test column in a pipe seems to make ldply sad...
 sst_ALL_length$test <- as.factor("length")
 # test that it ran correctly
@@ -112,16 +117,17 @@ sst_ALL_length$test <- as.factor("length")
 # unnest(slice(sst_ALL_length, 1), clim)
 # unnest(slice(sst_ALL_length, 1), event)
 # unnest(slice(sst_ALL_length, 1), cat)
-# save(sst_ALL_length, file = "data/sst_ALL_length.Rdata")
+save(sst_ALL_length, file = "data/sst_ALL_length.Rdata")
 # load("data/sst_ALL_length.Rdata")
 
 ## Missing data
 doMC::registerDoMC(cores = 50)
 system.time(
 sst_ALL_missing <- plyr::ddply(sst_ALL_knockout, c("site", "rep", "index_vals"),
-                               clim_event_cat_calc, .parallel = T) %>%
-  mutate(test = as.factor("missing"))
-) # ~235 seconds
+                               clim_event_cat_calc, .parallel = T) #%>%
+  # mutate(test = as.factor("missing"))
+) # ~411 seconds
+sst_ALL_missing$test <- as.factor("missing")
 save(sst_ALL_missing, file = "data/sst_ALL_missing.Rdata")
 # load("data/sst_ALL_missing.Rdata")
 
@@ -129,9 +135,10 @@ save(sst_ALL_missing, file = "data/sst_ALL_missing.Rdata")
 doMC::registerDoMC(cores = 50)
 system.time(
 sst_ALL_trended <- plyr::ddply(sst_ALL_add_trend, c("site", "rep", "index_vals"),
-                               clim_event_cat_calc, .parallel = T) %>%
-  mutate(test = as.factor("trended"))
-) # 140 seconds
+                               clim_event_cat_calc, .parallel = T) #%>%
+  # mutate(test = as.factor("trended"))
+) # 196 seconds
+sst_ALL_trended$test <- as.factor("trended")
 save(sst_ALL_trended, file = "data/sst_ALL_trended.Rdata")
 # load("data/sst_ALL_trended.Rdata")
 
@@ -151,33 +158,37 @@ doMC::registerDoMC(cores = 35)
 system.time(
 sst_ALL_length_width_10 <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results,
                                        .parallel = T, set_width = 10) %>%
-  mutate(test = as.factor("length_width_10"))
-) # ~105 seconds
-# save(sst_ALL_length_width_10, file = "data/sst_ALL_length_width_10.Rdata")
+  dplyr::mutate(test = as.factor("length_width_10"))
+) # ~108 seconds
+save(sst_ALL_length_width_10, file = "data/sst_ALL_length_width_10.Rdata")
 # load("data/sst_ALL_length_width_10.Rdata")
+
 doMC::registerDoMC(cores = 35)
 system.time(
 sst_ALL_length_width_20 <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results,
                                        .parallel = T, set_width = 20) %>%
-  mutate(test = as.factor("length_width_20"))
+  dplyr::mutate(test = as.factor("length_width_20"))
 ) # ~104 seconds
-# save(sst_ALL_length_width_20, file = "data/sst_ALL_length_width_20.Rdata")
+save(sst_ALL_length_width_20, file = "data/sst_ALL_length_width_20.Rdata")
 # load("data/sst_ALL_length_width_20.Rdata")
+
 doMC::registerDoMC(cores = 35)
 system.time(
 sst_ALL_length_width_30 <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results,
                                        .parallel = T, set_width = 30) %>%
-  mutate(test = as.factor("length_width_30"))
+  dplyr::mutate(test = as.factor("length_width_30"))
 ) # ~104 seconds
-# save(sst_ALL_length_width_30, file = "data/sst_ALL_length_width_30.Rdata")
+save(sst_ALL_length_width_30, file = "data/sst_ALL_length_width_30.Rdata")
 # load("data/sst_ALL_length_width_30.Rdata")
-doMC::registerDoMC(cores = 35)
-system.time(
-  sst_ALL_length_width_40 <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results,
-                                         .parallel = T, set_width = 40) %>%
-    mutate(test = as.factor("length_width_40"))
-) # ~104 seconds
-save(sst_ALL_length_width_40, file = "data/sst_ALL_length_width_40.Rdata")
+
+## NB: A window of 40 or greater breaks down for some reason
+# doMC::registerDoMC(cores = 35)
+# system.time(
+  # sst_ALL_length_width_40 <- plyr::ldply(.data = seq(1982, 2016), .fun = shrinking_results,
+                                         # .parallel = T, set_width = 40) %>%
+    # dplyr::mutate(test = as.factor("length_width_40"))
+# ) # ~104 seconds
+# save(sst_ALL_length_width_40, file = "data/sst_ALL_length_width_40.Rdata")
 # load("data/sst_ALL_length_width_40.Rdata")
 
 ## Missing data
@@ -185,12 +196,10 @@ doMC::registerDoMC(cores = 50)
 system.time(
 sst_ALL_missing_fix <- plyr::ddply(sst_ALL_knockout, c("site", "rep", "index_vals"),
                                    clim_event_cat_calc, .parallel = T, fix = "missing") %>%
-  mutate(test = as.factor("missing_fix"))
-) # ~xxx seconds
+  dplyr::mutate(test = as.factor("missing_fix"))
+) # ~405 seconds
 save(sst_ALL_missing, file = "data/sst_ALL_missing_fix.Rdata")
 # load("data/sst_ALL_missing_fix.Rdata")
-
-## NB: A window of 40 or greater breaks down for some reason
 
 ## Combine all results
 sst_ALL_clim_event_cat_fix <- rbind(sst_ALL_length_width_10, sst_ALL_length_width_20,
