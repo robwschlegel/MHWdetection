@@ -33,3 +33,32 @@ for(i in 1:length(OISST_files)){
   # Clear up some RAM
   gc()
 } # ~ 80 seconds each
+
+
+# Unpack results ----------------------------------------------------------
+
+# Unpack and save all of the different global bits
+global_unpack()
+
+
+# Process results ---------------------------------------------------------
+
+# Calculate the simple linear slopes for the different tests at each pixel
+# In the interest of time we are only pulling out the effect of length
+# on the focus event
+
+# Set cores
+doMC::registerDoMC(cores = 7)
+
+# Load data
+load("data/global_effect_event.Rdata")
+
+# Looking only at length for interest of time
+global_effect_event_length <-global_effect_event %>%
+  filter(test == "length")
+
+# Calculate slopes
+global_effect_event_length_slope <- plyr::ddply(global_effect_event_length,
+                                                .variables = c("lat", "lon", "test"),
+                                                .fun = global_slope, .parallel = T)
+save(global_effect_event_length_slope, file = "data/global_effect_event_length_slope.Rdata")

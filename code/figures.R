@@ -252,14 +252,17 @@ fig_2_length_only
 # Figure 3 ----------------------------------------------------------------
 
 # A table here showing the R2 values from Figure 2 would be good
-sst_ALL_R2_long <- sst_ALL_plot_long %>%
-  group_by(test, site, metric) %>%
-  filter(index_vals <= 30) %>%
-  nest() %>%
-  mutate(R2 = map(data, lm_p_R2)) %>%
-  select(-data) %>%
-  unnest()
+# sst_ALL_R2_long <- sst_ALL_plot_long %>%
+#   group_by(test, site, metric) %>%
+#   filter(index_vals <= 30) %>%
+#   nest() %>%
+#   mutate(R2 = map(data, lm_p_R2)) %>%
+#   select(-data) %>%
+#   unnest()
 
+# Rather it looks like this figure slot will be used to show the effect of the tests
+# on the focus MHWs
+# This code is currently found in the workflow.R script
 
 # Figure 4 ----------------------------------------------------------------
 
@@ -267,6 +270,23 @@ sst_ALL_R2_long <- sst_ALL_plot_long %>%
 # on from one of the above results
 # Specifically I think this figure will be the one that shows the average count
 # of consecutive missing days depending on the percent of missing data
+
+# Or rather here we will show the resuls from the global analyses
+
+# Global decadal trends
+load("data/global_dec_trend.Rdata")
+
+# Visualising the secular trends in the data
+ggplot(global_dec_trend, aes(x = lon, y = lat)) +
+  geom_raster(aes(fill = dec_trend)) +
+  borders(fill = "grey70", colour = "black") +
+  scale_fill_gradient2(low = "blue", high = "red") +
+  coord_equal(expand = F)
+
+# Single event effect
+load("data/global_effect_event.Rdata")
+
+# Visualising
 
 
 # Figure 5 ----------------------------------------------------------------

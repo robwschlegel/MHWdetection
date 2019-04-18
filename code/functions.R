@@ -5,7 +5,7 @@
 # Libraries ---------------------------------------------------------------
 
 library(tidyverse)
-library(broom)
+# library(broom)
 library(heatwaveR, lib.loc = "~/R-packages/")
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
 library(lubridate) # This is intentionally activated after data.table
@@ -721,6 +721,97 @@ global_analysis <- function(nc_file){
     )
   # )  # ~7 seconds for one, ~78 seconds for 720
   return(res_pixel)
+}
+
+# The function that unpacks global resuls as desired
+# testers...
+# global_file <- global_files[7]
+# sub_level <- 3
+# sub_level <- 5
+global_unpack_sub <- function(global_file, sub_level){
+  # Load the one slice
+  load(global_file)
+  slice_full <- data.frame()
+  for(i in 1:720){
+    slice_step_1 <- slice_res[[i]]
+    if(is.null(slice_step_1)){
+     # slice_full <- slice_full
+    } else if(nrow(as.data.frame(slice_step_1[sub_level])) > 0) {
+      slice_step_2 <- as.data.frame(slice_step_1[c(1, 2, sub_level)])
+      slice_full <- rbind(slice_full, slice_step_2)
+    }
+  }
+  return(slice_full)
+}
+
+# The function that crawls through all of the global results
+# unpacks them and then stitches them together before saving
+global_unpack <- function(){
+  # Point to files
+  global_files <- dir("data/global", full.names = T)
+
+  ## Run unpacker, save, and clear one at a time due to RAM restrictions on laptop
+  # Decadal trends
+  print("Unpacking decadal trends")
+  global_dec_trend <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                               .parallel = T, sub_level = 3)
+  save(global_dec_trend, file = "data/global_dec_trend.Rdata")
+  rm(global_dec_trend); gc()
+  # KS climatology results
+  print("Unpacking KS climatology results")
+  global_KS_clim <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                               .parallel = T, sub_level = 4)
+  colnames(global_KS_clim) <- gsub("KS_clim.", "", colnames(global_KS_clim))
+  save(global_KS_clim, file = "data/global_KS_clim.Rdata")
+  rm(global_KS_clim); gc()
+  # KS event results
+  print("Unpacking KS event results")
+  global_KS_event <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                               .parallel = T, sub_level = 5)
+  colnames(global_KS_event) <- gsub("KS_event.", "", colnames(global_KS_event))
+  save(global_KS_event, file = "data/global_KS_event.Rdata")
+  rm(global_KS_event); gc()
+  # KS category results
+  print("Unpacking KS category results")
+  global_KS_cat <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                               .parallel = T, sub_level = 6)
+  colnames(global_KS_cat) <- gsub("KS_cat.", "", colnames(global_KS_cat))
+  save(global_KS_cat, file = "data/global_KS_cat.Rdata")
+  rm(global_KS_cat); gc()
+  # Single event climatology results
+  print("Unpacking event climatology results")
+  global_effect_clim <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                               .parallel = T, sub_level = 7)
+  colnames(global_effect_clim) <- gsub("effect_clim.", "", colnames(global_effect_clim))
+  save(global_effect_clim, file = "data/global_effect_clim.Rdata")
+  rm(global_effect_clim); gc()
+  # Single evnt metric results
+  print("Unpacking event metric results")
+  global_effect_event <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                               .parallel = T, sub_level = 8)
+  colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
+  save(global_effect_event, file = "data/global_effect_event.Rdata")
+  rm(global_effect_event); gc()
+  # Single evnt category results
+  print("Unpacking event category results")
+  global_effect_cat <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                               .parallel = T, sub_level = 9)
+  colnames(global_effect_cat) <- gsub("effect_cat.", "", colnames(global_effect_cat))
+  save(global_effect_cat, file = "data/global_effect_cat.Rdata")
+  rm(global_effect_cat); gc()
+}
+
+# Function for calculating R2 values for sub-optimal results
+# This function expects to be given only one pixel + test at a time
+# tester...
+# df <- global_effect_event %>%
+  # filter(lon == lon[20], lat == lat[129], test == "length")
+global_slope <- function(df){
+  suppressWarnings( # Suppress perfect slope warnings
+  df_slope <- df %>%
+    group_by(metric) %>%
+    do(model = round(broom::tidy(lm(val ~ index_vals, data = .))$estimate[2], 3))
+  )
 }
 
 

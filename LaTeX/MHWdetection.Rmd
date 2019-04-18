@@ -26,34 +26,17 @@ Marine heatwaves (MHWs), or prolonged periods of anomalously warm sea water temp
 (244 words)
 
 
-I suggest you rewrite the intro around this.  
-Points 1&2 can be paragraph 1.  
-Point 3 can be paragraph 2 (include more details on what are the issues i.e. length and missing data).
-Point 4 can be paragraph 3, and also end it on a summary of what this paper does.
-
 # Introduction
-
-## PARAGRAPH 1
-### Point 1  
-*Marine heatwaves occur
   
-The idea of hot seawater being problematic is not a novel concept. We have known for decades, perhaps millennia, that seemingly transient hot water occurrences in the ocean could result in major impacts [e.g. @Salinger2016]. It was perhaps due to our lack of ability to track and record ocean temperatures globally that researchers did not begin to quantify the effects of anomalously warm seawater temperatures until the early 1980s when research into ENSO began [e.g. @Philander1983]. It was not until the 2000's that much work began to be done on the direct consequences of this hot water on ecosystems [e.g. @Garrabou2009]. Later still was the development of a globally utilised definition for these events that enjoyed wide-spread use. 
+The idea of hot seawater being problematic is not a novel concept. We have known for decades, perhaps millennia, that seemingly transient hot water occurrences in the ocean could result in major impacts [e.g. @Salinger2016]. It was perhaps due to our lack of ability to track and record ocean temperatures globally that researchers did not begin to quantify the effects of anomalously warm seawater temperatures until the early 1980s when research into the ENSO phenomenon began [e.g. @Philander1983]. Moving forward from the 80's, researchers began noticing that warm water events were becoming more frequent and problematic, buit wasn't until 2018 that this was proven [@Oliver2018]. In order to quantify the increased occurrence and severity of these events it was necesary to develop a methodology that would be inter-comparable for the entire planet. This was accomplished in 2016 when a group of marine scientists convened a series of wrokshop to address this issue [@Hobday2016]. This definition for anomolously warm seawater events, known as marine heatwaves (MHWs), has seen wide-spread and rapid adoption due to it's ease of use and applicability to any part of the planet. One problem with this definition/algorithm that has not yet been addressed is that the accurate detection of MHW currently assumes that the researcher has access to the highest quality data available.
 
-MHWs are now known to have had negative impacts on ecosystems in the 80's [@Smale2019].
-
-### Point 2  
-* Global observations allow a definition to be used, requiring good data
+<!-- A recent paper has looked back at these ENSO fueled hot water events in the 80's did have negative impacts on multiple ecosystems [@Smale2019].  -->
 
 ## PARAGRAPH 2
 ### Point 3  
 * Some regions not well observed
 * Include more details on what are the issues i.e. length and missing data
 
-The length of a time series may affect the detection of marine heatwaves by negatively affecting the creation of an accurate daily climatology relative to which the events can be detected in two primary ways. The first is that with fewer years of data to draw from, the presence of an anaomolously warm or cold year will have a larger effect on the climatology than with a sample size of 30 years. The second cause is that because the world is generally warming [@IPCC2014], the use of a shorter time series will almost certainly warm bias the results. For this reason we have removed the secular trend from all of the tests performed to answer the first two questions proposed in this research.
-
-Assuming that one does have enough data to accurately create a climatology, it then serves two main roles (WMO, 2017); 1) it serves as a ‘benchmark’ relative to which past and future measurements can be compared, and against which anomalies can be calculated, 2) it reflects the typical conditions likely to be experienced at a particular place at a particular time. The WMO technical guidelines (WMO, 2016) stipulate that daily climatologies (which they call ‘climate normals’) must be based on the most recent 30-year period that ends on a complete decade (currently 1981-2010). 
-
-Some remotely sensed products suffer from ‘gappiness’ that result in missing data (NAs) being introduced. This may be due to cloud cover, the presence of sea ice, unsuitable sea states, etc., which become more prevalent at smaller scales, particularly nearer the coast. Some products smooth out these influences, but this results in smoothed SST fields that mask some of the small-scale spatial variation in surface temperatures. Other times they rely on blending with data from other products, which may have its own suite of consequences. This is why the use of imperfect _in situ_ collected time series may still be encouraged in certain situations. These data are however also prone to large gaps and so the problems these data face with regards to accurate event detection are generally uncertain. 
 
 ## PARAGRAPH 3
 ### Point 4  
@@ -79,7 +62,7 @@ Here we explore additional issues that can improve the use of use of the @Hobday
 
 # What are robust data for detecting marine heatwaves?
 
-@Hobday2016 stated that the data used for the detection of MHWs should be of the hgihest quality possible to ensure inter-comparibility of results. Specific examples given were that the data should 1) be of at least 30 years in length, 2) be quality controlled, 3) be of the highest resolution possible, and 4) high quality _in situ_ data should be used to compliment remotely sensed data where possible. WHereas the authors did not specifically state that time series must not contain large proportions of missing data, it can be inferred from the aforementioned requirements. There are a number of methods within the already existing tools for detecting MHWs that can address these concerns and we will lay them out here. 
+@Hobday2016 stated that the data used for the detection of MHWs should be of the highest quality possible to ensure inter-comparibility of results. Specific examples given were that the data should 1) be of at least 30 years in length, 2) be quality controlled, 3) be of the highest resolution possible, and 4) high quality _in situ_ data should be used to compliment remotely sensed data where possible. WHereas the authors did not specifically state that time series must not contain large proportions of missing data, it can be inferred from the aforementioned requirements. There are a number of methods within the already existing tools for detecting MHWs that can address these concerns and we will lay them out here. 
 
 An issue not introduced in @Hobday2016 is the effect of long-term trends on the accurate detection of events. @Oliver2018 have shown how dominant the climate change signal can be in the detection of events and we seek to quantify this effect here.
 
