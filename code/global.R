@@ -48,7 +48,7 @@ global_unpack()
 # on the focus event
 
 # Set cores
-doMC::registerDoMC(cores = 7)
+# doMC::registerDoMC(cores = 7)
 
 # Load data
 load("data/global_effect_event.Rdata")

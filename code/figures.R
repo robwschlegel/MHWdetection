@@ -247,6 +247,7 @@ fig_2_length_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
          index_vals <= 20) %>%
   fig_2_plot()
 fig_2_length_only
+ggsave(plot = fig_2_length_only, filename = "output/fig_2_length_only.png", height = 8, width = 8)
 
 
 # Figure 3 ----------------------------------------------------------------
@@ -277,16 +278,28 @@ fig_2_length_only
 load("data/global_dec_trend.Rdata")
 
 # Visualising the secular trends in the data
-ggplot(global_dec_trend, aes(x = lon, y = lat)) +
+global_dec_trend_plot <- ggplot(global_dec_trend, aes(x = lon, y = lat)) +
   geom_raster(aes(fill = dec_trend)) +
   borders(fill = "grey70", colour = "black") +
   scale_fill_gradient2(low = "blue", high = "red") +
   coord_equal(expand = F)
+global_dec_trend_plot
+ggsave(global_dec_trend_plot, filename = "output/global_dec_trend_plot.png", height = 4, width = 8)
 
-# Single event effect
-load("data/global_effect_event.Rdata")
+# Single event effect of length
+load("data/global_effect_event_length_slope.Rdata")
+
+# Subset duration
+global_effect_event_length_slope_duration <- global_effect_event_length_slope %>%
+  filter(metric == "duration")
 
 # Visualising
+ggplot(global_effect_event_length_slope_duration, aes(x = lon, y = lat)) +
+  geom_raster(aes(fill = as.numeric(model))) +
+  borders(fill = "grey70", colour = "black") +
+  scale_fill_viridis_c() +
+  # scale_fill_gradient2(low = "blue", high = "red") +
+  coord_equal(expand = F)
 
 
 # Figure 5 ----------------------------------------------------------------

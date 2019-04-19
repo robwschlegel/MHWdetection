@@ -810,7 +810,7 @@ global_slope <- function(df){
   suppressWarnings( # Suppress perfect slope warnings
   df_slope <- df %>%
     group_by(metric) %>%
-    do(model = round(broom::tidy(lm(val ~ index_vals, data = .))$estimate[2], 3))
+    do(model = as.numeric(round(broom::tidy(lm(val ~ index_vals, data = .))$estimate[2], 3)))
   )
 }
 
