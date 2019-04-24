@@ -291,15 +291,38 @@ load("data/global_effect_event_length_slope.Rdata")
 
 # Subset duration
 global_effect_event_length_slope_duration <- global_effect_event_length_slope %>%
-  filter(metric == "duration")
+  filter(metric == "duration") %>%
+  mutate(model = as.numeric(model))
+
+global_effect_event_length_slope_duration_median <- median(global_effect_event_length_slope_duration$model, na.rm = T)
+
+# Testing
+# global_effect_event_length_slope_duration_1 <- global_effect_event_length_slope_duration %>%
+#   filter(lon == unique(lon)[2])
+# miss_lon <- unique(global_dec_trend$lon[!global_dec_trend$lon %in% global_effect_event_length_slope_duration$lon])
+#
+# global_effect_event_test <- global_effect_event %>%
+#   filter(test == "length", index_vals == 30, metric == "duration")
 
 # Visualising
-ggplot(global_effect_event_length_slope_duration, aes(x = lon, y = lat)) +
-  geom_raster(aes(fill = as.numeric(model))) +
+global_effect_event_length_slope_duration_plot <- ggplot(global_effect_event_length_slope_duration,
+                                                         aes(x = lon, y = lat)) +
+  # geom_point(aes(fill = model, colour = NULL), shape = 21, size = 0.001) +
+  # geom_tile(aes(fill = model, colour = model)) +
+  geom_raster(aes(fill = model)) +
+  # geom_raster(aes(fill = model)) +
+  # geom_raster(data = global_effect_event_length_slope_duration_1, aes(fill = model)) +
   borders(fill = "grey70", colour = "black") +
   scale_fill_viridis_c() +
+  # scale_colour_viridis_c() +
   # scale_fill_gradient2(low = "blue", high = "red") +
-  coord_equal(expand = F)
+  # coord_equal(expand = F) +
+  # scale_x_continuous(expand = c(0,0)) +
+  coord_equal(expand = F) +
+  labs(x = NULL, y = NULL)
+global_effect_event_length_slope_duration_plot
+ggsave(global_effect_event_length_slope_duration_plot,
+       filename = "output/global_effect_event_length_slope_duration.png", height = 4, width = 8)
 
 
 # Figure 5 ----------------------------------------------------------------

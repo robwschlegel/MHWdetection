@@ -1,10 +1,14 @@
-# 2019-04-16
+# 2019-04-23
+
+* Troubleshot the global analysis output
+
+# 2019-04-18
 
 * Unpacking and calculating slopes for global results
 * Re-writing Intro
 * Fleshing out Discussion
 
-# 2019-04-16
+# 2019-04-17
 
 * Expanded tests to 0.5C/dec trend and 99% missing data
 

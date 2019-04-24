@@ -541,8 +541,9 @@ effect_cat_func <- function(df, date_guide, choice_rep = "1"){
 # The following wrapper functions use the above functions,
 # but allow them to be used on the NOAA OISST NetCDF file structure
 
-# It's not reasonable to run a decadal trend test as well because
-# this value isbeing added in a completely controlled way.
+# It's not reasonable to run a decadal trend test in addition to the missing
+# and length tests because this value is being added in a completely
+# controlled way.
 # Meaning that controlling for it is the same as simply not adding it
 # in the first place.
 # To that end we want to provide a post-hoc correction.
@@ -550,7 +551,7 @@ effect_cat_func <- function(df, date_guide, choice_rep = "1"){
 # decadal trend and the peak date of the event we should be able to
 # correct for intensities by subtracting the decadal trend multiplied
 # by the peak date as it relates to the length of the time series.
-# For example, if the decadal trend is 0.3C, and the peak date of an event
+# For example, if the decadal trend is 0.3C/dec, and the peak date of an event
 # is in the 25th year of a 30 year time series (0.8333 of the length),
 # then the the impact of the decadal trend on the max. intensity should be
 # 0.3*0.83 = 0.25C
@@ -708,11 +709,10 @@ global_analysis_sub <- function(lat_step, nc_file){
 }
 
 # One function to rule them all
-# nc_file <- OISST_slice
+# nc_file <- OISST_files[20]
 global_analysis <- function(nc_file){
-  # Function that performs all of the analyses in one llply call
-    # Run through the latitudes as individual time series
-  # test_run <- global_analysis_sub(100, nc_file)
+
+  # test_run <- global_analysis_sub()
   # system.time(
     suppressWarnings( # Ignore the coercing factor to character messages
       res_pixel <- plyr::llply(.data = seq(1, 720),
@@ -720,14 +720,16 @@ global_analysis <- function(nc_file){
                                nc_file = nc_file, .parallel = T)
     )
   # )  # ~7 seconds for one, ~78 seconds for 720
+  # save(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rdata"))
   return(res_pixel)
 }
 
 # The function that unpacks global resuls as desired
 # testers...
-# global_file <- global_files[7]
+# global_file <- global_files[1]
 # sub_level <- 3
 # sub_level <- 5
+# sub_level <- 8
 global_unpack_sub <- function(global_file, sub_level){
   # Load the one slice
   load(global_file)
@@ -754,7 +756,7 @@ global_unpack <- function(){
   # Decadal trends
   print("Unpacking decadal trends")
   global_dec_trend <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                               .parallel = T, sub_level = 3)
+                                  .parallel = T, sub_level = 3)
   save(global_dec_trend, file = "data/global_dec_trend.Rdata")
   rm(global_dec_trend); gc()
   # KS climatology results
@@ -792,7 +794,7 @@ global_unpack <- function(){
   colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
   save(global_effect_event, file = "data/global_effect_event.Rdata")
   rm(global_effect_event); gc()
-  # Single evnt category results
+  # Single event category results
   print("Unpacking event category results")
   global_effect_cat <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
                                .parallel = T, sub_level = 9)
@@ -805,12 +807,14 @@ global_unpack <- function(){
 # This function expects to be given only one pixel + test at a time
 # tester...
 # df <- global_effect_event %>%
-  # filter(lon == lon[20], lat == lat[129], test == "length")
+  # filter(lon == lon[20], lat == lat[129])
 global_slope <- function(df){
   suppressWarnings( # Suppress perfect slope warnings
   df_slope <- df %>%
-    group_by(metric) %>%
-    do(model = as.numeric(round(broom::tidy(lm(val ~ index_vals, data = .))$estimate[2], 3)))
+    group_by(test, metric) %>%
+    # nest() %>%
+    do(slope = round(broom::tidy(lm(val ~ index_vals, data = .))$estimate[2], 3)) %>%
+    mutate(slope = as.numeric(slope))
   )
 }
 
