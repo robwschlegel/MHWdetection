@@ -319,6 +319,9 @@ global_effect_event_slope_plot(test_sub = "missing_fix", metric_sub = "duration"
 global_effect_event_slope_plot(test_sub = "missing_fix", metric_sub = "intensity_max")
 
 
+# A histogram below the maps showing the distribution of the slopes would be useful
+
+
 # Figure 5 ----------------------------------------------------------------
 
 
