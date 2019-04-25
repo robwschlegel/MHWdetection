@@ -804,20 +804,46 @@ global_unpack <- function(){
 }
 
 # Function for calculating R2 values for sub-optimal results
-# This function expects to be given only one pixel + test at a time
+global_slope_sub <- function(df){
+  if(nrow(df) >2){
+    round(broom::tidy(lm(val ~ index_vals, data = df))$estimate[2], 3)
+  } else{
+    return(NA)
+  }
+}
+
+
+# This function expects to be given only one latitude slice at a time
 # tester...
 # df <- global_effect_event %>%
   # filter(lon == lon[20], lat == lat[129])
+  # filter(lon == lon[20], lat == lat[129], test == "length", metric == "duration")
 global_slope <- function(df){
   suppressWarnings( # Suppress perfect slope warnings
   df_slope <- df %>%
-    group_by(test, metric) %>%
-    # nest() %>%
-    do(slope = round(broom::tidy(lm(val ~ index_vals, data = .))$estimate[2], 3)) %>%
-    mutate(slope = as.numeric(slope))
+    group_by(lon, test, metric) %>%
+    nest() %>%
+    mutate(slope = purrr::map(data, global_slope_sub)) %>%
+    select(-data) %>%
+    unnest()
   )
 }
 
+
+# Length fix --------------------------------------------------------------
+
+# Below are the functions used to perform post-hoc corrections on events
+# detected in shorter time series
+
+# To correct for the effect of time series length on event metrics we need
+# two things:
+  # The length of the time series
+  # The decadal trend in the region
+# It may be that rather than correcting the value, we should provide a CI instead
+
+# The relationship may be better aided by the known variance in the time series
+
+# Must see what the R2 + SE is between decadal trend and change in duration/max.int.
 
 # Figure convenience functions --------------------------------------------
 
@@ -944,3 +970,21 @@ fig_2_plot <- function(df){
     facet_grid(site~test, scales = "free_x", switch = "x") +
     theme(legend.position = "bottom")
 }
+
+# Function for easily plotting subsets from the global slope results
+# testers...
+# test_sub <- "length"
+# metric_sub <- "intensity_max"
+global_effect_event_slope_plot <- function(test_sub, metric_sub){
+  slope_plot <- global_effect_event_slope %>%
+    filter(test == test_sub, metric == metric_sub) %>%
+    ggplot(aes(x = lon, y = lat)) +
+    geom_raster(aes(fill = slope)) +
+    borders(fill = "grey70", colour = "black") +
+    scale_fill_viridis_c() +
+    coord_equal(expand = F) +
+    labs(x = NULL, y = NULL)
+  ggsave(slope_plot,
+         filename = paste0("output/",test_sub,"_",metric_sub,"_slope_plot.png"), height = 4, width = 8)
+  return(slope_plot)
+  }

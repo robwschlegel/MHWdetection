@@ -54,11 +54,11 @@ OISST_files <- dir(path = "~/data/OISST", full.names = T)
 doMC::registerDoMC(cores = 50)
 
 # Load data
-load("data/global_effect_event.Rdata")
+# load("data/global_effect_event.Rdata")
 
 # Calculate slopes
-global_effect_event_slope <- plyr::ddply(global_effect_event,
-                                         .variables = c("lat", "lon"),
-                                         .fun = global_slope, .parallel = T)
-save(global_effect_event_slope, file = "data/global_effect_event_slope.Rdata")
+# global_effect_event_slope <- plyr::ddply(global_effect_event,
+                                         # .variables = c("lat"),
+                                         # .fun = global_slope, .parallel = T)
+# save(global_effect_event_slope, file = "data/global_effect_event_slope.Rdata")
 
