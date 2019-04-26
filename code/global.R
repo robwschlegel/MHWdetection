@@ -82,13 +82,12 @@ load("data/global_effect_event_slope.Rdata")
 # Merge and filter data
 event_slope_dec_trend <- left_join(global_effect_event_slope, global_dec_trend, by = c("lon", "lat")) %>%
   filter(test == "length") %>%
-  na.omit()
+  na.omit() %>%
+  droplevels()
 
 # Linear model of relationship
 event_slope_dec_trend_model <- event_slope_dec_trend %>%
   group_by(test, metric) %>%
-  # Rename columns so we can use the global_slope() function from the previous section
-  # dplyr::rename(val = slope, index_vals = dec_trend)
   do(model = broom::glance(lm(slope ~ dec_trend, data = .))) %>%
   unnest()
 
@@ -101,14 +100,50 @@ event_dec_scatterplot <- ggplot(data = filter(event_slope_dec_trend,
   facet_wrap(~metric, scales = "free_y", ncol = 1)
 event_dec_scatterplot
 
-## The proportion of the size of the event in relationship to the change over time
-# First filter out only the full 30 year time series events
-global_effect_event_30 <- global_effect_event %>%
-  filter(test == "length",
-         index_vals == 30)
+# The spread of the results per year measured
+effect_event_spread <- global_effect_event %>%
+  filter(test == "length") %>%
+  droplevels() %>%
+  spread(key = index_vals, value = val) %>%
+  mutate(val_spread = `30`-`10`)
 
-event_slope_prop <- left_join(event_slope_dec_trend, global_effect_event_30, by = c("lon", "lat", "test", "metric")) %>%
-  droplevels()
+# Plot showing value spread between 30 and 10 years
+duration_spread_plot <- ggplot(filter(effect_event_spread, metric == "intensity_max"),
+                                      aes(x = lon, y = lat)) +
+  geom_raster(aes(fill = val_spread)) +
+  geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
+  scale_fill_gradient2(low = "blue", high = "red") +
+  coord_equal(expand = F) +
+  # labs(fill = "Linear trend (°C/dec)") +
+  theme_void() +
+  theme(legend.position = "bottom",
+        legend.key.width = unit(2, "cm"))
+duration_spread_plot
+
+# Join in the event metrics detected from full 30 year time series
+event_slope_prop <- left_join(event_slope_dec_trend, effect_event_spread,
+                              by = c("lon", "lat", "test", "metric")) %>%
+  na.omit() %>%
+  mutate(slope_prop = slope/val_spread)
+
+# Global map showing patterns of the slope as a proportion of the overall change
+spread_prop_plot <- ggplot(filter(event_slope_prop, metric == "intensity_max"),
+                               aes(x = lon, y = lat)) +
+  geom_raster(aes(fill = slope_prop)) +
+  geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
+  scale_fill_gradient2(low = "blue", high = "red") +
+  coord_equal(expand = F) +
+  # labs(fill = "Linear trend (°C/dec)") +
+  theme_void() +
+  theme(legend.position = "bottom",
+        legend.key.width = unit(2, "cm"))
+spread_prop_plot
+
+# Linear model of relationship between full event metric and rate of change from shortening
+event_slope_prop_model <- event_slope_prop %>%
+  group_by(test, metric) %>%
+  do(model = broom::glance(lm(slope ~ dec_trend, data = .))) %>%
+  unnest()
 
 # A regression scatterplot between decadal trend and duration/max.int. and ts length slope
 event_slope_prop_scatterplot <- ggplot(data = filter(event_slope_prop,
@@ -116,5 +151,5 @@ event_slope_prop_scatterplot <- ggplot(data = filter(event_slope_prop,
                                 aes(x = val, y = slope)) +
   geom_point(aes(colour = metric)) +
   geom_smooth(method = "lm") +
-  facet_wrap(~metric, scales = "free_y", ncol = 1)
+  facet_wrap(~metric, scales = "free", ncol = 1)
 event_slope_prop_scatterplot

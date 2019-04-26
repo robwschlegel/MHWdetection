@@ -280,7 +280,6 @@ load("data/global_dec_trend.Rdata")
 # Visualising the secular trends in the data
 global_dec_trend_plot <- ggplot(global_dec_trend, aes(x = lon, y = lat)) +
   geom_raster(aes(fill = dec_trend)) +
-  # borders(fill = "grey70", colour = "black") +
   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
   scale_fill_gradient2(low = "blue", high = "red") +
   coord_equal(expand = F) +

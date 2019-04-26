@@ -1008,8 +1008,10 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub){
   # Prepare Viridis colour palette
   if(metric_sub == "duration"){
     vir_op <- "C"
+    col_split <- c("purple", "forestgreen")
   } else{
     vir_op <- "A"
+    col_split <- c("blue", "red")
   }
 
   # Filter base data
@@ -1017,33 +1019,36 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub){
     filter(test == test_sub, metric == metric_sub)
 
   # Find quantiles
-  slope_quantiles <- quantile(base_sub$slope, na.rm = T, probs = c(0, 0.05, 0.5, 0.95, 1.0))
+  slope_quantiles <- quantile(base_sub$slope, na.rm = T,
+                              probs = c(0, 0.05, 0.1, 0.5, 0.9, 0.95, 1.0))
 
   # Correct base data to quantiles as the tails are very long
   base_quantile <- base_sub %>%
-    mutate(slope = case_when(slope > slope_quantiles[4] ~ slope_quantiles[4],
+    mutate(slope = case_when(slope > slope_quantiles[6] ~ slope_quantiles[6],
                              slope < slope_quantiles[2] ~ slope_quantiles[2],
-                             slope <= slope_quantiles[4] | slope >= slope_quantiles[2] ~ slope))
+                             slope <= slope_quantiles[6] | slope >= slope_quantiles[2] ~ slope))
 
   # The map
   slope_map <- ggplot(base_quantile, aes(x = lon, y = lat)) +
     geom_raster(aes(fill = slope)) +
     geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
     # scale_fill_viridis_c(option = vir_op) +
-    scale_fill_gradientn(colors = scales::viridis_pal(option = vir_op)(9),
+    # scale_fill_gradientn(colors = scales::viridis_pal(option = vir_op)(9),
                          # limits = c(as.numeric(slope_quantiles[2]),
                                     # as.numeric(slope_quantiles[4])),
-                         breaks = c(as.numeric(slope_quantiles[2:4]))) +
+                         # breaks = c(as.numeric(slope_quantiles[2:6]))) +
+    scale_fill_gradient2(low = col_split[1], high = col_split[2],
+                         breaks = c(as.numeric(slope_quantiles[2:6]))) +
     coord_equal(expand = F) +
     # labs(x = NULL, y = NULL) +
     theme_void() +
     theme(legend.position = "bottom",
-          legend.key.width = unit(2, "cm"))
+          legend.key.width = unit(3, "cm"))
   if(metric_sub == "intensity_max"){
-    slope_map <- slope_map + labs(fill = "Change in\nmax. intensity (°C)\nper year\nshorter than 30") #+
+    slope_map <- slope_map + labs(fill = "Change in\nmax. intensity (°C)\nper year") #+
       # theme(legend.text = element_text(angle = 20))
   } else if(metric_sub == "duration"){
-    slope_map <- slope_map + labs(fill = "Change in\nduration (days)\nper year\nshorter than 30") #+
+    slope_map <- slope_map + labs(fill = "Change in\nduration (days)\nper year") #+
       # scale_fill_viridis_c(option = "C")
   }
   # slope_map
