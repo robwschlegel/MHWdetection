@@ -1003,7 +1003,8 @@ fig_2_plot <- function(df){
 # test_sub <- "length"
 # metric_sub <- "intensity_max"
 # metric_sub <- "duration"
-global_effect_event_slope_plot <- function(test_sub, metric_sub){
+global_effect_event_slope_plot <- function(test_sub, metric_sub,
+                                           df = global_effect_event_slope){
 
   # Prepare Viridis colour palette
   if(metric_sub == "duration"){
@@ -1015,7 +1016,7 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub){
   }
 
   # Filter base data
-  base_sub <- global_effect_event_slope %>%
+  base_sub <- df %>%
     filter(test == test_sub, metric == metric_sub)
 
   # Find quantiles
