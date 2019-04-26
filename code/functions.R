@@ -1004,13 +1004,14 @@ fig_2_plot <- function(df){
 # metric_sub <- "intensity_max"
 # metric_sub <- "duration"
 global_effect_event_slope_plot <- function(test_sub, metric_sub,
-                                           df = global_effect_event_slope){
+                                           df = global_effect_event_slope,
+                                           prop = FALSE) {
 
   # Prepare Viridis colour palette
-  if(metric_sub == "duration"){
+  if(metric_sub == "duration") {
     vir_op <- "C"
     col_split <- c("purple", "forestgreen")
-  } else{
+  } else {
     vir_op <- "A"
     col_split <- c("blue", "red")
   }
@@ -1045,12 +1046,14 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub,
     theme_void() +
     theme(legend.position = "bottom",
           legend.key.width = unit(3, "cm"))
-  if(metric_sub == "intensity_max"){
-    slope_map <- slope_map + labs(fill = "Change in\nmax. intensity (°C)\nper year") #+
-      # theme(legend.text = element_text(angle = 20))
-  } else if(metric_sub == "duration"){
-    slope_map <- slope_map + labs(fill = "Change in\nduration (days)\nper year") #+
-      # scale_fill_viridis_c(option = "C")
+  if(metric_sub == "intensity_max" & prop == F){
+    slope_map <- slope_map + labs(fill = "Change in\nmax. intensity (°C)\nper year")
+  } else if(metric_sub == "duration" & prop == F){
+    slope_map <- slope_map + labs(fill = "Change in\nduration (days)\nper year")
+  } else if(metric_sub == "intensity_max" & prop == T){
+    slope_map <- slope_map + labs(fill = "Proportion change in\nmax. intensity (°C)\nfrom 10 year value")
+  } else if(metric_sub == "duration" & prop == T){
+    slope_map <- slope_map + labs(fill = "Proportion change in\nduration (days)\nfrom 10 year value")
   }
   # slope_map
 
@@ -1071,7 +1074,13 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub,
   #   theme(axis.text.x = element_blank())
   # slope_ridge
 
-  ggsave(slope_map,
-         filename = paste0("output/",test_sub,"_",metric_sub,"_slope_plot.png"), height = 6, width = 10)
-  return(slope_map)
+  if(prop){
+    type_sub <- "prop"
+  } else{
+    type_sub <- "slope"
   }
+
+  ggsave(slope_map,
+         filename = paste0("output/",test_sub,"_",metric_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
+  return(slope_map)
+}

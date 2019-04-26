@@ -132,26 +132,13 @@ event_slope_prop <- left_join(event_slope_dec_trend, effect_event_spread,
 # Get just slope ten and change it for easy plotting
 event_slope_prop_10 <- event_slope_prop %>%
   dplyr::select(lat:metric, slope_prop_10) %>%
-  dplyr::rename(slope = slope_prop_10) %>%
-  mutate(metric = "slope_prop_10")
-
-event_slope_10_quantiles <- quantile(event_slope_prop_10$slope, na.rm = T,
-                                     probs = c(0, 0.05, 0.1, 0.5, 0.9, 0.95, 1.0))
+  dplyr::rename(slope = slope_prop_10)
 
 # Global map showing patterns of the slope as a proportion of the overall change
-int_max_spread_prop_plot <- ggplot(filter(event_slope_prop, metric == "intensity_max"),
-                               aes(x = lon, y = lat)) +
-  geom_raster(aes(fill = slope_prop_10)) +
-  geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
-  scale_fill_gradient2(low = "blue", high = "red") +
-  coord_equal(expand = F) +
-  labs(fill = "Proportion change\yearLinear trend (°C/dec)") +
-  scale_fill_gradient2(low = col_split[1], high = col_split[2],
-                       breaks = c(as.numeric(slope_quantiles[2:6]))) +
-  theme_void() +
-  theme(legend.position = "bottom",
-        legend.key.width = unit(2, "cm"))
-int_max_spread_prop_plot
+global_effect_event_slope_plot(test_sub = "length", metric_sub = "intensity_max",
+                               df = event_slope_prop_10, prop = T)
+global_effect_event_slope_plot(test_sub = "length", metric_sub = "duration",
+                               df = event_slope_prop_10, prop = T)
 
 # Boxplot showing spread of proportion values
 
