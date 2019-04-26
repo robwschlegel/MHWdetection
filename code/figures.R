@@ -280,9 +280,14 @@ load("data/global_dec_trend.Rdata")
 # Visualising the secular trends in the data
 global_dec_trend_plot <- ggplot(global_dec_trend, aes(x = lon, y = lat)) +
   geom_raster(aes(fill = dec_trend)) +
-  borders(fill = "grey70", colour = "black") +
+  # borders(fill = "grey70", colour = "black") +
+  geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
   scale_fill_gradient2(low = "blue", high = "red") +
-  coord_equal(expand = F)
+  coord_equal(expand = F) +
+  labs(fill = "Linear trend (°C/dec)") +
+  theme_void() +
+  theme(legend.position = "bottom",
+        legend.key.width = unit(2, "cm"))
 global_dec_trend_plot
 ggsave(global_dec_trend_plot, filename = "output/global_dec_trend_plot.png", height = 4, width = 8)
 
@@ -320,9 +325,30 @@ global_effect_event_slope_plot(test_sub = "missing_fix", metric_sub = "intensity
 
 
 # A histogram below the maps showing the distribution of the slopes would be useful
+  # This may be found lying dormant within the global_effect_event_slope_plot() code
 
 
 # Figure 5 ----------------------------------------------------------------
+
+# Figure illustrating the change caused in the 90th perc. thresh.
+# against the seas. clim. in the reference time series
+
+load("data/sst_ALL_clim_event_cat.Rdata")
+
+clim_only <- sst_ALL_clim_event_cat %>%
+  # filter(rep == "1") %>%
+  select(test:clim) %>%
+  unnest() %>%
+  filter(index_vals <= 30,
+         test == "length") %>%
+  gather(key = "metric", value = "temp", seas, thresh) %>%
+  droplevels()
+
+clim_change_plot <- ggplot(data = clim_only, aes(x = doy, y = temp)) +
+  geom_line(aes(colour = index_vals, group = index_vals)) +
+  scale_colour_viridis_c(direction = -1) +
+  facet_grid(metric~site)
+clim_change_plot
 
 
 # Figure 6 ----------------------------------------------------------------

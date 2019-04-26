@@ -5,6 +5,7 @@
 # Libraries ---------------------------------------------------------------
 
 library(tidyverse)
+library(ggridges)
 # library(broom)
 library(heatwaveR, lib.loc = "~/R-packages/")
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
@@ -22,6 +23,7 @@ library(ncdf4)
 
 # Meta-data ---------------------------------------------------------------
 
+# The MHW category colour palette
 MHW_colours <- c(
   "I Moderate" = "#ffc866",
   "II Strong" = "#ff6900",
@@ -29,14 +31,24 @@ MHW_colours <- c(
   "IV Extreme" = "#2d0000"
 )
 
+# Location of NOAA OISST files
 OISST_files <- dir(path = "~/data/OISST", full.names = T)
 
+# Loation of MHW category files
 category_files <- as.character(dir(path = "~/data/cat_clim", pattern = "cat.clim",
                                    full.names = TRUE, recursive = TRUE))
 
+# Reference site coordinates
 sst_ALL_coords <- data.frame(site = c("WA", "NW_Atl", "Med"),
                              lon = c(112.5, -67, 9),
                              lat = c(-29.5, 43, 43.5))
+
+# The base map
+map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE)) %>%
+  dplyr::rename(lon = long) %>%
+  # filter(lat >= 25.6) %>%
+  mutate(group = ifelse(lon > 180, group+9999, group),
+         lon = ifelse(lon > 180, lon-360, lon))
 
 
 # Re-sampling -------------------------------------------------------------
@@ -812,7 +824,6 @@ global_slope_sub <- function(df){
   }
 }
 
-
 # This function expects to be given only one latitude slice at a time
 # tester...
 # df <- global_effect_event %>%
@@ -829,6 +840,22 @@ global_slope <- function(df){
   )
 }
 
+# This function is the same as above but less picky about the output
+# tester...
+# df <- event_slope_dec_trend %>%
+  # filter(lon == lon[20], lat == lat[129])
+  # filter(lon == lon[20], lat == lat[129], test == "length", metric == "duration")
+global_model <- function(df){
+  suppressWarnings( # Suppress perfect slope warnings
+    df_slope <- df %>%
+      group_by(lon, test, metric) %>%
+      # nest() %>%
+      # mutate(slope = purrr::map(data, global_slope_sub)) %>%
+      do(model = broom::augment(lm(slope ~ dec_trend, data = .))) #%>%
+      # select(-data) %>%
+      # unnest()
+  )
+}
 
 # Length fix --------------------------------------------------------------
 
@@ -975,16 +1002,70 @@ fig_2_plot <- function(df){
 # testers...
 # test_sub <- "length"
 # metric_sub <- "intensity_max"
+# metric_sub <- "duration"
 global_effect_event_slope_plot <- function(test_sub, metric_sub){
-  slope_plot <- global_effect_event_slope %>%
-    filter(test == test_sub, metric == metric_sub) %>%
-    ggplot(aes(x = lon, y = lat)) +
+
+  # Prepare Viridis colour palette
+  if(metric_sub == "duration"){
+    vir_op <- "C"
+  } else{
+    vir_op <- "A"
+  }
+
+  # Filter base data
+  base_sub <- global_effect_event_slope %>%
+    filter(test == test_sub, metric == metric_sub)
+
+  # Find quantiles
+  slope_quantiles <- quantile(base_sub$slope, na.rm = T, probs = c(0, 0.05, 0.5, 0.95, 1.0))
+
+  # Correct base data to quantiles as the tails are very long
+  base_quantile <- base_sub %>%
+    mutate(slope = case_when(slope > slope_quantiles[4] ~ slope_quantiles[4],
+                             slope < slope_quantiles[2] ~ slope_quantiles[2],
+                             slope <= slope_quantiles[4] | slope >= slope_quantiles[2] ~ slope))
+
+  # The map
+  slope_map <- ggplot(base_quantile, aes(x = lon, y = lat)) +
     geom_raster(aes(fill = slope)) +
-    borders(fill = "grey70", colour = "black") +
-    scale_fill_viridis_c() +
+    geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
+    # scale_fill_viridis_c(option = vir_op) +
+    scale_fill_gradientn(colors = scales::viridis_pal(option = vir_op)(9),
+                         # limits = c(as.numeric(slope_quantiles[2]),
+                                    # as.numeric(slope_quantiles[4])),
+                         breaks = c(as.numeric(slope_quantiles[2:4]))) +
     coord_equal(expand = F) +
-    labs(x = NULL, y = NULL)
-  ggsave(slope_plot,
-         filename = paste0("output/",test_sub,"_",metric_sub,"_slope_plot.png"), height = 4, width = 8)
-  return(slope_plot)
+    # labs(x = NULL, y = NULL) +
+    theme_void() +
+    theme(legend.position = "bottom",
+          legend.key.width = unit(2, "cm"))
+  if(metric_sub == "intensity_max"){
+    slope_map <- slope_map + labs(fill = "Change in\nmax. intensity (°C)\nper year\nshorter than 30") #+
+      # theme(legend.text = element_text(angle = 20))
+  } else if(metric_sub == "duration"){
+    slope_map <- slope_map + labs(fill = "Change in\nduration (days)\nper year\nshorter than 30") #+
+      # scale_fill_viridis_c(option = "C")
+  }
+  # slope_map
+
+  # The density polygon
+  # slope_density <- ggplot(base_sub, aes(x = slope)) +
+  #   geom_density(aes(fill = slope)) +
+  #   coord_flip() +
+  #   scale_x_continuous(expand = c(0,0))
+  # slope_density
+
+  # The ridgwlinw plot
+  # slope_ridge <- ggplot(base_sub, aes(x = slope, y = metric)) +
+  #   stat_density_ridges(aes(fill = factor(..quantile..)),
+  #                       geom = "density_ridges_gradient", calc_ecdf = TRUE,
+  #                       quantiles = 4, quantile_lines = TRUE) +
+  #   viridis::scale_fill_viridis(discrete = TRUE, name = "Quartiles", alpha = 0.7) +
+  #   coord_flip(expand = F) +
+  #   theme(axis.text.x = element_blank())
+  # slope_ridge
+
+  ggsave(slope_map,
+         filename = paste0("output/",test_sub,"_",metric_sub,"_slope_plot.png"), height = 6, width = 10)
+  return(slope_map)
   }
