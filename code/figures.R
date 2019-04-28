@@ -6,6 +6,8 @@ source("code/functions.R")
 
 # Figure 1 ----------------------------------------------------------------
 
+# Show the category
+
 # A multi-paneled figure showing a summary of information for the three reference time series
 # These could include:
   # Time series with rug plot showing events

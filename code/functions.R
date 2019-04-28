@@ -1047,13 +1047,13 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub,
     theme(legend.position = "bottom",
           legend.key.width = unit(3, "cm"))
   if(metric_sub == "intensity_max" & prop == F){
-    slope_map <- slope_map + labs(fill = "Change in\nmax. intensity (°C)\nper year")
+    slope_map <- slope_map + labs(fill = "Change in max. intensity (°C)\nper year")
   } else if(metric_sub == "duration" & prop == F){
-    slope_map <- slope_map + labs(fill = "Change in\nduration (days)\nper year")
+    slope_map <- slope_map + labs(fill = "Change in duration (days)\nper year")
   } else if(metric_sub == "intensity_max" & prop == T){
-    slope_map <- slope_map + labs(fill = "Proportion change in\nmax. intensity (°C)\nfrom 10 year value")
+    slope_map <- slope_map + labs(fill = "Proportion change in max. intensity (°C)\n per year from 10 year value")
   } else if(metric_sub == "duration" & prop == T){
-    slope_map <- slope_map + labs(fill = "Proportion change in\nduration (days)\nfrom 10 year value")
+    slope_map <- slope_map + labs(fill = "Proportion change in duration (days)\n per year from 10 year value")
   }
   # slope_map
 
