@@ -236,7 +236,7 @@ shrinking_results <- function(year_begin, df = sst_ALL_flat, set_width = 5){
 # Lazily I have it run on chosen columns by name given certain tests
 # as getting it to do this programmatically was becoming annoying
 # testers...
-# df_2 <- filter(df_long, index_vals == 0.2)
+# df_2 <- filter(df_long, index_vals == 0.50)
 # df_1 <- df_standard
 KS_sub <- function(df_2, df_1){
   if("seas" %in% names(df_1)){
@@ -274,6 +274,9 @@ KS_sub <- function(df_2, df_1){
 # df <- sst_res[ ,c(1:2,4)] %>%
 #   filter(test == "missing") %>%
 #   select(-test)
+# df <- sst_ALL_clim_event_cat[ ,c(1:4,6)] %>%
+  # filter(test == "missing", site == "WA", rep == "20") %>%
+    # select(-test, -site, - rep)
 KS_p <- function(df){
   # Unnest the clim data
   suppressWarnings( # Suppress warning about different factor levels for cat data
@@ -290,7 +293,7 @@ KS_p <- function(df){
     index_filter <- 0
   }
   # We then must screen out events only for the last decade for the length and trend tests
-  if(max(df_long$index_vals) != 0.5){
+  if(max(df_long$index_vals) == 0.50 | max(df_long$index_vals) > 1){
     if("intensity_mean" %in% names(df_long)){
       df_long <- df_long %>%
         filter(date_start >= "2009-01-02", date_end <= "2018-12-31")
@@ -380,9 +383,7 @@ aov_tukey <- function(df){
 }
 
 
-
 # Fisher test for category counting ---------------------------------------
-
 
 # Fisher pairwise function
 # Takes one rep of missing data and compares it against the complete data
@@ -878,24 +879,29 @@ global_model <- function(df){
 # The function expects to be given the dates that should be plotted
 # testers...
 # df <- sst_WA_event
-# sub_dates <- c(focus_WA$date_start-30, focus_WA$date_end+30)
-fig_1_plot <- function(df, sub_dates){
+# peak_date <- focus_WA$date_peak
+# spread <- 183
+fig_1_plot <- function(df, peak_date, spread){
   # Create category breaks and select slice of data.frame
   clim_cat <- df$clim %>%
     dplyr::mutate(diff = thresh - seas,
                   thresh_2x = thresh + diff,
                   thresh_3x = thresh_2x + diff,
                   thresh_4x = thresh_3x + diff) %>%
-    dplyr::filter(t >= sub_dates[1], t <= sub_dates[2])
+    dplyr::filter(t >= peak_date-spread, t <= peak_date+spread)
+
+  # Peak event
+  peak_event <- clim_cat %>%
+    filter(event_no == clim_cat$event_no[clim_cat$t == peak_date])
 
   # Set line colours
   lineColCat <- c(
     "Temperature" = "black",
-    "Climatology" = "gray20",
-    "Threshold" = "darkgreen",
-    "2x Threshold" = "darkgreen",
-    "3x Threshold" = "darkgreen",
-    "4x Threshold" = "darkgreen"
+    "Climatology" = "skyblue",
+    "Threshold" = "navy",
+    "2x Threshold" = "gray20",
+    "3x Threshold" = "gray30",
+    "4x Threshold" = "gray40"
   )
 
   # Set category fill colours
@@ -907,7 +913,7 @@ fig_1_plot <- function(df, sub_dates){
   )
 
   ggplot(data = clim_cat, aes(x = t, y = temp)) +
-    geom_flame(aes(y2 = thresh, fill = "I Moderate")) +
+    geom_flame(aes(y2 = thresh, fill = "I Moderate"), n = 5, n_gap = 2) +
     geom_flame(aes(y2 = thresh_2x, fill = "II Strong")) +
     geom_flame(aes(y2 = thresh_3x, fill = "III Severe")) +
     geom_flame(aes(y2 = thresh_4x, fill = "IV Extreme")) +
@@ -917,13 +923,34 @@ fig_1_plot <- function(df, sub_dates){
     geom_line(aes(y = seas, col = "Climatology"), size = 0.7) +
     geom_line(aes(y = thresh, col = "Threshold"), size = 0.7) +
     geom_line(aes(y = temp, col = "Temperature"), size = 0.6) +
+    # geom_segment(data = peak_event, arrow = arrow(),
+    #              aes(x = peak_date, xend = peak_date,
+    #                  y = max(peak_event$temp) + 2,
+    #                  yend = max(peak_event$temp))) +
+    geom_segment(colour = "springgreen",
+                 aes(x = min(peak_event$t)-1, xend = min(peak_event$t)-1,
+                     y = peak_event$thresh[peak_event$t == min(peak_event$t)]-1,
+                     yend = peak_event$thresh[peak_event$t == min(peak_event$t)]+1)) +
+    geom_segment(colour = "springgreen",
+                 aes(x = max(peak_event$t)+1, xend = max(peak_event$t)+1,
+                     y = peak_event$thresh[peak_event$t == max(peak_event$t)]-1,
+                     yend = peak_event$thresh[peak_event$t == max(peak_event$t)]+1)) +
+    geom_segment(colour = "forestgreen",
+                 aes(x = peak_date, xend = peak_date,
+                     y = peak_event$thresh[peak_event$t == peak_date]-1,
+                     yend = peak_event$thresh[peak_event$t == peak_date]+1)) +
+    # geom_rug(data = peak_event, sides = "b", colour = "red3", size = 2,
+    #          aes(x = c(min(peak_event$t), max(peak_event$t)), y = min(clim_cat$temp))) +
     scale_colour_manual(name = NULL, values = lineColCat,
-                        breaks = c("Temperature", "Climatology", "Threshold",
+                        breaks = c("Climatology", "Threshold", "Temperature",
                                    "2x Threshold", "3x Threshold", "4x Threshold")) +
     scale_fill_manual(name = NULL, values = fillColCat,
                       breaks = c("I Moderate", "II Strong",
                                  "III Severe", "IV Extreme")) +
-    scale_x_date(date_labels = "%b %Y", expand = c(0, 0)) +
+    scale_x_date(date_labels = "%b %Y", expand = c(0, 0),
+                 breaks = c(clim_cat$t[round(nrow(clim_cat)*0.25)],
+                            clim_cat$t[round(nrow(clim_cat)*0.5)],
+                            clim_cat$t[round(nrow(clim_cat)*0.75)])) +
     guides(colour = guide_legend(override.aes = list(linetype = c("solid", "solid", "solid",
                                                                   "dashed", "dotdash", "dotted")))) +
     labs(y = expression(paste("Temperature [", degree, "C]")), x = NULL)

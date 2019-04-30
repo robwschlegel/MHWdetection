@@ -57,29 +57,28 @@ sst_ALL_cat <- sst_ALL_res %>%
   select(site, cats) %>%
   unnest()
 
-# Focus events
-MHW_focus <- sst_ALL_event %>%
-  group_by(site) %>%
-  filter(intensity_cumulative == max(intensity_cumulative))
-# Interestingly this grabs a different MHW for the Med
-# so we need to more manually grab that one
+# Manually grab each event
 focus_Med <- sst_ALL_event %>%
   filter(site == "Med", date_end <= "2004-01-01") %>%
   filter(intensity_cumulative == max(intensity_cumulative)) %>%
   left_join(sst_ALL_coords, by = "site")
-focus_WA <- MHW_focus[3,] %>%
+focus_WA <- sst_ALL_event %>%
+  filter(site == "WA", date_end <= "2013-01-01") %>%
+  filter(intensity_max == max(intensity_max)) %>%
   left_join(sst_ALL_coords, by = "site")
-focus_NW_Atl <- MHW_focus[2,] %>%
+focus_NW_Atl <- sst_ALL_event %>%
+  filter(site == "NW_Atl", date_end <= "2013-01-01") %>%
+  filter(intensity_max == max(intensity_max)) %>%
   left_join(sst_ALL_coords, by = "site")
 
 # Create the three panelled events
-focus_WA_plot <- fig_1_plot(sst_WA_event, c(focus_WA$date_start-30, focus_WA$date_end+30))
-focus_NW_Atl_plot <- fig_1_plot(sst_NW_Atl_event, c(focus_NW_Atl$date_start-30, focus_NW_Atl$date_end+30))
-focus_Med_plot <- fig_1_plot(sst_Med_event, c(focus_Med$date_start-30, focus_Med$date_end+30))
+focus_WA_plot <- fig_1_plot(sst_WA_event, focus_WA$date_peak, 183)
+focus_NW_Atl_plot <- fig_1_plot(sst_NW_Atl_event, focus_NW_Atl$date_peak, 183)
+focus_Med_plot <- fig_1_plot(sst_Med_event, focus_Med$date_peak, 183)
 fig_1 <- ggarrange(focus_WA_plot, focus_NW_Atl_plot, focus_Med_plot,
-                   ncol = 3, nrow = 1, labels = "AUTO", common.legend = T)
-ggsave(fig_1, filename = "LaTeX/fig_1.pdf", width = 15, height = 5)
-ggsave(fig_1, filename = "LaTeX/fig_1.png", width = 15, height = 5)
+                   ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+ggsave(fig_1, filename = "LaTeX/fig_1.pdf", width = 8, height = 8)
+ggsave(fig_1, filename = "LaTeX/fig_1.png", width = 8, height = 8)
 
 
 # Figure 2 ----------------------------------------------------------------

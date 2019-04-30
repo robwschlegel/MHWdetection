@@ -1,3 +1,7 @@
+# 2019-04-30
+
+* Polished Methods
+
 # 2019-04-29
 
 * Further polishing of text

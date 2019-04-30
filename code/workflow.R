@@ -235,7 +235,7 @@ save(sst_ALL_KS_clim_fix, file = "data/sst_ALL_KS_clim_fix.Rdata")
 
 # Event metric results ----------------------------------------------------
 
-## Kolmogorov-Smirnov tests for similarity of climatologies
+## Kolmogorov-Smirnov tests for similarity of event metrics
 # sub-optimal data
 doMC::registerDoMC(cores = 50)
 sst_ALL_KS_event <- plyr::ddply(sst_ALL_clim_event_cat[ ,c(1:4,6)],
@@ -299,7 +299,7 @@ focus_NW_Atl <-  sst_ALL_clim_event_cat %>%
   unnest(event) %>%
   filter(site == "NW_Atl",
          date_start >= "2010-01-01", date_start <= "2014-01-01") %>%
-  filter(intensity_cumulative == max(intensity_cumulative))
+  filter(intensity_max == max(intensity_max))
 
 # Create infamous event index
 focus_ALL <- rbind(focus_Med, focus_NW_Atl, focus_WA) %>%
