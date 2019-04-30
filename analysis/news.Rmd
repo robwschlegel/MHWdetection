@@ -1,7 +1,9 @@
 # 2019-04-30
 
+* Re-created all figures as necessary
 * Polished Methods
-* Polished results
+* Polished Results
+* Polished Discussion
 
 # 2019-04-29
 
