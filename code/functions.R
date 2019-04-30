@@ -874,6 +874,62 @@ global_model <- function(df){
 
 # Figure convenience functions --------------------------------------------
 
+# The code that creates the figure 1 panels from detect_event output
+# The function expects to be given the dates that should be plotted
+# testers...
+# df <- sst_WA_event
+# sub_dates <- c(focus_WA$date_start-30, focus_WA$date_end+30)
+fig_1_plot <- function(df, sub_dates){
+  # Create category breaks and select slice of data.frame
+  clim_cat <- df$clim %>%
+    dplyr::mutate(diff = thresh - seas,
+                  thresh_2x = thresh + diff,
+                  thresh_3x = thresh_2x + diff,
+                  thresh_4x = thresh_3x + diff) %>%
+    dplyr::filter(t >= sub_dates[1], t <= sub_dates[2])
+
+  # Set line colours
+  lineColCat <- c(
+    "Temperature" = "black",
+    "Climatology" = "gray20",
+    "Threshold" = "darkgreen",
+    "2x Threshold" = "darkgreen",
+    "3x Threshold" = "darkgreen",
+    "4x Threshold" = "darkgreen"
+  )
+
+  # Set category fill colours
+  fillColCat <- c(
+    "I Moderate" = "#ffc866",
+    "II Strong" = "#ff6900",
+    "III Severe" = "#9e0000",
+    "IV Extreme" = "#2d0000"
+  )
+
+  ggplot(data = clim_cat, aes(x = t, y = temp)) +
+    geom_flame(aes(y2 = thresh, fill = "I Moderate")) +
+    geom_flame(aes(y2 = thresh_2x, fill = "II Strong")) +
+    geom_flame(aes(y2 = thresh_3x, fill = "III Severe")) +
+    geom_flame(aes(y2 = thresh_4x, fill = "IV Extreme")) +
+    geom_line(aes(y = thresh_2x, col = "2x Threshold"), size = 0.7, linetype = "dashed") +
+    geom_line(aes(y = thresh_3x, col = "3x Threshold"), size = 0.7, linetype = "dotdash") +
+    geom_line(aes(y = thresh_4x, col = "4x Threshold"), size = 0.7, linetype = "dotted") +
+    geom_line(aes(y = seas, col = "Climatology"), size = 0.7) +
+    geom_line(aes(y = thresh, col = "Threshold"), size = 0.7) +
+    geom_line(aes(y = temp, col = "Temperature"), size = 0.6) +
+    scale_colour_manual(name = NULL, values = lineColCat,
+                        breaks = c("Temperature", "Climatology", "Threshold",
+                                   "2x Threshold", "3x Threshold", "4x Threshold")) +
+    scale_fill_manual(name = NULL, values = fillColCat,
+                      breaks = c("I Moderate", "II Strong",
+                                 "III Severe", "IV Extreme")) +
+    scale_x_date(date_labels = "%b %Y", expand = c(0, 0)) +
+    guides(colour = guide_legend(override.aes = list(linetype = c("solid", "solid", "solid",
+                                                                  "dashed", "dotdash", "dotted")))) +
+    labs(y = expression(paste("Temperature [", degree, "C]")), x = NULL)
+}
+
+
 # Expects a one row data.frame with a 'lon' and 'lat' column
 # df <- focus_WA
 map_point <- function(df){

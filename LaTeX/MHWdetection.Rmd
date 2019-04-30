@@ -1,13 +1,14 @@
 ---
-title: "Detecting marine heatwaves from sub-optimal data"
+title: "Detecting marine heatwaves with sub-optimal data"
 author: Robert W. Schlegel(1,2), Eric C. J. Oliver(1), Alistair J. Hobday(3), Albertus
   J. Smit(2)
 date: "April 30th, 2018"
 output:
+  pdf_document: 
+    keep_tex: yes
   word_document:
     reference_docx: Frontiers_Template.docx
-  pdf_document: default
-# csl: frontiersSCNS.csl
+# csl: frontiersSCNS.cls
 bibliography: MHWdetection.bib
 ---
 
@@ -64,7 +65,7 @@ An additional advantage in the use of the @Hobday2016 and @Hobday2018 approach i
 
 @Hobday2016 stated that optimal data for detecting MHWs have the following porperties: 1) the time series must be at least 30 years in length, 2) be quality controlled, 3) be of the highest resolution possible, and 4) _in situ_ data should be used to compliment remotely sensed data where possible. Whereas the authors did not specifically state that time series must not contain large proportions of missing data, it can be inferred from the aforementioned requirements. There are a number of methods within the already existing tools for detecting MHWs that can address these concerns and we will lay them out here. An issue not discussed in @Hobday2016 is the effect of long-term trends on the accurate detection of events. @Oliver2018 have shown how dominant the climate change signal can be in the detection of events and we seek to quantify this effect here.
 
-A time series with a sub-optimal length may impact the detection of MHWs by negatively affecting the creation of the daily climatology relative to which MHWs are detected in two primary ways. The first is that with fewer years of data to draw from, the presence of an anomalously warm or cold year will have a larger effect on the climatology than with a sample size of 30 years. The second cause is that because the world is generally warming [@IPCC2014], the use of a shorter time series will almost certainly warm bias the results. Therefore, in order to isolate the effect of time series length on the detection of MHWs from the impact of a climate change signal, we removed the linear trends in the time series before investigating the effect that shortening the time series had.
+A time series with a sub-optimal length may impact the detection of MHWs by negatively affecting the creation of the daily climatology relative to which MHWs are detected in two primary ways. The first is that with fewer years of data to draw from, the presence of an anomalously warm or cold year will have a larger effect on the climatology than with a sample size of 30 years. The second cause is that because the world is generally warming [@IPCC2014], the use of a shorter time series will almost certainly warm bias the results.
 
 The climatology derived from a time series serves two main roles [@WMO2017]; 1) it serves as a 'benchmark' relative to which past and future measurements can be compared, and against which anomalies can be calculated, 2) it reflects the typical conditions likely to be experienced at a particular place at a particular time. The WMO Guide to Climatological Practices [@WMO2011] stipulate that daily climatologies (which they call 'climate normal') must be based on the most recent 30-year period that ends on a complete decade (currently 1981 -- 2010). It is from this WMO guideline that the optimal length for MHW detection was derived.
 
@@ -98,6 +99,8 @@ In the following sub-sections we will describe how we control for the three sub-
 
 
 ## Assessing the effect of time series length
+
+<!-- Therefore, in order to isolate the effect of time series length on the detection of MHWs from the impact of a climate change signal, we removed the linear trends in the time series before investigating the effect that shortening the time series had. -->
 
 In order to determine at what number of years MHWs detected  in shortened time series become significantly different from an assumed truth, based on a standard 30-year record, we first remove the long-term linear trends in the data before systematically shortening the reference time series one year at a time, from the maximum length currently available length of 37 years in the NOAA OISST dataset (first complete year of data is 1982), down to a minimum length of ten years (start date of 2009, end date of 2018), before comparing the results with a Kolmogorov-Smirnov test. This test is designed specifically to look for differences in the distribution of values between two sets of data, rather than testing for differences of central tendency (e.g. t-test or ANOVA). It was decided to not test for central tendency as the assumption that the results were normally distributed was usually violated.
 

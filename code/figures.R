@@ -6,16 +6,7 @@ source("code/functions.R")
 
 # Figure 1 ----------------------------------------------------------------
 
-# Show the category
-
-# A multi-paneled figure showing a summary of information for the three reference time series
-# These could include:
-  # Time series with rug plot showing events
-  # Lolliplots
-  # The clims only
-  # The main event
-  # Map/location point
-  # Summary/stats table
+# Show the 3 focus MHWs and the category layers
 
 # Load base data
 load("data/sst_ALL.Rdata")
@@ -81,93 +72,14 @@ focus_WA <- MHW_focus[3,] %>%
 focus_NW_Atl <- MHW_focus[2,] %>%
   left_join(sst_ALL_coords, by = "site")
 
-
-# Time series with rug plot showing events
-ts_clim_rug_WA <- ts_clim_rug("WA")
-ts_clim_rug_WA
-ts_clim_rug_NW_Atl <- ts_clim_rug("NW_Atl")
-ts_clim_rug_NW_Atl
-ts_clim_rug_Med <- ts_clim_rug("Med")
-ts_clim_rug_Med
-
-
-# Lolliplots
-lolli_WA <- lolli_plot(sst_WA_event)
-lolli_WA
-lolli_NW_Atl <- lolli_plot(sst_NW_Atl_event)
-lolli_NW_Atl
-lolli_Med <- lolli_plot(sst_Med_event)
-lolli_Med
-
-
-# The main event
-event_WA <- event_line(sst_WA_event, category = T)
-event_WA
-event_NW_Atl <- event_line(sst_NW_Atl_event, category = T)
-event_NW_Atl
-event_Med <- event_line(sst_Med_event, category = T)
-event_Med
-
-
-# The clims only
-clim_WA <- clim_line("WA")
-clim_WA
-clim_NW_Atl <- clim_line("NW_Atl")
-clim_NW_Atl
-clim_Med <- clim_line("Med")
-clim_Med
-
-
-# Map/location point
-map_WA <- map_point(focus_WA)
-map_WA
-map_NW_Atl <- map_point(focus_NW_Atl)
-map_NW_Atl
-map_Med <- map_point(focus_Med)
-map_Med
-
-
-# Summary/stats table
-# Ideas for table:
-  # Count of events
-  # Mean/ max duration
-  # mean/ max intensity
-  # Seasonal range
-  # Threshold range
-  # Category count
-table_summary_WA <- table_summary("WA")
-# table_summary_WA
-table_summary_NW_Atl <- table_summary("NW_Atl")
-# table_summary_NW_Atl
-table_summary_Med <- table_summary("Med")
-# table_summary_Med
-
-
-## Stitch all of the figures together
-# Time series with rug plot showing events
-# Lolliplots
-# The clims only
-# The main event
-# Map/location point
-# Summary/stats table
-stitch_plot_WA <- ggpubr::ggarrange(ts_clim_rug_WA, clim_WA, lolli_WA,
-                                    event_WA, map_WA, table_summary_WA, labels = "AUTO")
-stitch_plot_WA
-# ggsave(plot = stitch_plot_WA, filename = "output/stitch_plot_WA.pdf", height = 8, width = 14)
-stitch_plot_NW_Atl <- ggpubr::ggarrange(ts_clim_rug_NW_Atl, clim_NW_Atl,
-                                        lolli_NW_Atl, event_NW_Atl, map_NW_Atl,
-                                        table_summary_NW_Atl, labels = "AUTO")
-stitch_plot_NW_Atl
-stitch_plot_Med <- ggpubr::ggarrange(ts_clim_rug_Med, clim_Med, lolli_Med,
-                                     event_Med, map_Med, table_summary_Med, labels = "AUTO")
-stitch_plot_Med
-
-## A more paired down figure
-stitch_sub_plot_WA <- ggpubr::ggarrange(event_WA, map_WA, labels = "AUTO")
-stitch_sub_plot_WA
-ggsave(plot = stitch_sub_plot_WA,
-       filename = "output/stitch_sub_plot_WA.pdf",
-       height = 4, width = 8)
+# Create the three panelled events
+focus_WA_plot <- fig_1_plot(sst_WA_event, c(focus_WA$date_start-30, focus_WA$date_end+30))
+focus_NW_Atl_plot <- fig_1_plot(sst_NW_Atl_event, c(focus_NW_Atl$date_start-30, focus_NW_Atl$date_end+30))
+focus_Med_plot <- fig_1_plot(sst_Med_event, c(focus_Med$date_start-30, focus_Med$date_end+30))
+fig_1 <- ggarrange(focus_WA_plot, focus_NW_Atl_plot, focus_Med_plot,
+                   ncol = 3, nrow = 1, labels = "AUTO", common.legend = T)
+ggsave(fig_1, filename = "LaTeX/fig_1.pdf", width = 15, height = 5)
+ggsave(fig_1, filename = "LaTeX/fig_1.png", width = 15, height = 5)
 
 
 # Figure 2 ----------------------------------------------------------------
