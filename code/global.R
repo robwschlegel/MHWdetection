@@ -135,10 +135,18 @@ event_slope_prop_10 <- event_slope_prop %>%
   dplyr::rename(slope = slope_prop_10)
 
 # Global map showing patterns of the slope as a proportion of the overall change
-global_effect_event_slope_plot(test_sub = "length", metric_sub = "intensity_max",
-                               df = event_slope_prop_10, prop = T)
-global_effect_event_slope_plot(test_sub = "length", metric_sub = "duration",
-                               df = event_slope_prop_10, prop = T)
+fig_4 <- global_effect_event_slope_plot(test_sub = "length", metric_sub = "intensity_max",
+                                        df = event_slope_prop_10, prop = T)
+# fig_4
+ggsave(plot = fig_4, filename = "LaTeX/fig_4.pdf", height = 6, width = 10)
+ggsave(plot = fig_4, filename = "LaTeX/fig_4.png", height = 6, width = 10)
+
+fig_5 <- global_effect_event_slope_plot(test_sub = "length", metric_sub = "duration",
+                                        df = event_slope_prop_10, prop = T)
+fig_5
+ggsave(plot = fig_5, filename = "LaTeX/fig_5.pdf", height = 6, width = 10)
+ggsave(plot = fig_5, filename = "LaTeX/fig_5.png", height = 6, width = 10)
+
 
 # Boxplot showing spread of proportion values
 

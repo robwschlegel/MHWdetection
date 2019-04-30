@@ -18,6 +18,7 @@ library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(ggridges)
 library(ncdf4)
+# library(egg)
 # library(rcompanion)
 
 
@@ -468,10 +469,20 @@ KS_long <- function(df){
   res <- df %>%
     gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
     group_by(test, site, metric, index_vals) %>%
-    summarise(p.value.mean = mean(p.value))
+    summarise(p.value.min = min(p.value, na.rm = T),
+              p.value.mean = mean(p.value, na.rm = T),
+              p.value.max = max(p.value, na.rm = T),
+              p.value.sd = sd(p.value, na.rm = T)) %>%
+    ungroup()
   return(res)
 }
 
+# Wrapper for creating plugs for smoother fig 2 - 4 plotting
+control_plug <- function(test_plug, site_plug){
+  plug <- data.frame(test = test_plug, site = site_plug, metric = unique(sst_ALL_plot_long$metric),
+                     index_vals = 30, p.value.min = 1.0, p.value.mean = 1.0,
+                     p.value.max = 1.0, p.value.sd = 0)
+}
 
 # Event effect functions --------------------------------------------------
 
@@ -873,7 +884,8 @@ global_model <- function(df){
 
 # Must see what the R2 + SE is between decadal trend and change in duration/max.int.
 
-# Figure convenience functions --------------------------------------------
+
+# Figure functions --------------------------------------------------------
 
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted
@@ -956,6 +968,165 @@ fig_1_plot <- function(df, peak_date, spread){
     labs(y = expression(paste("Temperature [", degree, "C]")), x = NULL)
 }
 
+# The code that creates figure 2 - 4
+# These show the p-values for the KS tests from different sub-optimal treatments
+# testers...
+# df <- sst_ALL_plot_long
+# site_sub <- "WA"
+# test_sub <- "length"
+fig_line_plot <- function(site_sub, test_sub, df = sst_ALL_plot_long){
+
+  # Create x -axis label
+  if(test_sub == "length"){
+    x_label <- "Time series length (years)"
+  } else if(test_sub == "missing" | test_sub == "missing_fix"){
+    x_label <- "Missing data (%)"
+  } else if(test_sub == "trended"){
+    x_label <- "Added linear trend (°C/dec)"
+  } else{
+    stop("Typos make baby pandas cry...")
+  }
+
+  # Filter data
+  df_sub <- df %>%
+    filter(site == site_sub, test == test_sub)
+
+  # Correct percentage missing index_vals
+  if(test_sub == "missing" | test_sub == "missing_fix"){
+    df_sub$index_vals <- df_sub$index_vals*100
+  }
+
+  # Create figure
+  fig_plot <- ggplot(df_sub, aes(x = index_vals, y = p.value.mean, colour = metric)) +
+    geom_line() +
+    # geom_point() +
+    geom_ribbon(alpha = 0.1, colour = NA,
+                aes(ymin = p.value.mean-p.value.sd,
+                    ymax = p.value.mean+p.value.sd, fill = metric)) +
+    geom_point(data = filter(df_sub, p.value.mean <= 0.05), shape = 15, colour = "red", size = 2) +
+    geom_hline(yintercept = 0.05, colour = "red", linetype = "dashed") +
+    scale_colour_manual(name = "Output",
+                        values = c("skyblue", "navy",
+                                   "springgreen", "forestgreen",
+                                   "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
+                        labels = c("Seasonal climatology", "Threshold climatology",
+                                   "Duration (days)", "Max. intensity (°C)",
+                                   "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
+    scale_fill_manual(name = "Output",
+                      values = c("skyblue", "navy",
+                                   "springgreen", "forestgreen",
+                                   "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
+                        labels = c("Seasonal climatology", "Threshold climatology",
+                                   "Duration (days)", "Max. intensity (°C)",
+                                   "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
+    # scale_y_continuous(limits = c(0, 1)) +
+    coord_cartesian(ylim = c(0, 1), expand = F) +
+    # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
+    # guides(colour = guide_legend(override.aes = list(shape = 15, linetype = NA, size = 3))) +
+    labs(y = "Mean p-value +- SD", x = x_label) +
+    # facet_grid(site~test, scales = "free_x", switch = "x") +
+    theme(legend.position = "top")
+  # fig_plot
+  return(fig_plot)
+}
+
+
+# Function that plots the effect on a single focus MHW
+
+
+
+# Function for easily plotting subsets from the global slope results
+# testers...
+# test_sub <- "length"
+# metric_sub <- "intensity_max"
+# metric_sub <- "duration"
+global_effect_event_slope_plot <- function(test_sub, metric_sub,
+                                           df = global_effect_event_slope,
+                                           prop = FALSE) {
+
+  # Prepare Viridis colour palette
+  if(metric_sub == "duration") {
+    vir_op <- "C"
+    col_split <- c("purple", "forestgreen")
+  } else {
+    vir_op <- "A"
+    col_split <- c("blue", "red")
+  }
+
+  # Filter base data
+  base_sub <- df %>%
+    filter(test == test_sub, metric == metric_sub) #%>%
+    # Convert from proportion to percent
+    # mutate(slope = slope*100)
+
+  if(prop){
+    type_sub <- "prop"
+    base_sub$slope <- base_sub$slope*100
+  } else{
+    type_sub <- "slope"
+  }
+
+  # Find quantiles
+  slope_quantiles <- quantile(base_sub$slope, na.rm = T,
+                              probs = c(0, 0.05, 0.1, 0.5, 0.9, 0.95, 1.0))
+
+  # Correct base data to quantiles as the tails are very long
+  base_quantile <- base_sub %>%
+    mutate(slope = case_when(slope > slope_quantiles[6] ~ slope_quantiles[6],
+                             slope < slope_quantiles[2] ~ slope_quantiles[2],
+                             slope <= slope_quantiles[6] | slope >= slope_quantiles[2] ~ slope))
+
+  # The map
+  slope_map <- ggplot(base_quantile, aes(x = lon, y = lat)) +
+    geom_raster(aes(fill = slope)) +
+    geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
+    # scale_fill_viridis_c(option = vir_op) +
+    # scale_fill_gradientn(colors = scales::viridis_pal(option = vir_op)(9),
+    # limits = c(as.numeric(slope_quantiles[2]),
+    # as.numeric(slope_quantiles[4])),
+    # breaks = c(as.numeric(slope_quantiles[2:6]))) +
+    scale_fill_gradient2(low = col_split[1], high = col_split[2],
+                         breaks = c(as.numeric(slope_quantiles[2:6]))) +
+    coord_equal(expand = F) +
+    # labs(x = NULL, y = NULL) +
+    theme_void() +
+    theme(legend.position = "bottom",
+          legend.key.width = unit(3, "cm"))
+  if(metric_sub == "intensity_max" & prop == F){
+    slope_map <- slope_map + labs(fill = "Change in max. intensity (°C)\nper year")
+  } else if(metric_sub == "duration" & prop == F){
+    slope_map <- slope_map + labs(fill = "Change in duration (days)\nper year")
+  } else if(metric_sub == "intensity_max" & prop == T){
+    slope_map <- slope_map + labs(fill = "Percent change in max. intensity (°C)\n per year from 10 year value")
+  } else if(metric_sub == "duration" & prop == T){
+    slope_map <- slope_map + labs(fill = "Percent change in duration (days)\n per year from 10 year value")
+  }
+  # slope_map
+
+  # The density polygon
+  # slope_density <- ggplot(base_sub, aes(x = slope)) +
+  #   geom_density(aes(fill = slope)) +
+  #   coord_flip() +
+  #   scale_x_continuous(expand = c(0,0))
+  # slope_density
+
+  # The ridgwlinw plot
+  # slope_ridge <- ggplot(base_sub, aes(x = slope, y = metric)) +
+  #   stat_density_ridges(aes(fill = factor(..quantile..)),
+  #                       geom = "density_ridges_gradient", calc_ecdf = TRUE,
+  #                       quantiles = 4, quantile_lines = TRUE) +
+  #   viridis::scale_fill_viridis(discrete = TRUE, name = "Quartiles", alpha = 0.7) +
+  #   coord_flip(expand = F) +
+  #   theme(axis.text.x = element_blank())
+  # slope_ridge
+
+  ggsave(slope_map,
+         filename = paste0("output/",test_sub,"_",metric_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
+  return(slope_map)
+}
+
+
+# Old figure functions ----------------------------------------------------
 
 # Expects a one row data.frame with a 'lon' and 'lat' column
 # df <- focus_WA
@@ -1060,110 +1231,3 @@ clim_line <-function(site_1){
     labs(x = NULL, y = "Temperature (°C)")
 }
 
-# The code two create figure 2, which shows the p-values for the KS tests
-fig_2_plot <- function(df){
-  fig_2 <- ggplot(df, aes(x = index_vals, y = p.value.mean, colour = metric)) +
-    geom_line() +
-    geom_point() +
-    geom_point(data = filter(df, p.value.mean <= 0.05), shape = 15, colour = "red", size = 2) +
-    geom_hline(yintercept = 0.05, colour = "red", linetype = "dashed") +
-    scale_colour_manual(name = "Metric",
-                        values = c("skyblue", "navy",
-                                   "springgreen", "forestgreen",
-                                   "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
-                        labels = c("Seasonal climatology", "Threshold climatology",
-                                   "Duration (days)", "Max. intensity (°C)",
-                                   "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
-    # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-    guides(colour = guide_legend(override.aes = list(shape = 15, linetype = NA, size = 3))) +
-    labs(y = "Mean p-value (n = 100)", x = NULL) +
-    facet_grid(site~test, scales = "free_x", switch = "x") +
-    theme(legend.position = "bottom")
-}
-
-# Function for easily plotting subsets from the global slope results
-# testers...
-# test_sub <- "length"
-# metric_sub <- "intensity_max"
-# metric_sub <- "duration"
-global_effect_event_slope_plot <- function(test_sub, metric_sub,
-                                           df = global_effect_event_slope,
-                                           prop = FALSE) {
-
-  # Prepare Viridis colour palette
-  if(metric_sub == "duration") {
-    vir_op <- "C"
-    col_split <- c("purple", "forestgreen")
-  } else {
-    vir_op <- "A"
-    col_split <- c("blue", "red")
-  }
-
-  # Filter base data
-  base_sub <- df %>%
-    filter(test == test_sub, metric == metric_sub)
-
-  # Find quantiles
-  slope_quantiles <- quantile(base_sub$slope, na.rm = T,
-                              probs = c(0, 0.05, 0.1, 0.5, 0.9, 0.95, 1.0))
-
-  # Correct base data to quantiles as the tails are very long
-  base_quantile <- base_sub %>%
-    mutate(slope = case_when(slope > slope_quantiles[6] ~ slope_quantiles[6],
-                             slope < slope_quantiles[2] ~ slope_quantiles[2],
-                             slope <= slope_quantiles[6] | slope >= slope_quantiles[2] ~ slope))
-
-  # The map
-  slope_map <- ggplot(base_quantile, aes(x = lon, y = lat)) +
-    geom_raster(aes(fill = slope)) +
-    geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
-    # scale_fill_viridis_c(option = vir_op) +
-    # scale_fill_gradientn(colors = scales::viridis_pal(option = vir_op)(9),
-                         # limits = c(as.numeric(slope_quantiles[2]),
-                                    # as.numeric(slope_quantiles[4])),
-                         # breaks = c(as.numeric(slope_quantiles[2:6]))) +
-    scale_fill_gradient2(low = col_split[1], high = col_split[2],
-                         breaks = c(as.numeric(slope_quantiles[2:6]))) +
-    coord_equal(expand = F) +
-    # labs(x = NULL, y = NULL) +
-    theme_void() +
-    theme(legend.position = "bottom",
-          legend.key.width = unit(3, "cm"))
-  if(metric_sub == "intensity_max" & prop == F){
-    slope_map <- slope_map + labs(fill = "Change in max. intensity (°C)\nper year")
-  } else if(metric_sub == "duration" & prop == F){
-    slope_map <- slope_map + labs(fill = "Change in duration (days)\nper year")
-  } else if(metric_sub == "intensity_max" & prop == T){
-    slope_map <- slope_map + labs(fill = "Proportion change in max. intensity (°C)\n per year from 10 year value")
-  } else if(metric_sub == "duration" & prop == T){
-    slope_map <- slope_map + labs(fill = "Proportion change in duration (days)\n per year from 10 year value")
-  }
-  # slope_map
-
-  # The density polygon
-  # slope_density <- ggplot(base_sub, aes(x = slope)) +
-  #   geom_density(aes(fill = slope)) +
-  #   coord_flip() +
-  #   scale_x_continuous(expand = c(0,0))
-  # slope_density
-
-  # The ridgwlinw plot
-  # slope_ridge <- ggplot(base_sub, aes(x = slope, y = metric)) +
-  #   stat_density_ridges(aes(fill = factor(..quantile..)),
-  #                       geom = "density_ridges_gradient", calc_ecdf = TRUE,
-  #                       quantiles = 4, quantile_lines = TRUE) +
-  #   viridis::scale_fill_viridis(discrete = TRUE, name = "Quartiles", alpha = 0.7) +
-  #   coord_flip(expand = F) +
-  #   theme(axis.text.x = element_blank())
-  # slope_ridge
-
-  if(prop){
-    type_sub <- "prop"
-  } else{
-    type_sub <- "slope"
-  }
-
-  ggsave(slope_map,
-         filename = paste0("output/",test_sub,"_",metric_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
-  return(slope_map)
-}

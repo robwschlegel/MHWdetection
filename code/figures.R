@@ -83,7 +83,8 @@ ggsave(fig_1, filename = "LaTeX/fig_1.png", width = 8, height = 8)
 
 # Figure 2 ----------------------------------------------------------------
 
-## A synthesis of the three tests: length, missing, trended
+# The results from the 100 re-sampled length tests
+
 # Sub-optimal data
 load("data/sst_ALL_KS_clim.Rdata")
 load("data/sst_ALL_KS_event.Rdata")
@@ -92,10 +93,6 @@ load("data/sst_ALL_KS_cat.Rdata")
 load("data/sst_ALL_KS_clim_fix.Rdata")
 load("data/sst_ALL_KS_event_fix.Rdata")
 load("data/sst_ALL_KS_cat_fix.Rdata")
-
-# I envision here some sort of figure that compares the results side by side
-# while highlighting how as the degridation of the three tests increases
-# how much more rapidly this effects the results than the other tests
 
 # Climatology results
 sst_ALL_KS_clim_long <- KS_long(sst_ALL_KS_clim)
@@ -109,138 +106,130 @@ sst_ALL_KS_event_fix_long <- KS_long(sst_ALL_KS_event_fix)
 sst_ALL_KS_cat_long <- KS_long(sst_ALL_KS_cat)
 sst_ALL_KS_cat_fix_long <- KS_long(sst_ALL_KS_cat_fix)
 
-## Combine for plotting
-# Sub-optimal data
-sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long, sst_ALL_KS_cat_long) %>%
-  filter(!metric %in% c("intensity_mean", "intensity_cumulative")) %>%
-  ungroup() %>%
-  mutate(metric = factor(metric, levels = c("seas", "thresh",
-                                            "duration", "intensity_max",
-                                            "p_moderate", "p_strong", "p_severe", "p_extreme")),
-         test = case_when(test == "length" ~ "length (years)",
-                          test == "missing" ~ "missing data (proportion)" ,
-                          test == "trended" ~ "added trend (°C/dec)"),
-         test = as.factor(test),
-         test = factor(test, levels = levels(test)[c(2,3,1)]))
-
-# Fixed data
-sst_ALL_plot_fix_long <- rbind(sst_ALL_KS_clim_fix_long,
-                               sst_ALL_KS_event_fix_long, sst_ALL_KS_cat_fix_long) %>%
-  filter(!metric %in% c("intensity_mean", "intensity_cumulative")) %>%
-  ungroup() %>%
+# Combine for plotting
+sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long,
+                           sst_ALL_KS_cat_long, sst_ALL_KS_clim_fix_long,
+                           sst_ALL_KS_event_fix_long, sst_ALL_KS_cat_fix_long) %>%
+  filter(!metric %in% c("intensity_mean", "intensity_cumulative"),
+         index_vals <= 0.5 | index_vals >= 10) %>%
   mutate(metric = factor(metric, levels = c("seas", "thresh",
                                             "duration", "intensity_max",
                                             "p_moderate", "p_strong", "p_severe", "p_extreme")))
 
-## Plot them all together
-# Sub-optimal data
-fig_2 <- fig_2_plot(sst_ALL_plot_long)
-fig_2
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 8, width = 12)
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 8, width = 12)
+# Create plugs for control time series
+control_plug_WA <- control_plug("length", "WA")
+control_plug_NW_Atl <- control_plug("length", "NW_Atl")
+control_plug_Med <- control_plug("length", "Med")
 
+# Plug-em
+sst_ALL_plot_long <- rbind(sst_ALL_plot_long, control_plug_WA, control_plug_NW_Atl, control_plug_Med)
 
-# Fixed data
-fig_2_fix <- fig_2_plot(sst_ALL_plot_fix_long)
-fig_2_fix
-# ggsave(plot = fig_2, filename = "LaTeX/fig_2_fix.pdf", height = 8, width = 12)
+# Create individual panels
+fig_2_WA <- fig_line_plot("WA", "length")
+# fig_2_WA
+fig_2_NW_Atl <- fig_line_plot("NW_Atl", "length")
+# fig_2_NW_Atl
+fig_2_Med <- fig_line_plot("Med", "length")
+# fig_2_Med
 
-# Missing data only
-fig_2_missing_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
-  filter(test %in% c("missing data (proportion)", "missing_fix")) %>%
-  fig_2_plot()
-fig_2_missing_only
-ggsave(plot = fig_2_missing_only, filename = "output/fig_2_missing_only.pdf", height = 8, width = 8)
-ggsave(plot = fig_2_missing_only, filename = "output/fig_2_missing_only.png", height = 8, width = 8)
-
-# Length tests only
-fig_2_length_only <- rbind(sst_ALL_plot_long, sst_ALL_plot_fix_long) %>%
-  filter(test %in% c("length (years)", "length_width_10",
-                     "length_width_20", "length_width_30", "length_width_40"),
-         index_vals <= 20) %>%
-  fig_2_plot()
-fig_2_length_only
-ggsave(plot = fig_2_length_only, filename = "output/fig_2_length_only.png", height = 8, width = 8)
+# Combine and save
+fig_2 <- ggarrange(fig_2_WA, fig_2_NW_Atl, fig_2_Med,
+                   ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 8, width = 8)
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 8, width = 8)
 
 
 # Figure 3 ----------------------------------------------------------------
 
-# A table here showing the R2 values from Figure 2 would be good
-# sst_ALL_R2_long <- sst_ALL_plot_long %>%
-#   group_by(test, site, metric) %>%
-#   filter(index_vals <= 30) %>%
-#   nest() %>%
-#   mutate(R2 = map(data, lm_p_R2)) %>%
-#   select(-data) %>%
-#   unnest()
+# The effects of the three sub-optimal tests on the focus MHW metrics
 
-# Rather it looks like this figure slot will be used to show the effect of the tests
-# on the focus MHWs
-# This code is currently found in the workflow.R script
+# This is currently made in the workflow.R script
+
 
 # Figure 4 ----------------------------------------------------------------
 
-# I imagine this figure being something that supports an argument that follows
-# on from one of the above results
-# Specifically I think this figure will be the one that shows the average count
-# of consecutive missing days depending on the percent of missing data
+# The global effect of length on max. intensity
 
-# Or rather here we will show the resuls from the global analyses
-
-# Global decadal trends
-load("data/global_dec_trend.Rdata")
-
-# Visualising the secular trends in the data
-global_dec_trend_plot <- ggplot(global_dec_trend, aes(x = lon, y = lat)) +
-  geom_raster(aes(fill = dec_trend)) +
-  geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
-  scale_fill_gradient2(low = "blue", high = "red") +
-  coord_equal(expand = F) +
-  labs(fill = "Linear trend (°C/dec)") +
-  theme_void() +
-  theme(legend.position = "bottom",
-        legend.key.width = unit(2, "cm"))
-global_dec_trend_plot
-ggsave(global_dec_trend_plot, filename = "output/global_dec_trend_plot.png", height = 4, width = 8)
-
-# The effect on single events
-load("data/global_effect_event.Rdata")
-
-# The slope results
-load("data/global_effect_event_slope.Rdata")
-
-# Subset length test and duration results
-global_effect_event_slope_length_duration <- global_effect_event_slope %>%
-  filter(test == "length", metric == "duration") #%>%
-  # mutate(model = as.numeric(model))
-
-global_effect_event_sloep_length_duration_median <- median(global_effect_event_slope_length_duration$slope, na.rm = T)
-
-# Testing
-# global_effect_event_slope_length_duration_1 <- global_effect_event_slope_length_duration %>%
-#   filter(lon == unique(lon)[2])
-# miss_lon <- unique(global_dec_trend$lon[!global_dec_trend$lon %in% global_effect_event_slope_length_duration$lon])
-#
-# global_effect_event_test <- global_effect_event %>%
-#   filter(test == "length", index_vals == 30, metric == "duration")
-
-## Visualising
-# Length effect
-global_effect_event_slope_plot(test_sub = "length", metric_sub = "duration")
-global_effect_event_slope_plot(test_sub = "length", metric_sub = "intensity_max")
-# Missing effect
-global_effect_event_slope_plot(test_sub = "missing", metric_sub = "duration")
-global_effect_event_slope_plot(test_sub = "missing", metric_sub = "intensity_max")
-# Missing fix effect
-global_effect_event_slope_plot(test_sub = "missing_fix", metric_sub = "duration")
-global_effect_event_slope_plot(test_sub = "missing_fix", metric_sub = "intensity_max")
-
-
-# A histogram below the maps showing the distribution of the slopes would be useful
-  # This may be found lying dormant within the global_effect_event_slope_plot() code
+# This figure is currently made in the global.R script
 
 
 # Figure 5 ----------------------------------------------------------------
+
+# The global effect of length on duration
+
+# This figure is currently made in the global.R script
+
+
+# Figure 6 ----------------------------------------------------------------
+
+# The results from the 100 re-sampled missing data tests
+
+# Create individual panels
+fig_6_WA <- fig_line_plot("WA", "missing")
+# fig_6_WA
+fig_6_NW_Atl <- fig_line_plot("NW_Atl", "missing")
+# fig_6_NW_Atl
+fig_6_Med <- fig_line_plot("Med", "missing")
+# fig_6_Med
+
+# Combine and save
+fig_6 <- ggpubr::ggarrange(fig_6_WA, fig_6_NW_Atl, fig_6_Med,
+                   ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+ggsave(plot = fig_6, filename = "LaTeX/fig_6.pdf", height = 8, width = 8)
+ggsave(plot = fig_6, filename = "LaTeX/fig_6.png", height = 8, width = 8)
+
+
+# Figure 7 ----------------------------------------------------------------
+
+# The fix for missing data
+
+# Create individual panels
+fig_7_WA <- fig_line_plot("WA", "missing_fix")
+# fig_7_WA
+fig_7_NW_Atl <- fig_line_plot("NW_Atl", "missing_fix")
+# fig_7_NW_Atl
+fig_7_Med <- fig_line_plot("Med", "missing_fix")
+# fig_7_Med
+
+# Combine and save
+fig_7 <- ggpubr::ggarrange(fig_7_WA, fig_7_NW_Atl, fig_7_Med,
+                           ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+ggsave(plot = fig_7, filename = "LaTeX/fig_7.pdf", height = 8, width = 8)
+ggsave(plot = fig_7, filename = "LaTeX/fig_7.png", height = 8, width = 8)
+
+
+# Figure 8 ----------------------------------------------------------------
+
+# The results from the 100 re-sampled added trend tests
+
+# Create individual panels
+fig_8_WA <- fig_line_plot("WA", "trended")
+# fig_8_WA
+fig_8_NW_Atl <- fig_line_plot("NW_Atl", "trended")
+# fig_8_NW_Atl
+fig_8_Med <- fig_line_plot("Med", "trended")
+# fig_8_Med
+
+# Combine and save
+fig_8 <- ggpubr::ggarrange(fig_8_WA, fig_8_NW_Atl, fig_8_Med,
+                   ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+ggsave(plot = fig_8, filename = "LaTeX/fig_8.pdf", height = 8, width = 8)
+ggsave(plot = fig_8, filename = "LaTeX/fig_8.png", height = 8, width = 8)
+
+
+# Figure 10 ---------------------------------------------------------------
+
+# The effect of added trends on the focus MHWs
+
+
+
+
+
+
+
+
+
+
 
 # Figure illustrating the change caused in the 90th perc. thresh.
 # against the seas. clim. in the reference time series
@@ -261,20 +250,3 @@ clim_change_plot <- ggplot(data = clim_only, aes(x = doy, y = temp)) +
   scale_colour_viridis_c(direction = -1) +
   facet_grid(metric~site)
 clim_change_plot
-
-
-# Figure 6 ----------------------------------------------------------------
-
-# A sixth figure would be a bit much, but it may be useful to show some sort
-# of meta-analysis here
-# Such as the relationships between increasing tests and aspects of the time series
-# To that end though if such a thing is to be investiagated it would be better
-# to run the global analysis and show that
-
-
-
-###
-# Perhaps some basic representations of what is going on would be best
-# Text book like diagrams with arrows showing the general trends in how
-# the data are affected when the three variables are tweeked
-

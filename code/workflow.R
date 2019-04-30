@@ -292,7 +292,7 @@ focus_WA <-  sst_ALL_clim_event_cat %>%
   select(-clim, -cat) %>%
   unnest(event) %>%
   filter(site == "WA", date_end >= "2010-01-01") %>%
-  filter(intensity_cumulative == max(intensity_cumulative))
+  filter(intensity_max == max(intensity_max))
 focus_NW_Atl <-  sst_ALL_clim_event_cat %>%
   filter(rep == "1", test == "trended", index_vals == 0) %>%
   select(-clim, -cat) %>%
@@ -325,7 +325,8 @@ effect_cat_fix <- effect_cat_func(sst_ALL_clim_event_cat_fix, focus_ALL)
 # Prep event data for pretty plotting
 effect_event_pretty <- effect_event %>%
   filter(metric %in% c("count", "duration", "intensity_max"),
-         !index_vals %in% seq(1, 9)) %>%
+         !index_vals %in% seq(1, 9),
+         index_vals <= 0.5 | index_vals >= 10) %>%
   mutate(metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
                             metric == "duration" ~ "duration (days)",
                             metric == "count" ~ "count (event)"),
@@ -333,38 +334,43 @@ effect_event_pretty <- effect_event %>%
                           test == "missing" ~ "missing data (proportion)" ,
                           test == "trended" ~ "added trend (°C/dec)"),
          test = as.factor(test),
-         test = factor(test, levels = levels(test)[c(2,3,1)]))
+         test = factor(test, levels = levels(test)[c(2,3,1)]),
+         site = as.character(site))
+effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
+effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
+effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
 
 ### Visualise
 ## Climatologies
 # Sub-optimal data
-ggplot(effect_clim, aes(x = index_vals)) +
-  # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-  geom_line(aes(y = mean, colour = site)) +
-  # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-  facet_grid(metric~test, scales = "free")
-# Fixed data
-ggplot(effect_clim_fix, aes(x = index_vals)) +
-  # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-  geom_line(aes(y = mean, colour = site)) +
-  # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-  facet_grid(metric~test, scales = "free")
+# ggplot(effect_clim, aes(x = index_vals)) +
+#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
+#   geom_line(aes(y = mean, colour = site)) +
+#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+#   facet_grid(metric~test, scales = "free")
+# # Fixed data
+# ggplot(effect_clim_fix, aes(x = index_vals)) +
+#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
+#   geom_line(aes(y = mean, colour = site)) +
+#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+#   facet_grid(metric~test, scales = "free")
 
 ## Event metrics
 # Sub-optimal data
 plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-  geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-  stat_smooth(aes(y = val, colour = site), geom = "line",
-              method = "lm", alpha = 0.5, size = 1) +
+  # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
+  # stat_smooth(aes(y = val, colour = site), geom = "line",
+              # method = "lm", alpha = 0.5, size = 1) +
   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
   facet_grid(metric~test, scales = "free", switch = "both") +
   labs(x = NULL, y = NULL, colour = "Site") +
   theme(legend.position = "bottom")
-plot_event_effect
 ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
+ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
 ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
+ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
 
 # Fixed data
 ggplot(effect_event_fix, aes(x = index_vals)) +
