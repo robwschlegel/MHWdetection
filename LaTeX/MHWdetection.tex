@@ -1,100 +1,54 @@
-\documentclass[]{article}
-\usepackage{lmodern}
-\usepackage{amssymb,amsmath}
-\usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-\else % if luatex or xelatex
-  \ifxetex
-    \usepackage{mathspec}
-  \else
-    \usepackage{fontspec}
-  \fi
-  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
-\fi
-% use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-% use microtype if available
-\IfFileExists{microtype.sty}{%
-\usepackage{microtype}
-\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-\usepackage[margin=1in]{geometry}
-\usepackage{hyperref}
-\hypersetup{unicode=true,
-            pdftitle={Detecting marine heatwaves with sub-optimal data},
-            pdfauthor={Robert W. Schlegel(1,2), Eric C. J. Oliver(1), Alistair J. Hobday(3), Albertus J. Smit(2)},
-            pdfborder={0 0 0},
-            breaklinks=true}
-\urlstyle{same}  % don't use monospace font for urls
-\usepackage{graphicx,grffile}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-\IfFileExists{parskip.sty}{%
-\usepackage{parskip}
-}{% else
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{0}
-% Redefines (sub)paragraphs to behave more like sections
-\ifx\paragraph\undefined\else
-\let\oldparagraph\paragraph
-\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
-\fi
-\ifx\subparagraph\undefined\else
-\let\oldsubparagraph\subparagraph
-\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
-\fi
+\documentclass[utf8]{frontiersSCNS} % for Science, Engineering and Humanities and Social Sciences articles
+%\documentclass[utf8]{frontiersHLTH} % for Health articles
+%\documentclass[utf8]{frontiersFPHY} % for Physics and Applied Mathematics and Statistics articles
 
-%%% Use protect on footnotes to avoid problems with footnotes in titles
-\let\rmarkdownfootnote\footnote%
-\def\footnote{\protect\rmarkdownfootnote}
+%\setcitestyle{square} % for Physics and Applied Mathematics and Statistics articles
+\usepackage{url,hyperref,lineno,microtype,subcaption}
+\usepackage[onehalfspacing]{setspace}
 
-%%% Change title format to be more compact
-\usepackage{titling}
+\linenumbers
 
-% Create subtitle command for use in maketitle
-\providecommand{\subtitle}[1]{
-  \posttitle{
-    \begin{center}\large#1\end{center}
-    }
-}
 
-\setlength{\droptitle}{-2em}
+% Leave a blank line between paragraphs instead of using \\
 
-  \title{Detecting marine heatwaves with sub-optimal data}
-    \pretitle{\vspace{\droptitle}\centering\huge}
-  \posttitle{\par}
-    \author{Robert W. Schlegel(1,2), Eric C. J. Oliver(1), Alistair J. Hobday(3),
-Albertus J. Smit(2)}
-    \preauthor{\centering\large\emph}
-  \postauthor{\par}
-      \predate{\centering\large\emph}
-  \postdate{\par}
-    \date{April 30th, 2018}
+
+\def\keyFont{\fontsize{8}{11}\helveticabold }
+\def\firstAuthorLast{Schlegel {et~al.}} %use et al only if is more than 1 author
+\def\Authors{Robert W. Schlegel\,$^{1,2*}$, Eric C. J. Oliver\,$^{1}$, Alistair J. Hobday\,$^{3}$ and Albertus J. Smit\,$^{2}$}
+% Affiliations should be keyed to the author's name with superscript numbers and be listed as follows: Laboratory, Institute, Department, Organization, City, State abbreviation (USA, Canada, Australia), and Country (without detailed address information such as city zip codes or street names).
+% If one of the authors has a change of address, list the new address below the correspondence details using a superscript symbol and use the same symbol to indicate the author in the author list.
+\def\Address{$^{1}$Department of Oceanography, Dalhousie University, Halifax, Nova Scotia, Canada \\
+$^{2}$Department of Biodiversity and Conservation Biology, University of the Western Cape, Bellville, South Africa \\
+$^{3}$CSIRO Oceans and Atmosphere, Hobart, Tasmania, 7000, Australia}
+% The Corresponding Author should be marked with an asterisk
+% Provide the exact contact address (this time including street name and city zip code) and email of the corresponding author
+\def\corrAuthor{Robert W. Schlegel}
+
+\def\corrEmail{robert.schlegel@dal.ca}
+
+
 
 
 \begin{document}
+\onecolumn
+\firstpage{1}
+
+\title[Detecting marine heatwaves]{Detecting marine heatwaves with sub-optimal data}
+
+\author[\firstAuthorLast ]{\Authors} %This field will be automatically populated
+\address{} %This field will be automatically populated
+\correspondance{} %This field will be automatically populated
+
+\extraAuth{}% If there are more than 1 corresponding author, comment this line and uncomment the next one.
+%\extraAuth{corresponding Author2 \\ Laboratory X2, Institute X2, Department X2, Organization X2, Street X2, City X2 , State XX2 (only USA, Canada and Australia), Zip Code2, X2 Country X2, email2@uni2.edu}
+
+
 \maketitle
 
-1: Department of Oceanography, Dalhousie University, Halifax, Nova
-Scotia, Canada 2: Department of Biodiversity and Conservation Biology,
-University of the Western Cape, Bellville, South Africa 3: CSIRO Oceans
-and Atmosphere, Hobart, Tasmania, 7000, Australia
 
-\section{Abstract}\label{abstract}
+\begin{abstract}
+
+\section{}
 
 Marine heatwaves (MHWs), or prolonged periods of anomalously warm sea
 water temperature, have been increasing in duration and intensity
@@ -120,17 +74,17 @@ provide suggestions for best practices to improve the accuracy of MHW
 detection with sub-optimal time series on a global scale and specific
 case studies of three notable MHWs from the literature.\\
 
-<<<<<<< HEAD
+\tiny
+ \keyFont{ \section{Keywords:} marine heatwaves, sea surface temperature, sub-optimal data, time series length, missing data, decadal trend} %All article types: you may provide up to 8 keywords; at least 5 are mandatory.
+\end{abstract}
+
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
-=======
-\section{Introduction}\label{introduction}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 The idea of locally warm seawater being problematic is not a novel
 concept. We have known for decades that seemingly transient warm water
 occurrences in the ocean could result in major impacts (e.g. Baumgartner
-1992, Salinger et al. (2016)). The study of the effects of anomalously
+1992; Salinger et al. 2016). The study of the effects of anomalously
 warm seawater temperatures began in earnest in the early 1980's when
 research into the ENSO phenomenon began (e.g. Philander 1983). After the
 1980's, researchers began noticing that warm water events were becoming
@@ -177,7 +131,8 @@ MHWs are quantified in order to provide researchers with the level of
 confidence they may express in their results. Where possible, best
 practices for the correction of these issues are detailed.
 
-\section{Defining marine heatwaves}\label{defining-marine-heatwaves}
+\hypertarget{defining-marine-heatwaves}{%
+\section{Defining marine heatwaves}\label{defining-marine-heatwaves}}
 
 The definition used in this paper for a MHW is ``a prolonged discrete
 anomalously warm water event that can be described by its duration,
@@ -252,12 +207,9 @@ dark green vertical segment. The beginning and end of each event are
 demarcated with light green vertical segments.}
 \end{figure}
 
-<<<<<<< HEAD
 \hypertarget{what-are-optimal-data-for-detecting-marine-heatwaves}{%
-=======
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 \section{What are optimal data for detecting marine
-heatwaves?}\label{what-are-optimal-data-for-detecting-marine-heatwaves}
+heatwaves?}\label{what-are-optimal-data-for-detecting-marine-heatwaves}}
 
 Hobday et al. (2016) stated that optimal data for detecting MHWs have
 the following properties: 1) the time series must be at least 30 years
@@ -306,12 +258,8 @@ encouraged in certain situations. These data are however also prone to
 large gaps and so the problems these data face with regards to accurate
 event detection are generally uncertain.
 
-<<<<<<< HEAD
 \hypertarget{methods}{%
 \section{Methods}\label{methods}}
-=======
-\section{Methods}\label{methods}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 To quantify the effects that time series length, missing data, and
 long-term trends have on MHW detection we will focus on the following
@@ -468,14 +416,9 @@ re-sampled time series and then removing it from the data. The following
 three sub-sections describe how the three sub-optimal time series
 challenges will be controlled for.
 
-<<<<<<< HEAD
 \hypertarget{controlling-for-time-series-length}{%
 \subsection{Controlling for time series
 length}\label{controlling-for-time-series-length}}
-=======
-\subsection{Controlling for time series
-length}\label{controlling-for-time-series-length}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 There are currently 37 complete years of data available in the NOAA
 OISST dataset (1982 -- 2018). In order to determine the effect that time
@@ -516,14 +459,9 @@ techniques, such as harmonic regression/Fourier analysis, would have a
 similar effect but are not used here in favour of the methodology
 available within the MHW algorithm.
 
-<<<<<<< HEAD
 \hypertarget{controlling-for-missing-data}{%
 \subsection{Controlling for missing
 data}\label{controlling-for-missing-data}}
-=======
-\subsection{Controlling for missing
-data}\label{controlling-for-missing-data}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 In order to determine how much random missing data effect the outputs of
 the MHW algorithm, we will randomly removed 0 -- 50\% of the data in 1\%
@@ -538,14 +476,9 @@ interpolation (imputing) gaps in time series, but we choose linear
 interpolation because of its simplicity and because it is already
 available in the software implementations of the MHW algorithm.
 
-<<<<<<< HEAD
 \hypertarget{controlling-for-long-term-trends}{%
 \subsection{Controlling for long-term
 trends}\label{controlling-for-long-term-trends}}
-=======
-\subsection{Controlling for long-term
-trends}\label{controlling-for-long-term-trends}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 To quantify the effect of long-term (secular) trends on the outputs of
 the MHW algorithm we added linear decadal trends of 0.00 -- 0.50°C/dec
@@ -561,17 +494,11 @@ added trend and the results it has on the outputs of MHW algorithm be
 documented to determine if a predictable relationship may be used to
 correct the results \emph{post-hoc}.
 
-<<<<<<< HEAD
 \hypertarget{results}{%
 \section{Results}\label{results}}
 
 \hypertarget{time-series-length}{%
 \subsection{Time series length}\label{time-series-length}}
-=======
-\section{Results}\label{results}
-
-\subsection{Time series length}\label{time-series-length}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 Shortening the lengths of the re-sampled time series had a noticeably
 negative effect on the comparability of the outputs of the MHW algorithm
@@ -701,12 +628,8 @@ can be controlled for \emph{a-priori} and is better controlled for in a
 \emph{post-hoc} manner along the same lines as the proposed fix for
 decadal trends (see below).
 
-<<<<<<< HEAD
 \hypertarget{missing-data}{%
 \subsection{Missing data}\label{missing-data}}
-=======
-\subsection{Missing data}\label{missing-data}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 The effects of missing data on the outputs of the MHW algorithm are very
 pronounced. Whereas the changes in time series length may affect the
@@ -792,12 +715,8 @@ gaps introduced from the random missing data filled via linear
 interpolation before running the MHW detection algorithm.}
 \end{figure}
 
-<<<<<<< HEAD
 \hypertarget{long-term-trends}{%
 \subsection{Long-term trends}\label{long-term-trends}}
-=======
-\subsection{Long-term trends}\label{long-term-trends}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 When adding a linear trend to the re-sampled time series we see that it
 created statistically significantly different climatologies at an
@@ -806,7 +725,6 @@ the other outputs of the MHW algorithm was roughly linear, and never
 produced results significantly different from the control time series.
 The maximum intensity and duration of events were affected more than the
 category proportions.
-<<<<<<< HEAD
 
 \begin{figure}
 \centering
@@ -840,43 +758,9 @@ event is a simple linear function of the decadal trend and where in the
 time series the event occurs. The slope for the increase in maximum
 intensity for the Med MHW is more shallow than the other two because
 this MHW occurred in 2003, as opposed to 2010 (WA) and 2012 (NWA).
-=======
 
-\begin{figure}
-\centering
-\includegraphics{../LaTeX/fig_8.png}
-\caption{Figure 8: The results from Kolmogorov-Smirnov (KS) tests on the
-similarity of the outputs from the MHW algorithm with optimal data
-against sub-optimal time series with increasingly larger linear decadal
-trends added to them. The climatology outputs are shown in blue, the
-event metrics in green, and the category proportions in yellow-red. The
-solid lines show the mean \emph{p}-value from the tests on the 100
-re-sampled time series for each step. The coloured ribbons show one
-standard deviation (SD) in the \emph{p}-values for each step. The
-results for each reference time series are A) Western Australia (WA), B)
-Northwest Atlantic (NWA), C) Mediterranean (Med). The x-axis shows the
-decadal trend added to the time series being compared against the flat
-(0 added trend; optimal) data. The y-axis shows the range of mean
-\emph{p}-values from 1.0 (exact same) to 0.0 (completely different),
-with a horizontal dashed red line at \emph{p}=0.05 (statistically
-significantly different). Any mean values at or below the \emph{p}=0.05
-line are highlighted with red squares.}
-\end{figure}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
-
-Adding linear long-term trends never caused the focus MHW to be
-dissected into multiple events (Figure 3; top right panel). The duration
-of the events are affected differently by the added linear trend. The
-Med shows practically no effect, the NWA has a very slight increase with
-a dramatic jump at an added trend of 0.04°C/dec, whereas the WA event
-sees a massive increase due primarily to one large jump at 0.42°/dec.
-The effect that the linear trend has on the maximum intensity of each
-event is a simple linear function of the decadal trend and where in the
-time series the event occurs. The slope for the increase in maximum
-intensity for the Med MHW is more shallow than the other two because
-this MHW occurred in 2003, as opposed to 2010 (WA) and 2012 (NWA).
-
-\section{Discussion}\label{discussion}
+\hypertarget{discussion}{%
+\section{Discussion}\label{discussion}}
 
 An investigation into the effects that sub-optimal data have on MHW
 results revealed that there are thresholds within which the outputs of
@@ -946,12 +830,8 @@ they spread outward they may encounter and be engulfed into one another.
 This reduces the overall count of the MHWs detected in a time series
 while increasing the apparent duration of the events.
 
-<<<<<<< HEAD
 \hypertarget{conclusions}{%
 \section{Conclusions}\label{conclusions}}
-=======
-\section{Conclusions}\label{conclusions}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 
 We have shown here that researchers must not shy away from the use of
 sub-optimal time series when the situation calls for it, such as coastal
@@ -970,77 +850,77 @@ algorithm is very robust and we have shown here that one may be
 confident in the inter-comparability of ones results when using time
 series within a generous range of sub-optimal data challenges.
 
-\section*{References}\label{references}
+\hypertarget{references}{%
+\section*{References}\label{references}}
 \addcontentsline{toc}{section}{References}
 
 \hypertarget{refs}{}
-\hypertarget{ref-Baumgartner1992}{}
+\leavevmode\hypertarget{ref-Baumgartner1992}{}%
 Baumgartner, TR. 1992. ``Reconstruction of the History of the Pacific
 Sardine and Northern Anchovy Populations over the Past Two Millenia from
 Sediments of the Santa Barbara Basin, California.'' \emph{CalCOFI Rep}
 33: 24--40.
 
-\hypertarget{ref-Hobday2016}{}
+\leavevmode\hypertarget{ref-Hobday2016}{}%
 Hobday, Alistair J, Lisa V Alexander, Sarah E Perkins, Dan A Smale,
 Sandra C Straub, Eric CJ Oliver, Jessica A Benthuysen, et al. 2016. ``A
 Hierarchical Approach to Defining Marine Heatwaves.'' \emph{Progress in
 Oceanography} 141. Elsevier: 227--38.
 
-\hypertarget{ref-Hobday2018}{}
+\leavevmode\hypertarget{ref-Hobday2018}{}%
 Hobday, Alistair J, Eric CJ Oliver, Alex Sen Gupta, Jessica A
 Benthuysen, Michael T Burrows, Markus G Donat, Neil J Holbrook, et al.
 2018. ``Categorizing and Naming Marine Heatwaves.'' \emph{Oceanography}
 31 (2). JSTOR: 162--73.
 
-\hypertarget{ref-Oliver2018}{}
+\leavevmode\hypertarget{ref-Oliver2018}{}%
 Oliver, Eric CJ, Markus G Donat, Michael T Burrows, Pippa J Moore, Dan A
 Smale, Lisa V Alexander, Jessica A Benthuysen, et al. 2018. ``Longer and
 More Frequent Marine Heatwaves over the Past Century.'' \emph{Nature
 Communications} 9 (1). Nature Publishing Group: 1324.
 
-\hypertarget{ref-WMO2011}{}
+\leavevmode\hypertarget{ref-WMO2011}{}%
 Organization, World Meteorological. 2011. \emph{Guide to Climatological
 Practices}. World Meteorological Organization (WMO).
 
-\hypertarget{ref-WMO2017}{}
+\leavevmode\hypertarget{ref-WMO2017}{}%
 ---------. 2017. \emph{WMO Guidelines on the Calculation of Climate
 Normals}. World Meteorological Organization (WMO).
 
-\hypertarget{ref-IPCC2014}{}
+\leavevmode\hypertarget{ref-IPCC2014}{}%
 Pachauri, Rajendra K, Leo Meyer, J van Ypersele, Sander Brinkman, Line
 van Kesteren, Noëmie Leprince-Ringuet, and Fijke Van Boxmeer. 2014.
 ``Climate Change 2014 Synthesis Report.''
 
-\hypertarget{ref-Philander1983}{}
+\leavevmode\hypertarget{ref-Philander1983}{}%
 Philander, S George H. 1983. ``El Nino Southern Oscillation Phenomena.''
 \emph{Nature} 302 (5906). Nature Publishing Group: 295.
 
-\hypertarget{ref-Reynolds2007}{}
+\leavevmode\hypertarget{ref-Reynolds2007}{}%
 Reynolds, Richard W, Thomas M Smith, Chunying Liu, Dudley B Chelton,
 Kenneth S Casey, and Michael G Schlax. 2007. ``Daily
 high-resolution-blended analyses for sea surface temperature.''
 \emph{Journal of Climate} 20 (22). NOAA, Natl Climatic Data Ctr,
 Asheville, NC 28801 USA: 5473--96.
 
-\hypertarget{ref-Salinger2016}{}
+\leavevmode\hypertarget{ref-Salinger2016}{}%
 Salinger, J., A.J. Hobday, R.J. Matear, T.J. O'Kane, J.S. Risbey, P.
 Dunstan, J.P. Eveson, et al. 2016. ``Chapter One - Decadal-Scale
 Forecasting of Climate Drivers for Marine Applications.'' In, edited by
 Barbara E. Curry, 74:1--68. Advances in Marine Biology. Academic Press.
-doi:\href{https://doi.org/https://doi.org/10.1016/bs.amb.2016.04.002}{https://doi.org/10.1016/bs.amb.2016.04.002}.
+\url{https://doi.org/https://doi.org/10.1016/bs.amb.2016.04.002}.
 
-\hypertarget{ref-Schlegel2018}{}
+\leavevmode\hypertarget{ref-Schlegel2018}{}%
 Schlegel, Robert W, and Albertus J Smit. 2018. ``HeatwaveR: A Central
 Algorithm for the Detection of Heatwaves and Cold-Spells.'' \emph{The
 Journal of Open Source Software} 3: 821.
 
-\hypertarget{ref-Smale2019}{}
+\leavevmode\hypertarget{ref-Smale2019}{}%
 Smale, Dan A, Thomas Wernberg, Eric CJ Oliver, Mads Thomsen, Ben P
 Harvey, Sandra C Straub, Michael T Burrows, et al. 2019. ``Marine
 Heatwaves Threaten Global Biodiversity and the Provision of Ecosystem
 Services.'' \emph{Nature Climate Change}. Nature Publishing Group, 1.
 
-<<<<<<< HEAD
 \leavevmode\hypertarget{ref-Wasserstein2019}{}%
 Wasserstein, Ronald L., Allen L. Schirm, and Nicole A. Lazar. 2019.
 ``Moving to a World Beyond `P\textless{}0.05'.'' \emph{The American
@@ -1048,15 +928,6 @@ Statistician} 73 (sup1). Taylor \& Francis: 1--19.
 \url{https://doi.org/10.1080/00031305.2019.1583913}.
 
 \leavevmode\hypertarget{ref-Zhao2019}{}%
-=======
-\hypertarget{ref-Wasserstein2019}{}
-Wasserstein, Ronald L., Allen L. Schirm, and Nicole A. Lazar. 2019.
-``Moving to a World Beyond `P\textless{}0.05'.'' \emph{The American
-Statistician} 73 (sup1). Taylor \& Francis: 1--19.
-doi:\href{https://doi.org/10.1080/00031305.2019.1583913}{10.1080/00031305.2019.1583913}.
-
-\hypertarget{ref-Zhao2019}{}
->>>>>>> 59f30a2abb8f68303f0eba570fc6e00bb2250a7f
 Zhao, Zijie, and Maxime Marin. 2019. ``A Matlab Toolbox to Detect and
 Analyze Marine Heatwaves.'' \emph{The Journal of Open Source Software}
 4: 1124.
