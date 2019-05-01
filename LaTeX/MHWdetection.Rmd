@@ -18,8 +18,8 @@ knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       eval = TRUE, tidy = FALSE)
 ```
 
-1: Department of Oceanography, Dalhousie University, Halifax, Nova Scotia, Canada
-2: Department of Biodiversity and Conservation Biology, University of the Western Cape, Bellville, South Africa
+1: Department of Oceanography, Dalhousie University, Halifax, Nova Scotia, Canada  
+2: Department of Biodiversity and Conservation Biology, University of the Western Cape, Bellville, South Africa  
 3: CSIRO Oceans and Atmosphere, Hobart, Tasmania, 7000, Australia
 
 
