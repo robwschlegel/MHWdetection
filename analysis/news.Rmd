@@ -1,3 +1,11 @@
+# 2019-05-02
+
+* Created a poster for the OceanPredict19 conference in Halifax
+
+# 2019-05-02
+
+* Added some info required in the submission process
+
 # 2019-04-30
 
 * Re-created all figures as necessary

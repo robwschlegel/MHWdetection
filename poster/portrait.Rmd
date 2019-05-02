@@ -1,0 +1,117 @@
+---
+# PLEASE SEE THE README for in depth description github.com/brentthorne/posterdown
+poster_height: "1189mm"
+poster_width: "841mm"
+font_family: 'Rasa'
+#ESSENTIALS
+title: '**Detecting marine heatwaves with sub-optimal data**'
+author:
+  - name: '**Robert W. Schlegel**'
+    affil: 1,2,*
+    main: true
+    orcid: '0000-0002-0705-1287'
+    twitter: wiederweiter 
+    email: robert.schlegel@dal.ca
+  - name: Eric C. J. Oliver
+    affil: 1
+    # main: false
+    # email: 'ag.con@posterdown.net'
+  - name: Alistair J. Hobday
+    affil: 3
+  - name: Albertus J. Smit
+    affil: 2
+affiliation:
+  - num: 1
+    address: Department of Oceanography, Dalhousie University, Halifax, Nova Scotia, Canada
+  - num: 2
+    address: Department of Biodiversity and Conservation Biology, University of the Western Cape, Bellville, South Africa
+  - num: 3
+    address: CSIRO Oceans and Atmosphere, Hobart, Tasmania, 7000, Australia
+#STYLE & FORMATTING
+title_textsize: "125pt"
+author_textsize: "1.17em"
+authorextra_textsize: "35px"
+affiliation_textsize: "25px"
+affiliation_textcol: '#00000080'
+caption_fontsize: "20pt"
+#Middle of the poster
+middle_fontfamily: "Special Elite"
+middle_textcol: "#FFFFFF"
+middle:textalpha: 90
+middle_fontsize: "75px"
+main_findings:
+  - "1) Marine heatwaves (MHWs) detected with 10 years of data (sub-optimal) do not differ significantly from those detected with 30 years of data (optimal)"
+  - "2) Individual MHWs in 10 year time series are on average 10% less intense and 28% shorter than the same event in a 30 year time series"
+  - "3) 20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events"
+logoleft_name: "Figures/heatwaveR_logo.png"
+logocenter_name: "Figures/MHWdetectionQR.png"
+logoright_name: "Figures/posterdownlogo.png"
+#---POSTER BODY OPTIONS---#
+primary_colour: '#0b4545'
+secondary_colour: '#008080'
+accent_colour: "#cc0000"
+body_bgcol: "#ffffff"
+body_textsize: "45px"
+body_textcol: "#000000"
+reference_textsize: "23px"
+#--Standard Options--#
+output: 
+  posterdown::posterdown_betterport:
+    self_contained: false
+    pandoc_args: --mathjax
+    highlight: espresso
+    number_sections: true
+bibliography: MyBib.bib
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  results = 'asis',
+  echo = FALSE,
+  comment = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center'
+)
+```
+
+# Introduction
+
+Welcome to `posterdown` ! This is my attempt to provide a semi-smooth workflow for those who wish to take their R Markdown skills to the conference world. Most features from R Markdown are available in this package such as Markdown section notation, figure captioning, and even citations like this one [@rmarkdown]. The rest of this example poster will show how you can insert typical conference poster features into your own document. 
+
+## Objectives
+
+1. Easy to use reproducible poster design. 
+2. Integration with R Markdown.
+3. Easy transition from `posterdown` to `thesisdown` or `rticles` [@rticles; @thesisdown].
+
+# Methods
+
+This package uses the same workflow approach as the R Markdown you know and love. Basically it goes from RMarkdown > Knitr > Markdown > Pandoc > HTML/CSS > PDF. You can even use the bibliography the same way [@turnerControlsWaterBalance2014].
+
+# Results
+
+I suggesting checking out the `kableExtra` package and its in depth documentation on customizing these tables found [here](https://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf) [@kableExtra2019]. You can reference tables like so: Table \@ref(tab:mytable). Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam placerat augue at velit tincidunt semper. Donec elementum porta posuere. Nullam interdum, odio at tincidunt feugiat, turpis nisi blandit eros, eu posuere risus felis non quam. Nam eget lorem odio. Duis et aliquet orci. Phasellus nec viverra est.
+
+```{r mytable, out.width='80%', fig.align='center'}
+knitr::kable(iris[1:10, 1:4], caption = 'Table caption.', align = 'c')
+```
+
+Or with figures: Figure \@ref(fig:standard-plot).
+
+```{r standard-plot, out.width='80%', fig.align='center', fig.cap='Great figure!', fig.height=5}
+plot(mtcars[1:2])
+```
+
+```{r morefigs, out.width='80%', fig.cap='Amazing, right?!', fig.height=5}
+data <- iris
+
+plot(x = data$Sepal.Length, y = data$Sepal.Width, col = data$Species, pch = 19, xlab = "Sepal Length (cm)", ylab = "Sepal Width (cm)")
+
+```
+
+
+# Conclusion
+
+Try `posterdown` out! Hopefully you like it!
+
+# References

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Detecting marine heatwaves with sub-optimal data</title>
+
+
+
+
+
+
+<!--
+Font-awesome icons ie github or twitter
+-->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/brands.css" integrity="sha384-n9+6/aSqa9lBidZMRCQHTHKJscPq6NW4pCQBiMmHdUCvPN8ZOg2zJJTkC7WIezWv" crossorigin="anonymous">
+
+<!--
+Google fonts api stuff
+-->
+<link href='https://fonts.googleapis.com/css?family=Special Elite' rel='stylesheet'>
+<link href='https://fonts.googleapis.com/css?family=Rasa' rel='stylesheet'>
+
+<!--
+Here are the required style attributes for css to make this poster work :)
+-->
+<style>
+@page {
+size: 841mm 1189mm;
+margin: 0;
+padding: 0;
+}
+body {
+margin: 0px;
+padding: 0px;
+width: 841mm;
+height: 1189mm;
+text-align: justify;
+font-size: 45px;
+}
+/* RMarkdown Class Styles */
+/* center align leaflet map,
+from https://stackoverflow.com/questions/52112119/center-leaflet-in-a-rmarkdown-document */
+.html-widget {
+margin: auto;
+position: sticky;
+margin-top: 2cm;
+margin-bottom: 2cm;
+}
+.leaflet.html-widget.html-widget-static-bound.leaflet-container.leaflet-touch.leaflet-fade-anim.leaflet-grab.leaflet-touch-drag.leaflet-touch-zoom {
+position: sticky;
+width: 100%;
+}
+pre.sourceCode.r {
+background-color: #dddddd40;
+border-radius: 4mm;
+padding: 4mm;
+width: 75%;
+margin: auto;
+margin-top: 1em;
+margin-bottom: 1em;
+/* align-items: center; */
+padding-left: 2cm;
+}
+code.sourceCode.r{
+background-color: transparent;
+font-size: 20pt;
+border-radius: 2mm;
+}
+code {
+font-size: 25pt;
+font-family: monospace;
+background-color: #00808024;
+color: #0b4545;
+padding: 1.2mm;
+border-radius: 2mm;
+}
+caption {
+margin-bottom: 10px;
+font-size: 20pt;
+font-style: italic;
+}
+tbody tr:nth-child(odd) {
+    background-color: #0b454520;
+}
+.table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td{
+  border-spacing: 0;
+  border-style: none;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-right: 20px;
+  padding-left: 20px;
+  line-height: 1.42857143;
+}
+.caption {
+font-size: 20pt;
+font-style: italic;
+}
+.references {
+font-size: 23px;
+line-height: 90%;
+}
+/* Create three unequal columns that floats next to each other */
+.column {
+float: left;
+padding: 0px;
+}
+.outer {
+width: 841mm;
+height: calc(1189mm * 0.6325);
+-webkit-column-count: 3; /* Chrome, Safari, Opera */
+-moz-column-count: 3; /* Firefox */
+column-count: 3;
+-webkit-column-fill: auto;
+-moz-column-fill: auto;
+column-fill: auto;
+column-gap: 0;
+padding-left: 0cm;
+padding-right: 0cm;
+/* -webkit-column-rule-width: 50%;
+-moz-column-rule-width: 50%;
+column-rule-width: 50%; */
+-webkit-column-rule-style: none;
+-moz-column-rule-style: none;
+column-rule-style: none;
+-webkit-column-rule-color: black;
+-moz-column-rule-color: black;
+column-rule-color: black;
+background-color: #ffffff;
+font-family: Rasa;
+margin-top: calc(1189mm * 0.25);
+padding-top: 1em;
+padding-bottom: 1em;
+}
+span.citation {
+  color: #008080;
+  font-weight: bold;
+}
+a {
+text-decoration: none;
+color: #008080;
+}
+#title {
+font-size: 125pt;
+text-align: left;
+padding-right: 5%;
+padding-left: 5%;
+margin: 0;
+line-height: 98%;
+border-bottom: 0;
+font-weight: normal;
+}
+#author {
+padding-right: 5%;
+padding-left: 5%;
+color: #0b4545;
+margin: 0;
+line-height: 85%;
+font-size: 1.17em;
+}
+#affiliation {
+padding-right: 5%;
+padding-left: 5%;
+padding-top: 1em;
+color: #00000080;
+font-style: italic;
+font-size: 25px;
+margin: 0;
+}
+sup {
+color: #cc0000;
+}
+.affiliation sup {
+font-size: 20px;
+}
+table {
+  padding-left: 5%;
+  padding-right:; 5%;
+}
+.author {
+text-align: left;
+}
+.author sup {
+font-size: 30px;
+}
+.author_extra {
+padding-right: 5%;
+padding-left: 5%;
+color: #008080;
+margin: 0;
+line-height: 85%;
+font-size: 35px;
+text-align: left;
+}
+.outer h1, h2, h3, h4, h5, h6 {
+text-align: center;
+margin-top: 0.5in;
+margin-bottom: 0.5in;
+font-weight: normal;
+}
+.outer h2 {
+text-align: center;
+}
+.outer p, .level2 {
+padding-right: 5%;
+padding-left: 5%;
+color: #000000;
+}
+.outer ol {
+padding-left: 8%;
+padding-right: 8%;
+text-align: left;
+}
+.middle {
+width: 841mm;
+height: calc(1189mm * 0.25);
+position: absolute;
+background-color: #0b4545;
+color: #FFFFFF;
+font-family: Special Elite;
+background-image: linear-gradient(#0b4545 50%, #008080);
+}
+.middle strong {
+color: #FFFFFF;
+}
+.middle strong > sup {
+color: #FFFFFF;
+}
+.middle sup {
+color: #FFFFFF;
+}
+#middle-img-left {
+width: 10%;
+left: 0.5in;
+bottom: 0.2in;
+position: absolute;
+opacity: 0.5
+}
+#middle-img-center {
+width: 10%;
+left: calc(841mm * 0.45);
+bottom: 0.5in;
+position: absolute;
+opacity: 0.5
+}
+#middle-img-right {
+width: 10%;
+right: 0.5in;
+bottom: 0.2in;
+position: absolute;
+opacity: 0.6
+}
+.middle p {
+padding-left: 7%;
+padding-right: 7%;
+font-size: 75px;
+text-align: left;
+}
+.fab {
+color: #00000030;
+font-size: 25px;
+}
+.twitter, i {
+color: #00000030;
+font-size: 35px;
+text-decoration: none;
+}
+a.email {
+text-decoration: none;
+color: #00000030;
+font-size: 35px;
+}
+.envelope {
+color: #00000030;
+font-size: 5px;
+text-decoration: none;
+}
+.poster_wrap {
+width: 841mm;
+height: 1189mm;
+padding: 0cm;
+}
+.emphasis_bottom {
+width: 841mm;
+height: calc(1189mm * 0.1);
+margin-top: calc(1189mm * 0.9);
+position: absolute;
+background-color: #0b4545;
+background-image: linear-gradient(#008080 10%, #0b4545);
+}
+
+span > #tab:mytable {
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+
+<div class="poster_wrap">
+
+<div class="column outer">
+<h1 id="title"><strong>Detecting marine heatwaves with sub-optimal data</strong></h1><br>
+<h3 id="author" class="author">
+
+<strong>Robert W. Schlegel</strong><sup> 1,2,*</sup><br>
+<a class="twitter" href="https://mobile.twitter.com/wiederweiter"><i class="fab fa-twitter"></i>&nbsp;&nbsp;@wiederweiter</a><br>
+
+<a class='envelope'><i class="fas fa-envelope"></i></a> <a href="mailto:robert.schlegel@dal.ca" class="email">robert.schlegel@dal.ca</a> <br>
+   </h3>
+
+<h5 id="author_extra", class="author_extra">
+ Eric C. J. Oliver<sup>1</sup>
+ Alistair J. Hobday<sup>3</sup>
+ Albertus J. Smit<sup>2</sup>
+</h5>
+
+<p id="affiliation" class="affiliation">
+<sup>1</sup> Department of Oceanography, Dalhousie University, Halifax, Nova Scotia, Canada<br> <sup>2</sup> Department of Biodiversity and Conservation Biology, University of the Western Cape, Bellville, South Africa<br> <sup>3</sup> CSIRO Oceans and Atmosphere, Hobart, Tasmania, 7000, Australia
+</p>
+
+<div id="introduction" class="section level1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>Welcome to <code>posterdown</code> ! This is my attempt to provide a semi-smooth workflow for those who wish to take their R Markdown skills to the conference world. Most features from R Markdown are available in this package such as Markdown section notation, figure captioning, and even citations like this one <span class="citation">(Allaire, Xie, McPherson, et al. 2018)</span>. The rest of this example poster will show how you can insert typical conference poster features into your own document.</p>
+<div id="objectives" class="section level2">
+<h2><span class="header-section-number">1.1</span> Objectives</h2>
+<ol style="list-style-type: decimal">
+<li>Easy to use reproducible poster design.</li>
+<li>Integration with R Markdown.</li>
+<li>Easy transition from <code>posterdown</code> to <code>thesisdown</code> or <code>rticles</code> <span class="citation">(Allaire, Xie, R Foundation, et al. 2018; Solomon 2019)</span>.</li>
+</ol>
+</div>
+</div>
+<div id="methods" class="section level1">
+<h1><span class="header-section-number">2</span> Methods</h1>
+<p>This package uses the same workflow approach as the R Markdown you know and love. Basically it goes from RMarkdown &gt; Knitr &gt; Markdown &gt; Pandoc &gt; HTML/CSS &gt; PDF. You can even use the bibliography the same way <span class="citation">(Turner et al. 2014)</span>.</p>
+</div>
+<div id="results" class="section level1">
+<h1><span class="header-section-number">3</span> Results</h1>
+<p>I suggesting checking out the <code>kableExtra</code> package and its in depth documentation on customizing these tables found <a href="https://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf">here</a> <span class="citation">(Zhu 2019)</span>. You can reference tables like so: Table <a href="#tab:mytable">3.1</a>. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam placerat augue at velit tincidunt semper. Donec elementum porta posuere. Nullam interdum, odio at tincidunt feugiat, turpis nisi blandit eros, eu posuere risus felis non quam. Nam eget lorem odio. Duis et aliquet orci. Phasellus nec viverra est.</p>
+<table>
+<caption><span id="tab:mytable">Table 3.1: </span>Table caption.</caption>
+<thead>
+<tr class="header">
+<th align="center">Sepal.Length</th>
+<th align="center">Sepal.Width</th>
+<th align="center">Petal.Length</th>
+<th align="center">Petal.Width</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">5.1</td>
+<td align="center">3.5</td>
+<td align="center">1.4</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="even">
+<td align="center">4.9</td>
+<td align="center">3.0</td>
+<td align="center">1.4</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="odd">
+<td align="center">4.7</td>
+<td align="center">3.2</td>
+<td align="center">1.3</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="even">
+<td align="center">4.6</td>
+<td align="center">3.1</td>
+<td align="center">1.5</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="odd">
+<td align="center">5.0</td>
+<td align="center">3.6</td>
+<td align="center">1.4</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="even">
+<td align="center">5.4</td>
+<td align="center">3.9</td>
+<td align="center">1.7</td>
+<td align="center">0.4</td>
+</tr>
+<tr class="odd">
+<td align="center">4.6</td>
+<td align="center">3.4</td>
+<td align="center">1.4</td>
+<td align="center">0.3</td>
+</tr>
+<tr class="even">
+<td align="center">5.0</td>
+<td align="center">3.4</td>
+<td align="center">1.5</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="odd">
+<td align="center">4.4</td>
+<td align="center">2.9</td>
+<td align="center">1.4</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="even">
+<td align="center">4.9</td>
+<td align="center">3.1</td>
+<td align="center">1.5</td>
+<td align="center">0.1</td>
+</tr>
+</tbody>
+</table>
+<p>Or with figures: Figure <a href="#fig:standard-plot">3.1</a>.</p>
+<div class="figure" style="text-align: center"><span id="fig:standard-plot"></span>
+<img src="portrait_files/figure-html/standard-plot-1.png" alt="Great figure!" width="80%" />
+<p class="caption">
+Figure 3.1: Great figure!
+</p>
+</div>
+<div class="figure" style="text-align: center"><span id="fig:morefigs"></span>
+<img src="portrait_files/figure-html/morefigs-1.png" alt="Amazing, right?!" width="80%" />
+<p class="caption">
+Figure 3.2: Amazing, right?!
+</p>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1><span class="header-section-number">4</span> Conclusion</h1>
+<p>Try <code>posterdown</code> out! Hopefully you like it!</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-rmarkdown">
+<p>Allaire, JJ, Yihui Xie, Jonathan McPherson, Javier Luraschi, Kevin Ushey, Aron Atkins, Hadley Wickham, Joe Cheng, Winston Chang, and Richard Iannone. 2018. <em>Rmarkdown: Dynamic Documents for R</em>. <a href="https://rmarkdown.rstudio.com">https://rmarkdown.rstudio.com</a>.</p>
+</div>
+<div id="ref-rticles">
+<p>Allaire, JJ, Yihui Xie, R Foundation, Hadley Wickham, Journal of Statistical Software, Ramnath Vaidyanathan, Association for Computing Machinery, et al. 2018. <em>Rticles: Article Formats for R Markdown</em>. <a href="https://CRAN.R-project.org/package=rticles">https://CRAN.R-project.org/package=rticles</a>.</p>
+</div>
+<div id="ref-thesisdown">
+<p>Solomon, Nick. 2019. <em>Thesisdown: An Updated R Markdown Thesis Template Using the Bookdown Package</em>.</p>
+</div>
+<div id="ref-turnerControlsWaterBalance2014">
+<p>Turner, Kevin W., Brent B. Wolfe, Thomas W. D. Edwards, Trevor C. Lantz, Roland I. Hall, and Guillaume Larocque. 2014. “Controls on Water Balance of Shallow Thermokarst Lakes and Their Relations with Catchment Characteristics: A Multi-Year, Landscape-Scale Assessment Based on Water Isotope Tracers and Remote Sensing in Old Crow Flats, Yukon (Canada).” <em>Global Change Biology</em> 20 (5): 1585–1603. <a href="https://doi.org/10.1111/gcb.12465">https://doi.org/10.1111/gcb.12465</a>.</p>
+</div>
+<div id="ref-kableExtra2019">
+<p>Zhu, Hao. 2019. <em>KableExtra: Construct Complex Table with ’Kable’ and Pipe Syntax</em>. <a href="https://CRAN.R-project.org/package=kableExtra">https://CRAN.R-project.org/package=kableExtra</a>.</p>
+</div>
+</div>
+</div>
+
+</div>
+<div class="column middle">
+<p>1) Marine heatwaves (MHWs) detected with 10 years of data (sub-optimal) do not differ significantly from those detected with 30 years of data (optimal)<br><br> 2) Individual MHWs in 10 year time series are on average 10% less intense and 28% shorter than the same event in a 30 year time series<br><br> 3) 20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events</p>
+</div>
+<div class="emphasis_bottom">
+<img id="middle-img-left" src=Figures/heatwaveR_logo.png>
+<img id="middle-img-center" src=Figures/MHWdetectionQR.png>
+<img id="middle-img-right" src="Figures/posterdownlogo.png">
+</div>
+</div>
+
+
+
+</body>
+</html>
