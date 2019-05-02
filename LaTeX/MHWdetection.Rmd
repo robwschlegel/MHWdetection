@@ -227,6 +227,8 @@ The majority of the text and figures were produced by RWS. A large portion of an
 
 # Funding
 
+This research was supported by National Sciences and Engineering Research Council of Canada Discovery Grant RGPIN-2018-05255.
+
 
 # Acknowledgments
 
