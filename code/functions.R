@@ -890,21 +890,28 @@ global_model <- function(df){
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted
 # testers...
-# df <- sst_WA_event
-# peak_date <- focus_WA$date_peak
+# df <- sst_ALL_clim
+# y_label <-  "Temperature (°C)"
 # spread <- 183
-fig_1_plot <- function(df, peak_date, spread, flat = F, y_label = "Temperature (°C)"){
+fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
   # Create category breaks and select slice of data.frame
-  clim_cat <- df$clim %>%
+  clim_cat <- df %>%
+    group_by(site_label) %>%
     dplyr::mutate(diff = thresh - seas,
                   thresh_2x = thresh + diff,
                   thresh_3x = thresh_2x + diff,
                   thresh_4x = thresh_3x + diff) %>%
-    dplyr::filter(t >= peak_date-spread, t <= peak_date+spread)
+    dplyr::filter(t >= date_peak-spread, t <= date_peak+spread)
 
   # Peak event
   peak_event <- clim_cat %>%
-    filter(event_no == clim_cat$event_no[clim_cat$t == peak_date])
+    group_by(site_label) %>%
+    filter(event_no == clim_cat$event_no[clim_cat$t == date_peak]) %>%
+    mutate(date_start = min(t),
+           date_end = max(t),
+           start_point = thresh[t == min(t)],
+           peak_point = thresh[t == date_peak],
+           end_point = thresh[t == max(t)])
 
   # Set line colours
   lineColCat <- c(
@@ -936,21 +943,21 @@ fig_1_plot <- function(df, peak_date, spread, flat = F, y_label = "Temperature (
     geom_line(aes(y = thresh, col = "Threshold"), size = 0.7) +
     geom_line(aes(y = temp, col = "Temperature"), size = 0.6) +
     # geom_segment(data = peak_event, arrow = arrow(),
-    #              aes(x = peak_date, xend = peak_date,
+    #              aes(x = date_peak[1], xend = date_peak[1],
     #                  y = max(peak_event$temp) + 2,
     #                  yend = max(peak_event$temp))) +
-    geom_segment(colour = "springgreen",
-                 aes(x = min(peak_event$t)-1, xend = min(peak_event$t)-1,
-                     y = peak_event$thresh[peak_event$t == min(peak_event$t)]-1,
-                     yend = peak_event$thresh[peak_event$t == min(peak_event$t)]+1)) +
-    geom_segment(colour = "springgreen",
-                 aes(x = max(peak_event$t)+1, xend = max(peak_event$t)+1,
-                     y = peak_event$thresh[peak_event$t == max(peak_event$t)]-1,
-                     yend = peak_event$thresh[peak_event$t == max(peak_event$t)]+1)) +
-    geom_segment(colour = "forestgreen",
-                 aes(x = peak_date, xend = peak_date,
-                     y = peak_event$thresh[peak_event$t == peak_date]-1,
-                     yend = peak_event$thresh[peak_event$t == peak_date]+1)) +
+    geom_segment(data = peak_event, colour = "springgreen",
+                 aes(x = date_start-1, xend = date_start-1,
+                     y = start_point-1,
+                     yend = start_point+1)) +
+    geom_segment(data = peak_event, colour = "springgreen",
+                 aes(x = date_end+1, xend = date_end+1,
+                     y = end_point-1,
+                     yend = end_point+1)) +
+    geom_segment(data = peak_event, colour = "forestgreen",
+                 aes(x = date_peak, xend = date_peak,
+                     y = peak_point-1,
+                     yend = peak_point+1)) +
     # geom_rug(data = peak_event, sides = "b", colour = "red3", size = 2,
     #          aes(x = c(min(peak_event$t), max(peak_event$t)), y = min(clim_cat$temp))) +
     scale_colour_manual(name = NULL, values = lineColCat,
@@ -959,13 +966,16 @@ fig_1_plot <- function(df, peak_date, spread, flat = F, y_label = "Temperature (
     scale_fill_manual(name = NULL, values = fillColCat,
                       breaks = c("I Moderate", "II Strong",
                                  "III Severe", "IV Extreme")) +
-    scale_x_date(date_labels = "%b %Y", expand = c(0, 0),
-                 breaks = c(clim_cat$t[round(nrow(clim_cat)*0.25)],
-                            clim_cat$t[round(nrow(clim_cat)*0.5)],
-                            clim_cat$t[round(nrow(clim_cat)*0.75)])) +
+    scale_x_date(date_labels = "%b %Y", expand = c(0, 0)) +
+    # scale_x_date(date_labels = "%b %Y", expand = c(0, 0),
+    #              breaks = c(clim_cat$t[round(nrow(clim_cat)*0.25)],
+    #                         clim_cat$t[round(nrow(clim_cat)*0.5)],
+    #                         clim_cat$t[round(nrow(clim_cat)*0.75)])) +
     guides(colour = guide_legend(override.aes = list(linetype = c("solid", "solid", "solid",
                                                                   "dashed", "dotdash", "dotted")))) +
-    labs(y = y_label, x = NULL)
+    labs(y = y_label, x = NULL) +
+    facet_wrap(~site_label, ncol = 1, scales = "free") +
+    theme(legend.position = "top")
 }
 
 # The code that creates figure 2 - 4

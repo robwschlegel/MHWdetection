@@ -327,7 +327,16 @@ effect_event_pretty <- effect_event %>%
   filter(metric %in% c("count", "duration", "intensity_max"),
          !index_vals %in% seq(1, 9),
          index_vals <= 0.5 | index_vals >= 10) %>%
-  mutate(metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
+  mutate(panel_label = case_when(metric == "count" & test == "length" ~ "A",
+                                 metric == "count" & test == "missing" ~ "B",
+                                 metric == "count" & test == "trended" ~ "C",
+                                 metric == "duration" & test == "length" ~ "D",
+                                 metric == "duration" & test == "missing" ~ "E",
+                                 metric == "duration" & test == "trended" ~ "F",
+                                 metric == "intensity_max" & test == "length" ~ "H",
+                                 metric == "intensity_max" & test == "missing" ~ "I",
+                                 metric == "intensity_max" & test == "trended" ~ "J"),
+         metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
                             metric == "duration" ~ "duration (days)",
                             metric == "count" ~ "count (event)"),
          test = case_when(test == "length" ~ "length (years)",
@@ -335,7 +344,12 @@ effect_event_pretty <- effect_event %>%
                           test == "trended" ~ "added trend (°C/dec)"),
          test = as.factor(test),
          test = factor(test, levels = levels(test)[c(2,3,1)]),
-         site = as.character(site))
+         site = as.character(site)) %>%
+  group_by(test) %>%
+  mutate(panel_label_x = min(index_vals)) %>%
+  group_by(metric) %>%
+  mutate(panel_label_y = max(val)) %>%
+  ungroup()
 effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
 effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
 effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
@@ -362,11 +376,14 @@ plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
   # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
   # stat_smooth(aes(y = val, colour = site), geom = "line",
               # method = "lm", alpha = 0.5, size = 1) +
-  geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
+  geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1) +
+  geom_text(aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+  scale_colour_brewer(palette = "Dark2") +
   facet_grid(metric~test, scales = "free", switch = "both") +
   labs(x = NULL, y = NULL, colour = "Site") +
   theme(legend.position = "bottom")
+plot_event_effect
 ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
 ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
 ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)

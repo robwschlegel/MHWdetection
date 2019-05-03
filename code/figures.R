@@ -11,12 +11,12 @@ source("code/functions.R")
 # Load base data
 load("data/sst_ALL.Rdata")
 
-sst_WA_event <- detect_event(ts2clm(filter(sst_ALL, site == "WA"),
-                                    climatologyPeriod = c("1982-01-01", "2011-12-31")))
-sst_NW_Atl_event <- detect_event(ts2clm(filter(sst_ALL, site == "NW_Atl"),
-                                    climatologyPeriod = c("1982-01-01", "2011-12-31")))
-sst_Med_event <- detect_event(ts2clm(filter(sst_ALL, site == "Med"),
-                                    climatologyPeriod = c("1982-01-01", "2011-12-31")))
+# sst_WA_event <- detect_event(ts2clm(filter(sst_ALL, site == "WA"),
+#                                     climatologyPeriod = c("1982-01-01", "2011-12-31")))
+# sst_NW_Atl_event <- detect_event(ts2clm(filter(sst_ALL, site == "NW_Atl"),
+#                                     climatologyPeriod = c("1982-01-01", "2011-12-31")))
+# sst_Med_event <- detect_event(ts2clm(filter(sst_ALL, site == "Med"),
+#                                     climatologyPeriod = c("1982-01-01", "2011-12-31")))
 
 # Calculate base results
 sst_ALL_res <- sst_ALL %>%
@@ -57,11 +57,7 @@ sst_ALL_cat <- sst_ALL_res %>%
   select(site, cats) %>%
   unnest()
 
-# Manually grab each event
-focus_Med <- sst_ALL_event %>%
-  filter(site == "Med", date_end <= "2004-01-01") %>%
-  filter(intensity_cumulative == max(intensity_cumulative)) %>%
-  left_join(sst_ALL_coords, by = "site")
+# Manually grab each event and combine
 focus_WA <- sst_ALL_event %>%
   filter(site == "WA", date_end <= "2013-01-01") %>%
   filter(intensity_max == max(intensity_max)) %>%
@@ -70,13 +66,20 @@ focus_NW_Atl <- sst_ALL_event %>%
   filter(site == "NW_Atl", date_end <= "2013-01-01") %>%
   filter(intensity_max == max(intensity_max)) %>%
   left_join(sst_ALL_coords, by = "site")
+focus_Med <- sst_ALL_event %>%
+  filter(site == "Med", date_end <= "2004-01-01") %>%
+  filter(intensity_cumulative == max(intensity_cumulative)) %>%
+  left_join(sst_ALL_coords, by = "site")
+focus_ALL <- rbind(focus_WA, focus_NW_Atl, focus_Med)
+
+# Merge with results for better plotting
+sst_ALL_clim <- left_join(sst_ALL_clim, focus_ALL[,c("site", "date_peak")], by = "site") %>%
+  mutate(site_label = case_when(site == "WA" ~ "A",
+                                site == "NW_Atl" ~ "B",
+                                site == "Med" ~ "C"))
 
 # Create the three panelled events
-focus_WA_plot <- fig_1_plot(sst_WA_event, focus_WA$date_peak, 183)
-focus_NW_Atl_plot <- fig_1_plot(sst_NW_Atl_event, focus_NW_Atl$date_peak, 183)
-focus_Med_plot <- fig_1_plot(sst_Med_event, focus_Med$date_peak, 183)
-fig_1 <- ggarrange(focus_WA_plot, focus_NW_Atl_plot, focus_Med_plot,
-                   ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+fig_1 <- fig_1_plot(sst_ALL_clim, 183)
 ggsave(fig_1, filename = "LaTeX/fig_1.pdf", width = 8, height = 8)
 ggsave(fig_1, filename = "LaTeX/fig_1.png", width = 8, height = 8)
 
@@ -139,17 +142,7 @@ sst_ALL_plot_long <- sst_ALL_plot_long %>%
                                 site == "NW_Atl" ~ "B",
                                 site == "Med" ~ "C"))
 
-# Create individual panels
-# fig_2_WA <- fig_line_plot("WA", "length")
-# fig_2_WA
-# fig_2_NW_Atl <- fig_line_plot("NW_Atl", "length")
-# fig_2_NW_Atl
-# fig_2_Med <- fig_line_plot("Med", "length")
-# fig_2_Med
-
-# Combine and save
-# fig_2 <- ggarrange(fig_2_WA, fig_2_NW_Atl, fig_2_Med,
-                   # ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+# Create figure and save
 fig_2 <- fig_line_plot("length")
 ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 4, width = 8)
 ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 4, width = 8)
@@ -180,57 +173,30 @@ ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 4, width = 8)
 
 # The results from the 100 re-sampled missing data tests
 
-# Create individual panels
-fig_6_WA <- fig_line_plot("WA", "missing")
-# fig_6_WA
-fig_6_NW_Atl <- fig_line_plot("NW_Atl", "missing")
-# fig_6_NW_Atl
-fig_6_Med <- fig_line_plot("Med", "missing")
-# fig_6_Med
-
-# Combine and save
-fig_6 <- ggpubr::ggarrange(fig_6_WA, fig_6_NW_Atl, fig_6_Med,
-                   ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
-ggsave(plot = fig_6, filename = "LaTeX/fig_6.pdf", height = 8, width = 8)
-ggsave(plot = fig_6, filename = "LaTeX/fig_6.png", height = 8, width = 8)
+# Create and save
+fig_6 <- fig_line_plot("missing")
+ggsave(plot = fig_6, filename = "LaTeX/fig_6.pdf", height = 4, width = 8)
+ggsave(plot = fig_6, filename = "LaTeX/fig_6.png", height = 4, width = 8)
 
 
 # Figure 7 ----------------------------------------------------------------
 
 # The fix for missing data
 
-# Create individual panels
-fig_7_WA <- fig_line_plot("WA", "missing_fix")
-# fig_7_WA
-fig_7_NW_Atl <- fig_line_plot("NW_Atl", "missing_fix")
-# fig_7_NW_Atl
-fig_7_Med <- fig_line_plot("Med", "missing_fix")
-# fig_7_Med
-
-# Combine and save
-fig_7 <- ggpubr::ggarrange(fig_7_WA, fig_7_NW_Atl, fig_7_Med,
-                           ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
-ggsave(plot = fig_7, filename = "LaTeX/fig_7.pdf", height = 8, width = 8)
-ggsave(plot = fig_7, filename = "LaTeX/fig_7.png", height = 8, width = 8)
+# Create and save
+fig_7 <- fig_line_plot("missing_fix")
+ggsave(plot = fig_7, filename = "LaTeX/fig_7.pdf", height = 4, width = 8)
+ggsave(plot = fig_7, filename = "LaTeX/fig_7.png", height = 4, width = 8)
 
 
 # Figure 8 ----------------------------------------------------------------
 
 # The results from the 100 re-sampled added trend tests
 
-# Create individual panels
-fig_8_WA <- fig_line_plot("WA", "trended")
-# fig_8_WA
-fig_8_NW_Atl <- fig_line_plot("NW_Atl", "trended")
-# fig_8_NW_Atl
-fig_8_Med <- fig_line_plot("Med", "trended")
-# fig_8_Med
-
-# Combine and save
-fig_8 <- ggpubr::ggarrange(fig_8_WA, fig_8_NW_Atl, fig_8_Med,
-                   ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
-ggsave(plot = fig_8, filename = "LaTeX/fig_8.pdf", height = 8, width = 8)
-ggsave(plot = fig_8, filename = "LaTeX/fig_8.png", height = 8, width = 8)
+# Create and save
+fig_8 <- fig_line_plot("trended")
+ggsave(plot = fig_8, filename = "LaTeX/fig_8.pdf", height = 4, width = 8)
+ggsave(plot = fig_8, filename = "LaTeX/fig_8.png", height = 4, width = 8)
 
 
 # Figure 10 ---------------------------------------------------------------
