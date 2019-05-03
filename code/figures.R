@@ -82,7 +82,7 @@ sst_ALL_clim <- left_join(sst_ALL_clim, focus_ALL[,c("site", "date_peak")], by =
 fig_1 <- fig_1_plot(sst_ALL_clim, 183)
 ggsave(fig_1, filename = "LaTeX/fig_1.pdf", width = 8, height = 8)
 ggsave(fig_1, filename = "LaTeX/fig_1.png", width = 8, height = 8)
-
+ggsave(fig_1, filename = "LaTeX/fig_1.jpg", width = 8, height = 8)
 
 # Create flattened figure for poster
 focus_WA_flat <- fig_1_plot(sst_WA_event, focus_WA$date_peak, 183, y_label = NULL)
@@ -146,6 +146,7 @@ sst_ALL_plot_long <- sst_ALL_plot_long %>%
 fig_2 <- fig_line_plot("length")
 ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 4, width = 8)
 ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 4, width = 8)
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.jpg", height = 4, width = 8)
 
 
 # Figure 3 ----------------------------------------------------------------
@@ -177,6 +178,7 @@ ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 4, width = 8)
 fig_6 <- fig_line_plot("missing")
 ggsave(plot = fig_6, filename = "LaTeX/fig_6.pdf", height = 4, width = 8)
 ggsave(plot = fig_6, filename = "LaTeX/fig_6.png", height = 4, width = 8)
+ggsave(plot = fig_6, filename = "LaTeX/fig_6.jpg", height = 4, width = 8)
 
 
 # Figure 7 ----------------------------------------------------------------
@@ -187,6 +189,7 @@ ggsave(plot = fig_6, filename = "LaTeX/fig_6.png", height = 4, width = 8)
 fig_7 <- fig_line_plot("missing_fix")
 ggsave(plot = fig_7, filename = "LaTeX/fig_7.pdf", height = 4, width = 8)
 ggsave(plot = fig_7, filename = "LaTeX/fig_7.png", height = 4, width = 8)
+ggsave(plot = fig_7, filename = "LaTeX/fig_7.jpg", height = 4, width = 8)
 
 
 # Figure 8 ----------------------------------------------------------------
@@ -197,6 +200,7 @@ ggsave(plot = fig_7, filename = "LaTeX/fig_7.png", height = 4, width = 8)
 fig_8 <- fig_line_plot("trended")
 ggsave(plot = fig_8, filename = "LaTeX/fig_8.pdf", height = 4, width = 8)
 ggsave(plot = fig_8, filename = "LaTeX/fig_8.png", height = 4, width = 8)
+ggsave(plot = fig_8, filename = "LaTeX/fig_8.jpg", height = 4, width = 8)
 
 
 # Figure 10 ---------------------------------------------------------------

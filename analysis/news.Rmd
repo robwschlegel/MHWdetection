@@ -2,6 +2,8 @@
 
 * Polished poster
 * Fixed a couple of figures
+* Created JPG versions of figures for draft submission
+* Submitted to FMars MHW special issue
 
 # 2019-05-02
 

@@ -385,9 +385,10 @@ plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
   theme(legend.position = "bottom")
 plot_event_effect
 ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
-ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
 ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
+ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
 ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
+ggsave(plot_event_effect, filename = "LaTeX/fig_3.jpg", height = 5, width = 10)
 
 # Fixed data
 ggplot(effect_event_fix, aes(x = index_vals)) +
