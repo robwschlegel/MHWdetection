@@ -25,9 +25,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
-<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
-<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -75,9 +74,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -102,6 +99,9 @@ img {
 button.code-folding-btn:focus {
   outline: none;
 }
+summary {
+  display: list-item;
+}
 </style>
 
 
@@ -116,7 +116,6 @@ body {
   padding-top: 56px;
   margin-top: -56px;
 }
-
 .section h2 {
   padding-top: 56px;
   margin-top: -56px;
@@ -136,6 +135,43 @@ body {
 .section h6 {
   padding-top: 56px;
   margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
 }
 </style>
 
@@ -157,18 +193,75 @@ $(document).ready(function () {
 });
 </script>
 
-
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
 });
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
 </script>
 
 <!-- code folding -->
-
 
 
 
@@ -256,6 +349,16 @@ div.tocify {
 
 
 </style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
@@ -348,229 +451,801 @@ div.section {
 </div>
 
 
-<p><strong>Last updated:</strong> 2019-03-20</p>
-<strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
-<ul>
-<li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
-<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
-</details>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/9f45ef73183a63375755405512bee53092922632" target="_blank">9f45ef7</a> </summary></p>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2019-05-03
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>MHWdetection/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.3.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomrobwschlegelMHWdetectiontreeacee19f1e68babd78e0d167315960123a33ea709targetblankacee19fa"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/acee19f1e68babd78e0d167315960123a33ea709" target="_blank">acee19f</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomrobwschlegelMHWdetectiontreeacee19f1e68babd78e0d167315960123a33ea709targetblankacee19fa" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    data/sst_ALL_add_trend.Rdata
+    Ignored:    data/global/
+    Ignored:    data/global_KS_cat.Rdata
+    Ignored:    data/global_KS_clim.Rdata
+    Ignored:    data/global_KS_event.Rdata
+    Ignored:    data/global_dec_trend.Rdata
+    Ignored:    data/global_effect_cat.Rdata
+    Ignored:    data/global_effect_clim.Rdata
+    Ignored:    data/global_effect_event.Rdata
     Ignored:    data/sst_ALL_clim_event_cat.Rdata
-    Ignored:    data/sst_ALL_clim_only.Rdata
-    Ignored:    data/sst_ALL_flat.Rdata
-    Ignored:    data/sst_ALL_knockout.Rdata
-    Ignored:    data/sst_ALL_repl.Rdata
-
-Unstaged changes:
-    Modified:   code/figures.R
-    Modified:   code/workflow.R
+    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
+    Ignored:    poster/portrait_files/
 
 </code></pre>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
-</li>
-</ul>
-<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
-<ul>
-<table style="border-collapse:separate; border-spacing:5px;">
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th>
 File
 </th>
-<th style="text-align:left;">
+<th>
 Version
 </th>
-<th style="text-align:left;">
+<th>
 Author
 </th>
-<th style="text-align:left;">
+<th>
 Date
 </th>
-<th style="text-align:left;">
+<th>
 Message
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
+<td>
 Rmd
 </td>
-<td style="text-align:left;">
-<a href="https://github.com/robwschlegel/MHWdetection/blob/9f45ef73183a63375755405512bee53092922632/analysis/news.Rmd" target="_blank">9f45ef7</a>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/502aacf15e093a5f49cfa6565ebf325d367ab6ec/analysis/news.Rmd" target="_blank">502aacf</a>
 </td>
-<td style="text-align:left;">
+<td>
+Robert Schlegel
+</td>
+<td>
+2019-05-03
+</td>
+<td>
+Created JPG versions of figures for draft submission
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/f5fba8fb66360b262acd85ca7985f3d4da852912/analysis/news.Rmd" target="_blank">f5fba8f</a>
+</td>
+<td>
+Robert Schlegel
+</td>
+<td>
+2019-05-03
+</td>
+<td>
+Polished poster
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/d5ed0d0b68ecf52900d54a45441da9d68d1838e8/analysis/news.Rmd" target="_blank">d5ed0d0</a>
+</td>
+<td>
+Robert William Schlegel
+</td>
+<td>
+2019-05-02
+</td>
+<td>
+Working on poster
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/9285aaa6346841f3fe322eb4f225bdb84c159315/analysis/news.Rmd" target="_blank">9285aaa</a>
+</td>
+<td>
 robwschlegel
 </td>
-<td style="text-align:left;">
+<td>
+2019-04-30
+</td>
+<td>
+Snag list
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/f79c3e910ddb9dd73f4ffbba5d7e1e4d0dbb3c1d/analysis/news.Rmd" target="_blank">f79c3e9</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-30
+</td>
+<td>
+Polished Conclusions
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/c1fa0d71db6061c5d1d15a529acf23e631364ed6/analysis/news.Rmd" target="_blank">c1fa0d7</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-30
+</td>
+<td>
+Polished Discussion
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/ad94e1ddf044dd21f6e316131f3f3d6d22ca5618/analysis/news.Rmd" target="_blank">ad94e1d</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-30
+</td>
+<td>
+Polished results
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/4920c7a80a39ddfd017ea807b16c74224699d55a/analysis/news.Rmd" target="_blank">4920c7a</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-30
+</td>
+<td>
+Polished Methods
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/897141e96b794593f6ad29cd717a2ff57a9d2a3c/analysis/news.Rmd" target="_blank">897141e</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-29
+</td>
+<td>
+Created Figure 1
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/8e53a5ccdb8dc4b4d10a670ff111edba510d0477/analysis/news.Rmd" target="_blank">8e53a5c</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-29
+</td>
+<td>
+Further polishing of text
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/4dc55c80793d862915e2aba92cce33fd0552fe3c/analysis/news.Rmd" target="_blank">4dc55c8</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-28
+</td>
+<td>
+Final round of comments addressed in part
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/151f5d188fe9ef8466312fa4c03540f21ef89606/analysis/news.Rmd" target="_blank">151f5d1</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-26
+</td>
+<td>
+Creating remaining figures
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/bb135c34685a2a41b90436256999e87aae4b7e09/analysis/news.Rmd" target="_blank">bb135c3</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-25
+</td>
+<td>
+Working on length fix
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/50aa5e406ab72f7e7a186725aa3d0d3742583341/analysis/news.Rmd" target="_blank">50aa5e4</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-24
+</td>
+<td>
+Troubleshot the global analysis output
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/104d600fc96ea17f72c122ff5948cf06c92d8c98/analysis/news.Rmd" target="_blank">104d600</a>
+</td>
+<td>
+Robert Schlegel
+</td>
+<td>
+2019-04-18
+</td>
+<td>
+Unpacking and calculating slopes for global results
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/b80fa5cbe76478365a57816628bd8922191af951/analysis/news.Rmd" target="_blank">b80fa5c</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-17
+</td>
+<td>
+Expanded tests to 0.5C/dec trend and 99% missing data
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/d1891c057a4b7623d6709ed0090a0650e7a71028/analysis/news.Rmd" target="_blank">d1891c0</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-16
+</td>
+<td>
+Edited manuscript through to the discussion section
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/444758988e699e4ef8c3935488843ed13c38d4fa/analysis/news.Rmd" target="_blank">4447589</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-15
+</td>
+<td>
+Global analysis error trapping
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/33966d0c2d4f59bf26664fffe060a9352f474136/analysis/news.Rmd" target="_blank">33966d0</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-15
+</td>
+<td>
+Finished writing global analysis code and began running it
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/87caad79ee97f881479047e81b8b4063b02813ea/analysis/news.Rmd" target="_blank">87caad7</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-14
+</td>
+<td>
+Implemented and ran code for fixes to sub-optimal data
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/7ba5f650d6ff6f75501607c3e1c8f0c417b62bf7/analysis/news.Rmd" target="_blank">7ba5f65</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-04-11
+</td>
+<td>
+Working towards answering Question 2
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/584d848d9ffd7626191edfb7be61ec8b83b089d8/analysis/news.Rmd" target="_blank">584d848</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-03-25
+</td>
+<td>
+Basic figures for the re-sample workflow complete
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/robwschlegel/MHWdetection/8ef792c515e949319bbebaff398bdbb7c17493a6/docs/news.html" target="_blank">8ef792c</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
 2019-03-20
 </td>
-<td style="text-align:left;">
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/robwschlegel/MHWdetection/blob/9f45ef73183a63375755405512bee53092922632/analysis/news.Rmd" target="_blank">9f45ef7</a>
+</td>
+<td>
+robwschlegel
+</td>
+<td>
+2019-03-20
+</td>
+<td>
 Update
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
+<td>
 html
 </td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/81a2ed553454c1f5480a64cf863266d1050b74ec/docs/news.html" target="_blank">81a2ed5</a>
+<td>
+<a href="https://rawcdn.githack.com/robwschlegel/MHWdetection/81a2ed553454c1f5480a64cf863266d1050b74ec/docs/news.html" target="_blank">81a2ed5</a>
 </td>
-<td style="text-align:left;">
+<td>
 robwschlegel
 </td>
-<td style="text-align:left;">
+<td>
 2019-03-19
 </td>
-<td style="text-align:left;">
+<td>
 Build site.
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
+<td>
 Rmd
 </td>
-<td style="text-align:left;">
+<td>
 <a href="https://github.com/robwschlegel/MHWdetection/blob/62fe75fba2723228f65760b88e020ee9ea8748c8/analysis/news.Rmd" target="_blank">62fe75f</a>
 </td>
-<td style="text-align:left;">
+<td>
 robwschlegel
 </td>
-<td style="text-align:left;">
+<td>
 2019-03-19
 </td>
-<td style="text-align:left;">
+<td>
 Publish the news file
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
+<td>
 html
 </td>
-<td style="text-align:left;">
-<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/36100c0f66df370adc3d94eab7aed243bbb17d68/docs/news.html" target="_blank">36100c0</a>
+<td>
+<a href="https://rawcdn.githack.com/robwschlegel/MHWdetection/36100c0f66df370adc3d94eab7aed243bbb17d68/docs/news.html" target="_blank">36100c0</a>
 </td>
-<td style="text-align:left;">
+<td>
 robwschlegel
 </td>
-<td style="text-align:left;">
+<td>
 2019-03-19
 </td>
-<td style="text-align:left;">
+<td>
 Build site.
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
+<td>
 Rmd
 </td>
-<td style="text-align:left;">
+<td>
 <a href="https://github.com/robwschlegel/MHWdetection/blob/0aac666455ea6d7983ffa28f317bae6ca3c9bc3d/analysis/news.Rmd" target="_blank">0aac666</a>
 </td>
-<td style="text-align:left;">
+<td>
 robwschlegel
 </td>
-<td style="text-align:left;">
+<td>
 2019-03-19
 </td>
-<td style="text-align:left;">
+<td>
 Publish the menu files
 </td>
 </tr>
 </tbody>
 </table>
-</ul>
-<p></details></p>
-<hr />
+</div>
+<hr>
+</div>
+</div>
+</div>
 <div id="section" class="section level1">
+<h1>2019-05-03</h1>
+<ul>
+<li>Polished poster</li>
+<li>Fixed a couple of figures</li>
+<li>Created JPG versions of figures for draft submission</li>
+<li>Submitted to FMars MHW special issue</li>
+<li>Updatted project website</li>
+</ul>
+</div>
+<div id="section-1" class="section level1">
+<h1>2019-05-02</h1>
+<ul>
+<li>Created a poster for the OceanPredict19 conference in Halifax</li>
+</ul>
+</div>
+<div id="section-2" class="section level1">
+<h1>2019-05-02</h1>
+<ul>
+<li>Added some info required in the submission process</li>
+</ul>
+</div>
+<div id="section-3" class="section level1">
+<h1>2019-04-30</h1>
+<ul>
+<li>Re-created all figures as necessary</li>
+<li>Polished Methods</li>
+<li>Polished Results</li>
+<li>Polished Discussion</li>
+<li>Polished Conclusions</li>
+<li>Snag list</li>
+</ul>
+</div>
+<div id="section-4" class="section level1">
+<h1>2019-04-29</h1>
+<ul>
+<li>Further polishing of text</li>
+<li>Created Figure 1</li>
+<li>Prepping for LaTeX typesetting</li>
+</ul>
+</div>
+<div id="section-5" class="section level1">
+<h1>2019-04-28</h1>
+<ul>
+<li>Final round of comments addressed in part</li>
+</ul>
+</div>
+<div id="section-6" class="section level1">
+<h1>2019-04-26</h1>
+<ul>
+<li>Creating remaining figures</li>
+</ul>
+</div>
+<div id="section-7" class="section level1">
+<h1>2019-04-25</h1>
+<ul>
+<li>Working on length fix</li>
+</ul>
+</div>
+<div id="section-8" class="section level1">
+<h1>2019-04-24</h1>
+<ul>
+<li>Troubleshot the global analysis output</li>
+</ul>
+</div>
+<div id="section-9" class="section level1">
+<h1>2019-04-18</h1>
+<ul>
+<li>Unpacking and calculating slopes for global results</li>
+<li>Re-writing Intro</li>
+<li>Fleshing out Discussion</li>
+</ul>
+</div>
+<div id="section-10" class="section level1">
+<h1>2019-04-17</h1>
+<ul>
+<li>Expanded tests to 0.5C/dec trend and 99% missing data</li>
+</ul>
+</div>
+<div id="section-11" class="section level1">
+<h1>2019-04-16</h1>
+<ul>
+<li>Edited manuscript through to the discussion section</li>
+<li>First pass at global analysis nearly finished</li>
+</ul>
+</div>
+<div id="section-12" class="section level1">
+<h1>2019-04-15</h1>
+<ul>
+<li>Global analysis error trapping</li>
+</ul>
+</div>
+<div id="section-13" class="section level1">
+<h1>2019-04-14</h1>
+<ul>
+<li>Implemented and ran code for fixes to sub-optimal data</li>
+<li>Wrote global analysis code</li>
+<li>Began running global analysis code</li>
+</ul>
+</div>
+<div id="section-14" class="section level1">
+<h1>2019-04-12</h1>
+<ul>
+<li>Finished first pass on answer to Question 2</li>
+</ul>
+</div>
+<div id="section-15" class="section level1">
+<h1>2019-04-11</h1>
+<ul>
+<li>Working towards Question 2</li>
+</ul>
+</div>
+<div id="section-16" class="section level1">
+<h1>2019-03-20</h1>
+<ul>
+<li>Basic figures for the re-sample workflow complete</li>
+</ul>
+</div>
+<div id="section-17" class="section level1">
 <h1>2019-03-20</h1>
 <ul>
 <li>Working on the consolidated workflow script</li>
 </ul>
 </div>
-<div id="section-1" class="section level1">
+<div id="section-18" class="section level1">
 <h1>2019-03-19</h1>
 <ul>
 <li>Switching from <code>pkgdown</code> to <code>workflowr</code> for project management/visualisation</li>
 </ul>
 </div>
-<div id="section-2" class="section level1">
+<div id="section-19" class="section level1">
 <h1>2019-03-12</h1>
 <ul>
 <li>Incorporated first round of edits from AJH</li>
 <li>Began writing new decadal detection chunk</li>
 </ul>
 </div>
-<div id="section-3" class="section level1">
+<div id="section-20" class="section level1">
 <h1>2019-03-07</h1>
 <ul>
 <li>Incorporated first round of edits from AJS</li>
 </ul>
 </div>
-<div id="section-4" class="section level1">
+<div id="section-21" class="section level1">
 <h1>2019-03-06</h1>
 <ul>
 <li>Worked out basic event count results for all vignettes</li>
 <li>Final skeleton of paper</li>
 </ul>
 </div>
-<div id="section-5" class="section level1">
+<div id="section-22" class="section level1">
 <h1>2019-03-05</h1>
 <ul>
 <li>More missing data work</li>
 <li>Worked through basic decadal trend results</li>
 </ul>
 </div>
-<div id="section-6" class="section level1">
+<div id="section-23" class="section level1">
 <h1>2019-03-04</h1>
 <ul>
 <li>Working through the missing data analyses</li>
 </ul>
 </div>
-<div id="section-7" class="section level1">
+<div id="section-24" class="section level1">
 <h1>2019-02-26</h1>
 <ul>
 <li>Working through the duration analyses</li>
 </ul>
 </div>
-<div id="section-8" class="section level1">
+<div id="section-25" class="section level1">
 <h1>2019-02-25</h1>
 <ul>
 <li>More work on the skeleton</li>
 <li>Beginning to flesh out the sections</li>
 </ul>
 </div>
-<div id="section-9" class="section level1">
+<div id="section-26" class="section level1">
 <h1>2019-02-17</h1>
 <ul>
 <li>Working over the skeleton</li>
 </ul>
 </div>
-<div id="section-10" class="section level1">
+<div id="section-27" class="section level1">
 <h1>2019-02-15</h1>
 <ul>
 <li>Back to business</li>
 </ul>
 </div>
-<div id="section-11" class="section level1">
+<div id="section-28" class="section level1">
 <h1>2019-01-24</h1>
 <ul>
 <li>Looking over skeleton of main text</li>
-<li>Python issue was addressed</li>
+<li>Python issue was addressed
+<ul>
 <li>The difference was caused by the default nature of how each language did/did not interpolate missing data</li>
 <li>The calculations otherwise still remained the same</li>
+</ul></li>
 </ul>
 </div>
-<div id="section-12" class="section level1">
+<div id="section-29" class="section level1">
 <h1>2019-01-23</h1>
 <ul>
 <li>Performed a deep dive on the issues around missing data and the quantile thresholds
@@ -579,7 +1254,7 @@ Publish the menu files
 </ul></li>
 </ul>
 </div>
-<div id="section-13" class="section level1">
+<div id="section-30" class="section level1">
 <h1>2019-01-17</h1>
 <ul>
 <li>Checked that R and Python base results still match up after heatwaveR v0.3.6 release
@@ -588,50 +1263,54 @@ Publish the menu files
 </ul></li>
 </ul>
 </div>
-<div id="section-14" class="section level1">
+<div id="section-31" class="section level1">
 <h1>2018-10-30</h1>
 <ul>
 <li>More editing on the time series length vignette</li>
 </ul>
 </div>
-<div id="section-15" class="section level1">
+<div id="section-32" class="section level1">
 <h1>2018-10-25</h1>
 <ul>
 <li>Big changes coming through</li>
-<li>Added two new vignettes:</li>
+<li>Added two new vignettes:
+<ul>
 <li><code>Assessing the effects of long-term trends</code></li>
 <li><code>Assessing the effects of variance</code></li>
+</ul></li>
 </ul>
 </div>
-<div id="section-16" class="section level1">
+<div id="section-33" class="section level1">
 <h1>2018-10-24</h1>
 <ul>
 <li>Finished editing the “simply shorter” section of the time series length vignette</li>
 </ul>
 </div>
-<div id="section-17" class="section level1">
+<div id="section-34" class="section level1">
 <h1>2018-10-23</h1>
 <ul>
 <li>Beginning aggressive editing of text</li>
-<li>Allowing calculation of events for all year ranges from 3 – 34</li>
+<li>Allowing calculation of events for all year ranges from 3 – 34
+<ul>
 <li>Not just 10 20, and 30 years</li>
+</ul></li>
 <li>Removing all <code>var</code> results</li>
 </ul>
 </div>
-<div id="section-18" class="section level1">
+<div id="section-35" class="section level1">
 <h1>2018-10-14</h1>
 <ul>
 <li>Incorporated ECJO’s most recent round of comments into the main two vignettes.</li>
 </ul>
 </div>
-<div id="section-19" class="section level1">
+<div id="section-36" class="section level1">
 <h1>2018-09-14</h1>
 <ul>
 <li>Added comparison to <code>r_vs_python.Rmd</code> for how the two languages handle missing data to create climatologies and calculate events.</li>
 <li>Completed the <code>Ice coverage</code> section in <code>missing_data.Rmd</code></li>
 </ul>
 </div>
-<div id="section-20" class="section level1">
+<div id="section-37" class="section level1">
 <h1>2018-09-14</h1>
 <ul>
 <li>Finished up new proposed work on <code>time_series_duration.Rmd</code></li>
@@ -639,33 +1318,33 @@ Publish the menu files
 <li>Recompiled vignettes</li>
 </ul>
 </div>
-<div id="section-21" class="section level1">
+<div id="section-38" class="section level1">
 <h1>2018-09-13</h1>
 <ul>
 <li>Finished up initially proposed work on <code>missing_data.Rmd</code></li>
 <li>Rebuilt site to reflect upversion to v0.0.3</li>
 </ul>
 </div>
-<div id="section-22" class="section level1">
+<div id="section-39" class="section level1">
 <h1>2018-09-11</h1>
 <ul>
 <li>Minor additions</li>
 </ul>
 </div>
-<div id="section-23" class="section level1">
+<div id="section-40" class="section level1">
 <h1>2018-09-10</h1>
 <ul>
 <li>Further editing to <code>time_series_duration.Rmd</code></li>
 </ul>
 </div>
-<div id="section-24" class="section level1">
+<div id="section-41" class="section level1">
 <h1>2018-09-06</h1>
 <ul>
 <li>Finished preliminary random missing data results</li>
 <li>Fixed CI issues with short time series vignette</li>
 </ul>
 </div>
-<div id="section-25" class="section level1">
+<div id="section-42" class="section level1">
 <h1>2018-09-05</h1>
 <ul>
 <li>Further editing to <code>time_series_duration.Rmd</code></li>
@@ -673,81 +1352,81 @@ Publish the menu files
 <li>Rebuilt site to host changes</li>
 </ul>
 </div>
-<div id="section-26" class="section level1">
+<div id="section-43" class="section level1">
 <h1>2018-09-03</h1>
 <ul>
 <li>Added AJS and ECJO feedback into <code>MHWdetection.Rmd</code></li>
 <li>Added AJS and ECJO feedback into <code>time_series_duration.Rmd</code></li>
 </ul>
 </div>
-<div id="section-27" class="section level1">
+<div id="section-44" class="section level1">
 <h1>2018-06-21</h1>
 <ul>
 <li>More in-depths category comparisons made</li>
 </ul>
 </div>
-<div id="section-28" class="section level1">
+<div id="section-45" class="section level1">
 <h1>2018-06-16</h1>
 <ul>
 <li>Some pre-emptive thoughts about more category comparisons</li>
 </ul>
 </div>
-<div id="section-29" class="section level1">
+<div id="section-46" class="section level1">
 <h1>2018-06-13</h1>
 <ul>
 <li>Finished up basic comparisons of categories for different clim periods</li>
 </ul>
 </div>
-<div id="section-30" class="section level1">
+<div id="section-47" class="section level1">
 <h1>2018-06-12</h1>
 <ul>
 <li>Added significance tests for clims of different lengths for both single and re-sampled clims</li>
 </ul>
 </div>
-<div id="section-31" class="section level1">
+<div id="section-48" class="section level1">
 <h1>2018-06-07</h1>
 <ul>
 <li>More work on duration section</li>
 </ul>
 </div>
-<div id="section-32" class="section level1">
+<div id="section-49" class="section level1">
 <h1>2018-06-06</h1>
 <ul>
 <li>More work on duration section</li>
 </ul>
 </div>
-<div id="section-33" class="section level1">
+<div id="section-50" class="section level1">
 <h1>2018-06-05</h1>
 <ul>
 <li>Smoothed out issues preventing site from being built</li>
 <li>Tweaks to benchmarking of the languages</li>
 </ul>
 </div>
-<div id="section-34" class="section level1">
+<div id="section-51" class="section level1">
 <h1>2018-06-01</h1>
 <ul>
 <li>Second section of duration vignette nearly finished</li>
 </ul>
 </div>
-<div id="section-35" class="section level1">
+<div id="section-52" class="section level1">
 <h1>2018-05-31</h1>
 <ul>
 <li>Completed the first section of the duration vignette</li>
 </ul>
 </div>
-<div id="section-36" class="section level1">
+<div id="section-53" class="section level1">
 <h1>2018-05-30</h1>
 <ul>
 <li>Some musings added to the short duration vignette</li>
 </ul>
 </div>
-<div id="section-37" class="section level1">
+<div id="section-54" class="section level1">
 <h1>2018-05-29</h1>
 <ul>
 <li>Skeleton vignettes for the proposed research created</li>
 </ul>
 </div>
-<div id="section-38" class="section level1">
+<div id="section-55" class="section level1">
 <h1>2018-05-25</h1>
 <ul>
 <li>Regenerated vignettes to reflect corrections made in <code>heatwaveR</code> code</li>
@@ -755,13 +1434,14 @@ Publish the menu files
 <li>Added LaTeX folder</li>
 </ul>
 </div>
-<div id="section-39" class="section level1">
+<div id="section-56" class="section level1">
 <h1>2018-05-24</h1>
 <ul>
 <li>Added a <code>NEWS.md</code> file to track changes to the package.</li>
 <li>Ported over the relevant vignettes that were cluttering up the <code>heatwaveR</code> site</li>
 </ul>
 </div>
+
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
 TeX fonts only; see
@@ -774,14 +1454,6 @@ footer is added to webpages before the MathJax javascript. -->
     "HTML-CSS": { availableFonts: ["TeX"] }
   });
 </script>
-
-<hr>
-<p>
-  This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
-  analysis was created with
-  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.1
-</p>
-<hr>
 
 
 </div>
