@@ -6,8 +6,9 @@ output:
     toc: false
 ---
 
+# Overview
+
 Welcome to the research website for the paper _Detecting marine heatwaves with sub-optimal_. This site contains all of the code used in the paper and is set up using the package `workflowr` to ensure openness and reproducibility standards.
 
 Please click on the 'Vignettes' tab above to view particular aspects of the research explained in more detail. This includes all of the code that was used for each individual step.
 
-# Overview
