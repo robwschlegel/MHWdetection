@@ -893,7 +893,7 @@ global_model <- function(df){
 # df <- sst_WA_event
 # peak_date <- focus_WA$date_peak
 # spread <- 183
-fig_1_plot <- function(df, peak_date, spread){
+fig_1_plot <- function(df, peak_date, spread, flat = F, y_label = "Temperature (°C)"){
   # Create category breaks and select slice of data.frame
   clim_cat <- df$clim %>%
     dplyr::mutate(diff = thresh - seas,
@@ -965,7 +965,7 @@ fig_1_plot <- function(df, peak_date, spread){
                             clim_cat$t[round(nrow(clim_cat)*0.75)])) +
     guides(colour = guide_legend(override.aes = list(linetype = c("solid", "solid", "solid",
                                                                   "dashed", "dotdash", "dotted")))) +
-    labs(y = expression(paste("Temperature [", degree, "C]")), x = NULL)
+    labs(y = y_label, x = NULL)
 }
 
 # The code that creates figure 2 - 4
@@ -974,7 +974,7 @@ fig_1_plot <- function(df, peak_date, spread){
 # df <- sst_ALL_plot_long
 # site_sub <- "WA"
 # test_sub <- "length"
-fig_line_plot <- function(site_sub, test_sub, df = sst_ALL_plot_long){
+fig_line_plot <- function(test_sub, df = sst_ALL_plot_long){
 
   # Create x -axis label
   if(test_sub == "length"){
@@ -989,13 +989,20 @@ fig_line_plot <- function(site_sub, test_sub, df = sst_ALL_plot_long){
 
   # Filter data
   df_sub <- df %>%
-    filter(site == site_sub, test == test_sub)
+    filter(test == test_sub)
 
   # Correct percentage missing index_vals
   if(test_sub == "missing" | test_sub == "missing_fix"){
     df_sub$index_vals <- df_sub$index_vals*100
   }
 
+  # Set label names and colours
+  colour_choice <- c("skyblue", "navy",
+                     "springgreen", "forestgreen",
+                     "#ffc866", "#ff6900", "#9e0000", "#2d0000")
+  label_choice <- c("Climatology", "Threshold",
+                   "Duration (days)", "Max. intensity (°C)",
+                   "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")
   # Create figure
   fig_plot <- ggplot(df_sub, aes(x = index_vals, y = p.value.mean, colour = metric)) +
     geom_line() +
@@ -1005,27 +1012,18 @@ fig_line_plot <- function(site_sub, test_sub, df = sst_ALL_plot_long){
                     ymax = p.value.mean+p.value.sd, fill = metric)) +
     geom_point(data = filter(df_sub, p.value.mean <= 0.05), shape = 15, colour = "red", size = 2) +
     geom_hline(yintercept = 0.05, colour = "red", linetype = "dashed") +
-    scale_colour_manual(name = "Output",
-                        values = c("skyblue", "navy",
-                                   "springgreen", "forestgreen",
-                                   "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
-                        labels = c("Seasonal climatology", "Threshold climatology",
-                                   "Duration (days)", "Max. intensity (°C)",
-                                   "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
-    scale_fill_manual(name = "Output",
-                      values = c("skyblue", "navy",
-                                   "springgreen", "forestgreen",
-                                   "#ffc866", "#ff6900", "#9e0000", "#2d0000"),
-                        labels = c("Seasonal climatology", "Threshold climatology",
-                                   "Duration (days)", "Max. intensity (°C)",
-                                   "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")) +
+    scale_colour_manual(values = colour_choice,
+                        labels = label_choice) +
+    scale_fill_manual(values = colour_choice,
+                      labels = label_choice) +
     # scale_y_continuous(limits = c(0, 1)) +
     coord_cartesian(ylim = c(0, 1), expand = F) +
     # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
     # guides(colour = guide_legend(override.aes = list(shape = 15, linetype = NA, size = 3))) +
-    labs(y = "Mean p-value +- SD", x = x_label) +
+    labs(y = "Mean p-value +- SD", x = x_label, colour = NULL, fill = NULL) +
     # facet_grid(site~test, scales = "free_x", switch = "x") +
-    theme(legend.position = "top")
+    theme(legend.position = "top") +
+    facet_wrap(~site_label)
   # fig_plot
   return(fig_plot)
 }

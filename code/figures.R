@@ -81,6 +81,15 @@ ggsave(fig_1, filename = "LaTeX/fig_1.pdf", width = 8, height = 8)
 ggsave(fig_1, filename = "LaTeX/fig_1.png", width = 8, height = 8)
 
 
+# Create flattened figure for poster
+focus_WA_flat <- fig_1_plot(sst_WA_event, focus_WA$date_peak, 183, y_label = NULL)
+focus_NW_Atl_flat <- fig_1_plot(sst_NW_Atl_event, focus_NW_Atl$date_peak, 183, y_label = "Temp. (°C)")
+focus_Med_flat <- fig_1_plot(sst_Med_event, focus_Med$date_peak, 183, y_label = NULL)
+fig_1_flat <- ggarrange(focus_WA_flat, focus_NW_Atl_flat, focus_Med_flat, align = "v",
+                        ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+ggsave(fig_1_flat, filename = "LaTeX/fig_1_flat.png", width = 8, height = 5)
+
+
 # Figure 2 ----------------------------------------------------------------
 
 # The results from the 100 re-sampled length tests
@@ -124,19 +133,26 @@ control_plug_Med <- control_plug("length", "Med")
 # Plug-em
 sst_ALL_plot_long <- rbind(sst_ALL_plot_long, control_plug_WA, control_plug_NW_Atl, control_plug_Med)
 
+# Add label for panels
+sst_ALL_plot_long <- sst_ALL_plot_long %>%
+  mutate(site_label = case_when(site == "WA" ~ "A",
+                                site == "NW_Atl" ~ "B",
+                                site == "Med" ~ "C"))
+
 # Create individual panels
-fig_2_WA <- fig_line_plot("WA", "length")
+# fig_2_WA <- fig_line_plot("WA", "length")
 # fig_2_WA
-fig_2_NW_Atl <- fig_line_plot("NW_Atl", "length")
+# fig_2_NW_Atl <- fig_line_plot("NW_Atl", "length")
 # fig_2_NW_Atl
-fig_2_Med <- fig_line_plot("Med", "length")
+# fig_2_Med <- fig_line_plot("Med", "length")
 # fig_2_Med
 
 # Combine and save
-fig_2 <- ggarrange(fig_2_WA, fig_2_NW_Atl, fig_2_Med,
-                   ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 8, width = 8)
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 8, width = 8)
+# fig_2 <- ggarrange(fig_2_WA, fig_2_NW_Atl, fig_2_Med,
+                   # ncol = 1, nrow = 3, labels = "AUTO", common.legend = T, legend = "top")
+fig_2 <- fig_line_plot("length")
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 4, width = 8)
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 4, width = 8)
 
 
 # Figure 3 ----------------------------------------------------------------

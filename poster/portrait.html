@@ -259,7 +259,7 @@ opacity: 0.6
 .middle p {
 padding-left: 7%;
 padding-right: 7%;
-font-size: 75px;
+font-size: 150px;
 text-align: left;
 }
 .fab {
@@ -327,143 +327,108 @@ span > #tab:mytable {
 
 <div id="introduction" class="section level1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>Welcome to <code>posterdown</code> ! This is my attempt to provide a semi-smooth workflow for those who wish to take their R Markdown skills to the conference world. Most features from R Markdown are available in this package such as Markdown section notation, figure captioning, and even citations like this one <span class="citation">(Allaire, Xie, McPherson, et al. 2018)</span>. The rest of this example poster will show how you can insert typical conference poster features into your own document.</p>
+<p>The <span class="citation">Hobday et al. (2016)</span> and <span class="citation">Hobday et al. (2018)</span> definitions are used here for marine heatwaves (MHWs) and their categories. These events are increasing in duration and intensity around the globe <span class="citation">(Oliver et al. 2018)</span>. Many coastal, oceanic, and polar regions with ecosystems/species that are vulnerable to these events <span class="citation">(Smale et al. 2019)</span> do not have optimal sea water temperature time series available for the detection of MHWs.<br />
+An optimal time series is defined here as meeting these two primary requirements: 1) 30 years long, 2) no missing data. Any time series shorter than 30 years long or missing any data is therefore sub-optimal. The purpose of this study was to determine how confident we may be in our results when using sub-optimal data.</p>
 <div id="objectives" class="section level2">
 <h2><span class="header-section-number">1.1</span> Objectives</h2>
 <ol style="list-style-type: decimal">
-<li>Easy to use reproducible poster design.</li>
-<li>Integration with R Markdown.</li>
-<li>Easy transition from <code>posterdown</code> to <code>thesisdown</code> or <code>rticles</code> <span class="citation">(Allaire, Xie, R Foundation, et al. 2018; Solomon 2019)</span>.</li>
+<li>Find the sub-optimal data limits for detecting MHWs<br />
+</li>
+<li>Quantify the effects of sub-optimal data on individual MHWs<br />
+</li>
+<li>Determine if these effects are consistent around the globe</li>
 </ol>
 </div>
 </div>
 <div id="methods" class="section level1">
 <h1><span class="header-section-number">2</span> Methods</h1>
-<p>This package uses the same workflow approach as the R Markdown you know and love. Basically it goes from RMarkdown &gt; Knitr &gt; Markdown &gt; Pandoc &gt; HTML/CSS &gt; PDF. You can even use the bibliography the same way <span class="citation">(Turner et al. 2014)</span>.</p>
+<ul>
+<li>Reference time series from the <code>heatwaveR</code> package <span class="citation">(Schlegel and Smit 2018)</span> were re-sampled 100 times and made increasingly sub-optimal by:
+<ul>
+<li>Removing one year of data; 37 – 10 years</li>
+<li>Randomly removing 1% of data; 0 – 50%</li>
+<li>Adding linear trend of 0.01°C/dec.; 0.00 – 0.50°C/dec.</li>
+</ul></li>
+<li>The effect on an entire time series and one focus MHW (Figure <a href="#fig:event-flames">2.1</a>) were measured</li>
+<li>The sub-optimal treatments were performed on global NOAA OISST product and effects measured</li>
+</ul>
+<div class="figure" style="text-align: center"><span id="fig:event-flames"></span>
+<img src="/home/rws/MHWdetection/LaTeX/fig_1_flat.png" alt="Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks." width="90%" />
+<p class="caption">
+Figure 2.1: Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks.
+</p>
+</div>
 </div>
 <div id="results" class="section level1">
 <h1><span class="header-section-number">3</span> Results</h1>
-<p>I suggesting checking out the <code>kableExtra</code> package and its in depth documentation on customizing these tables found <a href="https://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf">here</a> <span class="citation">(Zhu 2019)</span>. You can reference tables like so: Table <a href="#tab:mytable">3.1</a>. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam placerat augue at velit tincidunt semper. Donec elementum porta posuere. Nullam interdum, odio at tincidunt feugiat, turpis nisi blandit eros, eu posuere risus felis non quam. Nam eget lorem odio. Duis et aliquet orci. Phasellus nec viverra est.</p>
-<table>
-<caption><span id="tab:mytable">Table 3.1: </span>Table caption.</caption>
-<thead>
-<tr class="header">
-<th align="center">Sepal.Length</th>
-<th align="center">Sepal.Width</th>
-<th align="center">Petal.Length</th>
-<th align="center">Petal.Width</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">5.1</td>
-<td align="center">3.5</td>
-<td align="center">1.4</td>
-<td align="center">0.2</td>
-</tr>
-<tr class="even">
-<td align="center">4.9</td>
-<td align="center">3.0</td>
-<td align="center">1.4</td>
-<td align="center">0.2</td>
-</tr>
-<tr class="odd">
-<td align="center">4.7</td>
-<td align="center">3.2</td>
-<td align="center">1.3</td>
-<td align="center">0.2</td>
-</tr>
-<tr class="even">
-<td align="center">4.6</td>
-<td align="center">3.1</td>
-<td align="center">1.5</td>
-<td align="center">0.2</td>
-</tr>
-<tr class="odd">
-<td align="center">5.0</td>
-<td align="center">3.6</td>
-<td align="center">1.4</td>
-<td align="center">0.2</td>
-</tr>
-<tr class="even">
-<td align="center">5.4</td>
-<td align="center">3.9</td>
-<td align="center">1.7</td>
-<td align="center">0.4</td>
-</tr>
-<tr class="odd">
-<td align="center">4.6</td>
-<td align="center">3.4</td>
-<td align="center">1.4</td>
-<td align="center">0.3</td>
-</tr>
-<tr class="even">
-<td align="center">5.0</td>
-<td align="center">3.4</td>
-<td align="center">1.5</td>
-<td align="center">0.2</td>
-</tr>
-<tr class="odd">
-<td align="center">4.4</td>
-<td align="center">2.9</td>
-<td align="center">1.4</td>
-<td align="center">0.2</td>
-</tr>
-<tr class="even">
-<td align="center">4.9</td>
-<td align="center">3.1</td>
-<td align="center">1.5</td>
-<td align="center">0.1</td>
-</tr>
-</tbody>
-</table>
-<p>Or with figures: Figure <a href="#fig:standard-plot">3.1</a>.</p>
-<div class="figure" style="text-align: center"><span id="fig:standard-plot"></span>
-<img src="portrait_files/figure-html/standard-plot-1.png" alt="Great figure!" width="80%" />
+<ul>
+<li>MHWs detected with 10 years of data do not differ significantly from those detected with 30 years of data (Figure <a href="#fig:length-KS">3.1</a>)<br />
+</li>
+<li>20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events <a href="#fig:effect-event">3.2</a>)<br />
+</li>
+<li>Individual MHWs in 10 year time series around the globe are on average 10% less intense (Figure <a href="#fig:global-intensity">3.3</a>) and 28% shorter than the same event in a 30 year time series<br />
+<!-- - The shifting up or down of the mean climatology is the primary driver of change in individual events   -->
+<!-- - The change in the count of events is caused by missing data   --></li>
+</ul>
+<div class="figure" style="text-align: center"><span id="fig:length-KS"></span>
+<img src="/home/rws/MHWdetection/LaTeX/fig_2.png" alt="The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results." width="90%" />
 <p class="caption">
-Figure 3.1: Great figure!
+Figure 3.1: The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results.
 </p>
 </div>
-<div class="figure" style="text-align: center"><span id="fig:morefigs"></span>
-<img src="portrait_files/figure-html/morefigs-1.png" alt="Amazing, right?!" width="80%" />
+<div class="figure" style="text-align: center"><span id="fig:effect-event"></span>
+<img src="/home/rws/MHWdetection/LaTeX/fig_3.png" alt="The effect on the focus MHWs (Figure \@ref(fig:event-flames)) given the three different sub-optimal data challenges." width="90%" />
 <p class="caption">
-Figure 3.2: Amazing, right?!
+Figure 3.2: The effect on the focus MHWs (Figure <a href="#fig:event-flames">2.1</a>) given the three different sub-optimal data challenges.
 </p>
 </div>
+<div class="figure" style="text-align: center"><span id="fig:global-intensity"></span>
+<img src="/home/rws/MHWdetection/LaTeX/fig_4.png" alt="Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened." width="90%" />
+<p class="caption">
+Figure 3.3: Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened.
+</p>
 </div>
-<div id="conclusion" class="section level1">
-<h1><span class="header-section-number">4</span> Conclusion</h1>
-<p>Try <code>posterdown</code> out! Hopefully you like it!</p>
+<!-- ```{r, out.width='90%', fig.align='center', fig.cap='Map showing the trends in increasing or decreasing duration of MHWs as a time series is lengthened.'} -->
+<!-- knitr::include_graphics("~/MHWdetection/LaTeX/fig_5.png") -->
+<!-- ``` -->
+</div>
+<div id="conclusions" class="section level1">
+<h1><span class="header-section-number">4</span> Conclusions</h1>
+<p>The MHW detection algorithm provides robust results that are insensitive to sub-optimal data challenges.<br />
+Missing data has a greater effect on MHWs than time series length. Linear interpolation is an effective fix for missing data up to 40%.<br />
+Time series length has a less predictable effect than missing data.<br />
+The shifting up or down of the mean climatology is the primary driver of change in MHWs.<br />
+Optimal data should still be used when possible.</p>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>
 <div id="refs" class="references">
-<div id="ref-rmarkdown">
-<p>Allaire, JJ, Yihui Xie, Jonathan McPherson, Javier Luraschi, Kevin Ushey, Aron Atkins, Hadley Wickham, Joe Cheng, Winston Chang, and Richard Iannone. 2018. <em>Rmarkdown: Dynamic Documents for R</em>. <a href="https://rmarkdown.rstudio.com">https://rmarkdown.rstudio.com</a>.</p>
+<div id="ref-Hobday2016">
+<p>Hobday, Alistair J, Lisa V Alexander, Sarah E Perkins, Dan A Smale, Sandra C Straub, Eric CJ Oliver, Jessica A Benthuysen, et al. 2016. “A Hierarchical Approach to Defining Marine Heatwaves.” <em>Progress in Oceanography</em> 141. Elsevier: 227–38.</p>
 </div>
-<div id="ref-rticles">
-<p>Allaire, JJ, Yihui Xie, R Foundation, Hadley Wickham, Journal of Statistical Software, Ramnath Vaidyanathan, Association for Computing Machinery, et al. 2018. <em>Rticles: Article Formats for R Markdown</em>. <a href="https://CRAN.R-project.org/package=rticles">https://CRAN.R-project.org/package=rticles</a>.</p>
+<div id="ref-Hobday2018">
+<p>Hobday, Alistair J, Eric CJ Oliver, Alex Sen Gupta, Jessica A Benthuysen, Michael T Burrows, Markus G Donat, Neil J Holbrook, et al. 2018. “Categorizing and Naming Marine Heatwaves.” <em>Oceanography</em> 31 (2). JSTOR: 162–73.</p>
 </div>
-<div id="ref-thesisdown">
-<p>Solomon, Nick. 2019. <em>Thesisdown: An Updated R Markdown Thesis Template Using the Bookdown Package</em>.</p>
+<div id="ref-Oliver2018">
+<p>Oliver, Eric CJ, Markus G Donat, Michael T Burrows, Pippa J Moore, Dan A Smale, Lisa V Alexander, Jessica A Benthuysen, et al. 2018. “Longer and More Frequent Marine Heatwaves over the Past Century.” <em>Nature Communications</em> 9 (1). Nature Publishing Group: 1324.</p>
 </div>
-<div id="ref-turnerControlsWaterBalance2014">
-<p>Turner, Kevin W., Brent B. Wolfe, Thomas W. D. Edwards, Trevor C. Lantz, Roland I. Hall, and Guillaume Larocque. 2014. “Controls on Water Balance of Shallow Thermokarst Lakes and Their Relations with Catchment Characteristics: A Multi-Year, Landscape-Scale Assessment Based on Water Isotope Tracers and Remote Sensing in Old Crow Flats, Yukon (Canada).” <em>Global Change Biology</em> 20 (5): 1585–1603. <a href="https://doi.org/10.1111/gcb.12465">https://doi.org/10.1111/gcb.12465</a>.</p>
+<div id="ref-Schlegel2018">
+<p>Schlegel, Robert W, and Albertus J Smit. 2018. “HeatwaveR: A Central Algorithm for the Detection of Heatwaves and Cold-Spells.” <em>The Journal of Open Source Software</em> 3 (27): 821.</p>
 </div>
-<div id="ref-kableExtra2019">
-<p>Zhu, Hao. 2019. <em>KableExtra: Construct Complex Table with ’Kable’ and Pipe Syntax</em>. <a href="https://CRAN.R-project.org/package=kableExtra">https://CRAN.R-project.org/package=kableExtra</a>.</p>
+<div id="ref-Smale2019">
+<p>Smale, Dan A, Thomas Wernberg, Eric CJ Oliver, Mads Thomsen, Ben P Harvey, Sandra C Straub, Michael T Burrows, et al. 2019. “Marine Heatwaves Threaten Global Biodiversity and the Provision of Ecosystem Services.” <em>Nature Climate Change</em> 9. Nature Publishing Group: 306–12.</p>
 </div>
 </div>
 </div>
 
 </div>
 <div class="column middle">
-<p>1) Marine heatwaves (MHWs) detected with 10 years of data (sub-optimal) do not differ significantly from those detected with 30 years of data (optimal)<br><br> 2) Individual MHWs in 10 year time series are on average 10% less intense and 28% shorter than the same event in a 30 year time series<br><br> 3) 20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events</p>
+<p><strong>Marine heatwaves</strong> detected in time series as short as <strong>10 years</strong> and <strong>missing 20% data</strong> are comparable to those detected in <strong>complete 30 year</strong> time series.</p>
 </div>
 <div class="emphasis_bottom">
 <img id="middle-img-left" src=Figures/heatwaveR_logo.png>
 <img id="middle-img-center" src=Figures/MHWdetectionQR.png>
-<img id="middle-img-right" src="Figures/posterdownlogo.png">
+<img id="middle-img-right" src="Figures/all_logo_long.jpg">
 </div>
 </div>
 

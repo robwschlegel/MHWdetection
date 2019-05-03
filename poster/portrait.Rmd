@@ -38,14 +38,12 @@ caption_fontsize: "20pt"
 middle_fontfamily: "Special Elite"
 middle_textcol: "#FFFFFF"
 middle:textalpha: 90
-middle_fontsize: "75px"
+middle_fontsize: "150px"
 main_findings:
-  - "1) Marine heatwaves (MHWs) detected with 10 years of data (sub-optimal) do not differ significantly from those detected with 30 years of data (optimal)"
-  - "2) Individual MHWs in 10 year time series are on average 10% less intense and 28% shorter than the same event in a 30 year time series"
-  - "3) 20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events"
+  - "__Marine heatwaves__ detected in time series as short as __10 years__ and __missing 20% data__ are comparable to those detected in __complete 30 year__ time series."
 logoleft_name: "Figures/heatwaveR_logo.png"
 logocenter_name: "Figures/MHWdetectionQR.png"
-logoright_name: "Figures/posterdownlogo.png"
+logoright_name: "Figures/all_logo_long.jpg"
 #---POSTER BODY OPTIONS---#
 primary_colour: '#0b4545'
 secondary_colour: '#008080'
@@ -61,8 +59,9 @@ output:
     pandoc_args: --mathjax
     highlight: espresso
     number_sections: true
-bibliography: MyBib.bib
+bibliography: MHWdetection.bib
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   results = 'asis',
@@ -76,42 +75,58 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Welcome to `posterdown` ! This is my attempt to provide a semi-smooth workflow for those who wish to take their R Markdown skills to the conference world. Most features from R Markdown are available in this package such as Markdown section notation, figure captioning, and even citations like this one [@rmarkdown]. The rest of this example poster will show how you can insert typical conference poster features into your own document. 
-
+The @Hobday2016 and @Hobday2018 definitions are used here for marine heatwaves (MHWs) and their categories. These events are increasing in duration and intensity around the globe [@Oliver2018]. Many coastal, oceanic, and polar regions with ecosystems/species that are vulnerable to these events [@Smale2019] do not have optimal sea water temperature time series available for the detection of MHWs.   
+An optimal time series is defined here as meeting these two primary requirements: 1) 30 years long, 2) no missing data. Any time series shorter than 30 years long or missing any data is therefore sub-optimal. The purpose of this study was to determine how confident we may be in our results when using sub-optimal data.
+  
 ## Objectives
 
-1. Easy to use reproducible poster design. 
-2. Integration with R Markdown.
-3. Easy transition from `posterdown` to `thesisdown` or `rticles` [@rticles; @thesisdown].
+1. Find the sub-optimal data limits for detecting MHWs  
+2. Quantify the effects of sub-optimal data on individual MHWs  
+3. Determine if these effects are consistent around the globe  
 
 # Methods
 
-This package uses the same workflow approach as the R Markdown you know and love. Basically it goes from RMarkdown > Knitr > Markdown > Pandoc > HTML/CSS > PDF. You can even use the bibliography the same way [@turnerControlsWaterBalance2014].
+- Reference time series from the `heatwaveR` package [@Schlegel2018] were re-sampled 100 times and made increasingly sub-optimal by:
+    - Removing one year of data; 37 -- 10 years
+    - Randomly removing 1% of data; 0 -- 50% 
+    - Adding linear trend of 0.01°C/dec.; 0.00 -- 0.50°C/dec.
+- The effect on an entire time series and one focus MHW (Figure \@ref(fig:event-flames)) were measured
+- The sub-optimal treatments were performed on global NOAA OISST product and effects measured
+
+```{r event-flames, out.width='90%', fig.align='center', fig.cap='Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks.', fig.height=2}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_1_flat.png")
+```
 
 # Results
 
-I suggesting checking out the `kableExtra` package and its in depth documentation on customizing these tables found [here](https://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf) [@kableExtra2019]. You can reference tables like so: Table \@ref(tab:mytable). Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam placerat augue at velit tincidunt semper. Donec elementum porta posuere. Nullam interdum, odio at tincidunt feugiat, turpis nisi blandit eros, eu posuere risus felis non quam. Nam eget lorem odio. Duis et aliquet orci. Phasellus nec viverra est.
+- MHWs detected with 10 years of data do not differ significantly from those detected with 30 years of data (Figure \@ref(fig:length-KS))  
+- 20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events \@ref(fig:effect-event))  
+- Individual MHWs in 10 year time series around the globe are on average 10% less intense (Figure \@ref(fig:global-intensity)) and 28% shorter than the same event in a 30 year time series  
+<!-- - The shifting up or down of the mean climatology is the primary driver of change in individual events   -->
+<!-- - The change in the count of events is caused by missing data   -->
 
-```{r mytable, out.width='80%', fig.align='center'}
-knitr::kable(iris[1:10, 1:4], caption = 'Table caption.', align = 'c')
+```{r length-KS, out.width='90%', fig.align='center', fig.cap='The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results.', fig.height=2}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_2.png")
 ```
 
-Or with figures: Figure \@ref(fig:standard-plot).
-
-```{r standard-plot, out.width='80%', fig.align='center', fig.cap='Great figure!', fig.height=5}
-plot(mtcars[1:2])
+```{r effect-event, out.width='90%', fig.align='center', fig.cap='The effect on the focus MHWs (Figure \\@ref(fig:event-flames)) given the three different sub-optimal data challenges.', fig.height=5}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_3.png")
 ```
 
-```{r morefigs, out.width='80%', fig.cap='Amazing, right?!', fig.height=5}
-data <- iris
-
-plot(x = data$Sepal.Length, y = data$Sepal.Width, col = data$Species, pch = 19, xlab = "Sepal Length (cm)", ylab = "Sepal Width (cm)")
-
+```{r global-intensity, out.width='90%', fig.align='center', fig.cap='Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened.', fig.height=5}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_4.png")
 ```
 
+<!-- ```{r, out.width='90%', fig.align='center', fig.cap='Map showing the trends in increasing or decreasing duration of MHWs as a time series is lengthened.'} -->
+<!-- knitr::include_graphics("~/MHWdetection/LaTeX/fig_5.png") -->
+<!-- ``` -->
 
-# Conclusion
+# Conclusions
 
-Try `posterdown` out! Hopefully you like it!
+The MHW detection algorithm provides robust results that are insensitive to sub-optimal data challenges.  
+Missing data has a greater effect on MHWs than time series length. Linear interpolation is an effective fix for missing data up to 40%.  
+Time series length has a less predictable effect than missing data.  
+The shifting up or down of the mean climatology is the primary driver of change in MHWs.  
+Optimal data should still be used when possible.
 
 # References
