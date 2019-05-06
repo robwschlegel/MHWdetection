@@ -22,7 +22,7 @@ navbar:
       - text: "Best practices"
         href: best_practices.html
     - text: "Poster"
-      href: ../poster/portrait.pdf
+      href: portrait.pdf
     - text: "License"
       href: license.html
     - text: News
