@@ -8,7 +8,8 @@ output:
 
 # Overview
 
-Welcome to the research website for the paper _Detecting marine heatwaves with sub-optimal_. This site contains all of the code used in the paper and is set up using the package `workflowr` to ensure openness and reproducibility standards.
+Welcome to the research website for the paper _Detecting marine heatwaves with sub-optimal data_. This site contains all of the code used in the paper and is set up using the package `workflowr` to ensure openness and reproducibility standards.
 
-Please click on the 'Vignettes' tab above to view particular aspects of the research explained in more detail. This includes all of the code that was used for each individual step.
+Please click on the 'Vignettes' tab above to view particular aspects of the research explained in more detail. This includes all of the code that was used for each individual step. Clicking the 'Poster' tab above will download the poster that was created for this research. This poster may also be seen at the following three conferences: OceanPredict'19, IMBeR, and CMOS/IUGG.
 
+The code used for the central analysis in the paper, currently in review in Frontiers in Marine Science, may be found at the GitHub repository whose link may be found in the top right corner of this site.
