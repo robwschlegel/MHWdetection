@@ -1,3 +1,7 @@
+# 2019-05-06
+
+* Uploaded poster to GitHub page
+
 # 2019-05-03
 
 * Polished poster
