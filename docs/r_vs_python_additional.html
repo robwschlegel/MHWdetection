@@ -11,7 +11,7 @@
 
 <meta name="author" content="Robert W Schlegel" />
 
-<meta name="date" content="2019-03-19" />
+<meta name="date" content="2019-05-06" />
 
 <title>Additional functionality for MHW outputs in R and Python</title>
 
@@ -279,23 +279,56 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHWdetection</a>
+      <a class="navbar-brand" href="index.html">MHW detection</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="index.html">Home</a>
+  <a href="index.html">Overview</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    </li>
+    <li>
+      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+    </li>
+    <li>
+      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+    </li>
+    <li>
+      <a href="time_series_duration.html">Effects of short time series</a>
+    </li>
+    <li>
+      <a href="missing_data.html">Effects of missing data</a>
+    </li>
+    <li>
+      <a href="trend.html">Effects of long-term trends</a>
+    </li>
+    <li>
+      <a href="best_practices.html">Best practices</a>
+    </li>
+  </ul>
 </li>
 <li>
-  <a href="about.html">About</a>
+  <a href="portrait.pdf">Poster</a>
 </li>
 <li>
   <a href="license.html">License</a>
 </li>
+<li>
+  <a href="news.html">News</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/jdblischak/workflowr">
+  <a href="https://github.com/robwschlegel/MHWdetection">
     <span class="fa fa-github"></span>
      
   </a>
@@ -318,71 +351,86 @@ div.section {
 
 <h1 class="title toc-ignore">Additional functionality for MHW outputs in R and Python</h1>
 <h4 class="author"><em>Robert W Schlegel</em></h4>
-<h4 class="date"><em>2019-03-19</em></h4>
+<h4 class="date"><em>2019-05-06</em></h4>
 
 </div>
 
 
-<p><strong>Last updated:</strong> 2019-03-19</p>
+<p><strong>Last updated:</strong> 2019-05-06</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
 <p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
 <p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(20190319)</code> </summary></p>
-<p>The command <code>set.seed(20190319)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
+<p>The command <code>set.seed(666)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
 <p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/64ac134076a04088c834291ce86c6405eedaf672" target="_blank">64ac134</a> </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/b1a7e3fcf3dacdd2ba4d7cd79a44fef13dd6191f" target="_blank">b1a7e3f</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    vignettes/data/sst_ALL_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_event_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_flat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_cat_chi.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_event_cat.Rdata
-    Ignored:    vignettes/data/sst_ALL_miss_clim_only.Rdata
-    Ignored:    vignettes/data/sst_ALL_repl.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_aov_tukey.Rdata
-    Ignored:    vignettes/data/sst_ALL_smooth_event.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend.Rdata
-    Ignored:    vignettes/data/sst_ALL_trend_clim_event_cat.Rdata
-
-Untracked files:
-    Untracked:  analysis/bibliography.bib
-    Untracked:  analysis/data/
-    Untracked:  code/functions.R
-    Untracked:  code/workflow.R
-    Untracked:  data/sst_WA.csv
-    Untracked:  docs/figure/
+    Ignored:    data/global/
+    Ignored:    data/global_KS_cat.Rdata
+    Ignored:    data/global_KS_clim.Rdata
+    Ignored:    data/global_KS_event.Rdata
+    Ignored:    data/global_dec_trend.Rdata
+    Ignored:    data/global_effect_cat.Rdata
+    Ignored:    data/global_effect_clim.Rdata
+    Ignored:    data/global_effect_event.Rdata
+    Ignored:    data/global_effect_event_length_slope.Rdata
+    Ignored:    data/global_effect_event_slope.Rdata
+    Ignored:    data/sst_ALL_add_trend.Rdata
+    Ignored:    data/sst_ALL_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
+    Ignored:    data/sst_ALL_flat.Rdata
+    Ignored:    data/sst_ALL_knockout.Rdata
+    Ignored:    data/sst_ALL_length.Rdata
+    Ignored:    data/sst_ALL_length_width_10.Rdata
+    Ignored:    data/sst_ALL_length_width_20.Rdata
+    Ignored:    data/sst_ALL_length_width_30.Rdata
+    Ignored:    data/sst_ALL_length_width_40.Rdata
+    Ignored:    data/sst_ALL_length_width_50.Rdata
+    Ignored:    data/sst_ALL_missing.Rdata
+    Ignored:    data/sst_ALL_missing_fix.Rdata
+    Ignored:    data/sst_ALL_repl.Rdata
+    Ignored:    data/sst_ALL_trended.Rdata
 
 Unstaged changes:
-    Modified:   NEWS.md
+    Modified:   analysis/Climatologies_and_baselines.Rmd
+    Modified:   analysis/best_practices.Rmd
+    Modified:   analysis/r_vs_python.Rmd
+    Modified:   analysis/r_vs_python_arguments.Rmd
 
 </code></pre>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</details>
 </li>
 </ul>
-<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<details>
+<summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
 <ul>
 <table style="border-collapse:separate; border-spacing:5px;">
 <thead>
@@ -407,6 +455,23 @@ Message
 <tbody>
 <tr>
 <td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/r_vs_python_additional.html" target="_blank">fa7fd57</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 Rmd
 </td>
 <td style="text-align:left;">
@@ -425,7 +490,7 @@ Publish analysis files
 </tbody>
 </table>
 </ul>
-<p></details></p>
+</details>
 <hr />
 <div id="overview" class="section level2">
 <h2>Overview</h2>
@@ -535,7 +600,7 @@ category_r</code></pre>
 <h2>References</h2>
 <div id="refs">
 <div id="ref-Hobday2018">
-<p>Hobday, Alistair J., Eric C.J. Oliver, Alex Sen Gupta, Jessica A. Benthysen, Michael T. Burrows, Markus G. Donat, Neil J. Holbrook, et al. 2018. “Categorizing and naming marine heatwaves.” <em>Oceanography</em> 31 (2). doi:<a href="https://doi.org/10.5670/oceanog.2018.205">10.5670/oceanog.2018.205</a>.</p>
+<p>Hobday, Alistair J., Eric C.J. Oliver, Alex Sen Gupta, Jessica A. Benthysen, Michael T. Burrows, Markus G. Donat, Neil J. Holbrook, et al. 2018. “Categorizing and naming marine heatwaves.” <em>Oceanography</em> 31 (2). <a href="https://doi.org/10.5670/oceanog.2018.205">https://doi.org/10.5670/oceanog.2018.205</a>.</p>
 </div>
 </div>
 </div>

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Robert W Schlegel" />
 
-<meta name="date" content="2019-03-19" />
+<meta name="date" content="2019-05-06" />
 
 <title>Arguments for MHW outputs in R and Python</title>
 
@@ -279,18 +279,12 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Detecting marine heatwaves from imperfect data</a>
+      <a class="navbar-brand" href="index.html">MHW detection</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="index.html">Home</a>
-</li>
-<li>
-  <a href="about.html">About</a>
-</li>
-<li>
-  <a href="license.html">License</a>
+  <a href="index.html">Overview</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -309,24 +303,27 @@ div.tocify {
       <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
     </li>
     <li>
-      <a href="Short_climatologies.html">Short climatologies</a>
-    </li>
-    <li>
-      <a href="Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
-    </li>
-    <li>
       <a href="time_series_duration.html">Effects of short time series</a>
     </li>
     <li>
       <a href="missing_data.html">Effects of missing data</a>
     </li>
     <li>
-      <a href="gridded_products.html">Difference between gridded products</a>
+      <a href="trend.html">Effects of long-term trends</a>
     </li>
     <li>
       <a href="best_practices.html">Best practices</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="portrait.pdf">Poster</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+<li>
+  <a href="news.html">News</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -354,219 +351,85 @@ div.section {
 
 <h1 class="title toc-ignore">Arguments for MHW outputs in R and Python</h1>
 <h4 class="author"><em>Robert W Schlegel</em></h4>
-<h4 class="date"><em>2019-03-19</em></h4>
+<h4 class="date"><em>2019-05-06</em></h4>
 
 </div>
 
 
-<p><strong>Last updated:</strong> 2019-03-19</p>
+<p><strong>Last updated:</strong> 2019-05-06</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
-<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+<details>
+<p><summary> <strong style="color:red;">✖</strong> <strong>R Markdown file:</strong> uncommitted changes </summary> The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
 <p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
 <p>The command <code>set.seed(666)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
 <p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/970b22c7c2cae4e09824722f8bf1d87fb5118a73" target="_blank">970b22c</a> </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/b1a7e3fcf3dacdd2ba4d7cd79a44fef13dd6191f" target="_blank">b1a7e3f</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    data/sst_ALL_clim_only.Rdata
-    Ignored:    data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    data/global/
+    Ignored:    data/global_KS_cat.Rdata
+    Ignored:    data/global_KS_clim.Rdata
+    Ignored:    data/global_KS_event.Rdata
+    Ignored:    data/global_dec_trend.Rdata
+    Ignored:    data/global_effect_cat.Rdata
+    Ignored:    data/global_effect_clim.Rdata
+    Ignored:    data/global_effect_event.Rdata
+    Ignored:    data/global_effect_event_length_slope.Rdata
+    Ignored:    data/global_effect_event_slope.Rdata
+    Ignored:    data/sst_ALL_add_trend.Rdata
+    Ignored:    data/sst_ALL_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
     Ignored:    data/sst_ALL_flat.Rdata
-    Ignored:    data/sst_ALL_miss.Rdata
-    Ignored:    data/sst_ALL_miss_cat_chi.Rdata
-    Ignored:    data/sst_ALL_miss_clim_event_cat.Rdata
-    Ignored:    data/sst_ALL_miss_clim_only.Rdata
-    Ignored:    data/sst_ALL_miss_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_knockout.Rdata
+    Ignored:    data/sst_ALL_length.Rdata
+    Ignored:    data/sst_ALL_length_width_10.Rdata
+    Ignored:    data/sst_ALL_length_width_20.Rdata
+    Ignored:    data/sst_ALL_length_width_30.Rdata
+    Ignored:    data/sst_ALL_length_width_40.Rdata
+    Ignored:    data/sst_ALL_length_width_50.Rdata
+    Ignored:    data/sst_ALL_missing.Rdata
+    Ignored:    data/sst_ALL_missing_fix.Rdata
     Ignored:    data/sst_ALL_repl.Rdata
-    Ignored:    data/sst_ALL_smooth.Rdata
-    Ignored:    data/sst_ALL_smooth_aov_tukey.Rdata
-    Ignored:    data/sst_ALL_smooth_event.Rdata
-    Ignored:    data/sst_ALL_trend.Rdata
-    Ignored:    data/sst_ALL_trend_clim_event_cat.Rdata
-
-Untracked files:
-    Untracked:  analysis/bibliography.bib
-    Untracked:  code/functions.R
-    Untracked:  code/workflow.R
-    Untracked:  data/.gitignore
-    Untracked:  data/clim_py.csv
-    Untracked:  data/clim_py_joinAG_1.csv
-    Untracked:  data/clim_py_joinAG_5.csv
-    Untracked:  data/clim_py_joinAG_no.csv
-    Untracked:  data/clim_py_minD_3.csv
-    Untracked:  data/clim_py_minD_7.csv
-    Untracked:  data/clim_py_pctile_80.csv
-    Untracked:  data/clim_py_pctile_95.csv
-    Untracked:  data/clim_py_pctile_99.csv
-    Untracked:  data/clim_py_random.csv
-    Untracked:  data/clim_py_spw_11.csv
-    Untracked:  data/clim_py_spw_51.csv
-    Untracked:  data/clim_py_spw_no.csv
-    Untracked:  data/clim_py_whw_3.csv
-    Untracked:  data/clim_py_whw_7.csv
-    Untracked:  data/mhwBlock.csv
-    Untracked:  data/mhws_py.csv
-    Untracked:  data/mhws_py_joinAG_1.csv
-    Untracked:  data/mhws_py_joinAG_5.csv
-    Untracked:  data/mhws_py_joinAG_no.csv
-    Untracked:  data/mhws_py_minD_3.csv
-    Untracked:  data/mhws_py_minD_7.csv
-    Untracked:  data/mhws_py_pctile_80.csv
-    Untracked:  data/mhws_py_pctile_95.csv
-    Untracked:  data/mhws_py_pctile_99.csv
-    Untracked:  data/mhws_py_random.csv
-    Untracked:  data/mhws_py_spw_11.csv
-    Untracked:  data/mhws_py_spw_51.csv
-    Untracked:  data/mhws_py_spw_no.csv
-    Untracked:  data/mhws_py_whw_3.csv
-    Untracked:  data/mhws_py_whw_7.csv
-    Untracked:  data/sst_ALL.Rdata
-    Untracked:  data/sst_ALL_KS.Rdata
-    Untracked:  data/sst_ALL_cat_chi.Rdata
-    Untracked:  data/sst_ALL_clim_category_count.Rdata
-    Untracked:  data/sst_ALL_con.Rdata
-    Untracked:  data/sst_ALL_detrend.Rdata
-    Untracked:  data/sst_ALL_event_cor.Rdata
-    Untracked:  data/sst_ALL_miss_clim_KS_p.Rdata
-    Untracked:  data/sst_ALL_miss_clim_aov_p.Rdata
-    Untracked:  data/sst_ALL_miss_clim_aov_tukey.Rdata
-    Untracked:  data/sst_ALL_miss_event_CI.Rdata
-    Untracked:  data/sst_ALL_smooth_R2.Rdata
-    Untracked:  data/sst_ALL_smooth_R2_base.Rdata
-    Untracked:  data/sst_ALL_smooth_cor_base.Rdata
-    Untracked:  data/sst_ALL_smooth_real_category.Rdata
-    Untracked:  data/sst_ALL_trend_cat_chi.Rdata
-    Untracked:  data/sst_ALL_trend_clim_KS_p.Rdata
-    Untracked:  data/sst_ALL_trend_clim_aov_tukey.Rdata
-    Untracked:  data/sst_ALL_trend_clim_only.Rdata
-    Untracked:  data/sst_ALL_trend_event_CI.Rdata
-    Untracked:  data/sst_ALL_trend_event_aov_tukey.Rdata
-    Untracked:  data/sst_WA.csv
-    Untracked:  data/sst_WA_miss_ice.csv
-    Untracked:  data/sst_WA_miss_random.csv
+    Ignored:    data/sst_ALL_trended.Rdata
 
 Unstaged changes:
-    Deleted:    .Rbuildignore
-    Modified:   .gitignore
-    Deleted:    DESCRIPTION
-    Deleted:    NAMESPACE
-    Modified:   NEWS.md
-    Deleted:    R/MHWdetection-package.R
-    Deleted:    R/placeholder.R
-    Modified:   README.md
-    Deleted:    _pkgdown.yml
-    Modified:   _workflowr.yml
-    Modified:   analysis/_site.yml
-    Deleted:    docs/articles/fig/heatwaveR_v3.svg
-    Deleted:    docs/docsearch.css
-    Deleted:    docs/docsearch.js
-    Deleted:    docs/link.svg
-    Deleted:    docs/pkgdown.css
-    Deleted:    docs/pkgdown.js
-    Deleted:    docs/pkgdown.yml
-    Deleted:    docs/sitemap.xml
-    Deleted:    man/MHWdetection-package.Rd
-    Deleted:    man/placeholder.Rd
-    Deleted:    tests/testthat.R
-    Deleted:    tests/testthat/test-placeholder.R
-    Deleted:    vignettes/.gitignore
-    Deleted:    vignettes/Climatologies_and_baselines.Rmd
-    Deleted:    vignettes/Short_climatologies.Rmd
-    Deleted:    vignettes/best_practices.Rmd
-    Deleted:    vignettes/bibliography.bib
-    Deleted:    vignettes/data/.gitignore
-    Deleted:    vignettes/data/clim_py.csv
-    Deleted:    vignettes/data/clim_py_joinAG_1.csv
-    Deleted:    vignettes/data/clim_py_joinAG_5.csv
-    Deleted:    vignettes/data/clim_py_joinAG_no.csv
-    Deleted:    vignettes/data/clim_py_minD_3.csv
-    Deleted:    vignettes/data/clim_py_minD_7.csv
-    Deleted:    vignettes/data/clim_py_pctile_80.csv
-    Deleted:    vignettes/data/clim_py_pctile_95.csv
-    Deleted:    vignettes/data/clim_py_pctile_99.csv
-    Deleted:    vignettes/data/clim_py_random.csv
-    Deleted:    vignettes/data/clim_py_spw_11.csv
-    Deleted:    vignettes/data/clim_py_spw_51.csv
-    Deleted:    vignettes/data/clim_py_spw_no.csv
-    Deleted:    vignettes/data/clim_py_whw_3.csv
-    Deleted:    vignettes/data/clim_py_whw_7.csv
-    Deleted:    vignettes/data/mhwBlock.csv
-    Deleted:    vignettes/data/mhws_py.csv
-    Deleted:    vignettes/data/mhws_py_joinAG_1.csv
-    Deleted:    vignettes/data/mhws_py_joinAG_5.csv
-    Deleted:    vignettes/data/mhws_py_joinAG_no.csv
-    Deleted:    vignettes/data/mhws_py_minD_3.csv
-    Deleted:    vignettes/data/mhws_py_minD_7.csv
-    Deleted:    vignettes/data/mhws_py_pctile_80.csv
-    Deleted:    vignettes/data/mhws_py_pctile_95.csv
-    Deleted:    vignettes/data/mhws_py_pctile_99.csv
-    Deleted:    vignettes/data/mhws_py_random.csv
-    Deleted:    vignettes/data/mhws_py_spw_11.csv
-    Deleted:    vignettes/data/mhws_py_spw_51.csv
-    Deleted:    vignettes/data/mhws_py_spw_no.csv
-    Deleted:    vignettes/data/mhws_py_whw_3.csv
-    Deleted:    vignettes/data/mhws_py_whw_7.csv
-    Deleted:    vignettes/data/sst_ALL.Rdata
-    Deleted:    vignettes/data/sst_ALL_KS.Rdata
-    Deleted:    vignettes/data/sst_ALL_cat_chi.Rdata
-    Deleted:    vignettes/data/sst_ALL_clim_category_count.Rdata
-    Deleted:    vignettes/data/sst_ALL_con.Rdata
-    Deleted:    vignettes/data/sst_ALL_detrend.Rdata
-    Deleted:    vignettes/data/sst_ALL_event_cor.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_clim_KS_p.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_p.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_tukey.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_event_CI.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_event_aov_tukey.Rdata
-    Deleted:    vignettes/data/sst_ALL_smooth_R2.Rdata
-    Deleted:    vignettes/data/sst_ALL_smooth_R2_base.Rdata
-    Deleted:    vignettes/data/sst_ALL_smooth_cor_base.Rdata
-    Deleted:    vignettes/data/sst_ALL_smooth_real_category.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_cat_chi.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_clim_KS_p.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_clim_aov_tukey.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_clim_only.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_event_CI.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_event_aov_tukey.Rdata
-    Deleted:    vignettes/data/sst_WA.csv
-    Deleted:    vignettes/data/sst_WA_miss_ice.csv
-    Deleted:    vignettes/data/sst_WA_miss_random.csv
-    Deleted:    vignettes/fig/detect_diagram.svg
-    Deleted:    vignettes/fig/heatwaveR_v3.svg
-    Deleted:    vignettes/gridded_products.Rmd
-    Deleted:    vignettes/missing_data.Rmd
-    Deleted:    vignettes/r_vs_python.Rmd
-    Deleted:    vignettes/r_vs_python_additional.Rmd
-    Deleted:    vignettes/r_vs_python_arguments.Rmd
-    Deleted:    vignettes/time_series_duration.Rmd
-    Deleted:    vignettes/trend.Rmd
-    Deleted:    vignettes/variance.Rmd
+    Modified:   analysis/Climatologies_and_baselines.Rmd
+    Modified:   analysis/best_practices.Rmd
+    Modified:   analysis/r_vs_python.Rmd
+    Modified:   analysis/r_vs_python_arguments.Rmd
 
 </code></pre>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</details>
 </li>
 </ul>
-<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<details>
+<summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
 <ul>
 <table style="border-collapse:separate; border-spacing:5px;">
 <thead>
@@ -589,6 +452,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/38559da0810a23b9416a3df8d57aa1c1ab651204/docs/r_vs_python_arguments.html" target="_blank">38559da</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -643,7 +523,7 @@ Publish analysis files
 </tbody>
 </table>
 </ul>
-<p></details></p>
+</details>
 <hr />
 <div id="overview" class="section level2">
 <h2>Overview</h2>
@@ -689,41 +569,16 @@ default_r &lt;- detect_event(ts2clm(data = sst_WA,
   return(res_event_cor)
   }</code></pre>
 <pre class="r"><code># Compare default clims and intensities
-cor(default_r$climatology$seas, default_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(default_r$climatology$seas) - sum(default_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(default_r$climatology$thresh, default_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999996</code></pre>
-<pre class="r"><code>sum(default_r$climatology$thresh) - sum(default_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.563502</code></pre>
-<pre class="r"><code>sum(default_r$event$intensity_cumulative) - sum(default_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1615886</code></pre>
-<pre class="r"><code>sum(default_r$event$intensity_max) - sum(default_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.008638202</code></pre>
-<pre class="r"><code># Compare default events
+cor(default_r$climatology$seas, default_py_clim$seas)
+sum(default_r$climatology$seas) - sum(default_py_clim$seas)
+cor(default_r$climatology$thresh, default_py_clim$thresh)
+sum(default_r$climatology$thresh) - sum(default_py_clim$thresh)
+sum(default_r$event$intensity_cumulative) - sum(default_py_event$intensity_cumulative)
+sum(default_r$event$intensity_max) - sum(default_py_event$intensity_max)
+
+# Compare default events
 default_event &lt;- compare_event(default_r$event, default_py_event)
 default_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999991                 intensity_mean
-7  0.9999997                  intensity_max
-8  0.9996080                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999971       intensity_mean_relThresh
-11 0.9999994        intensity_max_relThresh
-12 0.9995685        intensity_var_relThresh
-13 0.9999996 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9990733              intensity_max_abs
-16 0.9997267              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 1.0000000                     rate_onset
-19 0.9999999                   rate_decline</code></pre>
 </div>
 <div id="pctile-comparisons" class="section level2">
 <h2><code>pctile</code> comparisons</h2>
@@ -765,94 +620,36 @@ pctile_99_py_clim &lt;- read_csv(&quot;data/clim_py_pctile_99.csv&quot;)
 
 # Compare clims and intensities
 # 80
-cor(pctile_80_r$climatology$seas, pctile_80_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(pctile_80_r$climatology$seas) - sum(pctile_80_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(pctile_80_r$climatology$thresh, pctile_80_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999982</code></pre>
-<pre class="r"><code>sum(pctile_80_r$climatology$thresh) - sum(pctile_80_py_clim$thresh)</code></pre>
-<pre><code>[1] -14.02525</code></pre>
-<pre class="r"><code>sum(pctile_80_r$event$intensity_cumulative) - sum(pctile_80_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 2.440135</code></pre>
-<pre class="r"><code>sum(pctile_80_r$event$intensity_max) - sum(pctile_80_py_event$intensity_max)</code></pre>
-<pre><code>[1] -1.102664</code></pre>
-<pre class="r"><code># 95
-cor(pctile_95_r$climatology$seas, pctile_95_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(pctile_95_r$climatology$seas) - sum(pctile_95_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(pctile_95_r$climatology$thresh, pctile_95_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(pctile_95_r$climatology$thresh) - sum(pctile_95_py_clim$thresh)</code></pre>
-<pre><code>[1] -3.382435</code></pre>
-<pre class="r"><code>sum(pctile_95_r$event$intensity_cumulative) - sum(pctile_95_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.06078328</code></pre>
-<pre class="r"><code>sum(pctile_95_r$event$intensity_max) - sum(pctile_95_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.007673729</code></pre>
-<pre class="r"><code># 99
-cor(pctile_99_r$climatology$seas, pctile_99_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(pctile_99_r$climatology$seas) - sum(pctile_99_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(pctile_99_r$climatology$thresh, pctile_99_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999944</code></pre>
-<pre class="r"><code>sum(pctile_99_r$climatology$thresh) - sum(pctile_99_py_clim$thresh)</code></pre>
-<pre><code>[1] 28.37769</code></pre>
-<pre class="r"><code>sum(pctile_99_r$event$intensity_cumulative) - sum(pctile_99_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] -0.003483643</code></pre>
-<pre class="r"><code>sum(pctile_99_r$event$intensity_max) - sum(pctile_99_py_event$intensity_max)</code></pre>
-<pre><code>[1] -0.0003483643</code></pre>
-<pre class="r"><code># Compare events
+cor(pctile_80_r$climatology$seas, pctile_80_py_clim$seas)
+sum(pctile_80_r$climatology$seas) - sum(pctile_80_py_clim$seas)
+cor(pctile_80_r$climatology$thresh, pctile_80_py_clim$thresh)
+sum(pctile_80_r$climatology$thresh) - sum(pctile_80_py_clim$thresh)
+sum(pctile_80_r$event$intensity_cumulative) - sum(pctile_80_py_event$intensity_cumulative)
+sum(pctile_80_r$event$intensity_max) - sum(pctile_80_py_event$intensity_max)
+# 95
+cor(pctile_95_r$climatology$seas, pctile_95_py_clim$seas)
+sum(pctile_95_r$climatology$seas) - sum(pctile_95_py_clim$seas)
+cor(pctile_95_r$climatology$thresh, pctile_95_py_clim$thresh)
+sum(pctile_95_r$climatology$thresh) - sum(pctile_95_py_clim$thresh)
+sum(pctile_95_r$event$intensity_cumulative) - sum(pctile_95_py_event$intensity_cumulative)
+sum(pctile_95_r$event$intensity_max) - sum(pctile_95_py_event$intensity_max)
+# 99
+cor(pctile_99_r$climatology$seas, pctile_99_py_clim$seas)
+sum(pctile_99_r$climatology$seas) - sum(pctile_99_py_clim$seas)
+cor(pctile_99_r$climatology$thresh, pctile_99_py_clim$thresh)
+sum(pctile_99_r$climatology$thresh) - sum(pctile_99_py_clim$thresh)
+sum(pctile_99_r$event$intensity_cumulative) - sum(pctile_99_py_event$intensity_cumulative)
+sum(pctile_99_r$event$intensity_max) - sum(pctile_99_py_event$intensity_max)
+
+# Compare events
 # pctile_80_event &lt;- compare_event(pctile_80_r$event, pctile_80_py_event)
 pctile_95_event &lt;- compare_event(pctile_95_r$event, pctile_95_py_event)
-pctile_95_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999988                 intensity_mean
-7  0.9999996                  intensity_max
-8  0.9988691                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999979       intensity_mean_relThresh
-11 0.9999468        intensity_max_relThresh
-12 0.9988428        intensity_var_relThresh
-13 0.9999999 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9997819              intensity_max_abs
-16 0.9990655              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 0.9999998                     rate_onset
-19 1.0000000                   rate_decline</code></pre>
-<pre class="r"><code>pctile_99_event &lt;- compare_event(pctile_99_r$event, pctile_99_py_event)
+pctile_95_event
+pctile_99_event &lt;- compare_event(pctile_99_r$event, pctile_99_py_event)
 pctile_99_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  1.0000000                 intensity_mean
-7  1.0000000                  intensity_max
-8  0.9995133                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999046       intensity_mean_relThresh
-11 0.9999951        intensity_max_relThresh
-12 0.9993605        intensity_var_relThresh
-13 0.9999383 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 1.0000000              intensity_max_abs
-16 0.9991256              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 1.0000000                     rate_onset
-19 1.0000000                   rate_decline</code></pre>
 <p>There appears to be an issue with the results when the threshold is set to <code>pctile = 80</code> as Python detects one more event than R. Let’s take a closer look.</p>
 <pre class="r"><code>pctile_80_r_event &lt;- pctile_80_r$event
 pctile_80_py_event$date_start[!pctile_80_py_event$date_start %in% pctile_80_r_event$date_start]</code></pre>
-<pre><code>[1] &quot;2013-12-30&quot;</code></pre>
 <p>The issue appears to be that the R code is joining across a four day gap, which it shouldn’t do. So I assume that the threshold is different between the languages. This is curious as the seasonal and threshold climatologies correlate nearly perfectly. Diving deeper, let’s pull out the clim values around the time of this event and see what we see.</p>
 <pre class="r"><code>pctile_80_r_clim &lt;- pctile_80_r$climatology
 pctile_80_r_clim_sub &lt;- pctile_80_r_clim[11670:11720, ]
@@ -874,37 +671,6 @@ py_fig &lt;- ggplot(pctile_80_py_clim_sub,
   ggtitle(&quot;Python code&quot;)
 
 ggarrange(r_fig, py_fig, ncol = 1, nrow = 2)</code></pre>
-<p><img src="figure/r_vs_python_arguments.Rmd/unnamed-chunk-4-1.png" width="384" style="display: block; margin: auto;" /></p>
-<details> <summary><em>Expand here to see past versions of unnamed-chunk-4-1.png:</em></summary>
-<table style="border-collapse:separate; border-spacing:5px;">
-<thead>
-<tr>
-<th style="text-align:left;">
-Version
-</th>
-<th style="text-align:left;">
-Author
-</th>
-<th style="text-align:left;">
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<a href="https://github.com/robwschlegel/MHWdetection/blob/fa7fd57d97caa42308afbb27f761077d74e5239e/docs/figure/r_vs_python_arguments.Rmd/unnamed-chunk-4-1.png" target="_blank">fa7fd57</a>
-</td>
-<td style="text-align:left;">
-robwschlegel
-</td>
-<td style="text-align:left;">
-2019-03-19
-</td>
-</tr>
-</tbody>
-</table>
-<p></details></p>
 <p>As we may see in the figure above, the difference is not perceptible to the human eye. Looking very closely at the clim outputs manually one may see that in the R code, the threshold on <code>2013-12-29</code> is just below the temperature value due to a rounding difference from the Python code at the third decimal place.</p>
 <p>Also above one may see that even though the values correlate nearly perfectly, the sum of the seasonal climatology value output by R are <code>1.98122</code> less than the Python output. Considering that there are 12053 values, the average difference is only <code>0.00016</code>, which is not terribly much at all. The issue appears to be in the calculation of the threshold climatology. This value is not consistently different based on the <code>pctile</code> value used. It varies quite a bit. With the sum difference at <code>pctile = 80</code> being <code>-13.86432</code>, the default of <code>pctile = 90</code> being <code>-6.563516</code>, <code>pctile = 95</code> being <code>-3.382435</code>, and <code>pctile = 99</code> being <code>28.37769</code>. This is strong evidence that the threshold values are being calculated using some different method that needs to be addressed. That being said, even at the largest difference of <code>28.37769</code>, that is still only an average difference per row of <code>0.002354409</code></p>
 <p>Digging deeper still, let’s pull up the old <code>RmarineHeatWaves</code> code and run another comparison with that to see if this difference is due to newer changes in the development of the <code>heatwaveR</code> package.</p>
@@ -914,78 +680,28 @@ default_r_old_event &lt;- default_r_old$event
 default_r_old_clim &lt;- default_r_old$clim
 
 # Compare default new and old R clims  and intensities
-cor(default_r$climatology$seas, default_r_old_clim$seas_clim_year)</code></pre>
-<pre><code>[1] 1</code></pre>
-<pre class="r"><code>sum(default_r$climatology$seas) - sum(default_r_old_clim$seas_clim_year)</code></pre>
-<pre><code>[1] -0.05852104</code></pre>
-<pre class="r"><code>cor(default_r$climatology$thresh, default_r_old_clim$thresh_clim_year)</code></pre>
-<pre><code>[1] 1</code></pre>
-<pre class="r"><code>sum(default_r$climatology$thresh) - sum(default_r_old_clim$thresh_clim_year)</code></pre>
-<pre><code>[1] 1.414987e-05</code></pre>
-<pre class="r"><code>sum(default_r$event$intensity_cumulative) - sum(default_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1615886</code></pre>
-<pre class="r"><code>sum(default_r$event$intensity_max) - sum(default_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.008638202</code></pre>
-<pre class="r"><code># Compare default new and old R clims
+cor(default_r$climatology$seas, default_r_old_clim$seas_clim_year)
+sum(default_r$climatology$seas) - sum(default_r_old_clim$seas_clim_year)
+cor(default_r$climatology$thresh, default_r_old_clim$thresh_clim_year)
+sum(default_r$climatology$thresh) - sum(default_r_old_clim$thresh_clim_year)
+sum(default_r$event$intensity_cumulative) - sum(default_py_event$intensity_cumulative)
+sum(default_r$event$intensity_max) - sum(default_py_event$intensity_max)
+
+# Compare default new and old R clims
 default_event &lt;- compare_event(default_r$event, default_r_old_event)
-default_event</code></pre>
-<pre><code>    r                            var
-1   1                       event_no
-2   1                    index_start
-3  NA                     index_peak
-4  NA                      index_end
-5   1                       duration
-6  NA                 intensity_mean
-7  NA                  intensity_max
-8  NA                  intensity_var
-9  NA           intensity_cumulative
-10 NA       intensity_mean_relThresh
-11 NA        intensity_max_relThresh
-12 NA        intensity_var_relThresh
-13 NA intensity_cumulative_relThresh
-14 NA             intensity_mean_abs
-15 NA              intensity_max_abs
-16 NA              intensity_var_abs
-17 NA       intensity_cumulative_abs
-18  1                     rate_onset
-19  1                   rate_decline</code></pre>
-<pre class="r"><code># Compare Python and old R clims and intensities
-cor(default_py_clim$seas, default_r_old_clim$seas_clim_year)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(default_py_clim$seas) - sum(default_r_old_clim$seas_clim_year)</code></pre>
-<pre><code>[1] 1.98122</code></pre>
-<pre class="r"><code>cor(default_py_clim$thresh, default_r_old_clim$thresh_clim_year)</code></pre>
-<pre><code>[1] 0.9999996</code></pre>
-<pre class="r"><code>sum(default_py_clim$thresh) - sum(default_r_old_clim$thresh_clim_year)</code></pre>
-<pre><code>[1] 6.563516</code></pre>
-<pre class="r"><code>sum(default_py_event$intensity_cumulative) - sum(default_r_old_event$int_cum)</code></pre>
-<pre><code>[1] -0.157388</code></pre>
-<pre class="r"><code>sum(default_py_event$intensity_max) - sum(default_r_old_event$int_max)</code></pre>
-<pre><code>[1] -0.008520925</code></pre>
-<pre class="r"><code># Compare Python and old R clims
+default_event
+
+# Compare Python and old R clims and intensities
+cor(default_py_clim$seas, default_r_old_clim$seas_clim_year)
+sum(default_py_clim$seas) - sum(default_r_old_clim$seas_clim_year)
+cor(default_py_clim$thresh, default_r_old_clim$thresh_clim_year)
+sum(default_py_clim$thresh) - sum(default_r_old_clim$thresh_clim_year)
+sum(default_py_event$intensity_cumulative) - sum(default_r_old_event$int_cum)
+sum(default_py_event$intensity_max) - sum(default_r_old_event$int_max)
+
+# Compare Python and old R clims
 default_event &lt;- compare_event(default_r_old_event, default_py_event)
 default_event</code></pre>
-<pre><code>    r                 var
-1   1         index_start
-2  NA          index_stop
-3  NA            event_no
-4   1            duration
-5  NA            int_mean
-6  NA             int_max
-7  NA             int_var
-8  NA             int_cum
-9  NA int_mean_rel_thresh
-10 NA  int_max_rel_thresh
-11 NA  int_var_rel_thresh
-12 NA  int_cum_rel_thresh
-13 NA        int_mean_abs
-14 NA         int_max_abs
-15 NA         int_var_abs
-16 NA         int_cum_abs
-17 NA       int_mean_norm
-18 NA        int_max_norm
-19  1          rate_onset
-20  1        rate_decline</code></pre>
 <p>The differences between the old and new R implementation are minute to the point of being almost imperceptible.</p>
 </div>
 <div id="smoothpercentilewidth-comparisons" class="section level2">
@@ -1025,111 +741,34 @@ spw_51_py_clim &lt;- read_csv(&quot;data/clim_py_spw_51.csv&quot;)
 
 # Compare clims and intensities
 # no smoothing
-cor(spw_no_r$climatology$seas, spw_no_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999992</code></pre>
-<pre class="r"><code>sum(spw_no_r$climatology$seas) - sum(spw_no_py_clim$seas)</code></pre>
-<pre><code>[1] -2.11781</code></pre>
-<pre class="r"><code>cor(spw_no_r$climatology$thresh, spw_no_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999965</code></pre>
-<pre class="r"><code>sum(spw_no_r$climatology$thresh) - sum(spw_no_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.498985</code></pre>
-<pre class="r"><code>sum(spw_no_r$event$intensity_cumulative) - sum(spw_no_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1114894</code></pre>
-<pre class="r"><code>sum(spw_no_r$event$intensity_max) - sum(spw_no_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.01536202</code></pre>
-<pre class="r"><code># 11 days
-cor(spw_11_r$climatology$seas, spw_11_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999997</code></pre>
-<pre class="r"><code>sum(spw_11_r$climatology$seas) - sum(spw_11_py_clim$seas)</code></pre>
-<pre><code>[1] -2.055576</code></pre>
-<pre class="r"><code>cor(spw_11_r$climatology$thresh, spw_11_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.999999</code></pre>
-<pre class="r"><code>sum(spw_11_r$climatology$thresh) - sum(spw_11_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.317168</code></pre>
-<pre class="r"><code>sum(spw_11_r$event$intensity_cumulative) - sum(spw_11_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1227369</code></pre>
-<pre class="r"><code>sum(spw_11_r$event$intensity_max) - sum(spw_11_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.006142374</code></pre>
-<pre class="r"><code># 51 days
-cor(spw_51_r$climatology$seas, spw_51_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(spw_51_r$climatology$seas) - sum(spw_51_py_clim$seas)</code></pre>
-<pre><code>[1] -2.036326</code></pre>
-<pre class="r"><code>cor(spw_51_r$climatology$thresh, spw_51_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999998</code></pre>
-<pre class="r"><code>sum(spw_51_r$climatology$thresh) - sum(spw_51_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.616633</code></pre>
-<pre class="r"><code>sum(spw_51_r$event$intensity_cumulative) - sum(spw_51_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1545285</code></pre>
-<pre class="r"><code>sum(spw_51_r$event$intensity_max) - sum(spw_51_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.006523632</code></pre>
-<pre class="r"><code># Compare events
+cor(spw_no_r$climatology$seas, spw_no_py_clim$seas)
+sum(spw_no_r$climatology$seas) - sum(spw_no_py_clim$seas)
+cor(spw_no_r$climatology$thresh, spw_no_py_clim$thresh)
+sum(spw_no_r$climatology$thresh) - sum(spw_no_py_clim$thresh)
+sum(spw_no_r$event$intensity_cumulative) - sum(spw_no_py_event$intensity_cumulative)
+sum(spw_no_r$event$intensity_max) - sum(spw_no_py_event$intensity_max)
+# 11 days
+cor(spw_11_r$climatology$seas, spw_11_py_clim$seas)
+sum(spw_11_r$climatology$seas) - sum(spw_11_py_clim$seas)
+cor(spw_11_r$climatology$thresh, spw_11_py_clim$thresh)
+sum(spw_11_r$climatology$thresh) - sum(spw_11_py_clim$thresh)
+sum(spw_11_r$event$intensity_cumulative) - sum(spw_11_py_event$intensity_cumulative)
+sum(spw_11_r$event$intensity_max) - sum(spw_11_py_event$intensity_max)
+# 51 days
+cor(spw_51_r$climatology$seas, spw_51_py_clim$seas)
+sum(spw_51_r$climatology$seas) - sum(spw_51_py_clim$seas)
+cor(spw_51_r$climatology$thresh, spw_51_py_clim$thresh)
+sum(spw_51_r$climatology$thresh) - sum(spw_51_py_clim$thresh)
+sum(spw_51_r$event$intensity_cumulative) - sum(spw_51_py_event$intensity_cumulative)
+sum(spw_51_r$event$intensity_max) - sum(spw_51_py_event$intensity_max)
+
+# Compare events
 spw_no_event &lt;- compare_event(spw_no_r$event, spw_no_py_event)
-spw_no_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999980                 intensity_mean
-7  0.9999991                  intensity_max
-8  0.9993831                  intensity_var
-9  0.9999999           intensity_cumulative
-10 0.9999956       intensity_mean_relThresh
-11 0.9997743        intensity_max_relThresh
-12 0.9993297        intensity_var_relThresh
-13 0.9999995 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9989767              intensity_max_abs
-16 0.9995816              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 0.9999992                     rate_onset
-19 0.9999994                   rate_decline</code></pre>
-<pre class="r"><code>spw_11_event &lt;- compare_event(spw_11_r$event, spw_11_py_event)
-spw_11_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999983                 intensity_mean
-7  0.9999994                  intensity_max
-8  0.9994326                  intensity_var
-9  0.9999999           intensity_cumulative
-10 0.9999963       intensity_mean_relThresh
-11 0.9999580        intensity_max_relThresh
-12 0.9994217        intensity_var_relThresh
-13 0.9999996 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9989804              intensity_max_abs
-16 0.9996101              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 0.9999985                     rate_onset
-19 0.9999995                   rate_decline</code></pre>
-<pre class="r"><code>spw_51_event &lt;- compare_event(spw_51_r$event, spw_51_py_event)
+spw_no_event
+spw_11_event &lt;- compare_event(spw_11_r$event, spw_11_py_event)
+spw_11_event
+spw_51_event &lt;- compare_event(spw_51_r$event, spw_51_py_event)
 spw_51_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999995                 intensity_mean
-7  0.9999999                  intensity_max
-8  0.9996566                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999969       intensity_mean_relThresh
-11 0.9999678        intensity_max_relThresh
-12 0.9996305        intensity_var_relThresh
-13 0.9999996 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9992145              intensity_max_abs
-16 0.9997404              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 1.0000000                     rate_onset
-19 1.0000000                   rate_decline</code></pre>
 <p>Surprisingly the smoothing window, regardless if it is applied or not, seems to make little difference. But again, let’s compare the old R code against Python as well.</p>
 <pre class="r"><code>ts &lt;- RmarineHeatWaves::make_whole(sst_WA)
 spw_no_r_old &lt;- RmarineHeatWaves::detect(data = ts, climatology_start = &quot;1982-01-01&quot;, climatology_end = &quot;2014-12-31&quot;, smooth_percentile = FALSE)
@@ -1137,19 +776,14 @@ spw_no_r_old_event &lt;- spw_no_r_old$event
 spw_no_r_old_clim &lt;- spw_no_r_old$clim
 
 # Compare new and old R code
-sum(spw_no_r$climatology$seas) - sum(spw_no_r_old_clim$seas_clim_year)</code></pre>
-<pre><code>[1] -0.05585566</code></pre>
-<pre class="r"><code>sum(spw_no_r$climatology$thresh) - sum(spw_no_r_old_clim$thresh_clim_year)</code></pre>
-<pre><code>[1] 1.450436e-05</code></pre>
-<pre class="r"><code># Compare old &amp; new R against Python
-sum(spw_no_py_clim$seas) - sum(spw_no_r_old_clim$seas_clim_year)</code></pre>
-<pre><code>[1] 2.061954</code></pre>
-<pre class="r"><code>sum(spw_no_py_clim$seas) - sum(spw_no_r$climatology$seas)</code></pre>
-<pre><code>[1] 2.11781</code></pre>
-<pre class="r"><code>sum(spw_no_py_clim$thresh) - sum(spw_no_r_old_clim$thresh_clim_year)</code></pre>
-<pre><code>[1] 6.499</code></pre>
-<pre class="r"><code>sum(spw_no_py_clim$thresh) - sum(spw_no_r$climatology$thresh)</code></pre>
-<pre><code>[1] 6.498985</code></pre>
+sum(spw_no_r$climatology$seas) - sum(spw_no_r_old_clim$seas_clim_year)
+sum(spw_no_r$climatology$thresh) - sum(spw_no_r_old_clim$thresh_clim_year)
+
+# Compare old &amp; new R against Python
+sum(spw_no_py_clim$seas) - sum(spw_no_r_old_clim$seas_clim_year)
+sum(spw_no_py_clim$seas) - sum(spw_no_r$climatology$seas)
+sum(spw_no_py_clim$thresh) - sum(spw_no_r_old_clim$thresh_clim_year)
+sum(spw_no_py_clim$thresh) - sum(spw_no_r$climatology$thresh)</code></pre>
 <p>Again, almost no difference.</p>
 </div>
 <div id="windowhalfwidth-comparisons" class="section level2">
@@ -1179,74 +813,38 @@ whw_7_py_clim &lt;- read_csv(&quot;data/clim_py_whw_7.csv&quot;)
 
 # Compare clims and intensities
 # 3 days
-cor(whw_3_r$climatology$seas, whw_3_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(whw_3_r$climatology$seas) - sum(whw_3_py_clim$seas)</code></pre>
-<pre><code>[1] -1.29812</code></pre>
-<pre class="r"><code>cor(whw_3_r$climatology$thresh, whw_3_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(whw_3_r$climatology$thresh) - sum(whw_3_py_clim$thresh)</code></pre>
-<pre><code>[1] -3.037448</code></pre>
-<pre class="r"><code>sum(whw_3_r$event$intensity_cumulative) - sum(whw_3_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1043065</code></pre>
-<pre class="r"><code>sum(whw_3_r$event$intensity_max) - sum(whw_3_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.005511411</code></pre>
-<pre class="r"><code># 7 days
-cor(whw_7_r$climatology$seas, whw_7_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999998</code></pre>
-<pre class="r"><code>sum(whw_7_r$climatology$seas) - sum(whw_7_py_clim$seas)</code></pre>
-<pre><code>[1] -2.854977</code></pre>
-<pre class="r"><code>cor(whw_7_r$climatology$thresh, whw_7_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.999998</code></pre>
-<pre class="r"><code>sum(whw_7_r$climatology$thresh) - sum(whw_7_py_clim$thresh)</code></pre>
-<pre><code>[1] -13.58653</code></pre>
-<pre class="r"><code>sum(whw_7_r$event$intensity_cumulative) - sum(whw_7_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 8.3034</code></pre>
-<pre class="r"><code>sum(whw_7_r$event$intensity_max) - sum(whw_7_py_event$intensity_max)</code></pre>
-<pre><code>[1] 1.901295</code></pre>
-<pre class="r"><code># Compare events
+cor(whw_3_r$climatology$seas, whw_3_py_clim$seas)
+sum(whw_3_r$climatology$seas) - sum(whw_3_py_clim$seas)
+cor(whw_3_r$climatology$thresh, whw_3_py_clim$thresh)
+sum(whw_3_r$climatology$thresh) - sum(whw_3_py_clim$thresh)
+sum(whw_3_r$event$intensity_cumulative) - sum(whw_3_py_event$intensity_cumulative)
+sum(whw_3_r$event$intensity_max) - sum(whw_3_py_event$intensity_max)
+# 7 days
+cor(whw_7_r$climatology$seas, whw_7_py_clim$seas)
+sum(whw_7_r$climatology$seas) - sum(whw_7_py_clim$seas)
+cor(whw_7_r$climatology$thresh, whw_7_py_clim$thresh)
+sum(whw_7_r$climatology$thresh) - sum(whw_7_py_clim$thresh)
+sum(whw_7_r$event$intensity_cumulative) - sum(whw_7_py_event$intensity_cumulative)
+sum(whw_7_r$event$intensity_max) - sum(whw_7_py_event$intensity_max)
+
+# Compare events
 whw_3_event &lt;- compare_event(whw_3_r$event, whw_3_py_event)
-whw_3_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999997                 intensity_mean
-7  0.9999999                  intensity_max
-8  0.9996482                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999993       intensity_mean_relThresh
-11 0.9999937        intensity_max_relThresh
-12 0.9996044        intensity_var_relThresh
-13 0.9999999 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9993263              intensity_max_abs
-16 0.9997487              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 1.0000000                     rate_onset
-19 1.0000000                   rate_decline</code></pre>
-<pre class="r"><code># whw_7_event &lt;- compare_event(whw_7_r$event, whw_7_py_event)
+whw_3_event
+# whw_7_event &lt;- compare_event(whw_7_r$event, whw_7_py_event)
 # whw_7_event</code></pre>
 <p>We see here that the <code>windowHalfWidth</code> has a large effect on the difference between the results than anything else so far. The difference per row is still low at ~0.001 so isn’t much cause for alarm. We do however detect a different number of events if <code>windowHalfWidth = 7</code>. Let’s see how they differ.</p>
 <pre class="r"><code>whw_7_r_event &lt;- whw_7_r$event
 whw_7_r_event$date_start[!whw_7_r_event$date_start %in% whw_7_py_event$date_start]</code></pre>
-<pre><code>[1] &quot;2006-03-05&quot;</code></pre>
 <p>The difference lies in the R code detecting a five day event that the Python code must have seen as only 4 days or less. Again due to very narrow differences in the threshold values.</p>
 <p>Let’s look if there is a difference between the old and new R code.</p>
 <pre class="r"><code>ts &lt;- RmarineHeatWaves::make_whole(sst_WA)
 whw_7_r_old &lt;- RmarineHeatWaves::detect(data = ts, climatology_start = &quot;1982-01-01&quot;, climatology_end = &quot;2014-12-31&quot;, window_half_width = 7)
 
 # Compare new and old R code
-sum(whw_7_r$climatology$seas) - sum(whw_7_r_old$clim$seas_clim_year)</code></pre>
-<pre><code>[1] -0.05852104</code></pre>
-<pre class="r"><code>sum(whw_7_r$climatology$thresh) - sum(whw_7_r_old$clim$thresh_clim_year)</code></pre>
-<pre><code>[1] 1.413544e-05</code></pre>
-<pre class="r"><code>sum(whw_7_r$event$intensity_cumulative) - sum(whw_7_r_old$event$int_cum)</code></pre>
-<pre><code>[1] 0.004487785</code></pre>
-<pre class="r"><code>sum(whw_7_r$event$intensity_max) - sum(whw_7_r_old$event$int_max)</code></pre>
-<pre><code>[1] 0.0001720057</code></pre>
+sum(whw_7_r$climatology$seas) - sum(whw_7_r_old$clim$seas_clim_year)
+sum(whw_7_r$climatology$thresh) - sum(whw_7_r_old$clim$thresh_clim_year)
+sum(whw_7_r$event$intensity_cumulative) - sum(whw_7_r_old$event$int_cum)
+sum(whw_7_r$event$intensity_max) - sum(whw_7_r_old$event$int_max)</code></pre>
 <p>Everything matches up between old and new R for <code>windowHalfWidth = 7</code>.</p>
 </div>
 <div id="minduration-comparisons" class="section level2">
@@ -1276,76 +874,25 @@ minD_7_py_clim &lt;- read_csv(&quot;data/clim_py_minD_7.csv&quot;)
 
 # Compare clims and intensities
 # 3 days
-cor(minD_3_r$climatology$seas, minD_3_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(minD_3_r$climatology$seas) - sum(minD_3_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(minD_3_r$climatology$thresh, minD_3_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999996</code></pre>
-<pre class="r"><code>sum(minD_3_r$climatology$thresh) - sum(minD_3_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.563502</code></pre>
-<pre class="r"><code>sum(minD_3_r$event$intensity_cumulative) - sum(minD_3_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1950053</code></pre>
-<pre class="r"><code>sum(minD_3_r$event$intensity_max) - sum(minD_3_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.01368907</code></pre>
-<pre class="r"><code># 7 days
-cor(minD_7_r$climatology$seas, minD_7_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(minD_7_r$climatology$seas) - sum(minD_7_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(minD_7_r$climatology$thresh, minD_7_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999996</code></pre>
-<pre class="r"><code>sum(minD_7_r$climatology$thresh) - sum(minD_7_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.563502</code></pre>
-<pre class="r"><code>sum(minD_7_r$event$intensity_cumulative) - sum(minD_7_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1159891</code></pre>
-<pre class="r"><code>sum(minD_7_r$event$intensity_max) - sum(minD_7_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.007120868</code></pre>
-<pre class="r"><code># Compare events
+cor(minD_3_r$climatology$seas, minD_3_py_clim$seas)
+sum(minD_3_r$climatology$seas) - sum(minD_3_py_clim$seas)
+cor(minD_3_r$climatology$thresh, minD_3_py_clim$thresh)
+sum(minD_3_r$climatology$thresh) - sum(minD_3_py_clim$thresh)
+sum(minD_3_r$event$intensity_cumulative) - sum(minD_3_py_event$intensity_cumulative)
+sum(minD_3_r$event$intensity_max) - sum(minD_3_py_event$intensity_max)
+# 7 days
+cor(minD_7_r$climatology$seas, minD_7_py_clim$seas)
+sum(minD_7_r$climatology$seas) - sum(minD_7_py_clim$seas)
+cor(minD_7_r$climatology$thresh, minD_7_py_clim$thresh)
+sum(minD_7_r$climatology$thresh) - sum(minD_7_py_clim$thresh)
+sum(minD_7_r$event$intensity_cumulative) - sum(minD_7_py_event$intensity_cumulative)
+sum(minD_7_r$event$intensity_max) - sum(minD_7_py_event$intensity_max)
+
+# Compare events
 minD_3_event &lt;- compare_event(minD_3_r$event, minD_3_py_event)
-minD_3_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999988                 intensity_mean
-7  0.9999997                  intensity_max
-8  0.9987983                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999894       intensity_mean_relThresh
-11 0.9999946        intensity_max_relThresh
-12 0.9987097        intensity_var_relThresh
-13 0.9999996 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9991713              intensity_max_abs
-16 0.9990272              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 1.0000000                     rate_onset
-19 0.9999999                   rate_decline</code></pre>
-<pre class="r"><code>minD_7_event &lt;- compare_event(minD_7_r$event, minD_7_py_event)
+minD_3_event
+minD_7_event &lt;- compare_event(minD_7_r$event, minD_7_py_event)
 minD_7_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999992                 intensity_mean
-7  0.9999997                  intensity_max
-8  0.9992869                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999965       intensity_mean_relThresh
-11 0.9999769        intensity_max_relThresh
-12 0.9992401        intensity_var_relThresh
-13 0.9999995 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9996425              intensity_max_abs
-16 0.9994580              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 0.9999999                     rate_onset
-19 0.9999999                   rate_decline</code></pre>
 <p>As expected, changing the minimum duration of events has no effect on the threshold calculations. It is however gratifying to see that the same number of events is calculated between languages, regardless of the minimum duration. The difference these cause in the intensities of the events is also negligible between languages.</p>
 </div>
 <div id="joinacrossgaps-comparisons" class="section level2">
@@ -1385,111 +932,34 @@ joinAG_5_py_clim &lt;- read_csv(&quot;data/clim_py_joinAG_5.csv&quot;)
 
 # Compare clims and intensities
 # no days
-cor(joinAG_no_r$climatology$seas, joinAG_no_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(joinAG_no_r$climatology$seas) - sum(joinAG_no_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(joinAG_no_r$climatology$thresh, joinAG_no_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999996</code></pre>
-<pre class="r"><code>sum(joinAG_no_r$climatology$thresh) - sum(joinAG_no_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.563502</code></pre>
-<pre class="r"><code>sum(joinAG_no_r$event$intensity_cumulative) - sum(joinAG_no_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1545771</code></pre>
-<pre class="r"><code>sum(joinAG_no_r$event$intensity_max) - sum(joinAG_no_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.01432912</code></pre>
-<pre class="r"><code># 1 day
-cor(joinAG_1_r$climatology$seas, joinAG_1_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(joinAG_1_r$climatology$seas) - sum(joinAG_1_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(joinAG_1_r$climatology$thresh, joinAG_1_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999996</code></pre>
-<pre class="r"><code>sum(joinAG_1_r$climatology$thresh) - sum(joinAG_1_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.563502</code></pre>
-<pre class="r"><code>sum(joinAG_1_r$event$intensity_cumulative) - sum(joinAG_1_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1569108</code></pre>
-<pre class="r"><code>sum(joinAG_1_r$event$intensity_max) - sum(joinAG_1_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.01199538</code></pre>
-<pre class="r"><code># 7 days
-cor(joinAG_5_r$climatology$seas, joinAG_5_py_clim$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(joinAG_5_r$climatology$seas) - sum(joinAG_5_py_clim$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(joinAG_5_r$climatology$thresh, joinAG_5_py_clim$thresh)</code></pre>
-<pre><code>[1] 0.9999996</code></pre>
-<pre class="r"><code>sum(joinAG_5_r$climatology$thresh) - sum(joinAG_5_py_clim$thresh)</code></pre>
-<pre><code>[1] -6.563502</code></pre>
-<pre class="r"><code>sum(joinAG_5_r$event$intensity_cumulative) - sum(joinAG_5_py_event$intensity_cumulative)</code></pre>
-<pre><code>[1] 0.1598468</code></pre>
-<pre class="r"><code>sum(joinAG_5_r$event$intensity_max) - sum(joinAG_5_py_event$intensity_max)</code></pre>
-<pre><code>[1] 0.008638202</code></pre>
-<pre class="r"><code># Compare events
+cor(joinAG_no_r$climatology$seas, joinAG_no_py_clim$seas)
+sum(joinAG_no_r$climatology$seas) - sum(joinAG_no_py_clim$seas)
+cor(joinAG_no_r$climatology$thresh, joinAG_no_py_clim$thresh)
+sum(joinAG_no_r$climatology$thresh) - sum(joinAG_no_py_clim$thresh)
+sum(joinAG_no_r$event$intensity_cumulative) - sum(joinAG_no_py_event$intensity_cumulative)
+sum(joinAG_no_r$event$intensity_max) - sum(joinAG_no_py_event$intensity_max)
+# 1 day
+cor(joinAG_1_r$climatology$seas, joinAG_1_py_clim$seas)
+sum(joinAG_1_r$climatology$seas) - sum(joinAG_1_py_clim$seas)
+cor(joinAG_1_r$climatology$thresh, joinAG_1_py_clim$thresh)
+sum(joinAG_1_r$climatology$thresh) - sum(joinAG_1_py_clim$thresh)
+sum(joinAG_1_r$event$intensity_cumulative) - sum(joinAG_1_py_event$intensity_cumulative)
+sum(joinAG_1_r$event$intensity_max) - sum(joinAG_1_py_event$intensity_max)
+# 7 days
+cor(joinAG_5_r$climatology$seas, joinAG_5_py_clim$seas)
+sum(joinAG_5_r$climatology$seas) - sum(joinAG_5_py_clim$seas)
+cor(joinAG_5_r$climatology$thresh, joinAG_5_py_clim$thresh)
+sum(joinAG_5_r$climatology$thresh) - sum(joinAG_5_py_clim$thresh)
+sum(joinAG_5_r$event$intensity_cumulative) - sum(joinAG_5_py_event$intensity_cumulative)
+sum(joinAG_5_r$event$intensity_max) - sum(joinAG_5_py_event$intensity_max)
+
+# Compare events
 joinAG_no_event &lt;- compare_event(joinAG_no_r$event, joinAG_no_py_event)
-joinAG_no_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999990                 intensity_mean
-7  0.9999997                  intensity_max
-8  0.9989917                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999972       intensity_mean_relThresh
-11 0.9999993        intensity_max_relThresh
-12 0.9989421        intensity_var_relThresh
-13 0.9999996 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9997855              intensity_max_abs
-16 0.9992310              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 0.9999999                     rate_onset
-19 0.9999999                   rate_decline</code></pre>
-<pre class="r"><code>joinAG_1_event &lt;- compare_event(joinAG_1_r$event, joinAG_1_py_event)
-joinAG_1_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999991                 intensity_mean
-7  0.9999997                  intensity_max
-8  0.9992942                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999971       intensity_mean_relThresh
-11 0.9999832        intensity_max_relThresh
-12 0.9992455        intensity_var_relThresh
-13 0.9999996 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9997788              intensity_max_abs
-16 0.9995172              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 0.9999999                     rate_onset
-19 0.9999999                   rate_decline</code></pre>
-<pre class="r"><code>joinAG_5_event &lt;- compare_event(joinAG_5_r$event, joinAG_5_py_event)
+joinAG_no_event
+joinAG_1_event &lt;- compare_event(joinAG_1_r$event, joinAG_1_py_event)
+joinAG_1_event
+joinAG_5_event &lt;- compare_event(joinAG_5_r$event, joinAG_5_py_event)
 joinAG_5_event</code></pre>
-<pre><code>           r                            var
-1         NA                       event_no
-2  1.0000000                    index_start
-3  1.0000000                     index_peak
-4  1.0000000                      index_end
-5  1.0000000                       duration
-6  0.9999990                 intensity_mean
-7  0.9999997                  intensity_max
-8  0.9995554                  intensity_var
-9  1.0000000           intensity_cumulative
-10 0.9999960       intensity_mean_relThresh
-11 0.9999993        intensity_max_relThresh
-12 0.9995224        intensity_var_relThresh
-13 0.9999995 intensity_cumulative_relThresh
-14 1.0000000             intensity_mean_abs
-15 0.9966753              intensity_max_abs
-16 0.9997828              intensity_var_abs
-17 1.0000000       intensity_cumulative_abs
-18 1.0000000                     rate_onset
-19 0.9999999                   rate_decline</code></pre>
 <p>A little surprising, but good to see, is that the length of gap between events does not cause a different number of events to be calculated between languages considering all other arguments are kept at the default.</p>
 </div>
 <div id="conclusion" class="section level2">
@@ -1504,63 +974,6 @@ joinAG_5_event</code></pre>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 3.5.3 (2019-03-11)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 16.04.5 LTS
-
-Matrix products: default
-BLAS: /usr/lib/openblas-base/libblas.so.3
-LAPACK: /usr/lib/libopenblasp-r0.2.18.so
-
-locale:
- [1] LC_CTYPE=en_CA.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_CA.UTF-8        LC_COLLATE=en_CA.UTF-8    
- [5] LC_MONETARY=en_CA.UTF-8    LC_MESSAGES=en_CA.UTF-8   
- [7] LC_PAPER=en_CA.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-other attached packages:
- [1] bindrcpp_0.2.2    heatwaveR_0.3.3   data.table_1.11.6
- [4] ggpubr_0.1.8      magrittr_1.5      forcats_0.3.0    
- [7] stringr_1.3.1     dplyr_0.7.6       purrr_0.2.5      
-[10] readr_1.1.1       tidyr_0.8.1       tibble_1.4.2     
-[13] ggplot2_3.0.0     tidyverse_1.2.1  
-
-loaded via a namespace (and not attached):
- [1] reticulate_1.10         zoo_1.8-4              
- [3] tidyselect_0.2.4        haven_1.1.2            
- [5] lattice_0.20-35         colorspace_1.3-2       
- [7] htmltools_0.3.6         yaml_2.2.0             
- [9] rlang_0.2.2             R.oo_1.22.0            
-[11] pillar_1.3.0            glue_1.3.0             
-[13] withr_2.1.2             R.utils_2.7.0          
-[15] sp_1.3-1                modelr_0.1.2           
-[17] readxl_1.1.0            bindr_0.1.1            
-[19] plyr_1.8.4              munsell_0.5.0          
-[21] gtable_0.2.0            workflowr_1.1.1        
-[23] cellranger_1.1.0        raster_2.6-7           
-[25] rvest_0.3.2             R.methodsS3_1.7.1      
-[27] evaluate_0.11           labeling_0.3           
-[29] knitr_1.20              RmarineHeatWaves_0.17.0
-[31] broom_0.5.0             Rcpp_0.12.18           
-[33] scales_1.0.0            backports_1.1.2        
-[35] jsonlite_1.5            hms_0.4.2              
-[37] digest_0.6.16           stringi_1.2.4          
-[39] RcppRoll_0.3.0          cowplot_0.9.3          
-[41] grid_3.5.3              rprojroot_1.3-2        
-[43] cli_1.0.0               tools_3.5.3            
-[45] lazyeval_0.2.1          crayon_1.3.4           
-[47] whisker_0.3-2           pkgconfig_2.0.2        
-[49] Matrix_1.2-14           xml2_1.2.0             
-[51] lubridate_1.7.4         assertthat_0.2.0       
-[53] rmarkdown_1.10          httr_1.3.1             
-[55] rstudioapi_0.7          R6_2.2.2               
-[57] nlme_3.1-137            git2r_0.23.0           
-[59] compiler_3.5.3         </code></pre>
 </div>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
