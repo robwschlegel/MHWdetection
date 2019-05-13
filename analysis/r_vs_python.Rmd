@@ -15,7 +15,7 @@ bibliography: bibliography.bib
 # NB: This script will only compile correctly on a machine that has a python environment already set up with the name py27 and that has the marineHeatWaves repo installed
 knitr::opts_chunk$set(fig.width = 4, fig.align = 'center',
                       warning = FALSE, message = FALSE, 
-                      eval = TRUE, tidy = FALSE)
+                      eval = FALSE, tidy = FALSE)
 options(scipen=999)
 ```
 

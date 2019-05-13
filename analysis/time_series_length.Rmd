@@ -11,7 +11,7 @@ bibliography: bibliography.bib
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       echo = TRUE, warning = FALSE, message = FALSE, 
-                      eval = TRUE, tidy = FALSE)
+                      eval = FALSE, tidy = FALSE)
 ```
 
 

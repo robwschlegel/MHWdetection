@@ -14,7 +14,7 @@ navbar:
       - text: "Python vs. R - additional functions"
         href: r_vs_python_additional.html
       - text: "Effects of short time series"
-        href: time_series_duration.html
+        href: time_series_length.html
       - text: "Effects of missing data"
         href: missing_data.html
       - text: "Effects of long-term trends"
@@ -25,7 +25,7 @@ navbar:
       href: portrait.pdf
     - text: "License"
       href: license.html
-    - text: News
+    - text: "News"
       href: news.html
   right:
     - icon: fa-github

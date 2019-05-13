@@ -186,9 +186,6 @@ $(document).ready(function () {
         <li>
   <a href="index.html">Overview</a>
 </li>
-<li>
-  <a href="about.html">About</a>
-</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Vignettes
@@ -206,7 +203,7 @@ $(document).ready(function () {
       <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
     </li>
     <li>
-      <a href="time_series_duration.html">Effects of short time series</a>
+      <a href="time_series_length.html">Effects of short time series</a>
     </li>
     <li>
       <a href="missing_data.html">Effects of missing data</a>
@@ -218,6 +215,9 @@ $(document).ready(function () {
       <a href="best_practices.html">Best practices</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="portrait.pdf">Poster</a>
 </li>
 <li>
   <a href="license.html">License</a>
@@ -254,45 +254,70 @@ div.section {
 </div>
 
 
-<p><strong>Last updated:</strong> 2019-03-19</p>
+<p><strong>Last updated:</strong> 2019-05-06</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
 <p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/0aac666455ea6d7983ffa28f317bae6ca3c9bc3d" target="_blank">0aac666</a> </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/b1a7e3fcf3dacdd2ba4d7cd79a44fef13dd6191f" target="_blank">b1a7e3f</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    data/sst_ALL_clim_only.Rdata
-    Ignored:    data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    data/global/
+    Ignored:    data/global_KS_cat.Rdata
+    Ignored:    data/global_KS_clim.Rdata
+    Ignored:    data/global_KS_event.Rdata
+    Ignored:    data/global_dec_trend.Rdata
+    Ignored:    data/global_effect_cat.Rdata
+    Ignored:    data/global_effect_clim.Rdata
+    Ignored:    data/global_effect_event.Rdata
+    Ignored:    data/global_effect_event_length_slope.Rdata
+    Ignored:    data/global_effect_event_slope.Rdata
+    Ignored:    data/sst_ALL_add_trend.Rdata
+    Ignored:    data/sst_ALL_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
     Ignored:    data/sst_ALL_flat.Rdata
-    Ignored:    data/sst_ALL_miss.Rdata
-    Ignored:    data/sst_ALL_miss_cat_chi.Rdata
-    Ignored:    data/sst_ALL_miss_clim_event_cat.Rdata
-    Ignored:    data/sst_ALL_miss_clim_only.Rdata
-    Ignored:    data/sst_ALL_miss_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_knockout.Rdata
+    Ignored:    data/sst_ALL_length.Rdata
+    Ignored:    data/sst_ALL_length_width_10.Rdata
+    Ignored:    data/sst_ALL_length_width_20.Rdata
+    Ignored:    data/sst_ALL_length_width_30.Rdata
+    Ignored:    data/sst_ALL_length_width_40.Rdata
+    Ignored:    data/sst_ALL_length_width_50.Rdata
+    Ignored:    data/sst_ALL_missing.Rdata
+    Ignored:    data/sst_ALL_missing_fix.Rdata
     Ignored:    data/sst_ALL_repl.Rdata
-    Ignored:    data/sst_ALL_smooth.Rdata
-    Ignored:    data/sst_ALL_smooth_aov_tukey.Rdata
-    Ignored:    data/sst_ALL_smooth_event.Rdata
-    Ignored:    data/sst_ALL_trend.Rdata
-    Ignored:    data/sst_ALL_trend_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_trended.Rdata
+
+Untracked files:
+    Untracked:  analysis/time_series_length.Rmd
 
 Unstaged changes:
-    Deleted:    NEWS.md
+    Modified:   analysis/Climatologies_and_baselines.Rmd
     Modified:   analysis/_site.yml
+    Modified:   analysis/best_practices.Rmd
+    Modified:   analysis/missing_data.Rmd
+    Modified:   analysis/r_vs_python.Rmd
+    Modified:   analysis/r_vs_python_arguments.Rmd
+    Deleted:    analysis/time_series_duration.Rmd
+    Modified:   analysis/trend.Rmd
 
 </code></pre>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</details>
 </li>
 </ul>
-<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<details>
+<summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
 <ul>
 <table style="border-collapse:separate; border-spacing:5px;">
 <thead>
@@ -315,6 +340,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/36100c0f66df370adc3d94eab7aed243bbb17d68/docs/license.html" target="_blank">36100c0</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 html
@@ -386,7 +428,7 @@ Start workflowr project.
 </tbody>
 </table>
 </ul>
-<p></details></p>
+</details>
 <hr />
 <div id="mit-license" class="section level1">
 <h1>MIT License</h1>

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Robert W Schlegel" />
 
-<meta name="date" content="2019-03-19" />
+<meta name="date" content="2019-05-06" />
 
 <title>Default MHW outputs in R and Python</title>
 
@@ -279,18 +279,12 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Detecting marine heatwaves from imperfect data</a>
+      <a class="navbar-brand" href="index.html">MHW detection</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="index.html">Home</a>
-</li>
-<li>
-  <a href="about.html">About</a>
-</li>
-<li>
-  <a href="license.html">License</a>
+  <a href="index.html">Overview</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -309,24 +303,27 @@ div.tocify {
       <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
     </li>
     <li>
-      <a href="Short_climatologies.html">Short climatologies</a>
-    </li>
-    <li>
-      <a href="Climatologies_and_baselines.html">Alternative climatologies and baselines</a>
-    </li>
-    <li>
       <a href="time_series_duration.html">Effects of short time series</a>
     </li>
     <li>
       <a href="missing_data.html">Effects of missing data</a>
     </li>
     <li>
-      <a href="gridded_products.html">Difference between gridded products</a>
+      <a href="trend.html">Effects of long-term trends</a>
     </li>
     <li>
       <a href="best_practices.html">Best practices</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="portrait.pdf">Poster</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+<li>
+  <a href="news.html">News</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -354,219 +351,84 @@ div.section {
 
 <h1 class="title toc-ignore">Default MHW outputs in R and Python</h1>
 <h4 class="author"><em>Robert W Schlegel</em></h4>
-<h4 class="date"><em>2019-03-19</em></h4>
+<h4 class="date"><em>2019-05-06</em></h4>
 
 </div>
 
 
-<p><strong>Last updated:</strong> 2019-03-19</p>
+<p><strong>Last updated:</strong> 2019-05-06</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
-<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+<details>
+<p><summary> <strong style="color:red;">✖</strong> <strong>R Markdown file:</strong> uncommitted changes </summary> The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Environment:</strong> empty </summary></p>
 <p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Seed:</strong> <code>set.seed(666)</code> </summary></p>
 <p>The command <code>set.seed(666)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Session information:</strong> recorded </summary></p>
 <p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/970b22c7c2cae4e09824722f8bf1d87fb5118a73" target="_blank">970b22c</a> </summary></p>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/b1a7e3fcf3dacdd2ba4d7cd79a44fef13dd6191f" target="_blank">b1a7e3f</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
-    Ignored:    data/sst_ALL_clim_only.Rdata
-    Ignored:    data/sst_ALL_event_aov_tukey.Rdata
+    Ignored:    data/global/
+    Ignored:    data/global_KS_cat.Rdata
+    Ignored:    data/global_KS_clim.Rdata
+    Ignored:    data/global_KS_event.Rdata
+    Ignored:    data/global_dec_trend.Rdata
+    Ignored:    data/global_effect_cat.Rdata
+    Ignored:    data/global_effect_clim.Rdata
+    Ignored:    data/global_effect_event.Rdata
+    Ignored:    data/global_effect_event_length_slope.Rdata
+    Ignored:    data/global_effect_event_slope.Rdata
+    Ignored:    data/sst_ALL_add_trend.Rdata
+    Ignored:    data/sst_ALL_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_clim_event_cat.Rdata
+    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
     Ignored:    data/sst_ALL_flat.Rdata
-    Ignored:    data/sst_ALL_miss.Rdata
-    Ignored:    data/sst_ALL_miss_cat_chi.Rdata
-    Ignored:    data/sst_ALL_miss_clim_event_cat.Rdata
-    Ignored:    data/sst_ALL_miss_clim_only.Rdata
-    Ignored:    data/sst_ALL_miss_event_aov_tukey.Rdata
+    Ignored:    data/sst_ALL_knockout.Rdata
+    Ignored:    data/sst_ALL_length.Rdata
+    Ignored:    data/sst_ALL_length_width_10.Rdata
+    Ignored:    data/sst_ALL_length_width_20.Rdata
+    Ignored:    data/sst_ALL_length_width_30.Rdata
+    Ignored:    data/sst_ALL_length_width_40.Rdata
+    Ignored:    data/sst_ALL_length_width_50.Rdata
+    Ignored:    data/sst_ALL_missing.Rdata
+    Ignored:    data/sst_ALL_missing_fix.Rdata
     Ignored:    data/sst_ALL_repl.Rdata
-    Ignored:    data/sst_ALL_smooth.Rdata
-    Ignored:    data/sst_ALL_smooth_aov_tukey.Rdata
-    Ignored:    data/sst_ALL_smooth_event.Rdata
-    Ignored:    data/sst_ALL_trend.Rdata
-    Ignored:    data/sst_ALL_trend_clim_event_cat.Rdata
-
-Untracked files:
-    Untracked:  analysis/bibliography.bib
-    Untracked:  code/functions.R
-    Untracked:  code/workflow.R
-    Untracked:  data/.gitignore
-    Untracked:  data/clim_py.csv
-    Untracked:  data/clim_py_joinAG_1.csv
-    Untracked:  data/clim_py_joinAG_5.csv
-    Untracked:  data/clim_py_joinAG_no.csv
-    Untracked:  data/clim_py_minD_3.csv
-    Untracked:  data/clim_py_minD_7.csv
-    Untracked:  data/clim_py_pctile_80.csv
-    Untracked:  data/clim_py_pctile_95.csv
-    Untracked:  data/clim_py_pctile_99.csv
-    Untracked:  data/clim_py_random.csv
-    Untracked:  data/clim_py_spw_11.csv
-    Untracked:  data/clim_py_spw_51.csv
-    Untracked:  data/clim_py_spw_no.csv
-    Untracked:  data/clim_py_whw_3.csv
-    Untracked:  data/clim_py_whw_7.csv
-    Untracked:  data/mhwBlock.csv
-    Untracked:  data/mhws_py.csv
-    Untracked:  data/mhws_py_joinAG_1.csv
-    Untracked:  data/mhws_py_joinAG_5.csv
-    Untracked:  data/mhws_py_joinAG_no.csv
-    Untracked:  data/mhws_py_minD_3.csv
-    Untracked:  data/mhws_py_minD_7.csv
-    Untracked:  data/mhws_py_pctile_80.csv
-    Untracked:  data/mhws_py_pctile_95.csv
-    Untracked:  data/mhws_py_pctile_99.csv
-    Untracked:  data/mhws_py_random.csv
-    Untracked:  data/mhws_py_spw_11.csv
-    Untracked:  data/mhws_py_spw_51.csv
-    Untracked:  data/mhws_py_spw_no.csv
-    Untracked:  data/mhws_py_whw_3.csv
-    Untracked:  data/mhws_py_whw_7.csv
-    Untracked:  data/sst_ALL.Rdata
-    Untracked:  data/sst_ALL_KS.Rdata
-    Untracked:  data/sst_ALL_cat_chi.Rdata
-    Untracked:  data/sst_ALL_clim_category_count.Rdata
-    Untracked:  data/sst_ALL_con.Rdata
-    Untracked:  data/sst_ALL_detrend.Rdata
-    Untracked:  data/sst_ALL_event_cor.Rdata
-    Untracked:  data/sst_ALL_miss_clim_KS_p.Rdata
-    Untracked:  data/sst_ALL_miss_clim_aov_p.Rdata
-    Untracked:  data/sst_ALL_miss_clim_aov_tukey.Rdata
-    Untracked:  data/sst_ALL_miss_event_CI.Rdata
-    Untracked:  data/sst_ALL_smooth_R2.Rdata
-    Untracked:  data/sst_ALL_smooth_R2_base.Rdata
-    Untracked:  data/sst_ALL_smooth_cor_base.Rdata
-    Untracked:  data/sst_ALL_smooth_real_category.Rdata
-    Untracked:  data/sst_ALL_trend_cat_chi.Rdata
-    Untracked:  data/sst_ALL_trend_clim_KS_p.Rdata
-    Untracked:  data/sst_ALL_trend_clim_aov_tukey.Rdata
-    Untracked:  data/sst_ALL_trend_clim_only.Rdata
-    Untracked:  data/sst_ALL_trend_event_CI.Rdata
-    Untracked:  data/sst_ALL_trend_event_aov_tukey.Rdata
-    Untracked:  data/sst_WA.csv
-    Untracked:  data/sst_WA_miss_ice.csv
-    Untracked:  data/sst_WA_miss_random.csv
+    Ignored:    data/sst_ALL_trended.Rdata
 
 Unstaged changes:
-    Deleted:    .Rbuildignore
-    Modified:   .gitignore
-    Deleted:    DESCRIPTION
-    Deleted:    NAMESPACE
-    Modified:   NEWS.md
-    Deleted:    R/MHWdetection-package.R
-    Deleted:    R/placeholder.R
-    Modified:   README.md
-    Deleted:    _pkgdown.yml
-    Modified:   _workflowr.yml
-    Modified:   analysis/_site.yml
-    Deleted:    docs/articles/fig/heatwaveR_v3.svg
-    Deleted:    docs/docsearch.css
-    Deleted:    docs/docsearch.js
-    Deleted:    docs/link.svg
-    Deleted:    docs/pkgdown.css
-    Deleted:    docs/pkgdown.js
-    Deleted:    docs/pkgdown.yml
-    Deleted:    docs/sitemap.xml
-    Deleted:    man/MHWdetection-package.Rd
-    Deleted:    man/placeholder.Rd
-    Deleted:    tests/testthat.R
-    Deleted:    tests/testthat/test-placeholder.R
-    Deleted:    vignettes/.gitignore
-    Deleted:    vignettes/Climatologies_and_baselines.Rmd
-    Deleted:    vignettes/Short_climatologies.Rmd
-    Deleted:    vignettes/best_practices.Rmd
-    Deleted:    vignettes/bibliography.bib
-    Deleted:    vignettes/data/.gitignore
-    Deleted:    vignettes/data/clim_py.csv
-    Deleted:    vignettes/data/clim_py_joinAG_1.csv
-    Deleted:    vignettes/data/clim_py_joinAG_5.csv
-    Deleted:    vignettes/data/clim_py_joinAG_no.csv
-    Deleted:    vignettes/data/clim_py_minD_3.csv
-    Deleted:    vignettes/data/clim_py_minD_7.csv
-    Deleted:    vignettes/data/clim_py_pctile_80.csv
-    Deleted:    vignettes/data/clim_py_pctile_95.csv
-    Deleted:    vignettes/data/clim_py_pctile_99.csv
-    Deleted:    vignettes/data/clim_py_random.csv
-    Deleted:    vignettes/data/clim_py_spw_11.csv
-    Deleted:    vignettes/data/clim_py_spw_51.csv
-    Deleted:    vignettes/data/clim_py_spw_no.csv
-    Deleted:    vignettes/data/clim_py_whw_3.csv
-    Deleted:    vignettes/data/clim_py_whw_7.csv
-    Deleted:    vignettes/data/mhwBlock.csv
-    Deleted:    vignettes/data/mhws_py.csv
-    Deleted:    vignettes/data/mhws_py_joinAG_1.csv
-    Deleted:    vignettes/data/mhws_py_joinAG_5.csv
-    Deleted:    vignettes/data/mhws_py_joinAG_no.csv
-    Deleted:    vignettes/data/mhws_py_minD_3.csv
-    Deleted:    vignettes/data/mhws_py_minD_7.csv
-    Deleted:    vignettes/data/mhws_py_pctile_80.csv
-    Deleted:    vignettes/data/mhws_py_pctile_95.csv
-    Deleted:    vignettes/data/mhws_py_pctile_99.csv
-    Deleted:    vignettes/data/mhws_py_random.csv
-    Deleted:    vignettes/data/mhws_py_spw_11.csv
-    Deleted:    vignettes/data/mhws_py_spw_51.csv
-    Deleted:    vignettes/data/mhws_py_spw_no.csv
-    Deleted:    vignettes/data/mhws_py_whw_3.csv
-    Deleted:    vignettes/data/mhws_py_whw_7.csv
-    Deleted:    vignettes/data/sst_ALL.Rdata
-    Deleted:    vignettes/data/sst_ALL_KS.Rdata
-    Deleted:    vignettes/data/sst_ALL_cat_chi.Rdata
-    Deleted:    vignettes/data/sst_ALL_clim_category_count.Rdata
-    Deleted:    vignettes/data/sst_ALL_con.Rdata
-    Deleted:    vignettes/data/sst_ALL_detrend.Rdata
-    Deleted:    vignettes/data/sst_ALL_event_cor.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_clim_KS_p.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_p.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_clim_aov_tukey.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_event_CI.Rdata
-    Deleted:    vignettes/data/sst_ALL_miss_event_aov_tukey.Rdata
-    Deleted:    vignettes/data/sst_ALL_smooth_R2.Rdata
-    Deleted:    vignettes/data/sst_ALL_smooth_R2_base.Rdata
-    Deleted:    vignettes/data/sst_ALL_smooth_cor_base.Rdata
-    Deleted:    vignettes/data/sst_ALL_smooth_real_category.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_cat_chi.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_clim_KS_p.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_clim_aov_tukey.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_clim_only.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_event_CI.Rdata
-    Deleted:    vignettes/data/sst_ALL_trend_event_aov_tukey.Rdata
-    Deleted:    vignettes/data/sst_WA.csv
-    Deleted:    vignettes/data/sst_WA_miss_ice.csv
-    Deleted:    vignettes/data/sst_WA_miss_random.csv
-    Deleted:    vignettes/fig/detect_diagram.svg
-    Deleted:    vignettes/fig/heatwaveR_v3.svg
-    Deleted:    vignettes/gridded_products.Rmd
-    Deleted:    vignettes/missing_data.Rmd
-    Deleted:    vignettes/r_vs_python.Rmd
-    Deleted:    vignettes/r_vs_python_additional.Rmd
-    Deleted:    vignettes/r_vs_python_arguments.Rmd
-    Deleted:    vignettes/time_series_duration.Rmd
-    Deleted:    vignettes/trend.Rmd
-    Deleted:    vignettes/variance.Rmd
+    Modified:   analysis/Climatologies_and_baselines.Rmd
+    Modified:   analysis/best_practices.Rmd
+    Modified:   analysis/r_vs_python.Rmd
 
 </code></pre>
-Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes. </details>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</details>
 </li>
 </ul>
-<details> <summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<details>
+<summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
 <ul>
 <table style="border-collapse:separate; border-spacing:5px;">
 <thead>
@@ -589,6 +451,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/38559da0810a23b9416a3df8d57aa1c1ab651204/docs/r_vs_python.html" target="_blank">38559da</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -643,7 +522,7 @@ Publish analysis files
 </tbody>
 </table>
 </ul>
-<p></details></p>
+</details>
 <hr />
 <div id="overview" class="section level2">
 <h2>Overview</h2>
@@ -684,22 +563,10 @@ res_r &lt;- detect_event(ts_clim)</code></pre>
 <pre class="r"><code>## This is an R chunk ##
 
 # Look at the top six rows of the first 6 columns of the events
-res_r$event[1:6, 1:6]</code></pre>
-<pre><code># A tibble: 6 x 6
-  event_no index_start index_peak index_end duration date_start
-     &lt;int&gt;       &lt;dbl&gt;      &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt; &lt;date&gt;    
-1        1         884        887       895       12 1984-06-02
-2        2         899        901       904        6 1984-06-17
-3        3         908        922       926       19 1984-06-26
-4        4        1008       1010      1012        5 1984-10-04
-5        5        1023       1027      1029        7 1984-10-19
-6        6        1033       1034      1052       20 1984-10-29</code></pre>
-<pre class="r"><code># Or perhaps the most intense event
+res_r$event[1:6, 1:6]
+
+# Or perhaps the most intense event
 res_r$event[res_r$event$intensity_max == max(res_r$event$intensity_max), 1:6]</code></pre>
-<pre><code># A tibble: 1 x 6
-  event_no index_start index_peak index_end duration date_start
-     &lt;int&gt;       &lt;dbl&gt;      &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt; &lt;date&gt;    
-1       42       10629      10651     10689       61 2011-02-06</code></pre>
 </div>
 </div>
 <div id="python-code" class="section level3">
@@ -823,14 +690,10 @@ res_clim_Python &lt;- read_csv(&quot;data/clim_py.csv&quot;)</code></pre>
 <h3>Climatologies</h3>
 <pre class="r"><code>## This is an R chunk ##
 
-cor(res_clim_R$seas, res_clim_Python$seas)</code></pre>
-<pre><code>[1] 0.9999999</code></pre>
-<pre class="r"><code>sum(res_clim_R$seas) - sum(res_clim_Python$seas)</code></pre>
-<pre><code>[1] -2.039741</code></pre>
-<pre class="r"><code>cor(res_clim_R$thresh, res_clim_Python$thresh)</code></pre>
-<pre><code>[1] 0.9999996</code></pre>
-<pre class="r"><code>sum(res_clim_R$thresh) - sum(res_clim_Python$thresh)</code></pre>
-<pre><code>[1] -6.563502</code></pre>
+cor(res_clim_R$seas, res_clim_Python$seas)
+sum(res_clim_R$seas) - sum(res_clim_Python$seas)
+cor(res_clim_R$thresh, res_clim_Python$thresh)
+sum(res_clim_R$thresh) - sum(res_clim_Python$thresh)</code></pre>
 <p>The seasonal and threshold climatologies correlate very well, but adding them up we see that the Python values are consistently higher. This is due to rounding differences between the languages. Even though the sum difference between the thresholds may look large at a value of ~6.5, considering this is over 12053 days of data, the difference is only ~0.0005/day. So I think it is safe to move on and look at the events.</p>
 </div>
 <div id="february-29th" class="section level3">
@@ -847,10 +710,8 @@ res_clim_Python_29 &lt;- res_clim_Python %&gt;%
   select(seas, thresh) %&gt;% 
   distinct()
 
-res_clim_R_29$seas - res_clim_Python_29$seas</code></pre>
-<pre><code>[1] 0.0003483643</code></pre>
-<pre class="r"><code>res_clim_R_29$thresh - res_clim_Python_29$thresh</code></pre>
-<pre><code>[1] -0.005419341</code></pre>
+res_clim_R_29$seas - res_clim_Python_29$seas
+res_clim_R_29$thresh - res_clim_Python_29$thresh</code></pre>
 <p>Another thing pointed out by Zijie is that Python and MATLAB calculate percentiles differently, this then is likely also true for R and Python. This would explain why the seasonal climatologies (<code>seas</code>) are always much closer than the thresholds (<code>thresh</code>) for all of these tests.</p>
 </div>
 <div id="events" class="section level3">
@@ -879,38 +740,15 @@ for(i in 1:length(colnames(res_event_num))){
   res_event &lt;- rbind(res_event, x)
   }
 na.omit(res_event)</code></pre>
-<pre><code>           r difference                            var
-2  1.0000000    60.0000                    index_start
-3  1.0000000    60.0000                     index_peak
-4  1.0000000    60.0000                      index_end
-5  1.0000000     0.0000                       duration
-6  0.9999991     0.0086                 intensity_mean
-7  0.9999997     0.0086                  intensity_max
-8  0.9996080     0.7345                  intensity_var
-9  1.0000000     0.1616           intensity_cumulative
-10 0.9999971     0.0158       intensity_mean_relThresh
-11 0.9999994     0.0166        intensity_max_relThresh
-12 0.9995685     0.7374        intensity_var_relThresh
-13 0.9999996     0.4741 intensity_cumulative_relThresh
-14 1.0000000     0.0000             intensity_mean_abs
-15 0.9990733     1.6100              intensity_max_abs
-16 0.9997267     0.7667              intensity_var_abs
-17 1.0000000     0.0000       intensity_cumulative_abs
-18 1.0000000    -0.0001                     rate_onset
-19 0.9999999     0.0003                   rate_decline</code></pre>
 <p>It is a bit odd that there is such a large difference between <code>intensity_var</code> for the two language. This implies that R is detecting larger differences in the intensity around the threshold than Python is. This may again be due to the differences in thresholds being detected, but that makes a rather small difference. It is perhaps more likely that variance is calculated slightly differently between languages. Looking at the source code one sees that this is calculated by first finding the variance of the intensity, and then the square root of that. These two calculations likely differ enough between the languages to be causing this. Ultimately it is of little concern as the variance values found throughout both packages are not of much interest to anyone.</p>
 <p>We may also see that the difference in <code>intensity_max_abs</code> is a bit higher in Python than in R. This is rather surprising as <code>intensity_max_abs</code> simply shows the maximum temperature (independent of any thresholds etc.) experienced during that event. And considering that these calculations were performed on the exact same time series, <code>intensity_max_abs</code> should always be exactly the same between the two languages. Looking at the climatology output one sees that the temperature is still correct, meaning that the difference must occur somewhere within the R function <code>detect_event</code>. Looking at the R source code we see that <code>intensity_max_abs</code> is calculated on line 298, for Python this is calculated on line 376. The reason for the difference is because R is looking for the maximum temperature throughout all dates for a given event, whereas Python is simply taking the temperature on the peak date of the event. This is a subtle but significant difference as this means this value is showing two different things. I’m not certain which is more appropriate, though I’m leaning towards the Python implementation.</p>
 <p>With all of our overlapping columns compared, and our differences and Pearson r values looking solid, let’s finish off this basic comparison by finding which columns are not shared between the different language outputs. Also, please note that the apparently large differences between the <code>index_start</code>, <code>index_peak</code>, and <code>index_end</code> values are due to the different indexing methods of R and Python. R starts at 1 and Python at 0. The</p>
 <pre class="r"><code>## This is an R chunk ##
 
 cols_R &lt;- colnames(res_event_R)[!(colnames(res_event_R) %in% colnames(res_event_Python))]
-cols_R</code></pre>
-<pre><code>[1] &quot;event_no&quot;</code></pre>
-<pre class="r"><code>cols_Py &lt;- colnames(res_event_Python)[!(colnames(res_event_Python) %in% colnames(res_event_R))]
+cols_R
+cols_Py &lt;- colnames(res_event_Python)[!(colnames(res_event_Python) %in% colnames(res_event_R))]
 cols_Py</code></pre>
-<pre><code>[1] &quot;category&quot;          &quot;duration_extreme&quot;  &quot;duration_moderate&quot;
-[4] &quot;duration_severe&quot;   &quot;duration_strong&quot;   &quot;n_events&quot;         
-[7] &quot;time_end&quot;          &quot;time_peak&quot;         &quot;time_start&quot;       </code></pre>
 <p>Wonderful! Almost everything matches up exactly. The duration of categories of events is something added in R by another function <code>category()</code>, and will be left that way for now. The “time” columns in the Python output aren’t relevant as far as I can see in the present usage as these functions currently only take day values. The different methods of labelling the events will be left as they are for now as well.</p>
 <p>It is also worth noting that the values for <code>index_start</code>, <code>index_peak</code>, and <code>index_end</code> are off by one between the two languages. This is due to the difference in indexing between the languages. Looking at the <code>date_start</code>, <code>date_peak</code>, and <code>date_end</code> values we see that they are the same.</p>
 </div>
@@ -987,21 +825,15 @@ res_event_random_Python &lt;- read_csv(&quot;data/mhws_py_random.csv&quot;)</cod
 <pre class="r"><code>## This is an R chunk ##
 
 # Compare clims/thresholds
-cor(res_clim_random_R$seas, res_clim_random_Python$seas)</code></pre>
-<pre><code>[1] 0.9999709</code></pre>
-<pre class="r"><code>mean(res_clim_random_R$seas) - mean(res_clim_random_Python$seas)</code></pre>
-<pre><code>[1] 0.0004467828</code></pre>
-<pre class="r"><code>cor(res_clim_random_R$thresh, res_clim_random_Python$thresh)</code></pre>
-<pre><code>[1] 0.9999379</code></pre>
-<pre class="r"><code>mean(res_clim_random_R$thresh) - mean(res_clim_random_Python$thresh)</code></pre>
-<pre><code>[1] 0.0005155218</code></pre>
+cor(res_clim_random_R$seas, res_clim_random_Python$seas)
+mean(res_clim_random_R$seas) - mean(res_clim_random_Python$seas)
+cor(res_clim_random_R$thresh, res_clim_random_Python$thresh)
+mean(res_clim_random_R$thresh) - mean(res_clim_random_Python$thresh)</code></pre>
 <p>We may see from the results above that the values still correlate very strongly, if slightly less so than with no missing data. We see again that the Python values are higher overall for both the seasonal climatology and the threshold. This time however the differences are much larger. The seasonal climatology is off by ~0.0004/day, which is acceptable, but the 90th percentile threshold is off by ~0.0695. This is too large of a difference and this issue will need to be investigated. It is most likely due to the difference in how quantiles are calculated between the languages though and so there may be little to do about it. Perhaps more importantly is how these differences may affect the events being detected.</p>
 <pre class="r"><code>## This is an R chunk ##
 
-nrow(res_event_random_R)</code></pre>
-<pre><code>[1] 61</code></pre>
-<pre class="r"><code>nrow(res_event_random_Python)</code></pre>
-<pre><code>[1] 53</code></pre>
+nrow(res_event_random_R)
+nrow(res_event_random_Python)</code></pre>
 <pre class="r"><code>## This is an R chunk ##
 
 # Remove non-numeric columns
@@ -1024,25 +856,6 @@ for(i in 1:length(colnames(res_event_random_num))){
   res_event_random &lt;- rbind(res_event_random, x)
   }
 na.omit(res_event_random)</code></pre>
-<pre><code>   difference                            var
-2  50851.0000                    index_start
-3  50961.0000                     index_peak
-4  51114.0000                      index_end
-5    271.0000                       duration
-6      3.2705                 intensity_mean
-7      6.7657                  intensity_max
-8     -0.6593                  intensity_var
-9    498.7071           intensity_cumulative
-10    -3.8033       intensity_mean_relThresh
-11    -0.3247        intensity_max_relThresh
-12    -0.6651        intensity_var_relThresh
-13   167.2651 intensity_cumulative_relThresh
-14   154.8956             intensity_mean_abs
-15   159.5400              intensity_max_abs
-16    -0.1118              intensity_var_abs
-17  6329.6356       intensity_cumulative_abs
-18    -6.4583                     rate_onset
-19   -10.6540                   rate_decline</code></pre>
 <p>Because the count of events detected is not the same, we cannot run correlations. We can sum up the differences to get an idea of how far off things are, and we can see that the results are troubling. The differences in the <code>index_*</code> values can be discounted as we have already established that we have a different number of events. The next largest difference is that for <code>intensity_cumulative_abs</code>. Looking at the one event that is the same between the languages one may see that this value is the same for both, meaning that we may discount this difference as it is not due to calculation differences, but rather also due to the differing number of events. Regardless, it is an indicator that overall the much lower threshold in the R language is giving us results that look much more dire than the Python language. This is problematic and stems from the quantile calculation issue.</p>
 <p>I looked into this in quite some detail and it appears to stem not only from the calculation of quantiles being different, but also from the R quantile calculations never giving more than one additional decimal place of precision over the initial data, whereas the Python results float near infinity. This explains why the R results always tend to be lower, but does not account for why the presence of missing data has such a dramatic effect.</p>
 <pre class="r"><code>## This is an R chunk ##
@@ -1055,14 +868,10 @@ clim_only_random_R &lt;- res_clim_random_R %&gt;%
 clim_only_random_Python &lt;- res_clim_random_Python %&gt;% 
   slice(1:365)
 
-cor(clim_only_random_R$seas, clim_only_random_Python$seas)</code></pre>
-<pre><code>[1] 0.9999709</code></pre>
-<pre class="r"><code>sum(clim_only_random_R$seas) - sum(clim_only_random_Python$seas)</code></pre>
-<pre><code>[1] 0.1580903</code></pre>
-<pre class="r"><code>cor(clim_only_random_R$seas, clim_only_random_Python$seas)</code></pre>
-<pre><code>[1] 0.9999709</code></pre>
-<pre class="r"><code>sum(clim_only_random_R$thresh) - sum(clim_only_random_Python$thresh)</code></pre>
-<pre><code>[1] 0.1839033</code></pre>
+cor(clim_only_random_R$seas, clim_only_random_Python$seas)
+sum(clim_only_random_R$seas) - sum(clim_only_random_Python$seas)
+cor(clim_only_random_R$seas, clim_only_random_Python$seas)
+sum(clim_only_random_R$thresh) - sum(clim_only_random_Python$thresh)</code></pre>
 <p>Looking at only the values for one seasonal climatology or threshold cycle we see that the differences are the same as when we compare all of the data. I don’t know why they wouldn’t be… but I wanted to check.</p>
 <p>After having gone over the R code very thoroughly I think the next course of action is to go through the step by step output of the Python code to see where exactly these changes begin to occur. It could be in the following places:</p>
 <ul>
@@ -1085,19 +894,9 @@ cor(clim_only_random_R$seas, clim_only_random_Python$seas)</code></pre>
 <pre class="r"><code>library(microbenchmark)
 # The old R code
 library(RmarineHeatWaves)
-microbenchmark(detect(make_whole(data = sst_WA), climatology_start = &quot;1982-01-01&quot;, climatology_end = &quot;2014-12-31&quot;), times = 10)</code></pre>
-<pre><code>Unit: milliseconds
-                                                                                                     expr
- detect(make_whole(data = sst_WA), climatology_start = &quot;1982-01-01&quot;,      climatology_end = &quot;2014-12-31&quot;)
-      min       lq    mean   median       uq      max neval
- 528.6332 537.7533 605.428 544.3456 555.6387 1146.521    10</code></pre>
-<pre class="r"><code># The new R code
+microbenchmark(detect(make_whole(data = sst_WA), climatology_start = &quot;1982-01-01&quot;, climatology_end = &quot;2014-12-31&quot;), times = 10)
+# The new R code
 microbenchmark(detect_event(ts2clm(data = sst_WA, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2014-12-31&quot;))), times = 10)</code></pre>
-<pre><code>Unit: milliseconds
-                                                                                        expr
- detect_event(ts2clm(data = sst_WA, climatologyPeriod = c(&quot;1982-01-01&quot;,      &quot;2014-12-31&quot;)))
-      min       lq     mean   median       uq      max neval
- 136.0114 137.5676 140.6235 139.3807 143.8128 147.6173    10</code></pre>
 <p>Unsurprisingly, the average for running the heatwave analysis on <strong><code>heatwaveR</code></strong> 10 times comes out at ~0.194 seconds per calculations, which is faster than the average of ~0.730 with <strong><code>RmarineHeatWaves</code></strong>.</p>
 </div>
 <div id="python" class="section level3">
@@ -1124,58 +923,6 @@ print(bench_py)</code></pre>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 3.5.3 (2019-03-11)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 16.04.5 LTS
-
-Matrix products: default
-BLAS: /usr/lib/openblas-base/libblas.so.3
-LAPACK: /usr/lib/libopenblasp-r0.2.18.so
-
-locale:
- [1] LC_CTYPE=en_CA.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_CA.UTF-8        LC_COLLATE=en_CA.UTF-8    
- [5] LC_MONETARY=en_CA.UTF-8    LC_MESSAGES=en_CA.UTF-8   
- [7] LC_PAPER=en_CA.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-other attached packages:
- [1] RmarineHeatWaves_0.17.0 microbenchmark_1.4-4   
- [3] forcats_0.3.0           stringr_1.3.1          
- [5] dplyr_0.7.6             purrr_0.2.5            
- [7] readr_1.1.1             tidyr_0.8.1            
- [9] tibble_1.4.2            tidyverse_1.2.1        
-[11] bindrcpp_0.2.2          heatwaveR_0.3.3        
-[13] ggplot2_3.0.0           data.table_1.11.6      
-
-loaded via a namespace (and not attached):
- [1] httr_1.3.1        jsonlite_1.5      splines_3.5.3    
- [4] R.utils_2.7.0     modelr_0.1.2      assertthat_0.2.0 
- [7] sp_1.3-1          cellranger_1.1.0  yaml_2.2.0       
-[10] pillar_1.3.0      backports_1.1.2   lattice_0.20-35  
-[13] glue_1.3.0        reticulate_1.10   digest_0.6.16    
-[16] rvest_0.3.2       colorspace_1.3-2  sandwich_2.5-0   
-[19] htmltools_0.3.6   Matrix_1.2-14     R.oo_1.22.0      
-[22] plyr_1.8.4        pkgconfig_2.0.2   broom_0.5.0      
-[25] raster_2.6-7      haven_1.1.2       mvtnorm_1.0-8    
-[28] scales_1.0.0      whisker_0.3-2     git2r_0.23.0     
-[31] TH.data_1.0-9     withr_2.1.2       lazyeval_0.2.1   
-[34] cli_1.0.0         survival_2.42-6   magrittr_1.5     
-[37] crayon_1.3.4      readxl_1.1.0      evaluate_0.11    
-[40] R.methodsS3_1.7.1 fansi_0.3.0       nlme_3.1-137     
-[43] MASS_7.3-50       xml2_1.2.0        tools_3.5.3      
-[46] hms_0.4.2         multcomp_1.4-8    munsell_0.5.0    
-[49] compiler_3.5.3    RcppRoll_0.3.0    rlang_0.2.2      
-[52] grid_3.5.3        rstudioapi_0.7    rmarkdown_1.10   
-[55] gtable_0.2.0      codetools_0.2-15  R6_2.2.2         
-[58] zoo_1.8-4         lubridate_1.7.4   knitr_1.20       
-[61] utf8_1.1.4        bindr_0.1.1       workflowr_1.1.1  
-[64] rprojroot_1.3-2   stringi_1.2.4     Rcpp_0.12.18     
-[67] tidyselect_0.2.4 </code></pre>
 </div>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
