@@ -1,0 +1,74 @@
+---
+# PLEASE SEE THE README for in depth description github.com/brentthorne/posterdown
+# IUGG size: 90 x 45 inches or 228 x 114 cm (landscape orientation)
+poster_height: "45in"
+poster_width: "90in"
+font_family: 'Rasa'
+#ESSENTIALS
+title: A Better Reproducible Poster Title
+author:
+  - name: W. Brent Thorne
+    affil: 1,*
+    main: true
+    orcid: '0000-0002-1099-3857'
+    twitter: brentthorne18 
+    email: bthorne2@brocku.ca
+  - name: Another G. Contributor
+    affil: 2
+    email: ag.con@posterdown.net
+  - name: Person Three
+    affil: 3
+affiliation:
+  - num: 1
+    address: Department of Earth Science, Brock University
+  - num: 2
+    address: Department of Graphics and Layouts, University of Posters; Canada
+  - num: 3
+    address: Another Institute of a place where work gets done, Earth, Milky Way
+#STYLE & FORMATTING
+title_textsize: "125pt"
+author_textsize: "1.17em"
+authorextra_textsize: "35px"
+affiliation_textsize: "25px"
+affiliation_textcol: '#00000060'
+caption_fontsize: "20pt"
+#Findings Section "Middle" of the poster
+middle_fontfamily: "Special Elite"
+middle_textcol: "#FFFFFF90"
+middle_fontsize: "170px"
+main_findings:
+  - "Make **better posters** with <br> RMarkdown + **posterdown**."
+  - "Transition from **poster** to **manuscript** with ease!"
+logoleft_name: "Figures/qr-code-black.png"
+logoright_name: "Figures/posterdownlogo.png"
+#---POSTER BODY OPTIONS---#
+primary_colour: '#0b4545'
+secondary_colour: '#008080' 
+accent_colour: "#cc0000"
+body_bgcol: "#FFFFFF"
+body_textsize: "45px"
+body_textcol: "#000000"
+#--Standard Options--#
+output: 
+  posterdown::posterdown_betterland:
+    self_contained: false
+    pandoc_args: --mathjax
+    highlight: espresso
+    number_sections: false
+link-citations: true
+bibliography: MyBib.bib
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(results = 'asis',
+                      echo = FALSE,
+                      warning = FALSE,
+                      tidy = FALSE,
+                      message = FALSE,
+                      fig.align = 'center')
+options(knitr.table.format = "html") 
+```
+
+# Introduction
+
+This is the `posterdown_betterland` template for the {posterdown} package! I was inspired by the twitter thread of [Mike Morrison](https://mobile.twitter.com/mikemorrison/status/1110191245035479041) and wanted to apply the `#betterposter` concept to the reproducible (yet simple to use) functionality of the {posterdown} package [@thorneposterdown2019]. If you're not an R user don't sweat as you do **NOT** need to use it at all! Feel free to use only the Markdown functionality of this package :)
