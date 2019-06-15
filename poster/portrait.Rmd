@@ -15,7 +15,6 @@ author:
   - name: Eric C. J. Oliver
     affil: 1
     # main: false
-    # email: 'ag.con@posterdown.net'
   - name: Alistair J. Hobday
     affil: 3
   - name: Albertus J. Smit
