@@ -5,26 +5,29 @@ poster_height: "45in"
 poster_width: "90in"
 font_family: 'Rasa'
 #ESSENTIALS
-title: A Better Reproducible Poster Title
+title: '**Detecting marine heatwaves with sub-optimal data**'
 author:
-  - name: W. Brent Thorne
-    affil: 1,*
+  - name: '**Robert W. Schlegel**'
+    affil: 1,2,*
     main: true
-    orcid: '0000-0002-1099-3857'
-    twitter: brentthorne18 
-    email: bthorne2@brocku.ca
-  - name: Another G. Contributor
-    affil: 2
-    email: ag.con@posterdown.net
-  - name: Person Three
+    orcid: '0000-0002-0705-1287'
+    twitter: wiederweiter 
+    email: robert.schlegel@dal.ca
+  - name: Eric C. J. Oliver
+    affil: 1
+    # main: false
+    # email: 'ag.con@posterdown.net'
+  - name: Alistair J. Hobday
     affil: 3
+  - name: Albertus J. Smit
+    affil: 2
 affiliation:
   - num: 1
-    address: Department of Earth Science, Brock University
+    address: Department of Oceanography, Dalhousie University, Halifax, Nova Scotia, Canada
   - num: 2
-    address: Department of Graphics and Layouts, University of Posters; Canada
+    address: Department of Biodiversity and Conservation Biology, University of the Western Cape, Bellville, South Africa
   - num: 3
-    address: Another Institute of a place where work gets done, Earth, Milky Way
+    address: CSIRO Oceans and Atmosphere, Hobart, Tasmania, 7000, Australia
 #STYLE & FORMATTING
 title_textsize: "125pt"
 author_textsize: "1.17em"
@@ -37,10 +40,9 @@ middle_fontfamily: "Special Elite"
 middle_textcol: "#FFFFFF90"
 middle_fontsize: "170px"
 main_findings:
-  - "Make **better posters** with <br> RMarkdown + **posterdown**."
-  - "Transition from **poster** to **manuscript** with ease!"
-logoleft_name: "Figures/qr-code-black.png"
-logoright_name: "Figures/posterdownlogo.png"
+  - "__Marine heatwaves__ detected in time series as short as __10 years__ and __missing 20% data__ are comparable to those detected in __complete 30 year__ time series"
+logoleft_name: "Figures/MHWdetectionQR.png"
+logoright_name: "Figures/all_logo_long.jpg"
 #---POSTER BODY OPTIONS---#
 primary_colour: '#0b4545'
 secondary_colour: '#008080' 
@@ -56,19 +58,73 @@ output:
     highlight: espresso
     number_sections: false
 link-citations: true
-bibliography: MyBib.bib
+bibliography: MHWdetection.bib
 ---
 
-```{r, include=FALSE}
-knitr::opts_chunk$set(results = 'asis',
-                      echo = FALSE,
-                      warning = FALSE,
-                      tidy = FALSE,
-                      message = FALSE,
-                      fig.align = 'center')
-options(knitr.table.format = "html") 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  results = 'asis',
+  echo = FALSE,
+  comment = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.align = 'center'
+)
 ```
-
 # Introduction
 
-This is the `posterdown_betterland` template for the {posterdown} package! I was inspired by the twitter thread of [Mike Morrison](https://mobile.twitter.com/mikemorrison/status/1110191245035479041) and wanted to apply the `#betterposter` concept to the reproducible (yet simple to use) functionality of the {posterdown} package [@thorneposterdown2019]. If you're not an R user don't sweat as you do **NOT** need to use it at all! Feel free to use only the Markdown functionality of this package :)
+The @Hobday2016 and @Hobday2018 definitions are used here for marine heatwaves (MHWs) and their categories. These events are increasing in duration and intensity around the globe [@Oliver2018]. Many coastal, oceanic, and polar regions with ecosystems/species that are vulnerable to these events [@Smale2019] do not have optimal sea water temperature time series available for the detection of MHWs.   
+An optimal time series is defined here as meeting these two primary requirements: 1) 30 years long, 2) no missing data. Any time series shorter than 30 years long or missing any data is therefore sub-optimal. The purpose of this study was to determine how confident we may be in our results when using sub-optimal data.
+  
+## Objectives
+
+1. Find the sub-optimal data limits for detecting MHWs  
+2. Quantify the effects of sub-optimal data on individual MHWs  
+3. Determine if these effects are consistent around the globe  
+
+# Methods
+
+- Reference time series from the `heatwaveR` package [@Schlegel2018] were re-sampled 100 times and made increasingly sub-optimal by:
+    - Removing one year of data; 37 -- 10 years
+    - Randomly removing 1% of data; 0 -- 50% 
+    - Adding linear trend of 0.01°C/dec.; 0.00 -- 0.50°C/dec.
+- The effect on an entire time series and one focus MHW (Figure \@ref(fig:event-flames)) were measured
+- The sub-optimal treatments were performed on global NOAA OISST product and effects measured
+
+```{r event-flames, out.width='90%', fig.align='center', fig.cap='Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks.', fig.height=2}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_1_flat.png")
+```
+
+# Results
+
+- MHWs detected with 10 years of data do not differ significantly from those detected with 30 years of data (Figure \@ref(fig:length-KS))  
+- 20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events \@ref(fig:effect-event))  
+- Individual MHWs in 10 year time series around the globe are on average 10% less intense (Figure \@ref(fig:global-intensity)) and 28% shorter than the same event in a 30 year time series  
+<!-- - The shifting up or down of the mean climatology is the primary driver of change in individual events   -->
+<!-- - The change in the count of events is caused by missing data   -->
+
+```{r length-KS, out.width='90%', fig.align='center', fig.cap='The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results.', fig.height=2}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_2.png")
+```
+
+```{r effect-event, out.width='90%', fig.align='center', fig.cap='The effect on the focus MHWs (Figure \\@ref(fig:event-flames)) given the three different sub-optimal data challenges.', fig.height=5}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_3.png")
+```
+
+```{r global-intensity, out.width='90%', fig.align='center', fig.cap='Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened.', fig.height=5}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_4.png")
+```
+
+<!-- ```{r, out.width='90%', fig.align='center', fig.cap='Map showing the trends in increasing or decreasing duration of MHWs as a time series is lengthened.'} -->
+<!-- knitr::include_graphics("~/MHWdetection/LaTeX/fig_5.png") -->
+<!-- ``` -->
+
+# Conclusions
+
+The MHW detection algorithm provides robust results that are insensitive to sub-optimal data challenges.  
+Missing data has a greater effect on MHWs than time series length. Linear interpolation is an effective fix for missing data up to 40%.  
+Time series length has a less predictable effect than missing data.  
+The shifting up or down of the mean climatology is the primary driver of change in MHWs.  
+Optimal data should still be used when possible.
+
+# References
