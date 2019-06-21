@@ -29,16 +29,16 @@ affiliation:
   - num: 3
     address: CSIRO Oceans and Atmosphere, Hobart, Tasmania, 7000, Australia
 #STYLE & FORMATTING
-title_textsize: "125pt"
+title_textsize: "155pt"
 author_textsize: "1.17em"
-authorextra_textsize: "35px"
-affiliation_textsize: "25px"
+authorextra_textsize: "60px"
+affiliation_textsize: "40px"
 affiliation_textcol: '#00000060'
 caption_fontsize: "20pt"
 #Findings Section "Middle" of the poster
 middle_fontfamily: "Special Elite"
 middle_textcol: "#FFFFFF90"
-middle_fontsize: "170px"
+middle_fontsize: "270px"
 main_findings:
   - "__Marine heatwaves__ detected in time series as short as __10 years__ and __missing 20% data__ are comparable to those detected in __complete 30 year__ time series"
 logoleft_name: "Figures/MHWdetectionQR.png"
@@ -48,7 +48,7 @@ primary_colour: '#0b4545'
 secondary_colour: '#008080' 
 accent_colour: "#cc0000"
 body_bgcol: "#FFFFFF"
-body_textsize: "45px"
+body_textsize: "50px"
 body_textcol: "#000000"
 #--Standard Options--#
 output: 
@@ -56,21 +56,21 @@ output:
     self_contained: false
     pandoc_args: --mathjax
     highlight: espresso
-    number_sections: false
+    number_sections: true
 link-citations: true
 bibliography: MHWdetection.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  results = 'asis',
-  echo = FALSE,
-  comment = FALSE,
-  warning = FALSE,
-  message = FALSE,
-  fig.align = 'center'
-)
+knitr::opts_chunk$set(results = 'asis',
+                      echo = FALSE,
+                      warning = FALSE,
+                      tidy = FALSE,
+                      message = FALSE,
+                      fig.align = 'center')
+options(knitr.table.format = "html") 
 ```
+
 # Introduction
 
 The @Hobday2016 and @Hobday2018 definitions are used here for marine heatwaves (MHWs) and their categories. These events are increasing in duration and intensity around the globe [@Oliver2018]. Many coastal, oceanic, and polar regions with ecosystems/species that are vulnerable to these events [@Smale2019] do not have optimal sea water temperature time series available for the detection of MHWs.   
@@ -84,36 +84,17 @@ An optimal time series is defined here as meeting these two primary requirements
 
 # Methods
 
-- Reference time series from the `heatwaveR` package [@Schlegel2018] were re-sampled 100 times and made increasingly sub-optimal by:
-    - Removing one year of data; 37 -- 10 years
-    - Randomly removing 1% of data; 0 -- 50% 
-    - Adding linear trend of 0.01°C/dec.; 0.00 -- 0.50°C/dec.
-- The effect on an entire time series and one focus MHW (Figure \@ref(fig:event-flames)) were measured
-- The sub-optimal treatments were performed on global NOAA OISST product and effects measured
-
-```{r event-flames, out.width='90%', fig.align='center', fig.cap='Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks.', fig.height=2}
-knitr::include_graphics("~/MHWdetection/LaTeX/fig_1_flat.png")
-```
+Reference time series from the `heatwaveR` package [@Schlegel2018] were re-sampled 100 times and made increasingly sub-optimal by: A) removing one year of data; 37 -- 10 years, B) randomly removing 1% of data; 0 -- 50%, and C) adding linear trend of 0.01°C/dec.; 0.00 -- 0.50°C/dec.  
+The effect on an entire time series and one focus MHW (Figure \@ref(fig:event-flames)) were measured.  
+The sub-optimal treatments were performed on global NOAA OISST product and effects measured.  
 
 # Results
 
-- MHWs detected with 10 years of data do not differ significantly from those detected with 30 years of data (Figure \@ref(fig:length-KS))  
-- 20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events \@ref(fig:effect-event))  
-- Individual MHWs in 10 year time series around the globe are on average 10% less intense (Figure \@ref(fig:global-intensity)) and 28% shorter than the same event in a 30 year time series  
+MHWs detected with 10 years of data do not differ significantly from those detected with 30 years of data (Figure \@ref(fig:length-KS)).  
+20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events \@ref(fig:effect-event)).  
+Individual MHWs in 10 year time series around the globe are on average 10% less intense (Figure \@ref(fig:global-intensity)) and 28% shorter than the same event in a 30 year time series.  
 <!-- - The shifting up or down of the mean climatology is the primary driver of change in individual events   -->
 <!-- - The change in the count of events is caused by missing data   -->
-
-```{r length-KS, out.width='90%', fig.align='center', fig.cap='The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results.', fig.height=2}
-knitr::include_graphics("~/MHWdetection/LaTeX/fig_2.png")
-```
-
-```{r effect-event, out.width='90%', fig.align='center', fig.cap='The effect on the focus MHWs (Figure \\@ref(fig:event-flames)) given the three different sub-optimal data challenges.', fig.height=5}
-knitr::include_graphics("~/MHWdetection/LaTeX/fig_3.png")
-```
-
-```{r global-intensity, out.width='90%', fig.align='center', fig.cap='Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened.', fig.height=5}
-knitr::include_graphics("~/MHWdetection/LaTeX/fig_4.png")
-```
 
 <!-- ```{r, out.width='90%', fig.align='center', fig.cap='Map showing the trends in increasing or decreasing duration of MHWs as a time series is lengthened.'} -->
 <!-- knitr::include_graphics("~/MHWdetection/LaTeX/fig_5.png") -->
@@ -126,5 +107,21 @@ Missing data has a greater effect on MHWs than time series length. Linear interp
 Time series length has a less predictable effect than missing data.  
 The shifting up or down of the mean climatology is the primary driver of change in MHWs.  
 Optimal data should still be used when possible.
+
+```{r event-flames, out.width='70%', fig.align='center', fig.cap='Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks.'}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_1_flat.png")
+```
+
+```{r length-KS, out.width='70%', fig.align='center', fig.cap='The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results.'}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_2.png")
+```
+
+```{r effect-event, out.width='70%', fig.align='center', fig.cap='The effect on the focus MHWs (Figure \\@ref(fig:event-flames)) given the three different sub-optimal data challenges.'}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_3.png")
+```
+
+```{r global-intensity, out.width='70%', fig.align='center', fig.cap='Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened.'}
+knitr::include_graphics("~/MHWdetection/LaTeX/fig_4.png")
+```
 
 # References

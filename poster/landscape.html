@@ -32,18 +32,20 @@ Here are the required style attributes for css to make this poster work :)
 -->
 <style>
 @page {
-size: 841mm 1189mm;
+size: 90in 45in;
 margin: 0;
 padding: 0;
+background-color: #FFFFFF;
 }
 body {
 margin: 0px;
 padding: 0px;
-width: 841mm;
-height: 1189mm;
+width: 90in;
+height: 45in;
 text-align: justify;
-font-size: 45px;
-line-height: 1.05;
+font-size: 50px;
+background-color: #FFFFFF;
+color: #000000;
 }
 /* RMarkdown Class Styles */
 /* center align leaflet map,
@@ -87,12 +89,24 @@ margin-bottom: 10px;
 font-size: 20pt;
 font-style: italic;
 }
+tbody tr:nth-child(odd) {
+    background-color: #0b454520;
+}
+.table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td{
+  border-spacing: 0;
+  border-style: none;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-right: 20px;
+  padding-left: 20px;
+  line-height: 1.42857143;
+}
 .caption {
 font-size: 20pt;
 font-style: italic;
 }
 .references {
-font-size: 23px;
+font-size: 20px;
 line-height: 90%;
 }
 /* Create three unequal columns that floats next to each other */
@@ -101,31 +115,27 @@ float: left;
 padding: 0px;
 }
 .outer {
-width: 841mm;
-height: calc(1189mm *  0.6325 );
--webkit-column-count: ; /* Chrome, Safari, Opera */
--moz-column-count: ; /* Firefox */
-column-count: ;
+width: 90in;
+height: 45in;
+-webkit-column-count: 2; /* Chrome, Safari, Opera */
+-moz-column-count: 2; /* Firefox */
+column-count: 2;
 -webkit-column-fill: auto;
 -moz-column-fill: auto;
 column-fill: auto;
-column-gap: 0;
-padding-left: 0cm;
-padding-right: 0cm;
-/* -webkit-column-rule-width: 50%;
+-webkit-column-rule-width: 50%;
 -moz-column-rule-width: 50%;
-column-rule-width: 50%; */
--webkit-column-rule-style: none;
--moz-column-rule-style: none;
-column-rule-style: none;
+column-rule-width: 50%;
+-webkit-column-rule-style: solid;
+-moz-column-rule-style: solid;
+column-rule-style: solid;
 -webkit-column-rule-color: black;
 -moz-column-rule-color: black;
 column-rule-color: black;
-background-color: #ffffff;
+-webkit-column-gap: 50%;
+background-color: #FFFFFF;
 font-family: Rasa;
-margin-top: calc(1189mm *  0.25 );
-padding-top: 1em;
-padding-bottom: 1em;
+color: #000000;
 }
 span.citation {
   color: #008080;
@@ -136,24 +146,29 @@ text-decoration: none;
 color: #008080;
 }
 #title {
-font-size: 125pt;
+font-size: 155pt;
 text-align: left;
+padding-right: 7%;
+padding-left: 7%;
 margin: 0;
-line-height: 98%;
+line-height: 90%;
 border-bottom: 0;
-font-weight: normal;
 }
 #author {
+padding-right: 7%;
+padding-left: 7%;
 color: #0b4545;
 margin: 0;
-line-height: 85%;
+line-height: 90%;
 font-size: 1.17em;
 }
 #affiliation {
-padding-top: 0.1em;
-color: #00000080;
+padding-right: 7%;
+padding-left: 7%;
+padding-top: 1em;
+color: #00000060;
 font-style: italic;
-font-size: 25px;
+font-size: 40px;
 margin: 0;
 }
 sup {
@@ -162,145 +177,94 @@ color: #cc0000;
 .affiliation sup {
 font-size: 20px;
 }
-table {
-  padding-left: 5%;
-  padding-right:; 5%;
-}
-.author {
-text-align: left;
-}
 .author sup {
 font-size: 30px;
 }
 .author_extra {
+padding-right: 7%;
+padding-left: 7%;
 color: #008080;
 margin: 0;
 line-height: 85%;
-font-size: 35px;
-text-align: left;
+font-size: 60px;
 }
-.outer h1, h2, h3, h4, h5, h6 {
+.outer h1 {
 text-align: center;
-margin: 0;
-font-weight: bold;
-}
-.section h1 {
-  text-align:center;
-  padding-bottom:5px;
-  background:
-    linear-gradient(
-      to left,
-      #ffffff 1%,
-      #ffffff 20%,
-      #0b454575 33%,
-      #0b4545 50%,
-      #0b454575 66%,
-      #ffffff 80%,
-      #ffffff 99%
-    )
-    left
-    bottom
-    #ffffff
-    no-repeat;
-  background-size:100% 5px ;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+margin-top: 0.5in;
+margin-bottom: 0.5in;
 }
 .outer h2 {
 text-align: center;
 }
-.outer p, .level2 {
+.outer p {
+padding-right: 7%;
+padding-left: 7%;
 color: #000000;
 }
 .outer ol {
-padding-left: 8%;
-padding-right: 8%;
+padding-left: 12%;
+padding-right: 12%;
 text-align: left;
 }
 .middle {
-width: 841mm;
-height: calc(1189mm *  0.25 );
+width: calc(90in / 2);
+height: 45in;
 position: absolute;
+margin-left: calc(90in / 4);
 background-color: #0b4545;
-color: #FFFFFF;
+color: #FFFFFF90;
 font-family: Special Elite;
 background-image: linear-gradient(#0b4545 50%, #008080);
 }
 .middle strong {
 color: #FFFFFF;
 }
-.middle strong > sup {
-color: #FFFFFF;
-}
-.middle sup {
-color: #FFFFFF;
-}
 #middle-img-left {
-width: 10%;
+width: 20%;
 left: 0.5in;
 bottom: 0.2in;
 position: absolute;
 opacity: 0.5
 }
-#middle-img-center {
-width: 10%;
-left: calc(841mm * 0.45);
-bottom: 0.5in;
-position: absolute;
-opacity: 0.5
-}
 #middle-img-right {
-width: 10%;
+width: 18%;
 right: 0.5in;
 bottom: 0.2in;
 position: absolute;
 opacity: 0.6
 }
 .middle p {
-font-size: 150px;
+padding-left: 5%;
+padding-right: 5%;
+padding-top: 20%;
+font-size: 270px;
 text-align: left;
-margin: 0;
-margin-left: 0.2em;
-margin-top: 0.75em;
 }
 .fab {
-color: #00000030;
+color: #00000060;
 font-size: 25px;
 }
 .twitter, i {
-color: #00000030;
+color: #00000060;
 font-size: 35px;
 text-decoration: none;
 }
 a.email {
 text-decoration: none;
-color: #00000030;
+color: #00000060;
 font-size: 35px;
 }
 .envelope {
-color: #00000030;
+color: #00000060;
 font-size: 5px;
 text-decoration: none;
 }
 .poster_wrap {
-width: 841mm;
-height: 1189mm;
+width: 90in;
+height: 45in;
 padding: 0cm;
+background-color: #FFFFFF;
 }
-.emphasis_bottom {
-width: 841mm;
-height: calc(1189mm *  0.1 );
-margin-top: calc(1189mm *  0.9 );
-position: absolute;
-background-color: #0b4545;
-background-image: linear-gradient(#008080 10%, #0b4545);
-}
-
-.section, #author, #author_extra, #affiliation, #title {
-  padding-left: 7mm;
-  padding-right: 7mm;
-}
-
 span > #tab:mytable {
   font-weight: bold;
 }
@@ -310,9 +274,10 @@ span > #tab:mytable {
 
 
 <div class="poster_wrap">
-
 <div class="column outer">
-<h1 id="title"><strong>Detecting marine heatwaves with sub-optimal data</strong></h1><br>
+<br>
+<h1 id="title"><strong>Detecting marine heatwaves with sub-optimal data</strong></h1>
+<br>
 <h3 id="author" class="author">
 
 <strong>Robert W. Schlegel</strong><sup> 1,2,*</sup><br>
@@ -333,7 +298,7 @@ span > #tab:mytable {
 
 <div id="introduction" class="section level1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>The <span class="citation">Hobday et al. (2016)</span> and <span class="citation">Hobday et al. (2018)</span> definitions are used here for marine heatwaves (MHWs) and their categories. These events are increasing in duration and intensity around the globe <span class="citation">(Oliver et al. 2018)</span>. Many coastal, oceanic, and polar regions with ecosystems/species that are vulnerable to these events <span class="citation">(Smale et al. 2019)</span> do not have optimal sea water temperature time series available for the detection of MHWs.<br />
+<p>The <span class="citation">Hobday et al. (<a href="#ref-Hobday2016">2016</a>)</span> and <span class="citation">Hobday et al. (<a href="#ref-Hobday2018">2018</a>)</span> definitions are used here for marine heatwaves (MHWs) and their categories. These events are increasing in duration and intensity around the globe <span class="citation">(Oliver et al. <a href="#ref-Oliver2018">2018</a>)</span>. Many coastal, oceanic, and polar regions with ecosystems/species that are vulnerable to these events <span class="citation">(Smale et al. <a href="#ref-Smale2019">2019</a>)</span> do not have optimal sea water temperature time series available for the detection of MHWs.<br />
 An optimal time series is defined here as meeting these two primary requirements: 1) 30 years long, 2) no missing data. Any time series shorter than 30 years long or missing any data is therefore sub-optimal. The purpose of this study was to determine how confident we may be in our results when using sub-optimal data.</p>
 <div id="objectives" class="section level2">
 <h2><span class="header-section-number">1.1</span> Objectives</h2>
@@ -348,52 +313,17 @@ An optimal time series is defined here as meeting these two primary requirements
 </div>
 <div id="methods" class="section level1">
 <h1><span class="header-section-number">2</span> Methods</h1>
-<ul>
-<li>Reference time series from the <code>heatwaveR</code> package <span class="citation">(Schlegel and Smit 2018)</span> were re-sampled 100 times and made increasingly sub-optimal by:
-<ul>
-<li>Removing one year of data; 37 – 10 years</li>
-<li>Randomly removing 1% of data; 0 – 50%</li>
-<li>Adding linear trend of 0.01°C/dec.; 0.00 – 0.50°C/dec.</li>
-</ul></li>
-<li>The effect on an entire time series and one focus MHW (Figure <a href="#fig:event-flames">2.1</a>) were measured</li>
-<li>The sub-optimal treatments were performed on global NOAA OISST product and effects measured</li>
-</ul>
-<div class="figure" style="text-align: center"><span id="fig:event-flames"></span>
-<img src="/home/rws/MHWdetection/LaTeX/fig_1_flat.png" alt="Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks." width="90%" />
-<p class="caption">
-Figure 2.1: Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks.
-</p>
-</div>
+<p>Reference time series from the <code>heatwaveR</code> package <span class="citation">(Schlegel and Smit <a href="#ref-Schlegel2018">2018</a>)</span> were re-sampled 100 times and made increasingly sub-optimal by: A) removing one year of data; 37 – 10 years, B) randomly removing 1% of data; 0 – 50%, and C) adding linear trend of 0.01°C/dec.; 0.00 – 0.50°C/dec.<br />
+The effect on an entire time series and one focus MHW (Figure <a href="#fig:event-flames">4.1</a>) were measured.<br />
+The sub-optimal treatments were performed on global NOAA OISST product and effects measured.</p>
 </div>
 <div id="results" class="section level1">
 <h1><span class="header-section-number">3</span> Results</h1>
-<ul>
-<li>MHWs detected with 10 years of data do not differ significantly from those detected with 30 years of data (Figure <a href="#fig:length-KS">3.1</a>)<br />
-</li>
-<li>20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events <a href="#fig:effect-event">3.2</a>)<br />
-</li>
-<li>Individual MHWs in 10 year time series around the globe are on average 10% less intense (Figure <a href="#fig:global-intensity">3.3</a>) and 28% shorter than the same event in a 30 year time series<br />
+<p>MHWs detected with 10 years of data do not differ significantly from those detected with 30 years of data (Figure <a href="#fig:length-KS">4.2</a>).<br />
+20% missing data or less does not have an appreciable effect on the MHWs in a time series, but this can impact individual MHWs by dividing them up into smaller events <a href="#fig:effect-event">4.3</a>).<br />
+Individual MHWs in 10 year time series around the globe are on average 10% less intense (Figure <a href="#fig:global-intensity">4.4</a>) and 28% shorter than the same event in a 30 year time series.<br />
 <!-- - The shifting up or down of the mean climatology is the primary driver of change in individual events   -->
-<!-- - The change in the count of events is caused by missing data   --></li>
-</ul>
-<div class="figure" style="text-align: center"><span id="fig:length-KS"></span>
-<img src="/home/rws/MHWdetection/LaTeX/fig_2.png" alt="The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results." width="90%" />
-<p class="caption">
-Figure 3.1: The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results.
-</p>
-</div>
-<div class="figure" style="text-align: center"><span id="fig:effect-event"></span>
-<img src="/home/rws/MHWdetection/LaTeX/fig_3.png" alt="The effect on the focus MHWs (Figure \@ref(fig:event-flames)) given the three different sub-optimal data challenges." width="90%" />
-<p class="caption">
-Figure 3.2: The effect on the focus MHWs (Figure <a href="#fig:event-flames">2.1</a>) given the three different sub-optimal data challenges.
-</p>
-</div>
-<div class="figure" style="text-align: center"><span id="fig:global-intensity"></span>
-<img src="/home/rws/MHWdetection/LaTeX/fig_4.png" alt="Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened." width="90%" />
-<p class="caption">
-Figure 3.3: Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened.
-</p>
-</div>
+<!-- - The change in the count of events is caused by missing data   --></p>
 <!-- ```{r, out.width='90%', fig.align='center', fig.cap='Map showing the trends in increasing or decreasing duration of MHWs as a time series is lengthened.'} -->
 <!-- knitr::include_graphics("~/MHWdetection/LaTeX/fig_5.png") -->
 <!-- ``` -->
@@ -405,6 +335,30 @@ Missing data has a greater effect on MHWs than time series length. Linear interp
 Time series length has a less predictable effect than missing data.<br />
 The shifting up or down of the mean climatology is the primary driver of change in MHWs.<br />
 Optimal data should still be used when possible.</p>
+<div class="figure" style="text-align: center"><span id="fig:event-flames"></span>
+<img src="/home/rws/MHWdetection/LaTeX/fig_1_flat.png" alt="Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks." width="70%" />
+<p class="caption">
+Figure 4.1: Focus MHWs from the three reference time series: A) Western Australia, B) Northwest Atlantic, C) Mediterranean. Start/end dates shown with light-green marks.
+</p>
+</div>
+<div class="figure" style="text-align: center"><span id="fig:length-KS"></span>
+<img src="/home/rws/MHWdetection/LaTeX/fig_2.png" alt="The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results." width="70%" />
+<p class="caption">
+Figure 4.2: The effect of length on the MHWs detected within the 100 re-sampled time series. Note that lengths greater than 30 years also produce different results.
+</p>
+</div>
+<div class="figure" style="text-align: center"><span id="fig:effect-event"></span>
+<img src="/home/rws/MHWdetection/LaTeX/fig_3.png" alt="The effect on the focus MHWs (Figure \@ref(fig:event-flames)) given the three different sub-optimal data challenges." width="70%" />
+<p class="caption">
+Figure 4.3: The effect on the focus MHWs (Figure <a href="#fig:event-flames">4.1</a>) given the three different sub-optimal data challenges.
+</p>
+</div>
+<div class="figure" style="text-align: center"><span id="fig:global-intensity"></span>
+<img src="/home/rws/MHWdetection/LaTeX/fig_4.png" alt="Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened." width="70%" />
+<p class="caption">
+Figure 4.4: Global map showing the trends in increasing or decreasing maximum intensity of MHWs as a time series is lengthened.
+</p>
+</div>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>
@@ -429,12 +383,9 @@ Optimal data should still be used when possible.</p>
 
 </div>
 <div class="column middle">
-<p><strong>Marine heatwaves</strong> detected in time series as short as <strong>10 years</strong> and <strong>missing 20% data</strong> are comparable to those detected in <strong>complete 30 year</strong> time series.</p>
-</div>
-<div class="emphasis_bottom">
-<img id="middle-img-left" src=Figures/heatwaveR_logo.png>
-<img id="middle-img-center" src=Figures/MHWdetectionQR.png>
-<img id="middle-img-right" src=Figures/all_logo_long.jpg>
+<p><strong>Marine heatwaves</strong> detected in time series as short as <strong>10 years</strong> and <strong>missing 20% data</strong> are comparable to those detected in <strong>complete 30 year</strong> time series</p>
+<img id="middle-img-left" src=Figures/MHWdetectionQR.png>
+<img id="middle-img-right" src="Figures/all_logo_long.jpg">
 </div>
 </div>
 
