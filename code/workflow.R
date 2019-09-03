@@ -31,21 +31,6 @@ save(sst_ALL_flat, file = "data/sst_ALL_flat.Rdata")
 
 # Shorten the data --------------------------------------------------------
 
-# Re-sample the data 100 times
-# doMC::registerDoMC(cores = 50)
-# set.seed(666)
-# sst_ALL_repl <- plyr::ldply(2:100, sample_37, .parallel = T)
-#
-# # Add the original data as rep = "1"
-# sst_ALL_1 <- sst_ALL %>%
-#   mutate(year_orig = year(t),
-#          rep = "1")
-# sst_ALL_repl <- rbind(sst_ALL_1, sst_ALL_repl) %>%
-#   mutate(rep = factor(rep))
-#
-# # Save and clear
-# save(sst_ALL_repl, file = "data/sst_ALL_repl.Rdata")
-# # rm(sst_ALL_1, sst_ALL_repl); gc()
 
 
 # Knockout random days ----------------------------------------------------

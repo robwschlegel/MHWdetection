@@ -1,0 +1,42 @@
+---
+title: "Reviewer comments: round 1"
+author: "Robert W Schlegel"
+date: "`r Sys.Date()`"
+description: "This vignette goes over all of code based changes made in response to the first round of reviewer comments."
+# output: word_document
+output: html_document
+bibliography: bibliography.bib
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
+                      echo = TRUE, warning = FALSE, message = FALSE, 
+                      eval = FALSE, tidy = FALSE)
+```
+
+
+## Overview
+
+There were two reviewers on the first round of comments provided on the manuscript submitted to FMarS. The first reviewer took some issue with the (lack of) literature referenced and wanted more explanations/citations for several comments made, and a few that need to be made. These issues exist within the normal Word document based response and are not designed to be addressed in this vignette. It is the comments from reviwer two that have led us here. They raised several issues with the statistical tehcniques used and I am inclined to agree with them. This means however that some rather large changes are going to need to be made to the methodology. Foremost amongst these is the replacement of all significance tests with that of the measurement of effect sizes. I will go through these issues and more below.
+
+## Changes to time series duration test
+
+Before getting to the significance testing we must first change the way in which we are controlling for the shortening of the time series. Reviewer two pointed out that randomly selecting years of data from within a time series and reshuffling them will likely have unforeseen and undesirable impacts on the measure of the duration of MHWs as it will break up events that span across years. They point out that it would be better to simply use a few hundred real time series from the OISST dataset than to create random ones. I think this is a good idea and so I have changed the methodology accordingly.
+
+## Changes to missing data test
+
+No changes were proposed to the way in which data were randomly knocked out. Reviewer two did have issue with how only linear interpolation was used to fill in the missing data. They suggested that splines be used to interpolate the gaps however; I do not think this is a good idea because it makes too many assumptions about the shape of the missing data. Furthermore, performing additional interpolation techniques will require that we advise on these different methods, which I think is beyond the scope of this paper.
+
+## Changes to long-term trend control
+
+Neither reviewer had any issues with this methodology.
+
+## Changes to significance testing
+
+In the version of the manuscript that was sent to FMarS we decided to use Kolmogorov-Smirnov (KS) testst to provide _p_-values for all of the tests for the creation of sub-optimal data. Furthermore, I ended up using the _p_-value results as a method of showing the size of the effect of the different sub-optimal controls. Reviewer two shot this method down hard in favour of something more akin to effect sizes. Therefore I will be taking out all mention of significance from the paper. Instead I will create summary statistics (min, median, mean, max, sd) for the seas/thresh and duration/max intensity from all of the different sub-optimal control tests.
+
+There were a few other small issues that I will address as they come up.
+
+Obviously changing the methodology drastically like this is going to have some unforeseen consewquences so I will address those as they come up, too.
+
+Ultimately I would like to orient the entire study around the global results and move away from the focus on the three time series with infamous MHWs.
