@@ -17,25 +17,6 @@ save(sst_ALL, file = "data/sst_ALL.Rdata")
 # rm(sst_ALL); gc()
 
 
-# Re-sample the data ------------------------------------------------------
-
-# Re-sample the data 100 times
-doMC::registerDoMC(cores = 50)
-set.seed(666)
-sst_ALL_repl <- plyr::ldply(2:100, sample_37, .parallel = T)
-
-# Add the original data as rep = "1"
-sst_ALL_1 <- sst_ALL %>%
-  mutate(year_orig = year(t),
-         rep = "1")
-sst_ALL_repl <- rbind(sst_ALL_1, sst_ALL_repl) %>%
-  mutate(rep = factor(rep))
-
-# Save and clear
-save(sst_ALL_repl, file = "data/sst_ALL_repl.Rdata")
-# rm(sst_ALL_1, sst_ALL_repl); gc()
-
-
 # De-trend the data -------------------------------------------------------
 
 # Create de-trended anomaly time series from all re-samples
@@ -46,6 +27,25 @@ sst_ALL_flat <- plyr::ddply(sst_ALL_repl, c("site", "rep"), detrend)
 # Save and clear
 save(sst_ALL_flat, file = "data/sst_ALL_flat.Rdata")
 # rm(sst_ALL_flat); gc()
+
+
+# Shorten the data --------------------------------------------------------
+
+# Re-sample the data 100 times
+# doMC::registerDoMC(cores = 50)
+# set.seed(666)
+# sst_ALL_repl <- plyr::ldply(2:100, sample_37, .parallel = T)
+#
+# # Add the original data as rep = "1"
+# sst_ALL_1 <- sst_ALL %>%
+#   mutate(year_orig = year(t),
+#          rep = "1")
+# sst_ALL_repl <- rbind(sst_ALL_1, sst_ALL_repl) %>%
+#   mutate(rep = factor(rep))
+#
+# # Save and clear
+# save(sst_ALL_repl, file = "data/sst_ALL_repl.Rdata")
+# # rm(sst_ALL_1, sst_ALL_repl); gc()
 
 
 # Knockout random days ----------------------------------------------------
@@ -88,7 +88,7 @@ save(sst_ALL_add_trend, file = "data/sst_ALL_add_trend.Rdata")
 
 # Calculate clims, events, and categories ---------------------------------
 
-# NB: These are to large to be run as one command
+# NB: These are too large to be run as one command
   # They must be manually selected and run
   # Wait for each to finish before running the next
 

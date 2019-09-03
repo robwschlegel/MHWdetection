@@ -583,7 +583,7 @@ effect_cat_func <- function(df, date_guide, choice_rep = "1"){
 # match a de-trended time series.
 # The problem then becomes, why would anyone actually want to do this?
 # No. Rather we must provide a post-hoc fix for the potential impact of
-# a decadal trend on MHWs in conjunction with shot time series.
+# a decadal trend on MHWs in conjunction with short time series.
 # And then on top of that add in the correction for missing data.
 # Mercifully the correction for missing data is very simple and should
 # play nice with the other issues.

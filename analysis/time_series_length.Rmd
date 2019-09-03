@@ -22,47 +22,57 @@ It has been shown that the length (duration) of a time series may be one of the 
 
 ## Time series shortening
 
-A time series derives it's usefulness from it's length. This is generally because the greater the number of observations (larger sample size), the more confident one can be about the resultant statistics. This is particularly true for decadal scale measurements and is why the WMO recommends a minimum of 30 years of data before drawing any conclusions about decadal (long-term) trends observed in a time series. We however want to look not at decadal scale trends, but rather at how observed MHWs compare against one another when they have been detected using longer or shorter time series. In order to to quantify this effect we will use the minimum and maximum range of time series available to us. The maximum length will be 37 years, as this is the full extent of the NOAA OISST data included in __`heatwaveR`__. The minimum length for comparing the seasonal signal and 90th percentile thresholds will be three years as his is the minimum number of years required to calculate a climatology. For comparing MHWs the minimum will be ten years so that we may still have enough events detected between shortened time series to produce robust statistics.
+A time series derives it's usefulness from it's length. This is generally because the greater the number of observations (larger sample size), the more confident one can be about the resultant statistics. This is particularly true for decadal scale measurements and is why the WMO recommends a minimum of 30 years of data before drawing any conclusions about decadal (long-term) trends observed in a time series. We however want to look not at decadal scale trends, but rather at how observed MHWs compare against one another when they have been detected using longer or shorter time series. In order to to quantify this effect we will use the minimum and maximum range of time series available to us. The maximum length will be 37 years, as this is the full extent of the NOAA OISST data included in __`heatwaveR`__. The minimum length for comparing the seasonal signal and 90th percentile thresholds will be three years as this is the minimum number of years required to calculate a climatology. For comparing MHWs the minimum will be ten years so that we may still have enough events detected between shortened time series to produce robust statistics.
 
 Before we can discuss shortening techniques, we must first consider the inherent decadal trend in the time series themselves. This is usually the primary driver for much of the event detection changes over time [@Oliver2018]. Therefore, if we truly want to understand the effect that a shortened time series may have on event detection, apart from the effect of the decadal trend, we must de-trend the time series first. To this end there is an entire separate [vignette](https://robwschlegel.github.io/MHWdetection/articles/trend.html) that quantifies the effect of long-term trends on the detection of events.
 
-The time series shortening technique proposed here is [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html). This methodology takes the full 37 year de-trended time series and randomly samples _n_ years from it to simulate a 3 -- 37 year time series. One then uses the jumbled up, randomly selected years of data to create the seasonal signal and 90th percentile threshold (hereafter referred to as "the climatologies"). Re-sampling the time series in this way is useful because it allows us to replicate random climatology creation 100 (or more) times for each time series length in order to produce a more confident estimation of how likely climatologies generated from certain time series lengths are to impact the accuracy of event detection. It also allows us to see how consistent the size of MHWs are in a given time series, or if they very quite a bit depending on the years used.
+<!-- RWS: Reviewer 2 shot down this methodological appraoch to random time series creation for a number of reasons. Rather it is now proposed that real time series from the OISST dataset be used instead. Which then begs the question, why not just use all of the OISST pixels and report on what shakes out? -->
+<!-- The time series shortening technique proposed here is [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html). This methodology takes the full 37 year de-trended time series and randomly samples _n_ years from it to simulate a 3 -- 37 year time series. One then uses the jumbled up, randomly selected years of data to create the seasonal signal and 90th percentile threshold (hereafter referred to as "the climatologies"). Re-sampling the time series in this way is useful because it allows us to replicate random climatology creation 100 (or more) times for each time series length in order to produce a more confident estimation of how likely climatologies generated from certain time series lengths are to impact the accuracy of event detection. It also allows us to see how consistent the size of MHWs are in a given time series, or if they very quite a bit depending on the years used. -->
 
-The WMO recommends that the period used to create a climatology be 30 years in length, starting on the first year of a decade (e.g. 1981), however; because we are going to be running these analyses on many time series shorter than 30 years, for the sake of consistency we will use all of the years present in each re-sampled time series them as the climatology period, regardless of length. For example, if a time series spans 1982 -- 2018, that will be the period used for calculating the climatologies. Likewise, should the time series only span the years 2006 -- 2018, that will be the period used.
 
-The effect this has on the climatologies will be quantified through the following statistics:
 
-- An ANOVA will compare the climatologies created from different lengths;
-- A post-hoc Tukey test to determine where the difference in time series length for climatology creation become significant;
-- Correlations between time series length/SD and seas/thresh mean/SD 
-- Kolmogorov-Smirnov test for where the climatologies diverge significantly from the 30 year climatologies
+The WMO recommends that the period used to create a climatology be 30 years in length, starting on the first year of a decade (e.g. 1981), however; because we are going to be running these analyses on many time series shorter than 30 years, for the sake of consistency we will use all of the years present in each re-sampled time series as the climatology period, regardless of length. For example, if a time series spans 1982 -- 2018, that will be the period used for calculating the climatologies. Likewise, should the time series only span the years 2006 -- 2018, that will be the period used.
+
+The effect this has on the climatologies and MHW metrics will be quantified through the following statistics:
+
+<!-- - An ANOVA will compare the climatologies created from different lengths; -->
+<!-- - A post-hoc Tukey test to determine where the difference in time series length for climatology creation become significant; -->
+<!-- - Kolmogorov-Smirnov test for where the climatologies diverge significantly from the 30 year climatologies -->
+- The effecct size of shortening will be compared against the control (30 year time series) values
+- Confidence (CIs) for each doy seas/thresh and MHW metrics at different time series lengths will be calculated
+- Correlations between time series length and seas/thresh mean/median and MHW metrics
  
-The effect this has on the MHW metrics will be quantified with the following statistics:
+<!-- The effect this has on the MHW metrics will be quantified with the following statistics: -->
 
-- ANOVA comparing the primary metrics for MHWs detected using different time series lengths;
-- A post-hoc Tukey test to show where the difference in time series length for event detection become significant;
-- Confidence intervals (CIs) for the measured metrics 
-- Correlations between time series length/SD and MHW metrics
+<!-- - ANOVA comparing the primary metrics for MHWs detected using different time series lengths; -->
+<!-- - A post-hoc Tukey test to show where the difference in time series length for event detection become significant; -->
+<!-- - Confidence intervals (CIs) for the measured metrics  -->
+<!-- - Correlations between time series length/SD and MHW metrics -->
  
 In addition to checking all of the statistics mentioned above, it is also necessary to record what the overall relationship is with the reduction of time series length and the resultant climatologies/metrics. For example, are MHWs on average more intense in shorter time series or less? We must also look into how the categories of the events are affected. This will form part of the best practice advice later.
 
 
-## Re-sampling
+<!-- ## Re-sampling -->
 
-Below we use [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to simulate 100 time series at each length of 3 -- 37 years on de-trended data. This is presently being done with the three pre-packaged time series available in the __`heatwaveR`__ package and the python distribution, but eventually will be run on the global data. The original data are appended to these 100 re-samples as `rep = 0`.
+<!-- Below we use [re-sampling](https://robwschlegel.github.io/MHWdetection/articles/Short_climatologies.html) to simulate 100 time series at each length of 3 -- 37 years on de-trended data. This is presently being done with the three pre-packaged time series available in the __`heatwaveR`__ package and the python distribution, but eventually will be run on the global data. The original data are appended to these 100 re-samples as `rep = 0`. -->
+
+
+## Shortening
+
+Below we systematically shorten the three pre-packaged time series available in the __`heatwaveR`__ package and the python distribution from 37 -- 3 years on the first de-trended data. Eventually this will be run on the global data.
 
 ```{r r-init}
 library(tidyverse)
 library(broom)
 library(heatwaveR, lib.loc = "~/R-packages/")
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
-library(lubridate) # This is intentionally activated after data.table
+library(lubridate)
 library(fasttime)
 library(ggpubr)
 library(boot)
 library(FNN)
 library(mgcv)
-library(doMC); doMC::registerDoMC(cores = 50)
+doMC::registerDoMC(cores = 50)
 
 MHW_colours <- c(
   "I Moderate" = "#ffc866",
@@ -72,7 +82,7 @@ MHW_colours <- c(
 )
 ```
 
-```{r re-sample-time-series, eval = FALSE}
+```{r shortening-time-series, eval = FALSE}
 # First put all of the data together and create a site column
 sst_ALL <- rbind(sst_Med, sst_NW_Atl, sst_WA) %>% 
   mutate(site = rep(c("Med", "NW_Atl", "WA"), each = nrow(sst_WA)))
@@ -168,9 +178,18 @@ rm(sst_ALL_flat, sst_ALL_smooth); gc()
 ```
 
 
+## Climatology period
+
+It emerged in an earlier version of this manuscript that the 30 year period within a time series chosen for the climatology may have a noticeable impact on the MHW results. To this end we will also compare the results from our three default time series with varying 30 year climatology periods.
+
+```{r clim-period-vary}
+
+```
+
+
 ## Climatology statistics
 
-We will now see if the 100 re-sampled time series produce significantly different climatologies as they are shortened. If so, we also want to see at what point the climatologies begin to diverge.
+<!-- We will now see if the 100 re-sampled time series produce significantly different climatologies as they are shortened. If so, we also want to see at what point the climatologies begin to diverge. -->
 
 ```{r clim-only, eval=FALSE}
 load("data/sst_ALL_smooth.Rdata")
