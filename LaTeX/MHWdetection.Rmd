@@ -43,6 +43,8 @@ Most remotely-sensed data, and more recently output from ocean models and reanal
 
 <!-- RWS: Check that the @Harrison2019 reference came out correctly -->
 
+<!-- RWS: Also need to discuss how the different satellite products provide different resolutions, but at the cost of time series length. -->
+
 <!-- Coastal areas are often poorly sampled yet are the most susceptible to the impacts of MHWs [e.g. @Smale2019] so it is necessary to address the issues that using these data may have on the detection of MHWs. -->
 
 <!-- RWS: Perhaps a bit here about the increased heat content of sub-surface waters and how that makes MHWs below the surface appear to last longer. -->
@@ -93,7 +95,8 @@ Whereas the authors did not specifically state that time series must not contain
 
 A time series with a sub-optimal length may impact the detection of MHWs by negatively affecting the creation of the daily climatology relative to which MHWs are detected in two primary ways. The first is that with fewer years of data to draw from, the presence of an anomalously warm or cold year will have a larger effect on the climatology than with a sample size of 30 years. The second cause is that because the world is generally warming [@IPCC2014], the use of a shorter time series will almost certainly introduce a warm bias into the results.
 
-The climatology derived from a time series serves two main roles [@WMO2017]; 1) it serves as a 'benchmark' relative to which past and future measurements can be compared, and against which anomalies can be calculated, 2) it reflects the typical conditions likely to be experienced at a particular place at a particular time. The WMO Guide to Climatological Practices [@WMO2011] stipulate that daily climatologies (which they call 'climate normal') must be based on the most recent 30-year period that ends on a complete decade (currently 1981 -- 2010). It is from this WMO guideline that the optimal length of time series for MHW detection was derived.
+The climatology derived from a time series serves two main roles [@WMO2017]; 1) it serves as a 'benchmark' relative to which past and future measurements can be compared, and against which anomalies can be calculated, 2) it reflects the typical conditions likely to be experienced at a particular place at a particular time. The WMO Guide to Climatological Practices [@WMO2011] stipulate that daily climatologies (which they call 'climate normals') must be based on the most recent 30-year period that ends on a complete decade (currently 1981 -- 2010). It is from this WMO guideline that the optimal length of time series for MHW detection was derived.
+<!-- RWS: Check that the WMO citations come out correctly. May want to rather include this reference as a footnote as is done in Hobday2016 -->
 
 Some remotely sensed products suffer from 'gappiness' that result in missing data being introduced. This may be due to cloud cover, the presence of sea ice, unsuitable sea states, etc., which become more prevalent at smaller scales, particularly nearer the coast. Some products smooth out these influences, but this results in smoothed SST fields that mask some of the small-scale spatial variation in surface temperatures. Other times they rely on blending with data from other products, which may have its own suite of consequences. This is why the use of imperfect _in situ_ collected time series may still be encouraged in certain situations. These data are however also prone to large gaps and so the problems these data face with regards to accurate event detection are generally uncertain. 
 
