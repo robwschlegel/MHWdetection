@@ -62,17 +62,30 @@ detrend <- function(df){
 }
 
 
-
 # Summary stats -----------------------------------------------------------
 
 # Wrapper for extracting tidy summary statistics from any data
 summarise_stats <- function(df){
   res <- df %>%
-    summarise_if(is.numeric, c("min", "median", "mean", "max", "sd"), na.rm = T) %>%
-    gather(key = "var", value = "val") %>%
-    separate(var, c("metric", "stat")) %>%
-    mutate(val = round(val, 3),
-           count = nrow(df)) %>%
+    gather(var, val) %>%
+    group_by(var) %>%
+    summarise(min = min(val, na.rm = T),
+              lower = boot.ci(boot(data = val, statistic = boot_mean,
+                                   R = 1000), type = "basic")$basic[4],
+              median = median(val, na.rm = T),
+              mean = mean(val, na.rm = T),
+              upper = boot.ci(boot(data = val, statistic = boot_mean,
+                                   R = 1000), type = "basic")$basic[5],
+              max = max(val, na.rm = T),
+              range = max-min,
+              sd = sd(val, na.rm = T),
+              count = n()) %>%
+    mutate_if(is.numeric, round, 4) %>%
+    # summarise_if(is.numeric, c("min", "median", "mean", "max", "sd"), na.rm = T) %>%
+    # gather(key = "var", value = "val") %>%
+    # separate(var, c("metric", "stat")) %>%
+    # mutate(val = round(val, 3),
+           # count = nrow(df)) %>%
     # rbind(data.frame(metric = "count", stat = "n", val = nrow(df)))
     dplyr::select(count, everything())
   return(res)
@@ -92,12 +105,16 @@ clim_summary <- function(df){
 }
 
 # Likewise we want to grab only the event values we are interested in
-event_summary <- function(df){
+event_summary <- function(df, date_start_filter = "2009-01-02"){
   res <- df$event %>%
+    # Filter out events that occurred before the desired start date
+    # by default this is the most recent ten years of data
+    # This is done to ensure even sample sizes for comparing MHW metrics
+    filter(date_start >= date_start_filter) %>%
     # select(date_start, date_peak, date_end, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
     select(duration, intensity_max) %>%
     mutate_if(is.numeric, round, 3) %>%
-    dplyr::rename(intmax = intensity_max) %>%
+    dplyr::rename(int.max = intensity_max) %>%
     summarise_stats()
   return(res)
 }
@@ -106,8 +123,8 @@ event_summary <- function(df){
 cat_summary <- function(df){
   res <- category(df) %>%
     select(p_moderate:p_extreme) %>%
-    dplyr::rename(pmoderate = p_moderate, pstrong = p_strong,
-                  psevere = p_severe, pextreme = p_extreme) %>%
+    dplyr::rename(p.moderate = p_moderate, p.strong = p_strong,
+                  p.severe = p_severe, p.extreme = p_extreme) %>%
     summarise_stats()
   return(res)
 }
@@ -121,14 +138,15 @@ cat_summary <- function(df){
 # df <- sst_flat
 # year_begin <- 2000
 # set_width <- 10
-shrinking_results <- function(year_begin, df, set_width = 5){
+shrinking_results <- function(year_begin, year_end = 2018, df, set_width = 5){
   res <- df %>%
     filter(year(t) >= year_begin) %>%
     mutate(index_vals = 2018-year_begin+1) %>%
     group_by(index_vals) %>%
     nest() %>%
     mutate(clims = map(data, ts2clm, windowHalfWidth = set_width,
-                       climatologyPeriod = c(paste0(year_begin,"-01-01"), "2018-12-31")),
+                       climatologyPeriod = c(paste0(year_begin,"-01-01"),
+                                             paste0(year_end,"-12-31"))),
            events = map(clims, detect_event),
            cat = map(events, cat_summary),
            clim = map(events, clim_summary),

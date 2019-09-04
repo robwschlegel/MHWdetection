@@ -20,9 +20,11 @@ sst_flat <- detrend(sst_Med)
 #   geom_smooth(method = "lm")
 
 # Calculate shortened time series results
-sst_anom_length <- plyr::ldply(1982:2016, shrinking_results,
+  # NB: This falls over with fewer than 10 years of data
+  # But we want to see what happens to seas/thresh at as few as 3 years
+sst_anom_length <- plyr::ldply(1982:2009, shrinking_results,
                                df = sst_anom, .parallel = T)
-sst_flat_length <- plyr::ldply(1982:2016, shrinking_results,
+sst_flat_length <- plyr::ldply(1982:2009, shrinking_results,
                                df = sst_flat, .parallel = T)
 
 # visualise
@@ -32,6 +34,99 @@ ggplot(sst_flat_length, aes(x = index_vals, y = val)) +
 
 # Problems in the seas/thresh caused by length could be communicated as
 # the proportion of change in the mean signal against the control range (min - max)
+# may be better to look at the change as a proportion of the median
+
+prop_30 <- sst_anom_length %>%
+  filter(index_vals == 30) %>%
+  select(-index_vals) %>%
+  dplyr::rename(val_30 = val)
+
+prop_30_wide <- prop_30 %>%
+  spread(stat, val_30) %>%
+  unique() %>%
+  mutate(range = max - min) %>%
+  select(metric, count, min, median, mean, max, range, sd)
+
+prop_calc <- left_join(sst_anom_length,
+                       dplyr::select(prop_30, -count),
+                       by = c("metric", "stat")) %>%
+  mutate(prop = val/val_30,
+         prop = replace_na(prop, 0),
+         prop = ifelse(is.infinite(prop), 0, prop))
+
+# Visualise
+ggplot(filter(sst_anom_length, stat == "median"),
+       aes(x = index_vals, y = val)) +
+  geom_line() +
+  geom_hline(data = prop_range, aes(yintercept = median)) +
+  facet_wrap(~metric, scales = "free_y")
+
+ggplot(prop_calc, aes(x = index_vals, y = prop)) +
+  geom_line() +
+  facet_grid(metric~stat, scales = "free_y")
+
+# Confidence intervals
+
+boot_mean <- function(data, indices) {
+  d <- data[indices] # allows boot to select sample
+  return(mean(d))
+}
+
+
+test <- sst_anom %>%
+  nest() %>%
+  mutate(clims = map(data, ts2clm,
+                     climatologyPeriod = c("1982-01-01","2018-12-31")),
+         events = map(clims, detect_event)) %>%
+  select(events) %>%
+  unnest() %>%
+  filter(row_number() %% 2 == 0) %>%
+  unnest() %>%
+  #
+  select(duration, intensity_max) %>%
+  gather(var, val) %>%
+  group_by(var) %>%
+  summarise(lower = boot.ci(boot(data = val, statistic = boot_mean,
+                                 R = 1000), type = "basic")$basic[4],
+            mid = mean(val),
+            upper = boot.ci(boot(data = val, statistic = boot_mean,
+                                 R = 1000), type = "basic")$basic[5],
+            n = n()) %>%
+  mutate_if(is.numeric, round, 4)
+
+
+test_boot <- boot.ci(boot(data = test$intensity_max,
+             statistic = boot_mean,
+             R = 1000), type = "basic")
+
+
+# event_aov_CI <- function(df){
+  df_conf <- gather(df, key = "metric", value = "value", -year_index) %>%
+    group_by(year_index, metric) %>%
+    summarise(lower = boot.ci(boot(data=value, statistic=Bmean, R=1000),
+                              type = "basic")$basic[4],
+              mid = mean(value),
+              upper = boot.ci(boot(data=value, statistic=Bmean, R=1000),
+                              type = "basic")$basic[5],
+              n = n()) %>%
+    mutate_if(is.numeric, round, 4)
+  # return(df_conf)
+# }
+
+# Calculating CI from a normal distribution
+a <- 5
+s <- 2
+n <- 20
+error <- qnorm(0.975)*s/sqrt(n)
+left <- a-error
+right <- a+error
+
+
+# Fit linear models to everything and extract R2 values
+
+
+# Look at relationship between change in seas/thresh and other metrics over time
+# Look at this relationship for the proportion values, too
 
 
 # Base data ---------------------------------------------------------------
