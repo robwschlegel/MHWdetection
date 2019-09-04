@@ -4,6 +4,7 @@
 
 # Libraries ---------------------------------------------------------------
 
+library(jsonlite, lib.loc = "~/R-packages/")
 library(tidyverse)
 library(ggridges)
 # library(broom)
@@ -16,8 +17,7 @@ library(boot)
 library(FNN)
 library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
-library(ggridges)
-library(ncdf4)
+library(tidync, lib.loc = "~/R-packages/")
 # library(egg)
 # library(rcompanion)
 
@@ -52,40 +52,67 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
          lon = ifelse(lon > 180, lon-360, lon))
 
 
-# Re-sampling -------------------------------------------------------------
-
-# Function for creating a re-sample from 37 years of data
-sample_37 <- function(rep){
-  year_filter <- c(1,2,3)
-  while(length(unique(year_filter)) != 37){
-    year_filter <- factor(sample(1982:2018, size = 37, replace = F))
-  }
-  res <- data.frame()
-  for(i in 1:length(year_filter)){
-    df_sub <- sst_ALL %>%
-      filter(year(t) == year_filter[i],
-             # Remove leap-days here
-             paste0(month(t),"-",day(t)) != "2-29") %>%
-      mutate(year = seq(1982,2018)[i],
-             month = month(t),
-             day = day(t),
-             year_orig = year(t)) %>%
-      mutate(t = as.Date(fastPOSIXct(paste(year, month, day, sep = "-")))) %>%
-      select(-year, -month, -day)
-    res <- rbind(res, df_sub)
-  }
-  res$rep <- as.character(rep)
-  return(res)
-}
-
-
 # De-trending -------------------------------------------------------------
 
 detrend <- function(df){
   resids <- broom::augment(lm(temp ~ t, df))
   res <- df %>%
-    mutate(temp = round((temp - resids$.fitted),2)) %>%
-    select(-year_orig)
+    mutate(temp = round((temp - resids$.fitted),2))
+  return(res)
+}
+
+
+
+# Summary stats -----------------------------------------------------------
+
+# The climatologies themselves are much smaller and easier to handle on their own
+# So we want to pull out only the 366 day clims per run
+clim_summary <- function(df){
+  res <- df$climatology %>%
+    select(doy, seas:thresh) %>%
+    unique() %>%
+    mutate_if(is.numeric, round, 3) %>%
+    arrange(doy)
+  return(res)
+}
+
+# Likewise we want to grab only the event values we are interested in
+event_summary <- function(df){
+  res <- df$event %>%
+    select(date_start, date_peak, date_end, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
+    mutate_if(is.numeric, round, 3)
+  return(res)
+}
+
+# Pull out only some of the category results
+cat_summary <- function(df){
+  res <- category(df) %>%
+    select(peak_date:p_extreme)
+  return(res)
+}
+
+
+# Calculate clim, events, and cats on short time series -------------------
+
+# NB: The shortened time series require their own function for calculating results
+# in order to match the length of any given time series
+# testers...
+# df <- sst_flat
+# year_begin <- 2000
+# set_width <- 10
+shrinking_results <- function(year_begin, df, set_width = 5){
+  res <- df %>%
+    filter(year(t) >= year_begin) %>%
+    mutate(index_vals = 2018-year_begin+1) %>%
+    group_by(index_vals) %>%
+    nest() %>%
+    mutate(clims = map(data, ts2clm, windowHalfWidth = set_width,
+                       climatologyPeriod = c(paste0(year_begin,"-01-01"), "2018-12-31")),
+           events = map(clims, detect_event),
+           cat = map(events, cat_only),
+           clim = map(events, clim_only),
+           event = map(events, event_only)) %>%
+    select(index_vals, clim, event, cat)
   return(res)
 }
 
@@ -93,14 +120,14 @@ detrend <- function(df){
 # Random knockout ---------------------------------------------------------
 
 # Function for knocking out data but maintaing the time series consistency
-random_knockout <- function(prop, df = sst_ALL_flat){
+random_knockout <- function(prop, df){
   # NB: Don't allow sampling of first and last value to ensure
   # all time series are the same length
-  ts_length <- nrow(filter(df, site == "WA"))
+  ts_length <- nrow(df)
   miss_index <- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
   # df$x1[sample(nrow(df),250)] <- NA
   res <- df %>%
-    group_by(site, rep) %>%
+    # group_by(rep) %>%
     mutate(row_index = 1:n(),
            temp = replace(temp, which(row_index %in% miss_index), NA)) %>%
     mutate(index_vals = prop) %>%
@@ -130,10 +157,10 @@ con_miss <- function(df){
 # Add trends --------------------------------------------------------------
 
 # Function for adding trends to data
-add_trend <- function(rate, df = sst_ALL_flat){
+add_trend <- function(rate, df){
   daily_step <- rate/3652.5
   res <- df %>%
-    group_by(site, rep) %>%
+    # group_by(site, rep) %>%
     mutate(row_index = 1:n(),
            temp = temp + (row_index*daily_step)) %>%
     mutate(index_vals = rate) %>%
@@ -144,34 +171,13 @@ add_trend <- function(rate, df = sst_ALL_flat){
 
 # Calculate clims, events, and cats ---------------------------------------
 
-# The climatologies themselves are much smaller and easier to handle on their own
-# So we want to pull out only the 366 day clims per run
-clim_only <- function(df){
-  res <- df$climatology %>%
-    select(doy, seas:thresh) %>%
-    unique() %>%
-    mutate_if(is.numeric, round, 3) %>%
-    arrange(doy)
-  return(res)
-}
-
-# Likewise we want to grab only the event values we are interested in
-event_only <- function(df){
-  res <- df$event %>%
-    select(date_start, date_peak, date_end, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
-    mutate_if(is.numeric, round, 3)
-  return(res)
-}
-
 # Calculate climatologies, events, and categories on full length time series
 # testers...
 # df <- sst_ALL_knockout %>%
   # filter(site == "WA", rep == "1", index_vals == 0.4)
 # fix <- "none"
 # fix <- "missing"
-
 # ts2clm(df, climatologyPeriod = c("1982-01-01", "2011-12-31"))
-
 clim_event_cat_calc <- function(df, fix = "none"){
   res_base <- df %>%
     nest()
@@ -200,253 +206,6 @@ clim_event_cat_calc <- function(df, fix = "none"){
 }
 
 
-# Calculate clim, events, and cats on short time series -------------------
-
-# NB: The shortened time series require their own function for calculating results
-# in order to match the length of any given time series
-# testers...
-# df <- sst_ALL_flat %>%
-  # filter(site == "WA", rep == "1")
-# year_begin <- 2000
-# set_width <- 10
-shrinking_results <- function(year_begin, df = sst_ALL_flat, set_width = 5){
-  res <- df %>%
-    filter(year(t) >= year_begin) %>%
-    mutate(index_vals = 2018-year_begin+1) %>%
-    group_by(site, rep, index_vals) %>%
-    nest() %>%
-    mutate(clims = map(data, ts2clm, maxPadLength = 1, windowHalfWidth = set_width,
-                       climatologyPeriod = c(paste0(year_begin,"-01-01"), "2018-12-31")),
-           events = map(clims, detect_event),
-           cat = map(events, category),
-           clim = map(events, clim_only),
-           event = map(events, event_only)) %>%
-    select(site, rep, index_vals, clim, event, cat)
-  return(res)
-}
-
-
-# KS tests ----------------------------------------------------------------
-
-# The problem with running KS tests on category data is that it doesn't appear
-# to be bothered by differences in sample sizes
-# Meaning that a comparison across the count of events matters more on what
-# counts are present, rather than the difference in total counts
-
-# Function for running a pairwise KS test against the index_standard
-# Lazily I have it run on chosen columns by name given certain tests
-# as getting it to do this programmatically was becoming annoying
-# testers...
-# df_2 <- filter(df_long, index_vals == 0.50)
-# df_1 <- df_standard
-KS_sub <- function(df_2, df_1){
-  if("seas" %in% names(df_1)){
-    suppressWarnings( # Suppress warnings about ties
-    res <- data.frame(seas = round(ks.test(df_1$seas, df_2$seas)$p.value, 4),
-                      thresh = round(ks.test(df_1$thresh, df_2$thresh)$p.value, 4))
-    )
-  }
-  if("intensity_mean" %in% names(df_1)){
-    suppressWarnings( # Suppress warnings about ties
-      res <- data.frame(duration = round(ks.test(df_1$duration, df_2$duration)$p.value, 4),
-                        intensity_mean = round(ks.test(df_1$intensity_mean, df_2$intensity_mean)$p.value, 4),
-                        intensity_max = round(ks.test(df_1$intensity_max, df_2$intensity_max)$p.value, 4),
-                        intensity_cumulative = round(ks.test(df_1$intensity_cumulative, df_2$intensity_cumulative)$p.value, 4))
-    )
-  }
-  if("category" %in% names(df_1)){
-    suppressWarnings( # Suppress warnings about ties
-    res <- data.frame(p_moderate = round(ks.test(df_1$p_moderate, df_2$p_moderate)$p.value, 4),
-                      p_strong = round(ks.test(df_1$p_strong, df_2$p_strong)$p.value, 4),
-                      p_severe = round(ks.test(df_1$p_severe, df_2$p_severe)$p.value, 4),
-                      p_extreme = round(ks.test(df_1$p_extreme, df_2$p_extreme)$p.value, 4))
-    )
-  }
-  return(res)
-}
-
-# Wrapper function to run all pairwise KS tests
-# df <- sst_ALL_clim_event_cat[ ,c(1:4,7)] %>%
-  # filter(test == "trended", site == "WA", rep == "1") %>%
-  # select(-test, -rep, -site)
-# df <- sst_res[ ,c(1:3)] %>%
-#   filter(test == "length") %>%
-#   select(-test)
-# df <- sst_res[ ,c(1:2,4)] %>%
-#   filter(test == "missing") %>%
-#   select(-test)
-# df <- sst_ALL_clim_event_cat[ ,c(1:4,6)] %>%
-  # filter(test == "missing", site == "WA", rep == "20") %>%
-    # select(-test, -site, - rep)
-KS_p <- function(df){
-  # Unnest the clim data
-  suppressWarnings( # Suppress warning about different factor levels for cat data
-  df_long <- df %>%
-    # select(-event, -cat) %>%
-    unnest()
-  )
-  # This determines if the data are from the length test or not
-  # It then sets the benchmark value (30 years length or 0% missing/ 0C-dec)
-  if(max(df_long$index_vals) > 1){
-    index_filter <- 30
-
-  } else {
-    index_filter <- 0
-  }
-  # We then must screen out events only for the last decade for the length and trend tests
-  if(max(df_long$index_vals) == 0.50 | max(df_long$index_vals) > 1){
-    if("intensity_mean" %in% names(df_long)){
-      df_long <- df_long %>%
-        filter(date_start >= "2009-01-02", date_end <= "2018-12-31")
-    }
-    if("category" %in% names(df_long)){
-      df_long <- df_long %>%
-        filter(peak_date >= "2009-01-01", peak_date <= "2018-12-31")
-    }
-  }
-  # Lastly remove events from time series calculated with fewer than 10 years of data
-  # to ensire equitable sample sizes
-  if(max(df_long$index_vals) > 1){
-    df_long <- df_long %>%
-      filter(index_vals >= 10)
-  }
-  # Set the standard results for comparison
-  df_standard <- df_long %>%
-    filter(index_vals == index_filter)
-
-  # Exit if no events occurred in the last decade of data
-    # This is possible in a few icey areas
-  if(nrow(df_standard) == 0) return()
-
-  # Run the KS tests
-  res <- df_long %>%
-    filter(index_vals != index_filter) %>%
-    group_by(index_vals) %>%
-    nest() %>%
-    mutate(KS = map(data, KS_sub, df_1 = df_standard)) %>%
-    select(-data) %>%
-    unnest()
-  return(res)
-}
-
-
-# AOV and Tukey tests -----------------------------------------------------
-
-# Run an ANOVA on each metric of the combined event results and get the p-value
-# df <- res
-aov_p <- function(df){
-  aov_models <- df[ , -grep("index_vals", names(df))] %>%
-    map(~ aov(.x ~ df$index_vals)) %>%
-    map_dfr(~ broom::tidy(.), .id = 'metric') %>%
-    mutate(p.value = round(p.value, 4)) %>%
-    filter(term != "Residuals") %>%
-    select(metric, p.value)
-  return(aov_models)
-}
-
-# Run an ANOVA on each metric and then a Tukey test
-tukey_p <- function(df){
-  tukey_models <- df[ , -grep("index_vals", names(df))] %>%
-    map(~ TukeyHSD(aov(.x ~ df$index_vals))) %>%
-    map_dfr(~ broom::tidy(.), .id = 'metric') %>%
-    mutate(adj.p.value = round(adj.p.value, 4)) %>%
-    select(metric, comparison, adj.p.value) %>%
-    arrange(metric, adj.p.value)
-  return(tukey_models)
-}
-
-# Quick wrapper for getting results for ANOVA and Tukey on clims
-# df <- sst_ALL_clim_event_cat %>%
-  # filter(test == "length", site == "WA", rep == "1") %>%
-  # select(-test, -rep, -site)
-aov_tukey <- function(df){
-  # Extract MHW event data
-  prep <- df %>%
-    select(index_vals, event) %>%
-    unnest()
-  # Filter out results not from the most recent decade for equal comparison
-  # when looking at the changing lengtths test
-  if(max(prep$index_vals) > 1){
-    prep <- prep %>%
-      filter(index_vals >= 10) %>%
-      # 2009-01-02 is intentional
-      filter(date_start >= "2009-01-02", date_end <= "2018-12-31")
-  }
-  # Calculate the ANOVA and Tukey p values
-  res <- prep %>%
-    select(-date_start, -date_peak, -date_end) %>%
-    mutate(index_vals = as.factor(as.character(index_vals))) %>%
-    nest() %>%
-    mutate(aov = map(data, aov_p),
-           tukey = map(data, tukey_p)) %>%
-    select(-data)
-  return(res)
-}
-
-
-# Fisher test for category counting ---------------------------------------
-
-# Fisher pairwise function
-# Takes one rep of missing data and compares it against the complete data
-# testers...
-# df <- unnest(slice(select(res, data), 1))
-# df_comp <- df_standard
-fisher_pair <- function(df, df_comp){
-  # Prep data
-  df_joint <- table(rbind(df_comp, df))
-  if(ncol(df_joint) == 1){
-    df_joint <- as.table(cbind(df_joint, 'III & IV' = c(0,0)))
-  }
-  # Run tests
-  # res <- round(fisher.test(df_joint)$p.value, 4)
-  res <- fisher.test(df_joint)
-  # res_broom <- broom::augment(res) #%>%
-    # mutate_if(is.numeric, round, 4)
-  return(res)
-}
-
-# Wrapper to get data ready for pair-wise chi-squared tests
-# testers...
-# df <- sst_ALL_clim_event_cat %>%
-  # filter(test == "length", site == "WA", rep == "1") %>%
-  # select(-test, -rep, -site)
-fisher_test <- function(df){
-  suppressWarnings( # Suppress warning about category levels not all being present
-    df_long <- df %>%
-      select(index_vals, cat) %>%
-      unnest() %>%
-      # select(index_vals, category) %>%
-      mutate(category = ifelse(category %in% c("I Moderate","II Strong"), "I & II", category),
-             category = ifelse(category %in% c("III Severe","IV Extreme"), "III & IV", category),
-             category = as.character(category))
-  )
-  # This determines if the data are from the length test or not
-  # It then sets the benchmark value (30 years length or 0% missing/ 0C-dec)
-  if(max(df_long$index_vals) > 1){
-    index_filter <- 30
-    df_long <- df_long %>%
-      filter(index_vals >= 10,
-             peak_date >= "2009-01-01", peak_date <= "2018-12-31")
-  } else {
-    index_filter <- 0
-  }
-  res_table <- table(select(df_long, index_vals, category))
-  if(ncol(res_table) == 1){
-    res_table <- as.table(cbind(res_table, 'III & IV' = rep(0, nrow(res_table))))
-  }
-  res <- rcompanion::pairwiseNominalIndependence(res_table, fisher = TRUE, gtest = FALSE,
-                                     chisq = FALSE, method = "bonferroni",
-                                     digits = 3)
-  res_tidy <- separate(res, col = "Comparison", into = c("group_1", "group_2"), sep = " : ") %>%
-    filter(group_1 == index_filter | group_2 == index_filter) %>%
-    mutate(index_vals = ifelse(group_1 == index_filter, group_2, group_1),
-           p.adj.Fisher = p.Fisher* n(),
-           p.adj.Fisher = ifelse(p.adj.Fisher > 1, 1, p.adj.Fisher)) %>%
-    select(index_vals, p.Fisher, p.adj.Fisher)
-  return(res_tidy)
-}
-
-
 # Model linear relationships ----------------------------------------------
 
 # Wrapper function for nesting
@@ -461,21 +220,8 @@ lm_p_R2 <- function(df){
 }
 
 
-
 # Convenience functions ---------------------------------------------------
 
-# Wrapper function to melt KS results
-KS_long <- function(df){
-  res <- df %>%
-    gather(key = "metric", value = "p.value", -test, -site, -rep, -index_vals) %>%
-    group_by(test, site, metric, index_vals) %>%
-    summarise(p.value.min = min(p.value, na.rm = T),
-              p.value.mean = mean(p.value, na.rm = T),
-              p.value.max = max(p.value, na.rm = T),
-              p.value.sd = sd(p.value, na.rm = T)) %>%
-    ungroup()
-  return(res)
-}
 
 # Wrapper for creating plugs for smoother fig 2 - 4 plotting
 control_plug <- function(test_plug, site_plug){
@@ -486,7 +232,7 @@ control_plug <- function(test_plug, site_plug){
 
 # Event effect functions --------------------------------------------------
 
-# The effect that the three tests have the climatologies
+# The effect that the three tests have on the climatologies
 effect_clim_func <- function(df, choice_rep = "1"){
   res <- df %>%
     filter(rep == choice_rep) %>%
@@ -592,11 +338,11 @@ effect_cat_func <- function(df, date_guide, choice_rep = "1"){
 # having more missing data on one end of a time series over the other
 # should not be pronounced.
 
-# Function for knocking out data but maintaing the time series consistency
+# Function for knocking out data but maintaining the time series consistency
 # df <- sst
 # prop <- 0.1
-random_knockout_global <- function(prop, df){
-  # NB: Don't allow samppling of first and last value to ensure
+global_random_knockout <- function(prop, df){
+  # NB: Don't allow sampling of first and last value to ensure
   # all time series are the same length
   ts_length <- nrow(df)
   miss_index <- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
@@ -611,7 +357,7 @@ random_knockout_global <- function(prop, df){
 }
 
 # Function for calculating shrinking time series from the global data
-shrinking_results_global <- function(year_begin, df){
+global_shrinking_results <- function(year_begin, df){
   res <- df %>%
     filter(year(t) >= year_begin) %>%
     mutate(index_vals = 2018-year_begin+1) %>%
@@ -627,8 +373,9 @@ shrinking_results_global <- function(year_begin, df){
   return(res)
 }
 
-# The function that runs all of the tests on a single pixel
+# The function that runs all of the tests on a single pixel/time series
 # lat_step <- 78
+# nc_file <- OISST_files[100]
 global_analysis_sub <- function(lat_step, nc_file){
 
   nc <- nc_open(nc_file)
@@ -640,18 +387,19 @@ global_analysis_sub <- function(lat_step, nc_file){
   dimnames(sst_raw) <- list(t = nc$dim$time$vals)
   nc_close(nc)
 
-  # Prep SST for further use
-  sst <- as.data.frame(reshape2::melt(sst_raw, value.name = "temp"), row.names = NULL) %>%
+  sst <- tidync(nc_file) %>%
+    hyper_tibble() %>%
+    dplyr::rename(t = time, temp = sst) %>%
     mutate(t = as.Date(t, origin = "1970-01-01")) %>%
-    na.omit() %>%
     filter(t <= "2018-12-31") %>%
-      mutate(site = as.character(lat), rep = "1")
-  if(nrow(sst) == 0) return()
-
-  # Some icey bits don't start on 1982-01-01, or go until 2018-12-31, which is problematic
+    na.omit() %>%
+    # Some ice pixels don't start on 1982-01-01, or go until 2018-12-31
     # So for now we are simply removing them
-  if(min(sst$t) > as.Date("1982-01-01"))  return()
-  if(max(sst$t) < as.Date("2018-12-31"))  return()
+    group_by(lon, lat) %>%
+    filter(max(t) == "2018-12-31",
+           min(t) == "1982-01-01") %>%
+    select(lon, lat, t, temp) %>%
+    mutate(site = as.character(lat), rep = "1")
 
   # Calculate the secular trend
   dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, sst))[2,2]*3652.5), 3)
@@ -696,10 +444,6 @@ global_analysis_sub <- function(lat_step, nc_file){
     select(test, index_vals, clim, event, cat) %>%
     mutate(site = as.character(lat), rep = "1")
 
-  # Run KS tests
-  sst_KS_clim <- plyr::ddply(.data = sst_res[ ,c(1:3)], .variables = c("test"), .fun = KS_p)
-  sst_KS_event <- plyr::ddply(.data = sst_res[ ,c(1:2,4)], .variables = c("test"), .fun = KS_p)
-  sst_KS_cat <- plyr::ddply(.data = sst_res[ ,c(1:2,5)], .variables = c("test"), .fun = KS_p)
 
   # Find the focus event
   focus_event <-  sst_res_base %>%
@@ -723,12 +467,9 @@ global_analysis_sub <- function(lat_step, nc_file){
 
   # Wrap it up
   res <- list(lat = lat, lon = lon, dec_trend = dec_trend,
-              KS_clim = sst_KS_clim,
-                 KS_event = sst_KS_event,
-                 KS_cat = sst_KS_cat,
-                 effect_clim = effect_clim_res,
-                 effect_event = effect_event_res,
-                 effect_cat = effect_cat_res)
+              effect_clim = effect_clim_res,
+              effect_event = effect_event_res,
+              effect_cat = effect_cat_res)
   return(res)
 }
 

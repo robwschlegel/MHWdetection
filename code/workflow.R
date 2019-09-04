@@ -6,6 +6,38 @@
 source("code/functions.R")
 
 
+
+# Length experiment -------------------------------------------------------
+
+# Create anomaly and detrended time series
+sst_anom <- sst_WA %>%
+  mutate(temp = round(temp-mean(temp), 2))
+sst_flat <- detrend(sst_WA)
+
+# Visualise
+# ggplot(sst_anom, aes(x = t, y = temp)) +
+#   geom_line() +
+#   geom_smooth(method = "lm")
+
+# Calculate shortened time series results
+sst_anom_length <- plyr::ldply(1982:2016, shrinking_results,
+                               df = sst_anom, .parallel = T)
+sst_flat_length <- plyr::ldply(1982:2016, shrinking_results,
+                               df = sst_flat, .parallel = T)
+
+# Summary statistics
+sst_anom_length_clim <- sst_anom_length %>%
+  select(index_vals, clim) %>%
+  unnest() %>%
+  filter(index_vals == 37) %>%
+  select(-index_vals, - doy) %>%
+  summarise_all(c("min", "median", "mean", "max", "sd"), na.rm = T) %>%
+  gather(key = "var", value = "val") %>%
+  separate(var, c("stat", "test")) %>%
+  mutate(val = round(val, 3))
+
+
+
 # Base data ---------------------------------------------------------------
 
 # Combine the three reference time series into one file
