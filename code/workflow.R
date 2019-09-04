@@ -65,61 +65,11 @@ ggplot(prop_calc, aes(x = index_vals, y = prop)) +
   geom_line() +
   facet_grid(metric~stat, scales = "free_y")
 
-# Confidence intervals
-
-boot_mean <- function(data, indices) {
-  d <- data[indices] # allows boot to select sample
-  return(mean(d))
-}
-
-
-test <- sst_anom %>%
-  nest() %>%
-  mutate(clims = map(data, ts2clm,
-                     climatologyPeriod = c("1982-01-01","2018-12-31")),
-         events = map(clims, detect_event)) %>%
-  select(events) %>%
-  unnest() %>%
-  filter(row_number() %% 2 == 0) %>%
-  unnest() %>%
-  #
-  select(duration, intensity_max) %>%
-  gather(var, val) %>%
-  group_by(var) %>%
-  summarise(lower = boot.ci(boot(data = val, statistic = boot_mean,
-                                 R = 1000), type = "basic")$basic[4],
-            mid = mean(val),
-            upper = boot.ci(boot(data = val, statistic = boot_mean,
-                                 R = 1000), type = "basic")$basic[5],
-            n = n()) %>%
-  mutate_if(is.numeric, round, 4)
-
-
-test_boot <- boot.ci(boot(data = test$intensity_max,
-             statistic = boot_mean,
-             R = 1000), type = "basic")
-
-
-# event_aov_CI <- function(df){
-  df_conf <- gather(df, key = "metric", value = "value", -year_index) %>%
-    group_by(year_index, metric) %>%
-    summarise(lower = boot.ci(boot(data=value, statistic=Bmean, R=1000),
-                              type = "basic")$basic[4],
-              mid = mean(value),
-              upper = boot.ci(boot(data=value, statistic=Bmean, R=1000),
-                              type = "basic")$basic[5],
-              n = n()) %>%
-    mutate_if(is.numeric, round, 4)
-  # return(df_conf)
-# }
-
-# Calculating CI from a normal distribution
-a <- 5
-s <- 2
-n <- 20
-error <- qnorm(0.975)*s/sqrt(n)
-left <- a-error
-right <- a+error
+# Visualise CI change over time
+ggplot(sst_anom_length, aes(x = index_vals, y = mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3) +
+  facet_wrap(~var, scales = "free_y")
 
 
 # Fit linear models to everything and extract R2 values

@@ -64,6 +64,12 @@ detrend <- function(df){
 
 # Summary stats -----------------------------------------------------------
 
+# Boot strap mean for confidence intervals
+boot_mean <- function(data, indices) {
+  d <- data[indices] # allows boot to select sample
+  return(mean(d))
+}
+
 # Wrapper for extracting tidy summary statistics from any data
 summarise_stats <- function(df){
   res <- df %>%
@@ -110,6 +116,7 @@ event_summary <- function(df, date_start_filter = "2009-01-02"){
     # Filter out events that occurred before the desired start date
     # by default this is the most recent ten years of data
     # This is done to ensure even sample sizes for comparing MHW metrics
+      # NB: This isn't filtering out events correctly...
     filter(date_start >= date_start_filter) %>%
     # select(date_start, date_peak, date_end, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
     select(duration, intensity_max) %>%
