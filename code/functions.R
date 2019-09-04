@@ -65,6 +65,19 @@ detrend <- function(df){
 
 # Summary stats -----------------------------------------------------------
 
+# Wrapper for extracting tidy summary statistics from any data
+summarise_stats <- function(df){
+  res <- df %>%
+    summarise_if(is.numeric, c("min", "median", "mean", "max", "sd"), na.rm = T) %>%
+    gather(key = "var", value = "val") %>%
+    separate(var, c("metric", "stat")) %>%
+    mutate(val = round(val, 3),
+           count = nrow(df)) %>%
+    # rbind(data.frame(metric = "count", stat = "n", val = nrow(df)))
+    dplyr::select(count, everything())
+  return(res)
+}
+
 # The climatologies themselves are much smaller and easier to handle on their own
 # So we want to pull out only the 366 day clims per run
 clim_summary <- function(df){
@@ -72,22 +85,30 @@ clim_summary <- function(df){
     select(doy, seas:thresh) %>%
     unique() %>%
     mutate_if(is.numeric, round, 3) %>%
-    arrange(doy)
+    arrange(doy) %>%
+    select(-doy) %>%
+    summarise_stats()
   return(res)
 }
 
 # Likewise we want to grab only the event values we are interested in
 event_summary <- function(df){
   res <- df$event %>%
-    select(date_start, date_peak, date_end, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
-    mutate_if(is.numeric, round, 3)
+    # select(date_start, date_peak, date_end, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
+    select(duration, intensity_max) %>%
+    mutate_if(is.numeric, round, 3) %>%
+    dplyr::rename(intmax = intensity_max) %>%
+    summarise_stats()
   return(res)
 }
 
 # Pull out only some of the category results
 cat_summary <- function(df){
   res <- category(df) %>%
-    select(peak_date:p_extreme)
+    select(p_moderate:p_extreme) %>%
+    dplyr::rename(pmoderate = p_moderate, pstrong = p_strong,
+                  psevere = p_severe, pextreme = p_extreme) %>%
+    summarise_stats()
   return(res)
 }
 
@@ -109,11 +130,12 @@ shrinking_results <- function(year_begin, df, set_width = 5){
     mutate(clims = map(data, ts2clm, windowHalfWidth = set_width,
                        climatologyPeriod = c(paste0(year_begin,"-01-01"), "2018-12-31")),
            events = map(clims, detect_event),
-           cat = map(events, cat_only),
-           clim = map(events, clim_only),
-           event = map(events, event_only)) %>%
+           cat = map(events, cat_summary),
+           clim = map(events, clim_summary),
+           event = map(events, event_summary)) %>%
     select(index_vals, clim, event, cat)
-  return(res)
+  res_long <- rbind(unnest(res[,1:2]), unnest(res[,c(1,3)]), unnest(res[,c(1,4)]))
+  return(res_long)
 }
 
 

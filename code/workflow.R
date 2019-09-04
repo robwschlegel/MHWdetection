@@ -10,9 +10,9 @@ source("code/functions.R")
 # Length experiment -------------------------------------------------------
 
 # Create anomaly and detrended time series
-sst_anom <- sst_WA %>%
+sst_anom <- sst_Med %>%
   mutate(temp = round(temp-mean(temp), 2))
-sst_flat <- detrend(sst_WA)
+sst_flat <- detrend(sst_Med)
 
 # Visualise
 # ggplot(sst_anom, aes(x = t, y = temp)) +
@@ -25,17 +25,13 @@ sst_anom_length <- plyr::ldply(1982:2016, shrinking_results,
 sst_flat_length <- plyr::ldply(1982:2016, shrinking_results,
                                df = sst_flat, .parallel = T)
 
-# Summary statistics
-sst_anom_length_clim <- sst_anom_length %>%
-  select(index_vals, clim) %>%
-  unnest() %>%
-  filter(index_vals == 37) %>%
-  select(-index_vals, - doy) %>%
-  summarise_all(c("min", "median", "mean", "max", "sd"), na.rm = T) %>%
-  gather(key = "var", value = "val") %>%
-  separate(var, c("stat", "test")) %>%
-  mutate(val = round(val, 3))
+# visualise
+ggplot(sst_flat_length, aes(x = index_vals, y = val)) +
+  geom_line() +
+  facet_wrap(stat~metric, scales = "free_y")
 
+# Problems in the seas/thresh caused by length could be communicated as
+# the proportion of change in the mean signal against the control range (min - max)
 
 
 # Base data ---------------------------------------------------------------
