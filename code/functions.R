@@ -4,10 +4,11 @@
 
 # Libraries ---------------------------------------------------------------
 
-# .libPaths(c("~/R-packages", .libPaths()))
+.libPaths(c("~/R-packages", .libPaths()))
 
-library(jsonlite, lib.loc = "~/R-packages/")
-library(tidyverse)
+# library(jsonlite, lib.loc = "~/R-packages/")
+# library(dplyr, lib.loc = "~/R-packages/") # Development version for group_modify()
+library(tidyverse, lib.loc = "~/R-packages/")
 library(ggridges)
 # library(broom)
 library(heatwaveR, lib.loc = "~/R-packages/")
@@ -20,7 +21,8 @@ library(FNN)
 library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(tidync, lib.loc = "~/R-packages/")
-# library(pgirmess)
+library(rgdal, lib.loc = "~/R-packages/")
+library(pgirmess)
 # library(egg)
 # library(rcompanion)
 
@@ -65,6 +67,83 @@ detrend <- function(df){
 }
 
 
+# Control test variables --------------------------------------------------
+
+# Length of time series
+control_length <- function(year_begin, df){
+  res <- df %>%
+    filter(year(t) >= year_begin) %>%
+    mutate(index_vals = 2018-year_begin+1,
+           test = "length") %>%
+    dplyr::select(test, index_vals, t, temp)
+  return(res)
+}
+
+# Missing data
+control_missing <- function(prop, df){
+  # NB: Don't allow sampling of first and last value to ensure
+  # all time series are the same length
+  ts_length <- nrow(df)
+  miss_index <- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
+  res <- df %>%
+    mutate(row_index = 1:n(),
+           temp = replace(temp, which(row_index %in% miss_index), NA),
+           test = "missing") %>%
+    mutate(index_vals = prop) %>%
+    dplyr::select(test, index_vals, t, temp)
+  return(res)
+}
+
+# Linear decadal trend
+control_trend <- function(rate, df){
+  daily_step <- rate/3652.5
+  res <- df %>%
+    mutate(row_index = 1:n(),
+           temp = temp + (row_index*daily_step),
+           test = "trend") %>%
+    mutate(index_vals = rate) %>%
+    dplyr::select(test, index_vals, t, temp)
+  return(res)
+}
+
+
+# Calculate clims and metrics ---------------------------------------------
+
+# df <- sst_WA
+clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-01-01",
+                             year_start = 0, year_end = 0){
+
+  # First and last years for full clim period
+  if(year_start == 0)  year_start <- min(lubridate::year(df$t))
+  if(year_end == 0) year_end <- max(lubridate::year(df$t))
+
+  # base calculation
+  res <- ts2clm(df, windowHalfWidth = set_window, maxPadLength = set_pad,
+                climatologyPeriod = c(paste0(year_start,"-01-01"), paste0(year_end,"-12-31"))) %>%
+    filter(t >= min_date) %>%
+    detect_event()
+
+  # Extract desired values
+  res_clim <- res$climatology %>%
+    dplyr::select(doy, seas, thresh) %>%
+    unique() %>%
+    arrange(doy) %>%
+    gather(var, val, -doy) %>%
+    dplyr::rename(id = doy) %>%
+    mutate(id = paste0("doy_",id))
+  res_metric <- res$event %>%
+    dplyr::select(event_no, duration, intensity_max) %>%
+    gather(var, val, -event_no) %>%
+    dplyr::rename(id = event_no) %>%
+    mutate(id = paste0("event_no_",id))
+
+  # Combine and exit
+  res_all <- rbind(res_clim, res_metric) %>%
+    mutate(val = round(val, 3))
+  return(res_all)
+}
+
+
 # Summary stats -----------------------------------------------------------
 
 # Boot strap mean for confidence intervals
@@ -74,11 +153,11 @@ boot_mean <- function(data, indices) {
 }
 
 # Wrapper for extracting tidy summary statistics from any data
-summarise_stats <- function(df){
+summary_stats <- function(df){
+  event_count <- nrow(filter(df, grepl('event_no', id)))/2
   res <- df %>%
-    gather(var, val) %>%
-    group_by(var) %>%
-    summarise(min = min(val, na.rm = T),
+    summarise(count = event_count,
+              min = min(val, na.rm = T),
               lower = boot.ci(boot(data = val, statistic = boot_mean,
                                    R = 1000), type = "basic")$basic[4],
               median = median(val, na.rm = T),
@@ -87,53 +166,10 @@ summarise_stats <- function(df){
                                    R = 1000), type = "basic")$basic[5],
               max = max(val, na.rm = T),
               range = max-min,
-              sd = sd(val, na.rm = T),
-              count = n()) %>%
-    mutate_if(is.numeric, round, 4) %>%
-    dplyr::select(count, everything())
+              sd = sd(val, na.rm = T)) %>%
+    mutate_if(is.numeric, round, 3)
   return(res)
 }
-
-# The climatologies themselves are much smaller and easier to handle on their own
-# So we want to pull out only the 366 day clims per run
-clim_summary <- function(df){
-  res <- df$climatology %>%
-    select(doy, seas:thresh) %>%
-    unique() %>%
-    mutate_if(is.numeric, round, 3) %>%
-    arrange(doy) %>%
-    select(-doy) %>%
-    summarise_stats()
-  return(res)
-}
-
-# Likewise we want to grab only the event values we are interested in
-event_summary <- function(df, date_start_filter = "2009-01-02"){
-  res <- df$event %>%
-    # Filter out events that occurred before the desired start date
-    # by default this is the most recent ten years of data
-    # This is done to ensure even sample sizes for comparing MHW metrics
-      # NB: This isn't filtering out events correctly...
-    filter(date_start >= date_start_filter) %>%
-    # select(date_start, date_peak, date_end, duration, intensity_mean, intensity_max, intensity_cumulative) %>%
-    select(duration, intensity_max) %>%
-    mutate_if(is.numeric, round, 3) %>%
-    dplyr::rename(int.max = intensity_max) %>%
-    summarise_stats()
-  return(res)
-}
-
-# Pull out only some of the category results
-  # NB: No longer looking at the category values as they are not useful
-cat_summary <- function(df){
-  res <- category(df) %>%
-    select(p_moderate:p_extreme) %>%
-    dplyr::rename(p.moderate = p_moderate, p.strong = p_strong,
-                  p.severe = p_severe, p.extreme = p_extreme) %>%
-    summarise_stats()
-  return(res)
-}
-
 
 
 # Significance tests ------------------------------------------------------
@@ -153,9 +189,25 @@ aov_p <- function(df){
 }
 
 # Run an ANOVA on each metric and then a Tukey test
+df <- sst_clim_metric %>%
+  filter(test == "length", var == "duration") %>%
+  ungroup() %>%
+  select(-test, -var)
+
+# Kruskal-Wallis post-hoc
+kph <- function(df){
+  df$index_vals <- factor(df$index_vals)
+  if("30" %in% levels(df$index_vals)){
+    df$index_vals <- relevel(df$index_vals, "30")
+  }
+  res <- kruskalmc(df$val, as.factor(df$index_vals))$dif.com %>%
+    mutate(comp_index = row.names(.))
+  return(res)
+}
+
 aov_tukey <- function(df){
-  aov_tukey <- df[ , -grep("year_index", names(df))] %>%
-    map(~ TukeyHSD(aov(.x ~ df$year_index))) %>%
+  aov_tukey <- df[ , -grep("index_vals", names(df))] %>%
+    map(~ TukeyHSD(aov(.x ~ df$index_vals))) %>%
     map_dfr(~ broom::tidy(.), .id = 'metric') %>%
     mutate(p.value = round(adj.p.value, 4)) %>%
     # filter(term != "Residuals") %>%
@@ -188,7 +240,7 @@ clim_aov_tukey <- function(df){
 # df <- sst_flat
 # year_begin <- 2000
 # set_width <- 10
-shrinking_results <- function(year_begin, year_end = 2018, df, set_width = 5){
+shrinking_results <- function(year_begin = 1982, year_end = 2018, df, set_width = 5){
   res <- df %>%
     filter(year(t) >= year_begin) %>%
     mutate(index_vals = 2018-year_begin+1) %>%
@@ -207,24 +259,30 @@ shrinking_results <- function(year_begin, year_end = 2018, df, set_width = 5){
   # return(res_long)
 }
 
-
-# Random knockout ---------------------------------------------------------
-
-# Function for knocking out data but maintaing the time series consistency
-random_knockout <- function(prop, df){
-  # NB: Don't allow sampling of first and last value to ensure
-  # all time series are the same length
-  ts_length <- nrow(df)
-  miss_index <- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
-  # df$x1[sample(nrow(df),250)] <- NA
-  res <- df %>%
-    # group_by(rep) %>%
-    mutate(row_index = 1:n(),
-           temp = replace(temp, which(row_index %in% miss_index), NA)) %>%
-    mutate(index_vals = prop) %>%
-    select(-row_index)
-  return(res)
+res_base <- df %>%
+  nest()
+if(fix == "none"){
+  res_clim <- res_base %>%
+    mutate(clims = map(data, ts2clm,
+                       climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
+  # select(-data) %>%
+  # unnest()
+} else if(fix == "missing"){
+  res_clim <- res_base %>%
+    mutate(clims = map(data, ts2clm, maxPadLength = 9999, # dummy length
+                       climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
+  # select(-data) %>%
+  # unnest()
+} else{
+  stop("Make sure the argument provided to 'fix' is correct.")
 }
+res <- res_clim %>%
+  mutate(events = map(clims, detect_event),
+         cat = map(events, category),
+         clim = map(events, clim_only),
+         event = map(events, event_only)) %>%
+  select(-data, -clims, -events)
+return(res)
 
 
 # Count consecutive days --------------------------------------------------
@@ -241,58 +299,6 @@ con_miss <- function(df){
     mutate(duration = index_end - index_start + 1) %>%
     group_by(duration) %>%
     summarise(count = n())
-  return(res)
-}
-
-
-# Add trends --------------------------------------------------------------
-
-# Function for adding trends to data
-add_trend <- function(rate, df){
-  daily_step <- rate/3652.5
-  res <- df %>%
-    # group_by(site, rep) %>%
-    mutate(row_index = 1:n(),
-           temp = temp + (row_index*daily_step)) %>%
-    mutate(index_vals = rate) %>%
-    select(-row_index)
-  return(res)
-}
-
-
-# Calculate clims, events, and cats ---------------------------------------
-
-# Calculate climatologies, events, and categories on full length time series
-# testers...
-# df <- sst_ALL_knockout %>%
-  # filter(site == "WA", rep == "1", index_vals == 0.4)
-# fix <- "none"
-# fix <- "missing"
-# ts2clm(df, climatologyPeriod = c("1982-01-01", "2011-12-31"))
-clim_event_cat_calc <- function(df, fix = "none"){
-  res_base <- df %>%
-    nest()
-  if(fix == "none"){
-    res_clim <- res_base %>%
-      mutate(clims = map(data, ts2clm,
-                         climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
-      # select(-data) %>%
-      # unnest()
-  } else if(fix == "missing"){
-    res_clim <- res_base %>%
-      mutate(clims = map(data, ts2clm, maxPadLength = 9999, # dummy length
-                         climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
-      # select(-data) %>%
-      # unnest()
-  } else{
-    stop("Make sure the argument provided to 'fix' is correct.")
-  }
-  res <- res_clim %>%
-    mutate(events = map(clims, detect_event),
-           cat = map(events, category),
-           clim = map(events, clim_only),
-           event = map(events, event_only)) %>%
-    select(-data, -clims, -events)
   return(res)
 }
 

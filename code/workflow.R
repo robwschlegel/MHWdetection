@@ -6,6 +6,53 @@
 source("code/functions.R")
 
 
+# Rough outline -----------------------------------------------------------
+
+# Create base anomaly time series
+sst_anom <- sst_Med %>%
+  mutate(temp = round(temp-mean(temp), 2))
+
+# Create flat time series
+sst_flat <- detrend(sst_Med)
+
+# Calculate MHWs from these two time series
+sst_anom_MHW <- detect_event(ts2clm(sst_anom, climatologyPeriod = c("1982-01-01", "2011-12-31")))
+sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2011-12-31")))
+
+# Sub-optimise data
+## Length
+sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat) #%>%
+  # group_by(index_vals) %>%
+  # mutate(clims = map(data, ts2clm, ))
+
+## Missing data
+sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
+
+## Decadal trend
+sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
+
+# Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
+## This means the ts must be filtered down to 10 years before running detect_event()
+system.time(
+sst_clim_metric <- rbind(plyr::ldply(1982:2009, control_length, df = sst_flat),
+                 plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat),
+                 plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)) %>%
+  group_by(test, index_vals) %>%
+  group_modify(~clim_metric_calc(.x))
+) # 18 seconds
+
+# Run ANOVA/Tukey on MHW results for three different tests
+sst_tukey <- sst_clim_metric %>%
+  group_by(test, index_vals) %>%
+  group_modify(~tukey_calc(.x))
+
+# Create summary statistics of MHW results
+system.time(
+sst_summary <- sst_clim_metric %>%
+  group_by(test, index_vals) %>%
+  group_modify(~summary_stats(.x))
+) # 10 seconds
+
 
 # Length experiment -------------------------------------------------------
 
