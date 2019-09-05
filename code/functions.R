@@ -16,9 +16,9 @@ library(heatwaveR, lib.loc = "~/R-packages/")
 library(lubridate) # This is intentionally activated after data.table
 # library(fasttime)
 library(ggpubr)
-library(boot)
-library(FNN)
-library(mgcv)
+# library(boot)
+# library(FNN)
+# library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(tidync, lib.loc = "~/R-packages/")
 library(rgdal, lib.loc = "~/R-packages/")
@@ -190,104 +190,41 @@ aov_p <- function(df){
 
 # Run an ANOVA on each metric and then a Tukey test
 df <- sst_clim_metric %>%
-  filter(test == "length", var == "duration") %>%
+  filter(test == "missing", var == "duration") %>%
   ungroup() %>%
   select(-test, -var)
 
 # Kruskal-Wallis post-hoc
-kph <- function(df){
+kruskal_post_hoc <- function(df){
   df$index_vals <- factor(df$index_vals)
   if("30" %in% levels(df$index_vals)){
     df$index_vals <- relevel(df$index_vals, "30")
   }
-  res <- kruskalmc(df$val, as.factor(df$index_vals))$dif.com %>%
-    mutate(comp_index = row.names(.))
+  res <- kruskalmc(df$val, df$index_vals)$dif.com %>%
+    mutate(comp_index = row.names(.)) %>%
+    separate(comp_index, into = c("control", "comp"), sep = '-') %>%
+    filter(control == levels(df$index_vals)[1]) %>%
+    # filter(grepl(levels(df$index_vals)[1], control)) %>%
+    select(-obs.dif, -critical.dif)
   return(res)
 }
 
 aov_tukey <- function(df){
-  aov_tukey <- df[ , -grep("index_vals", names(df))] %>%
-    map(~ TukeyHSD(aov(.x ~ df$index_vals))) %>%
-    map_dfr(~ broom::tidy(.), .id = 'metric') %>%
+  res <- TukeyHSD(aov(val ~ as.factor(index_vals), df)) %>%
+  # aov_tukey <- df[ , -grep("index_vals", names(df))] %>%
+    # map(~ TukeyHSD(aov(.x ~ df$index_vals))) %>%
+    broom::tidy(.) %>%
     mutate(p.value = round(adj.p.value, 4)) %>%
     # filter(term != "Residuals") %>%
-    select(metric, comparison, adj.p.value) %>%
+    select(comparison, adj.p.value) %>%
     # filter(adj.p.value <= 0.05) %>%
-    arrange(metric, adj.p.value)
+    arrange(adj.p.value)
   return(aov_tukey)
 }
 
-# Quick wrapper for getting results for ANOVA and Tukey on clims
-# df <- sst_ALL_clim_only %>%
-#   filter(rep == "1", site == "WA") %>%
-#   select(-rep, -site)
-clim_aov_tukey <- function(df){
-  res <- df %>%
-    select(year_index, seas, thresh) %>%
-    mutate(year_index = as.factor(year_index)) %>%
-    nest() %>%
-    mutate(aov = map(data, aov_p),
-           tukey = map(data, aov_tukey)) %>%
-    select(-data)
-  return(res)
-}
 
-# Calculate clim, events, and cats on short time series -------------------
+# Count consecutive missing days ------------------------------------------
 
-# NB: The shortened time series require their own function for calculating results
-# in order to match the length of any given time series
-# testers...
-# df <- sst_flat
-# year_begin <- 2000
-# set_width <- 10
-shrinking_results <- function(year_begin = 1982, year_end = 2018, df, set_width = 5){
-  res <- df %>%
-    filter(year(t) >= year_begin) %>%
-    mutate(index_vals = 2018-year_begin+1) %>%
-    group_by(index_vals) %>%
-    nest() %>%
-    mutate(clims = map(data, ts2clm, windowHalfWidth = set_width,
-                       climatologyPeriod = c(paste0(year_begin,"-01-01"),
-                                             paste0(year_end,"-12-31"))),
-           events = map(clims, detect_event)) %>% #,
-           # clim = map(events, clim_summary),
-           # event = map(events, event_summary)) %>%
-    select(index_vals, events)
-    # select(index_vals, clim, event)
-  # res_long <- rbind(unnest(res[,1:2]), unnest(res[,c(1,3)]))
-  return(res)
-  # return(res_long)
-}
-
-res_base <- df %>%
-  nest()
-if(fix == "none"){
-  res_clim <- res_base %>%
-    mutate(clims = map(data, ts2clm,
-                       climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
-  # select(-data) %>%
-  # unnest()
-} else if(fix == "missing"){
-  res_clim <- res_base %>%
-    mutate(clims = map(data, ts2clm, maxPadLength = 9999, # dummy length
-                       climatologyPeriod = c("1982-01-01", "2011-12-31"))) #%>%
-  # select(-data) %>%
-  # unnest()
-} else{
-  stop("Make sure the argument provided to 'fix' is correct.")
-}
-res <- res_clim %>%
-  mutate(events = map(clims, detect_event),
-         cat = map(events, category),
-         clim = map(events, clim_only),
-         event = map(events, event_only)) %>%
-  select(-data, -clims, -events)
-return(res)
-
-
-# Count consecutive days --------------------------------------------------
-
-# Quantify consecutive missing days
 con_miss <- function(df){
   ex1 <- rle(is.na(df$temp))
   ind1 <- rep(seq_along(ex1$lengths), ex1$lengths)
@@ -434,41 +371,6 @@ effect_cat_func <- function(df, date_guide, choice_rep = "1"){
 # data that are matching the temperatures around them so the problem of
 # having more missing data on one end of a time series over the other
 # should not be pronounced.
-
-# Function for knocking out data but maintaining the time series consistency
-# df <- sst
-# prop <- 0.1
-global_random_knockout <- function(prop, df){
-  # NB: Don't allow sampling of first and last value to ensure
-  # all time series are the same length
-  ts_length <- nrow(df)
-  miss_index <- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
-  # df$x1[sample(nrow(df),250)] <- NA
-  res <- df %>%
-    # group_by(site, rep) %>%
-    mutate(row_index = 1:n(),
-           temp = replace(temp, which(row_index %in% miss_index), NA)) %>%
-    mutate(index_vals = prop) %>%
-    select(-row_index)
-  return(res)
-}
-
-# Function for calculating shrinking time series from the global data
-global_shrinking_results <- function(year_begin, df){
-  res <- df %>%
-    filter(year(t) >= year_begin) %>%
-    mutate(index_vals = 2018-year_begin+1) %>%
-    group_by(index_vals) %>%
-    nest() %>%
-    mutate(clims = map(data, ts2clm,
-                       climatologyPeriod = c(paste0(year_begin,"-01-01"), "2018-12-31")),
-           events = map(clims, detect_event),
-           cat = map(events, category),
-           clim = map(events, clim_only),
-           event = map(events, event_only)) %>%
-    select(index_vals, clim, event, cat)
-  return(res)
-}
 
 # The function that runs all of the tests on a single pixel/time series
 # lat_step <- 78

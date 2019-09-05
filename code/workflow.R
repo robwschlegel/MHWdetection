@@ -42,9 +42,11 @@ sst_clim_metric <- rbind(plyr::ldply(1982:2009, control_length, df = sst_flat),
 ) # 18 seconds
 
 # Run ANOVA/Tukey on MHW results for three different tests
-sst_tukey <- sst_clim_metric %>%
-  group_by(test, index_vals) %>%
-  group_modify(~tukey_calc(.x))
+system.time(
+sst_signif <- sst_clim_metric %>%
+  group_by(test, var) %>%
+  group_modify(~kruskal_post_hoc(.x))
+) # 1 second
 
 # Create summary statistics of MHW results
 system.time(
