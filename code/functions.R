@@ -4,6 +4,8 @@
 
 # Libraries ---------------------------------------------------------------
 
+# .libPaths(c("~/R-packages", .libPaths()))
+
 library(jsonlite, lib.loc = "~/R-packages/")
 library(tidyverse)
 library(ggridges)
@@ -18,6 +20,7 @@ library(FNN)
 library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(tidync, lib.loc = "~/R-packages/")
+# library(pgirmess)
 # library(egg)
 # library(rcompanion)
 
@@ -87,12 +90,6 @@ summarise_stats <- function(df){
               sd = sd(val, na.rm = T),
               count = n()) %>%
     mutate_if(is.numeric, round, 4) %>%
-    # summarise_if(is.numeric, c("min", "median", "mean", "max", "sd"), na.rm = T) %>%
-    # gather(key = "var", value = "val") %>%
-    # separate(var, c("metric", "stat")) %>%
-    # mutate(val = round(val, 3),
-           # count = nrow(df)) %>%
-    # rbind(data.frame(metric = "count", stat = "n", val = nrow(df)))
     dplyr::select(count, everything())
   return(res)
 }
@@ -127,6 +124,7 @@ event_summary <- function(df, date_start_filter = "2009-01-02"){
 }
 
 # Pull out only some of the category results
+  # NB: No longer looking at the category values as they are not useful
 cat_summary <- function(df){
   res <- category(df) %>%
     select(p_moderate:p_extreme) %>%
@@ -136,6 +134,51 @@ cat_summary <- function(df){
   return(res)
 }
 
+
+
+# Significance tests ------------------------------------------------------
+
+# consider nlme()
+
+# Run an ANOVA on each metric of the combined event results and get the p-value
+# df <- res
+aov_p <- function(df){
+  aov_models <- df[ , -grep("index_vals", names(df))] %>%
+    map(~ aov(.x ~ df$index_vals)) %>%
+    map_dfr(~ broom::tidy(.), .id = 'metric') %>%
+    mutate(p.value = round(p.value, 4)) %>%
+    filter(term != "Residuals") %>%
+    select(metric, p.value)
+  return(aov_models)
+}
+
+# Run an ANOVA on each metric and then a Tukey test
+aov_tukey <- function(df){
+  aov_tukey <- df[ , -grep("year_index", names(df))] %>%
+    map(~ TukeyHSD(aov(.x ~ df$year_index))) %>%
+    map_dfr(~ broom::tidy(.), .id = 'metric') %>%
+    mutate(p.value = round(adj.p.value, 4)) %>%
+    # filter(term != "Residuals") %>%
+    select(metric, comparison, adj.p.value) %>%
+    # filter(adj.p.value <= 0.05) %>%
+    arrange(metric, adj.p.value)
+  return(aov_tukey)
+}
+
+# Quick wrapper for getting results for ANOVA and Tukey on clims
+# df <- sst_ALL_clim_only %>%
+#   filter(rep == "1", site == "WA") %>%
+#   select(-rep, -site)
+clim_aov_tukey <- function(df){
+  res <- df %>%
+    select(year_index, seas, thresh) %>%
+    mutate(year_index = as.factor(year_index)) %>%
+    nest() %>%
+    mutate(aov = map(data, aov_p),
+           tukey = map(data, aov_tukey)) %>%
+    select(-data)
+  return(res)
+}
 
 # Calculate clim, events, and cats on short time series -------------------
 
@@ -154,13 +197,14 @@ shrinking_results <- function(year_begin, year_end = 2018, df, set_width = 5){
     mutate(clims = map(data, ts2clm, windowHalfWidth = set_width,
                        climatologyPeriod = c(paste0(year_begin,"-01-01"),
                                              paste0(year_end,"-12-31"))),
-           events = map(clims, detect_event),
-           cat = map(events, cat_summary),
-           clim = map(events, clim_summary),
-           event = map(events, event_summary)) %>%
-    select(index_vals, clim, event, cat)
-  res_long <- rbind(unnest(res[,1:2]), unnest(res[,c(1,3)]), unnest(res[,c(1,4)]))
-  return(res_long)
+           events = map(clims, detect_event)) %>% #,
+           # clim = map(events, clim_summary),
+           # event = map(events, event_summary)) %>%
+    select(index_vals, events)
+    # select(index_vals, clim, event)
+  # res_long <- rbind(unnest(res[,1:2]), unnest(res[,c(1,3)]))
+  return(res)
+  # return(res_long)
 }
 
 
@@ -269,13 +313,13 @@ lm_p_R2 <- function(df){
 
 # Convenience functions ---------------------------------------------------
 
-
 # Wrapper for creating plugs for smoother fig 2 - 4 plotting
 control_plug <- function(test_plug, site_plug){
   plug <- data.frame(test = test_plug, site = site_plug, metric = unique(sst_ALL_plot_long$metric),
                      index_vals = 30, p.value.min = 1.0, p.value.mean = 1.0,
                      p.value.max = 1.0, p.value.sd = 0)
 }
+
 
 # Event effect functions --------------------------------------------------
 
@@ -425,15 +469,6 @@ global_shrinking_results <- function(year_begin, df){
 # nc_file <- OISST_files[100]
 global_analysis_sub <- function(lat_step, nc_file){
 
-  nc <- nc_open(nc_file)
-  lat <- nc$dim$lat$vals[lat_step]
-  lon <- nc$dim$lon$vals[1]
-
-  # Extract raw SST
-  sst_raw <- ncvar_get(nc, "sst", start = c(lat_step,1,1), count = c(1,-1,-1))
-  dimnames(sst_raw) <- list(t = nc$dim$time$vals)
-  nc_close(nc)
-
   sst <- tidync(nc_file) %>%
     hyper_tibble() %>%
     dplyr::rename(t = time, temp = sst) %>%
@@ -453,7 +488,7 @@ global_analysis_sub <- function(lat_step, nc_file){
 
   # Remove random data
   set.seed(666)
-  sst_knockout <- plyr::ldply(.data = c(0.10, 0.25, 0.50, 0.75, 0.90),
+  sst_knockout <- plyr::ldply(.data = c(0.10, 0.25, 0.50),
                               .fun = random_knockout_global, df = sst)
 
   # Manually force certain key dates to be present

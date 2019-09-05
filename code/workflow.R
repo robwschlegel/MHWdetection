@@ -23,60 +23,88 @@ sst_flat <- detrend(sst_Med)
   # NB: This falls over with fewer than 10 years of data
   # But we want to see what happens to seas/thresh at as few as 3 years
 sst_anom_length <- plyr::ldply(1982:2009, shrinking_results,
-                               df = sst_anom, .parallel = T)
+                               df = sst_anom, .parallel = T) #%>%
+  # mutate(var = factor(var, levels = c("seas", "thresh", "duration", "int.max")))
 sst_flat_length <- plyr::ldply(1982:2009, shrinking_results,
-                               df = sst_flat, .parallel = T)
+                               df = sst_flat, .parallel = T)# %>%
+  # mutate(var = factor(var, levels = c("seas", "thresh", "duration", "int.max")))
 
 # visualise
-ggplot(sst_flat_length, aes(x = index_vals, y = val)) +
+ggplot(sst_flat_length, aes(x = index_vals, y = median)) +
   geom_line() +
-  facet_wrap(stat~metric, scales = "free_y")
+  facet_wrap(~var, scales = "free_y")
 
 # Problems in the seas/thresh caused by length could be communicated as
 # the proportion of change in the mean signal against the control range (min - max)
 # may be better to look at the change as a proportion of the median
 
-prop_30 <- sst_anom_length %>%
+prop_30 <- sst_flat_length %>%
   filter(index_vals == 30) %>%
-  select(-index_vals) %>%
-  dplyr::rename(val_30 = val)
+  select(-index_vals) #%>%
+  # dplyr::rename(val_30 = val)
 
-prop_30_wide <- prop_30 %>%
-  spread(stat, val_30) %>%
-  unique() %>%
-  mutate(range = max - min) %>%
-  select(metric, count, min, median, mean, max, range, sd)
+prop_30_long <- prop_30 %>%
+  gather("stat", "val", -count, - var) %>%
+  dplyr::rename(val_30 = val) %>%
+  dplyr::select(-count)
 
-prop_calc <- left_join(sst_anom_length,
-                       dplyr::select(prop_30, -count),
-                       by = c("metric", "stat")) %>%
+# prop_30_wide <- prop_30 %>%
+  # spread(stat, val_30) %>%
+  # unique() #%>%
+  # mutate(range = max - min) %>%
+  # select(metric, count, min, median, mean, max, range, sd)
+
+prop_calc <- sst_flat_length  %>%
+  gather("stat", "val", -count, - var, -index_vals) %>%
+  left_join(prop_30_long, by = c("stat", "var")) %>%
   mutate(prop = val/val_30,
          prop = replace_na(prop, 0),
          prop = ifelse(is.infinite(prop), 0, prop))
 
-# Visualise
-ggplot(filter(sst_anom_length, stat == "median"),
-       aes(x = index_vals, y = val)) +
-  geom_line() +
-  geom_hline(data = prop_range, aes(yintercept = median)) +
-  facet_wrap(~metric, scales = "free_y")
+## Visualise
 
-ggplot(prop_calc, aes(x = index_vals, y = prop)) +
+# Overall mean values
+ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
   geom_line() +
-  facet_grid(metric~stat, scales = "free_y")
+  facet_wrap(~var, scales = "free_y")
+
+# Mean values against the mean at 30 years
+ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
+  geom_line() +
+  geom_hline(data = prop_30, aes(yintercept = mean)) +
+  facet_wrap(~var, scales = "free_y")
+
+# Proportion of change away from 30 years
+ggplot(filter(prop_calc, stat == "mean"), aes(x = index_vals, y = prop)) +
+  geom_line() +
+  geom_hline(aes(yintercept = 1)) +
+  facet_wrap(~var, scales = "free_y")
 
 # Visualise CI change over time
-ggplot(sst_anom_length, aes(x = index_vals, y = mean)) +
+ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
   geom_line() +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3) +
   facet_wrap(~var, scales = "free_y")
 
-
-# Fit linear models to everything and extract R2 values
-
+# Need to think about how best to show proportional change in mean seas value
+# when the change is bringing it closer to 0, but when that means it is actually increasing
 
 # Look at relationship between change in seas/thresh and other metrics over time
 # Look at this relationship for the proportion values, too
+
+# Fit linear models to everything and extract R2 values
+
+# Where on the x axis things go wrong is the main question to be answers
+
+# Use ANOVA to show where along the x-axis the mean values become significantly different
+
+# Create a map at which the year after which a threshold is exceeded in the change in the statistic in question
+
+# Include the maps showing the results with the trends left in as supplementary material
+
+# Write a paragraph in the discussion that talks about why using p-values for deciding what not to use is a bad idea/problematic
+
+# Show the difference in the moving 30 year clim vs. the preferred 30 year clim as an appendix figure
 
 
 # Base data ---------------------------------------------------------------
