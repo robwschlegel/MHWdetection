@@ -147,52 +147,77 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
 # Summary stats -----------------------------------------------------------
 
 # Boot strap mean for confidence intervals
+  # NB: CI's don't appear to be very useful/informative
+  # This is because the different tests do not have a large effect on
+  # the mean and distribution of the clims/metrics
 boot_mean <- function(data, indices) {
   d <- data[indices] # allows boot to select sample
   return(mean(d))
 }
 
 # Wrapper for extracting tidy summary statistics from any data
+# tester...
+# df <- sst_clim_metric %>%
+  # ungroup() %>%
+# filter(test == "length") %>%
+# select(-test)
 summary_stats <- function(df){
-  event_count <- nrow(filter(df, grepl('event_no', id)))/2
-  res <- df %>%
-    summarise(count = event_count,
-              min = min(val, na.rm = T),
-              lower = boot.ci(boot(data = val, statistic = boot_mean,
-                                   R = 1000), type = "basic")$basic[4],
+
+  # Determine the control group
+  if(30 %in% df$index_vals){
+    control_val <- 30
+  } else{
+    control_val <- 0
+  }
+
+  # Count of values
+  res_count <- df %>%
+    group_by(index_vals) %>%
+    count(var) %>%
+    filter(var == "duration") %>%
+    select(-var) %>%
+    unique()
+
+  # Summary stats for each index_val
+  # event_count <- nrow(filter(df, grepl('event_no', id)))/2
+  res_base <- df %>%
+    group_by(index_vals, var) %>%
+    summarise(min = min(val, na.rm = T),
+              # lower = boot.ci(boot(data = val, statistic = boot_mean,
+              #                      R = 1000), type = "basic")$basic[4],
               median = median(val, na.rm = T),
               mean = mean(val, na.rm = T),
-              upper = boot.ci(boot(data = val, statistic = boot_mean,
-                                   R = 1000), type = "basic")$basic[5],
-              max = max(val, na.rm = T),
-              range = max-min,
-              sd = sd(val, na.rm = T)) %>%
-    mutate_if(is.numeric, round, 3)
-  return(res)
+              # upper = boot.ci(boot(data = val, statistic = boot_mean,
+              #                      R = 1000), type = "basic")$basic[5],
+              max = max(val, na.rm = T)) %>% #,
+              # range = max-min,
+              # sd = sd(val, na.rm = T)) %>%
+    ungroup() %>%
+    mutate_if(is.numeric, round, 3) %>%
+    left_join(res_count, by = "index_vals")
+
+  # Extract control row
+  res_control <- filter(res_base, index_vals == control_val)
+
+  # Find proportions and exit
+  res_prop <- res_base %>%
+    # group_by(index_vals, var) %>%
+    mutate(min_prop = min/res_control$min,
+           median_prop = median/res_control$median,
+           mean_prop = mean/res_control$mean,
+           max_prop = max/res_control$max,
+           n_diff = n-res_control$n)
+  return(res_prop)
 }
 
 
 # Significance tests ------------------------------------------------------
 
-# consider nlme()
-
-# Run an ANOVA on each metric of the combined event results and get the p-value
-# df <- res
-aov_p <- function(df){
-  aov_models <- df[ , -grep("index_vals", names(df))] %>%
-    map(~ aov(.x ~ df$index_vals)) %>%
-    map_dfr(~ broom::tidy(.), .id = 'metric') %>%
-    mutate(p.value = round(p.value, 4)) %>%
-    filter(term != "Residuals") %>%
-    select(metric, p.value)
-  return(aov_models)
-}
-
-# Run an ANOVA on each metric and then a Tukey test
-df <- sst_clim_metric %>%
-  filter(test == "missing", var == "duration") %>%
-  ungroup() %>%
-  select(-test, -var)
+# tester...
+# df <- sst_clim_metric %>%
+#   filter(test == "missing", var == "duration") %>%
+#   ungroup() %>%
+#   select(-test, -var)
 
 # Kruskal-Wallis post-hoc
 kruskal_post_hoc <- function(df){
@@ -209,15 +234,13 @@ kruskal_post_hoc <- function(df){
   return(res)
 }
 
-aov_tukey <- function(df){
+# Tukey post-hoc
+tukey_post_hoc <- function(df){
   res <- TukeyHSD(aov(val ~ as.factor(index_vals), df)) %>%
-  # aov_tukey <- df[ , -grep("index_vals", names(df))] %>%
-    # map(~ TukeyHSD(aov(.x ~ df$index_vals))) %>%
     broom::tidy(.) %>%
+    separate(comparison, into = c("comp", "control"), sep = '-') %>%
     mutate(p.value = round(adj.p.value, 4)) %>%
-    # filter(term != "Residuals") %>%
-    select(comparison, adj.p.value) %>%
-    # filter(adj.p.value <= 0.05) %>%
+    filter(control == levels(df$index_vals)[1]) %>%
     arrange(adj.p.value)
   return(aov_tukey)
 }
@@ -390,6 +413,8 @@ global_analysis_sub <- function(lat_step, nc_file){
            min(t) == "1982-01-01") %>%
     select(lon, lat, t, temp) %>%
     mutate(site = as.character(lat), rep = "1")
+
+  # Also filter out pixels where there is 50% or more ice cover during the time series
 
   # Calculate the secular trend
   dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, sst))[2,2]*3652.5), 3)

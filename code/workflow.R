@@ -21,9 +21,7 @@ sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01"
 
 # Sub-optimise data
 ## Length
-sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat) #%>%
-  # group_by(index_vals) %>%
-  # mutate(clims = map(data, ts2clm, ))
+sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat)
 
 ## Missing data
 sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
@@ -32,7 +30,6 @@ sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat
 sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
 
 # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
-## This means the ts must be filtered down to 10 years before running detect_event()
 system.time(
 sst_clim_metric <- rbind(plyr::ldply(1982:2009, control_length, df = sst_flat),
                  plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat),
@@ -41,19 +38,19 @@ sst_clim_metric <- rbind(plyr::ldply(1982:2009, control_length, df = sst_flat),
   group_modify(~clim_metric_calc(.x))
 ) # 18 seconds
 
+# Create summary statistics of MHW results
+system.time(
+  sst_summary <- sst_clim_metric %>%
+    group_by(test) %>%
+    group_modify(~summary_stats(.x))
+) # 1 seconds
+
 # Run ANOVA/Tukey on MHW results for three different tests
 system.time(
 sst_signif <- sst_clim_metric %>%
   group_by(test, var) %>%
   group_modify(~kruskal_post_hoc(.x))
 ) # 1 second
-
-# Create summary statistics of MHW results
-system.time(
-sst_summary <- sst_clim_metric %>%
-  group_by(test, index_vals) %>%
-  group_modify(~summary_stats(.x))
-) # 10 seconds
 
 
 # Length experiment -------------------------------------------------------
@@ -82,33 +79,6 @@ sst_flat_length <- plyr::ldply(1982:2009, shrinking_results,
 ggplot(sst_flat_length, aes(x = index_vals, y = median)) +
   geom_line() +
   facet_wrap(~var, scales = "free_y")
-
-# Problems in the seas/thresh caused by length could be communicated as
-# the proportion of change in the mean signal against the control range (min - max)
-# may be better to look at the change as a proportion of the median
-
-prop_30 <- sst_flat_length %>%
-  filter(index_vals == 30) %>%
-  select(-index_vals) #%>%
-  # dplyr::rename(val_30 = val)
-
-prop_30_long <- prop_30 %>%
-  gather("stat", "val", -count, - var) %>%
-  dplyr::rename(val_30 = val) %>%
-  dplyr::select(-count)
-
-# prop_30_wide <- prop_30 %>%
-  # spread(stat, val_30) %>%
-  # unique() #%>%
-  # mutate(range = max - min) %>%
-  # select(metric, count, min, median, mean, max, range, sd)
-
-prop_calc <- sst_flat_length  %>%
-  gather("stat", "val", -count, - var, -index_vals) %>%
-  left_join(prop_30_long, by = c("stat", "var")) %>%
-  mutate(prop = val/val_30,
-         prop = replace_na(prop, 0),
-         prop = ifelse(is.infinite(prop), 0, prop))
 
 ## Visualise
 
@@ -143,6 +113,8 @@ ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
 
 # Fit linear models to everything and extract R2 values
 
+# Look at relationship between change in count of events and the proportional change of other summary stats
+
 # Where on the x axis things go wrong is the main question to be answers
 
 # Use ANOVA to show where along the x-axis the mean values become significantly different
@@ -155,6 +127,8 @@ ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
 
 # Show the difference in the moving 30 year clim vs. the preferred 30 year clim as an appendix figure
 
+# It may end up being best to offer advise based on the change in the count of MHWs
+# Also the proportion shift in duration and max int based on something bio relevant in literature
 
 # Base data ---------------------------------------------------------------
 
