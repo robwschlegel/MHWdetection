@@ -134,14 +134,16 @@ con_miss <- function(df){
 # Calculate clims and metrics ---------------------------------------------
 
 # testers...
-# df <- sst_length
+# df <- filter(sst_length, index_vals == 30)
 # df <- filter(sst_interp, index_vals == 0.2)
 # df <- filter(sst_window_10, index_vals == 10)
 # set_window = 5
+# set_window = 30
 # set_pad = F
 # min_date = "2009-01-01"
 # year_start = 0
 # year_end = 0
+# focus_dates = focus_event
 clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-01-01",
                              year_start = 0, year_end = 0, focus_dates){
 
@@ -165,7 +167,8 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
               intensity_cumulative = sum(intensity_cumulative)) %>%
     gather(var, val) %>%
     mutate(id = "focus_event",
-           var = paste0("focus_",var)) %>%
+           var = paste0("focus_",var),
+           val = if_else(is.infinite(val), 0, val)) %>%
     select(id, var, val)
 
   # Extract desired clim values

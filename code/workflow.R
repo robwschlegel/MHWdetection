@@ -6,6 +6,7 @@
 source("code/functions.R")
 options(scipen=999)
 
+
 # Rough outline -----------------------------------------------------------
 
 # Create base anomaly time series
@@ -26,12 +27,12 @@ focus_event <- sst_flat_MHW$event %>%
 # Sub-optimise data
 ## Length
 sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat)
-sst_window_10 <- mutate(sst_length, test = "window_10")
-sst_window_20 <- mutate(sst_length, test = "window_20")
+# sst_window_10 <- mutate(sst_length, test = "window_10")
+# sst_window_20 <- mutate(sst_length, test = "window_20")
 
 ## Missing data
 sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
-sst_interp <- mutate(sst_missing, test = "interp")
+# sst_interp <- mutate(sst_missing, test = "interp")
 # Count consecutive missing days
 system.time(
 sst_missing_count <- sst_missing %>%
@@ -46,38 +47,59 @@ sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
 system.time(
   sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
     group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event))
-) # 26 seconds
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event)) %>%
+    ungroup()
+) # 22 seconds
 
 # Run the tests while also interpolating all gaps
 system.time(
-  sst_interp_res <- sst_interp %>%
+  sst_interp_res <- sst_missing %>%
     group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_pad = 9999))
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
+    ungroup() %>%
+    mutate(test = "interp")
 ) # 11 seconds
+
+### NB: It appears that increasing the window half width has a direct effect on reducing the MHW count
+### This means that this test must almost certainly not be performed
+### Need to first test this on several ts first before axing it
 
 # Increase rolling mean window to 10
 system.time(
-  sst_window_10_res <- sst_window_10 %>%
+  sst_window_10_res <- sst_length %>%
     group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 10))
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 10)) %>%
+    ungroup() %>%
+    mutate(test = "window_10")
 ) # 5 seconds
 
 # Increase rolling mean window to 20
 system.time(
-  sst_window_10_res <- sst_window_10 %>%
+  sst_window_20_res <- sst_length %>%
     group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 20))
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 20)) %>%
+    ungroup() %>%
+    mutate(test = "window_20")
 ) # 5 seconds
 
+# Increase rolling mean window to 30
+system.time(
+  sst_window_30_res <- sst_length %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 30)) %>%
+    ungroup() %>%
+    mutate(test = "window_30")
+) # 5 seconds
 
+# Combine for ease of use
+sst_clim_metric <- rbind(sst_base_res, sst_interp_res, sst_window_10_res, sst_window_20_res,  sst_window_30_res)
 
 # Run ANOVA/Tukey on MHW results for three different tests
 system.time(
   sst_signif <- sst_clim_metric %>%
     select(test:val) %>%
     filter(id != "focus_event") %>%
-    group_by(test, fix, var) %>%
+    group_by(test, var) %>%
     group_modify(~kruskal_post_hoc(.x))
 ) # 1 second
 
@@ -86,16 +108,16 @@ system.time(
   sst_summary <- sst_clim_metric %>%
     select(test:val) %>%
     filter(id != "focus_event") %>%
-    group_by(test, fix) %>%
+    group_by(test) %>%
     group_modify(~summary_stats(.x)) %>%
-    left_join(sst_signif, by = c("test", "fix", "index_vals", "var")) %>%
+    left_join(sst_signif, by = c("test", "index_vals", "var")) %>%
     mutate(difference = replace_na(difference, FALSE))
 ) # 1 second
 
 # Effect on focus MHW
 sst_focus <- sst_clim_metric %>%
   filter(id == "focus_event") %>%
-  group_by(test, fix) %>%
+  group_by(test) %>%
   group_modify(~summary_stats_focus(.x))
 
 ## Visualise
@@ -110,29 +132,67 @@ ggplot(sst_summary, aes(x = index_vals, y = mean)) +
   facet_grid(fix~test, scales = "free")# +
   # coord_cartesian(ylim = c(-2, 2))
 
-# Percent change away from control values
-ggplot(sst_summary, aes(x = index_vals, y = mean_perc)) +
+# Percent change away from control valuesfor base three tests
+ggplot(filter(sst_summary, test %in% c("length", "missing", "trend")),
+              aes(x = index_vals, y = mean_perc)) +
   geom_hline(aes(yintercept = 0), colour = "grey") +
   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
   geom_point(data = filter(sst_summary, difference == TRUE),
              colour = "red", size = 1, alpha = 0.4) +
   # scale_colour_manual(values = c("black", "red")) +
-  facet_grid(fix~test, scales = "free") +
+  facet_wrap(~test, scales = "free") +
   coord_cartesian(ylim = c(-2, 2))
 
+# Percent change away from control values with interpolation
+ggplot(filter(sst_summary, test %in% c("missing", "interp")),
+       aes(x = index_vals, y = mean_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+  geom_point(data = filter(sst_summary, difference == TRUE),
+             colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_wrap(~test, scales = "free") +
+  coord_cartesian(ylim = c(-1, 1))
+
 # Change in count of MHWs
-ggplot(sst_summary, aes(x = index_vals, y = n_diff)) +
+ggplot(filter(sst_summary, test %in% c("missing", "interp")),
+       aes(x = index_vals, y = n_diff)) +
   geom_hline(aes(yintercept = 0), colour = "grey") +
   geom_line() +
   facet_grid(~test, scales = "free")
 
-# Change in MHW days
+# Percent change away from control values with interpolation
+ggplot(filter(sst_summary, test %in% c("length", "window_10", "window_20", "window_30")),
+       aes(x = index_vals, y = mean_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+  # geom_point(data = filter(sst_summary, difference == TRUE),
+  #            colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_wrap(~test, scales = "free") +
+  coord_cartesian(ylim = c(-1, 1))
+
+# Change in count of MHWs
+ggplot(filter(sst_summary, test %in% c("length", "window_10", "window_20", "window_30")),
+       aes(x = index_vals, y = n)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line() +
+  facet_grid(~test, scales = "free")
+
+# Change in percent of MHW days
 ggplot(filter(sst_summary, var == "duration"),
        aes(x = index_vals, y = sum_perc)) +
   geom_hline(aes(yintercept = 0), colour = "grey") +
   geom_line() +
   facet_grid(~test, scales = "free")
 
+# Change in focus event
+# ggplot(filter(sst_focus, var == "focus_duration"),
+ggplot(sst_focus,
+       aes(x = index_vals, y = val_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line() +
+  facet_grid(var~test, scales = "free")
 
 # Where on the x axis things go wrong is the main question to be answers
 
@@ -147,6 +207,8 @@ ggplot(filter(sst_summary, var == "duration"),
 # It may end up being best to offer advise based on the change in MHW count/days
 # Also the proportion shift in duration and max int based on something bio relevant in literature
 
+# Need to run the above code on the three base ts and see what those results look like
+# If that looks good then it is time to go global
 
 
 # Base data ---------------------------------------------------------------
