@@ -107,6 +107,27 @@ control_trend <- function(rate, df){
 }
 
 
+# Count consecutive missing days ------------------------------------------
+
+con_miss <- function(df){
+  ex1 <- rle(is.na(df$temp))
+  ind1 <- rep(seq_along(ex1$lengths), ex1$lengths)
+  s1 <- split(1:nrow(df), ind1)
+  if(length(s1) == 1){
+    res <- tibble(duration = 1, count = 0)
+  } else{
+    res <- do.call(rbind,
+                   lapply(s1[ex1$values == TRUE], function(x)
+                     data.frame(index_start = min(x), index_end = max(x))
+                   )) %>%
+      mutate(duration = index_end - index_start + 1) %>%
+      group_by(duration) %>%
+      summarise(count = n())
+  }
+  return(res)
+}
+
+
 # Calculate clims and metrics ---------------------------------------------
 
 # df <- sst_WA
@@ -118,14 +139,19 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
   if(year_end == 0) year_end <- max(lubridate::year(df$t))
 
   # base calculation
-  res <- ts2clm(df, windowHalfWidth = set_window, maxPadLength = set_pad,
+  res <- ts2clm(df, windowHalfWidth = set_window, maxPadLength = set_pad, var = TRUE,
                 climatologyPeriod = c(paste0(year_start,"-01-01"), paste0(year_end,"-12-31"))) %>%
     filter(t >= min_date) %>%
     detect_event()
 
+  # The metrics for the largest event
+  res_focus <- res$event %>%
+    filter(intensity_cumulative == max(intensity_cumulative)) %>%
+    mutate(event_no = paste0("event_no_",event_no))
+
   # Extract desired values
   res_clim <- res$climatology %>%
-    dplyr::select(doy, seas, thresh) %>%
+    dplyr::select(doy, seas, thresh, var) %>%
     unique() %>%
     arrange(doy) %>%
     gather(var, val, -doy) %>%
@@ -139,75 +165,33 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
 
   # Combine and exit
   res_all <- rbind(res_clim, res_metric) %>%
-    mutate(val = round(val, 3))
+    mutate(val = round(val, 3)) %>%
+    left_join(res_focus, by = c("id" = "event_no"))
   return(res_all)
 }
 
 
-# Summary stats -----------------------------------------------------------
+# Effect on focus event ---------------------------------------------------
 
-# Boot strap mean for confidence intervals
-  # NB: CI's don't appear to be very useful/informative
-  # This is because the different tests do not have a large effect on
-  # the mean and distribution of the clims/metrics
-boot_mean <- function(data, indices) {
-  d <- data[indices] # allows boot to select sample
-  return(mean(d))
-}
-
-# Wrapper for extracting tidy summary statistics from any data
-# tester...
-# df <- sst_clim_metric %>%
-  # ungroup() %>%
-# filter(test == "length") %>%
-# select(-test)
-summary_stats <- function(df){
-
-  # Determine the control group
-  if(30 %in% df$index_vals){
-    control_val <- 30
-  } else{
-    control_val <- 0
-  }
-
-  # Count of values
-  res_count <- df %>%
-    group_by(index_vals) %>%
-    count(var) %>%
-    filter(var == "duration") %>%
-    select(-var) %>%
-    unique()
-
-  # Summary stats for each index_val
-  # event_count <- nrow(filter(df, grepl('event_no', id)))/2
-  res_base <- df %>%
-    group_by(index_vals, var) %>%
-    summarise(min = min(val, na.rm = T),
-              # lower = boot.ci(boot(data = val, statistic = boot_mean,
-              #                      R = 1000), type = "basic")$basic[4],
-              median = median(val, na.rm = T),
-              mean = mean(val, na.rm = T),
-              # upper = boot.ci(boot(data = val, statistic = boot_mean,
-              #                      R = 1000), type = "basic")$basic[5],
-              max = max(val, na.rm = T)) %>% #,
-              # range = max-min,
-              # sd = sd(val, na.rm = T)) %>%
-    ungroup() %>%
-    mutate_if(is.numeric, round, 3) %>%
-    left_join(res_count, by = "index_vals")
-
-  # Extract control row
-  res_control <- filter(res_base, index_vals == control_val)
-
-  # Find proportions and exit
-  res_prop <- res_base %>%
-    # group_by(index_vals, var) %>%
-    mutate(min_prop = min/res_control$min,
-           median_prop = median/res_control$median,
-           mean_prop = mean/res_control$mean,
-           max_prop = max/res_control$max,
-           n_diff = n-res_control$n)
-  return(res_prop)
+# The effect that the three tests have on the focus event
+effect_event_func <- function(df, date_guide, choice_rep = "1"){
+  res <- df %>%
+    filter(rep == choice_rep) %>%
+    select(-clim, -cat) %>%
+    unnest(event) %>%
+    left_join(date_guide, by = "site") %>%
+    filter(date_peak >= date_start_control,
+           date_peak <= date_end_control) %>%
+    group_by(site, test, index_vals) %>%
+    summarise(count = n(),
+              duration = sum(duration),
+              intensity_mean = mean(intensity_mean),
+              intensity_max = max(intensity_max),
+              intensity_cumulative = sum(intensity_cumulative)) %>%
+    mutate_if(is.numeric, round, 2) %>%
+    gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
+    ungroup()
+  return(res)
 }
 
 
@@ -227,10 +211,12 @@ kruskal_post_hoc <- function(df){
   }
   res <- kruskalmc(df$val, df$index_vals)$dif.com %>%
     mutate(comp_index = row.names(.)) %>%
-    separate(comp_index, into = c("control", "comp"), sep = '-') %>%
+    separate(comp_index, into = c("control", "index_vals"),
+             sep = '-', convert = T) %>%
     filter(control == levels(df$index_vals)[1]) %>%
     # filter(grepl(levels(df$index_vals)[1], control)) %>%
-    select(-obs.dif, -critical.dif)
+    select(-obs.dif, -critical.dif, -control) #%>%
+    # mutate(difference = replace_na(difference, FALSE))
   return(res)
 }
 
@@ -246,36 +232,104 @@ tukey_post_hoc <- function(df){
 }
 
 
-# Count consecutive missing days ------------------------------------------
+# Summary stats -----------------------------------------------------------
 
-con_miss <- function(df){
-  ex1 <- rle(is.na(df$temp))
-  ind1 <- rep(seq_along(ex1$lengths), ex1$lengths)
-  s1 <- split(1:nrow(df), ind1)
-  res <- do.call(rbind,
-                 lapply(s1[ex1$values == TRUE], function(x)
-                   data.frame(index_start = min(x), index_end = max(x))
-                 )) %>%
-    mutate(duration = index_end - index_start + 1) %>%
-    group_by(duration) %>%
-    summarise(count = n())
-  return(res)
+# Boot strap mean for confidence intervals
+  # NB: CI's don't appear to be very useful/informative
+  # This is because the different tests do not have a large effect on
+  # the mean and distribution of the clims/metrics
+# boot_mean <- function(data, indices) {
+#   d <- data[indices] # allows boot to select sample
+#   return(mean(d))
+# }
+
+# Wrapper for extracting tidy summary statistics from any data
+# tester...
+# df <- sst_clim_metric %>%
+# ungroup() %>%
+# filter(test == "missing") %>%
+# select(-test)
+summary_stats <- function(df){
+
+  # Determine the control group
+  if(30 %in% df$index_vals){
+    control_val <- 30
+  } else{
+    control_val <- 0
+  }
+
+  # Count of values
+  res_count <- df %>%
+    group_by(index_vals) %>%
+    count(var) %>%
+    filter(var == "duration") %>%
+    select(-var) %>%
+    unique() %>%
+    data.frame()
+
+  # Summary stats for each index_val
+  # event_count <- nrow(filter(df, grepl('event_no', id)))/2
+  res_base <- df %>%
+    group_by(index_vals, var) %>%
+    summarise(min = min(val, na.rm = T),
+              # lower = boot.ci(boot(data = val, statistic = boot_mean,
+              #                      R = 1000), type = "basic")$basic[4],
+              median = median(val, na.rm = T),
+              mean = mean(val, na.rm = T),
+              # upper = boot.ci(boot(data = val, statistic = boot_mean,
+              #                      R = 1000), type = "basic")$basic[5],
+              max = max(val, na.rm = T),
+              sum = sum(val, na.rm = T),
+              # range = max-min,
+              sd = sd(val, na.rm = T)) %>%
+    ungroup() %>%
+    left_join(res_count, by = "index_vals") %>%
+    mutate(index_vals = as.character(index_vals)) %>%
+    mutate_if(is.numeric, round, 3) %>%
+    mutate(index_vals = as.numeric(index_vals))
+
+  # Extract control row
+    # Make all vlaues absolute values
+  res_control <- filter(res_base, index_vals == control_val) #%>%
+    # mutate_if(is.numeric, abs)
+
+  # Find proportions and exit
+  res_perc <- res_base %>%
+    # group_by(index_vals, var) %>%
+    mutate(min_perc = (min-res_control$min)/abs(res_control$min),
+           median_perc = (median-res_control$median)/abs(res_control$median),
+           mean_perc = (mean-res_control$mean)/abs(res_control$mean),
+           max_perc = (max-res_control$max)/abs(res_control$max),
+           sum_perc = (sum-res_control$sum)/abs(res_control$sum),
+           sd_perc = (sd-res_control$sd)/abs(res_control$sd),
+           n_diff = n-res_control$n)
+  return(res_perc)
 }
 
 
 # Model linear relationships ----------------------------------------------
 
-# Wrapper function for nesting
-# testers...
-# df <- slice(sst_ALL_R2_long, 1) %>%
-  # unnest()
-lm_p_R2 <- function(df){
-  res <- lm(p.value.mean~index_vals, data = df)
-  res_broom <- broom::glance(res) %>%
-    mutate_if(is.numeric, round, 4)
-  return(res_broom)
-}
+## Currently not calculating R2 for first global pass
+# Potentially will calculate these on the global results afterwards
 
+## Ideas:
+# Fit linear models to everything and extract R2 values
+# Look at relationship between change in seas/thresh and other metrics over time
+# Look at this relationship for the percentage values, too
+# Look at relationship between change in count of events and the percentage change of other summary stats
+
+## Clever way of calculating R2 for any number of paired columns
+# specify columns to regress
+# y_col <- colnames(sst_summary)#"disp"
+# y_col <- c("index_vals", "n", "n_diff", "mean")
+# x_col <- colnames(sst_summary)[-c(1:3)]
+#
+# test <- expand.grid(y = y_col, x = x_col, stringsAsFactors = F) %>%
+#   mutate(formula = paste(y,"~",x)) %>%
+#   group_by(formula) %>%
+#   mutate(r_sq = summary(lm(formula, data = filter(sst_summary, test == "missing", var == "seas")))$r.squared,
+#          r_sq = round(r_sq, 2)) %>%
+#   ungroup()
 
 # Convenience functions ---------------------------------------------------
 
@@ -284,82 +338,6 @@ control_plug <- function(test_plug, site_plug){
   plug <- data.frame(test = test_plug, site = site_plug, metric = unique(sst_ALL_plot_long$metric),
                      index_vals = 30, p.value.min = 1.0, p.value.mean = 1.0,
                      p.value.max = 1.0, p.value.sd = 0)
-}
-
-
-# Event effect functions --------------------------------------------------
-
-# The effect that the three tests have on the climatologies
-effect_clim_func <- function(df, choice_rep = "1"){
-  res <- df %>%
-    filter(rep == choice_rep) %>%
-    select(-event, -cat) %>%
-    unnest(clim) %>%
-    select(-doy, -rep) %>%
-    gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
-    group_by(site, test, index_vals, metric) %>%
-    summarise_if(is.numeric,
-                 .funs = c("min", "median", "mean", "max")) %>%
-    # group_by(site, test) %>%
-    mutate_if(is.numeric, round, 3) %>%
-    ungroup()
-  return(res)
-}
-
-# The effect that the three tests have on the focus event
-# df <- sst_res
-# date_guide <- focus_event
-# choice_rep <- "1"
-effect_event_func <- function(df, date_guide, choice_rep = "1"){
-  res <- df %>%
-    filter(rep == choice_rep) %>%
-    select(-clim, -cat) %>%
-    unnest(event) %>%
-    left_join(date_guide, by = "site") %>%
-    filter(date_peak >= date_start_control,
-           date_peak <= date_end_control) %>%
-    group_by(site, test, index_vals) %>%
-    #
-    # Not sure what to do with this information
-    # mutate(date_start_change = date_start_control - date_start,
-    #        date_peak_change = date_peak_control - date_peak,
-    #        date_end_change = date_end_control - date_end) %>%
-    #
-    summarise(count = n(),
-              duration = sum(duration),
-              intensity_mean = mean(intensity_mean),
-              intensity_max = max(intensity_max),
-              intensity_cumulative = sum(intensity_cumulative)) %>%
-    mutate_if(is.numeric, round, 2) %>%
-    gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
-    ungroup()
-  return(res)
-}
-
-# The effect that the three tests have on the categories
-# df <- sst_res
-# date_guide <- focus_event
-# choice_rep <- "1"
-effect_cat_func <- function(df, date_guide, choice_rep = "1"){
-  res <- df %>%
-    filter(rep == choice_rep) %>%
-    select(-clim, -event) %>%
-    unnest(cat) %>%
-    left_join(date_guide, by = "site") %>%
-    filter(peak_date >= date_start_control,
-           peak_date <= date_end_control) %>%
-    group_by(site, test, index_vals) %>%
-    summarise(count = n(),
-              duration = sum(duration),
-              i_max = max(i_max),
-              p_moderate = mean(p_moderate),
-              p_strong = mean(p_strong),
-              p_severe = mean(p_severe),
-              p_extreme = mean(p_extreme)) %>%
-    mutate_if(is.numeric, round, 2) %>%
-    gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
-    ungroup()
-  return(res)
 }
 
 
@@ -420,7 +398,7 @@ global_analysis_sub <- function(lat_step, nc_file){
   dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, sst))[2,2]*3652.5), 3)
 
   # Remove random data
-  set.seed(666)
+  # set.seed(666)
   sst_knockout <- plyr::ldply(.data = c(0.10, 0.25, 0.50),
                               .fun = random_knockout_global, df = sst)
 
@@ -431,7 +409,7 @@ global_analysis_sub <- function(lat_step, nc_file){
   sst_knockout$temp[sst_knockout$t == "2009-01-01"] <- sst$temp[sst$t == "2009-01-01"]
   sst_knockout$temp[sst_knockout$t == "2018-12-31"] <- sst$temp[sst$t == "2018-12-31"]
 
-  # # Make base calculations
+  # Make base calculations
   sst_res_base <- clim_event_cat_calc(sst) %>%
     mutate(index_vals = 0, test = as.factor("missing"))
   sst_res_base_fix <- sst_res_base %>%

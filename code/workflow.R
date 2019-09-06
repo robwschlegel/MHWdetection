@@ -4,7 +4,7 @@
 # Libraries ---------------------------------------------------------------
 
 source("code/functions.R")
-
+options(scipen=999)
 
 # Rough outline -----------------------------------------------------------
 
@@ -25,99 +25,83 @@ sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat)
 
 ## Missing data
 sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
+system.time(
+sst_missing_count <- sst_missing %>%
+  group_by(index_vals) %>%
+  group_modify(~con_miss(.x))
+) # 18 seconds
 
 ## Decadal trend
 sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
 
 # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
 system.time(
-sst_clim_metric <- rbind(plyr::ldply(1982:2009, control_length, df = sst_flat),
-                 plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat),
-                 plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)) %>%
+sst_clim_metric <- rbind(sst_length, sst_missing, sst_trend) %>%
   group_by(test, index_vals) %>%
+  # nest() %>%
+  # mutate(clim_metric = map(data, clim_metric_calc)) %>%
+  # select(-data)
   group_modify(~clim_metric_calc(.x))
-) # 18 seconds
+) # 22 seconds
+
+# Run ANOVA/Tukey on MHW results for three different tests
+system.time(
+  sst_signif <- sst_clim_metric %>%
+    unnest() %>%
+    filter(row_number() %% 1 == 0) %>%
+    unnest() %>%
+    group_by(test, var) %>%
+    group_modify(~kruskal_post_hoc(.x))
+) # 1 second
 
 # Create summary statistics of MHW results
 system.time(
   sst_summary <- sst_clim_metric %>%
     group_by(test) %>%
-    group_modify(~summary_stats(.x))
+    group_modify(~summary_stats(.x)) %>%
+    left_join(sst_signif, by = c("test", "index_vals", "var")) %>%
+    mutate(difference = replace_na(difference, FALSE))
+    # mutate(difference = as.integer(difference),
+    #        difference = replace_na(difference, 0))
 ) # 1 seconds
-
-# Run ANOVA/Tukey on MHW results for three different tests
-system.time(
-sst_signif <- sst_clim_metric %>%
-  group_by(test, var) %>%
-  group_modify(~kruskal_post_hoc(.x))
-) # 1 second
-
-
-# Length experiment -------------------------------------------------------
-
-# Create anomaly and detrended time series
-sst_anom <- sst_Med %>%
-  mutate(temp = round(temp-mean(temp), 2))
-sst_flat <- detrend(sst_Med)
-
-# Visualise
-# ggplot(sst_anom, aes(x = t, y = temp)) +
-#   geom_line() +
-#   geom_smooth(method = "lm")
-
-# Calculate shortened time series results
-  # NB: This falls over with fewer than 10 years of data
-  # But we want to see what happens to seas/thresh at as few as 3 years
-sst_anom_length <- plyr::ldply(1982:2009, shrinking_results,
-                               df = sst_anom, .parallel = T) #%>%
-  # mutate(var = factor(var, levels = c("seas", "thresh", "duration", "int.max")))
-sst_flat_length <- plyr::ldply(1982:2009, shrinking_results,
-                               df = sst_flat, .parallel = T)# %>%
-  # mutate(var = factor(var, levels = c("seas", "thresh", "duration", "int.max")))
-
-# visualise
-ggplot(sst_flat_length, aes(x = index_vals, y = median)) +
-  geom_line() +
-  facet_wrap(~var, scales = "free_y")
 
 ## Visualise
 
 # Overall mean values
-ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
+ggplot(sst_summary, aes(x = index_vals, y = mean)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+  geom_point(data = filter(sst_summary, difference == TRUE),
+             colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_grid(~test, scales = "free")# +
+  # coord_cartesian(ylim = c(-2, 2))
+
+# Percent change away from control values
+ggplot(sst_summary, aes(x = index_vals, y = mean_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+  geom_point(data = filter(sst_summary, difference == TRUE),
+             colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_grid(~test, scales = "free") +
+  coord_cartesian(ylim = c(-2, 2))
+
+# Change in count of MHWs
+ggplot(sst_summary, aes(x = index_vals, y = n_diff)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
   geom_line() +
-  facet_wrap(~var, scales = "free_y")
+  facet_grid(~test, scales = "free")
 
-# Mean values against the mean at 30 years
-ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
+# Change in MHW days
+ggplot(filter(sst_summary, var == "duration"),
+       aes(x = index_vals, y = sum_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
   geom_line() +
-  geom_hline(data = prop_30, aes(yintercept = mean)) +
-  facet_wrap(~var, scales = "free_y")
+  facet_grid(~test, scales = "free")
 
-# Proportion of change away from 30 years
-ggplot(filter(prop_calc, stat == "mean"), aes(x = index_vals, y = prop)) +
-  geom_line() +
-  geom_hline(aes(yintercept = 1)) +
-  facet_wrap(~var, scales = "free_y")
-
-# Visualise CI change over time
-ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
-  geom_line() +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3) +
-  facet_wrap(~var, scales = "free_y")
-
-# Need to think about how best to show proportional change in mean seas value
-# when the change is bringing it closer to 0, but when that means it is actually increasing
-
-# Look at relationship between change in seas/thresh and other metrics over time
-# Look at this relationship for the proportion values, too
-
-# Fit linear models to everything and extract R2 values
-
-# Look at relationship between change in count of events and the proportional change of other summary stats
 
 # Where on the x axis things go wrong is the main question to be answers
-
-# Use ANOVA to show where along the x-axis the mean values become significantly different
 
 # Create a map at which the year after which a threshold is exceeded in the change in the statistic in question
 
@@ -127,8 +111,10 @@ ggplot(sst_flat_length, aes(x = index_vals, y = mean)) +
 
 # Show the difference in the moving 30 year clim vs. the preferred 30 year clim as an appendix figure
 
-# It may end up being best to offer advise based on the change in the count of MHWs
+# It may end up being best to offer advise based on the change in MHW count/days
 # Also the proportion shift in duration and max int based on something bio relevant in literature
+
+
 
 # Base data ---------------------------------------------------------------
 
