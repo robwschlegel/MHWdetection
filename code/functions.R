@@ -223,6 +223,7 @@ kruskal_post_hoc <- function(df){
 }
 
 # Tukey post-hoc
+  # NB: Not used as the data are not normal
 tukey_post_hoc <- function(df){
   res <- TukeyHSD(aov(val ~ as.factor(index_vals), df)) %>%
     broom::tidy(.) %>%
@@ -235,15 +236,6 @@ tukey_post_hoc <- function(df){
 
 
 # Summary stats -----------------------------------------------------------
-
-# Boot strap mean for confidence intervals
-  # NB: CI's don't appear to be very useful/informative
-  # This is because the different tests do not have a large effect on
-  # the mean and distribution of the clims/metrics
-# boot_mean <- function(data, indices) {
-#   d <- data[indices] # allows boot to select sample
-#   return(mean(d))
-# }
 
 # Summary stats for broad results
 # tester...
@@ -273,15 +265,10 @@ summary_stats <- function(df){
   res_base <- df %>%
     group_by(index_vals, var) %>%
     summarise(min = min(val, na.rm = T),
-              # lower = boot.ci(boot(data = val, statistic = boot_mean,
-              #                      R = 1000), type = "basic")$basic[4],
               median = median(val, na.rm = T),
               mean = mean(val, na.rm = T),
-              # upper = boot.ci(boot(data = val, statistic = boot_mean,
-              #                      R = 1000), type = "basic")$basic[5],
               max = max(val, na.rm = T),
               sum = sum(val, na.rm = T),
-              # range = max-min,
               sd = sd(val, na.rm = T)) %>%
     ungroup() %>%
     left_join(res_count, by = "index_vals") %>%
@@ -325,13 +312,6 @@ summary_stats_focus <- function(df){
   res_perc <- df %>%
     select(-id) %>%
     mutate(val_perc = round((val-res_control$val)/abs(res_control$val), 2))
-    # mutate(count = (focus_count-res_control$)/abs(res_control$min),
-           # median_perc = (median-res_control$median)/abs(res_control$median),
-           # mean_perc = (mean-res_control$mean)/abs(res_control$mean),
-           # max_perc = (max-res_control$max)/abs(res_control$max),
-           # sum_perc = (sum-res_control$sum)/abs(res_control$sum),
-           # sd_perc = (sd-res_control$sd)/abs(res_control$sd),
-           # n_diff = n-res_control$n)
   return(res_perc)
 }
 
@@ -361,55 +341,15 @@ summary_stats_focus <- function(df){
 #   ungroup()
 
 
-# Global functions --------------------------------------------------------
+# Single full analysis ----------------------------------------------------
 
-# The following wrapper functions use the above functions,
-# but allow them to be used on the NOAA OISST NetCDF file structure
-
-# It's not reasonable to run a decadal trend test in addition to the missing
-# and length tests because this value is being added in a completely
-# controlled way.
-# Meaning that controlling for it is the same as simply not adding it
-# in the first place.
-# To that end we want to provide a post-hoc correction.
-# Because we have seen that max. intensity is a function of the
-# decadal trend and the peak date of the event we should be able to
-# correct for intensities by subtracting the decadal trend multiplied
-# by the peak date as it relates to the length of the time series.
-# For example, if the decadal trend is 0.3C/dec, and the peak date of an event
-# is in the 25th year of a 30 year time series (0.8333 of the length),
-# then the the impact of the decadal trend on the max. intensity should be
-# 0.3*0.83 = 0.25C
-# So one would subtract this value in order to correct the results to
-# match a de-trended time series.
-# The problem then becomes, why would anyone actually want to do this?
-# No. Rather we must provide a post-hoc fix for the potential impact of
-# a decadal trend on MHWs in conjunction with short time series.
-# And then on top of that add in the correction for missing data.
-# Mercifully the correction for missing data is very simple and should
-# play nice with the other issues.
-# This is because the linear interpolation of NA gaps will provide
-# data that are matching the temperatures around them so the problem of
-# having more missing data on one end of a time series over the other
-# should not be pronounced.
-
-# This single function runs through and outputs all of the desired tests
-single_analysis <- function(df){
+# This single function runs through and outputs all of the desired tests as a list
+single_analysis <- function(df, count_miss = F){
 
   # Calculate the secular trend
   dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, df))[2,2]*3652.5), 3)
 
-  # Create base anomaly time series
-    # NB: Rather just calcuate this for the globe by itself
-    # It only takes a couple of hours to do this
-  # sst_anom <- df %>%
-  #   mutate(temp = round(temp-mean(temp), 2))
-  # sst_anom_MHW <- detect_event(ts2clm(sst_anom, climatologyPeriod = c("1982-01-01", "2018-12-31")))
-
-  # Create flat time series
-  # sst_flat <- detrend(df)
-
-  # Calculate MHWs from detrended
+  # Calculate MHWs from detrended ts
   sst_flat_MHW <- detect_event(ts2clm(detrend(df), climatologyPeriod = c("1982-01-01", "2018-12-31")))
 
   # Pull out the largest event in the ts
@@ -426,95 +366,65 @@ single_analysis <- function(df){
   sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
 
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
-  system.time(
-    sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
-      group_by(test, index_vals) %>%
-      group_modify(~clim_metric_calc(.x, focus_dates = focus_event)) %>%
-      ungroup()
-  ) # 22 seconds
+  sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event)) %>%
+    ungroup()
 
   # Run the tests while also interpolating all gaps
-  system.time(
-    sst_interp_res <- sst_missing %>%
-      group_by(test, index_vals) %>%
-      group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
-      ungroup() %>%
-      mutate(test = "interp")
-  ) # 11 seconds
-
-  ### NB: It appears that increasing the window half width has a direct effect on reducing the MHW count
-  ### This means that this test must almost certainly not be performed
-  ### Need to first test this on several ts first before axing it
-
-  # Increase rolling mean window to 10
-  system.time(
-    sst_window_10_res <- sst_length %>%
-      group_by(test, index_vals) %>%
-      group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 10)) %>%
-      ungroup() %>%
-      mutate(test = "window_10")
-  ) # 5 seconds
-
-  # Increase rolling mean window to 20
-  system.time(
-    sst_window_20_res <- sst_length %>%
-      group_by(test, index_vals) %>%
-      group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 20)) %>%
-      ungroup() %>%
-      mutate(test = "window_20")
-  ) # 5 seconds
-
-  # Increase rolling mean window to 30
-  system.time(
-    sst_window_30_res <- sst_length %>%
-      group_by(test, index_vals) %>%
-      group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 30)) %>%
-      ungroup() %>%
-      mutate(test = "window_30")
-  ) # 5 seconds
+  sst_interp_res <- sst_missing %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
+    ungroup() %>%
+    mutate(test = "interp")
 
   # Combine for ease of use
-  sst_clim_metric <- rbind(sst_base_res, sst_interp_res, sst_window_10_res, sst_window_20_res,  sst_window_30_res)
+  sst_clim_metric <- data.frame(rbind(sst_base_res, sst_interp_res))
 
   # Run ANOVA/Tukey on MHW results for three different tests
-  system.time(
-    sst_signif <- sst_clim_metric %>%
-      filter(id != "focus_event") %>%
-      group_by(test, var) %>%
-      group_modify(~kruskal_post_hoc(.x))
-  ) # 1 second
+  sst_signif <- sst_clim_metric %>%
+    filter(id != "focus_event") %>%
+    group_by(test, var) %>%
+    group_modify(~kruskal_post_hoc(.x))
 
   # Create summary statistics of MHW results
-  system.time(
-    sst_summary <- sst_clim_metric %>%
-      filter(id != "focus_event") %>%
-      group_by(test) %>%
-      group_modify(~summary_stats(.x)) %>%
-      left_join(sst_signif, by = c("test", "index_vals", "var")) %>%
-      mutate(difference = replace_na(difference, FALSE))
-  ) # 1 second
+  sst_summary <- sst_clim_metric %>%
+    filter(id != "focus_event") %>%
+    group_by(test) %>%
+    group_modify(~summary_stats(.x)) %>%
+    left_join(sst_signif, by = c("test", "index_vals", "var")) %>%
+    mutate(difference = replace_na(difference, FALSE)) %>%
+    data.frame()
 
   # Effect on focus MHW
   sst_focus <- sst_clim_metric %>%
     filter(id == "focus_event") %>%
     group_by(test) %>%
-    group_modify(~summary_stats_focus(.x))
+    group_modify(~summary_stats_focus(.x)) %>%
+    data.frame()
 
-  # Count consecutive missing days
-    # NB: This would be useful information to have but it takes to long to calculate
-  # system.time(
-  #   sst_missing_count <- sst_missing %>%
-  #     group_by(index_vals) %>%
-  #     group_modify(~con_miss(.x))
-  # ) # 18 seconds
-
-  # Wrap it up
+  # Merge all
   res <- list(dec_trend = dec_trend,
               clim_metric = sst_clim_metric,
               summary = sst_summary,
               focus = sst_focus)
+
+  # Count consecutive missing days
+  # NB: This would be useful information to have but it takes to long to calculate
+  if(count_miss){
+    # system.time(
+    sst_missing_count <- sst_missing %>%
+      group_by(index_vals) %>%
+      group_modify(~con_miss(.x)) %>%
+      data.frame()
+    # ) # 18 seconds
+    res <- c(res, list(missing_count = sst_missing_count))
+  }
   return(res)
 }
+
+
+# Global functions --------------------------------------------------------
 
 # The function that runs all of the tests on a single pixel/time series
 # nc_file <- OISST_files[100]
