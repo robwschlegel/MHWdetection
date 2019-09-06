@@ -16,15 +16,23 @@ sst_anom <- sst_Med %>%
 sst_flat <- detrend(sst_Med)
 
 # Calculate MHWs from these two time series
-sst_anom_MHW <- detect_event(ts2clm(sst_anom, climatologyPeriod = c("1982-01-01", "2011-12-31")))
-sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2011-12-31")))
+sst_anom_MHW <- detect_event(ts2clm(sst_anom, climatologyPeriod = c("1982-01-01", "2018-12-31")))
+sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
+
+# Pull out the largest event in the ts
+focus_event <- sst_flat_MHW$event %>%
+  filter(intensity_cumulative == max(intensity_cumulative))
 
 # Sub-optimise data
 ## Length
 sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat)
+sst_window_10 <- mutate(sst_length, fix = "window_10")
+sst_window_20 <- mutate(sst_length, fix = "window_20")
 
 ## Missing data
 sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
+sst_interp <- mutate(sst_missing, fix = "interp")
+# Count consecutive missing days
 system.time(
 sst_missing_count <- sst_missing %>%
   group_by(index_vals) %>%
@@ -36,34 +44,41 @@ sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
 
 # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
 system.time(
-sst_clim_metric <- rbind(sst_length, sst_missing, sst_trend) %>%
+  sst_clim_metric <- rbind(sst_length, sst_missing, sst_trend) %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event))
+) # 26 seconds
+
+
+test <- rbind(sst_length, sst_missing, sst_interp) %>%
   group_by(test, index_vals) %>%
-  # nest() %>%
-  # mutate(clim_metric = map(data, clim_metric_calc)) %>%
-  # select(-data)
-  group_modify(~clim_metric_calc(.x))
-) # 22 seconds
+  group_modify(~clim_metric_calc(.x, focus_dates = focus_event))
 
 # Run ANOVA/Tukey on MHW results for three different tests
 system.time(
   sst_signif <- sst_clim_metric %>%
-    unnest() %>%
-    filter(row_number() %% 1 == 0) %>%
-    unnest() %>%
-    group_by(test, var) %>%
+    select(test:val) %>%
+    filter(id != "focus_event") %>%
+    group_by(test, fix, var) %>%
     group_modify(~kruskal_post_hoc(.x))
 ) # 1 second
 
 # Create summary statistics of MHW results
 system.time(
   sst_summary <- sst_clim_metric %>%
-    group_by(test) %>%
+    select(test:val) %>%
+    filter(id != "focus_event") %>%
+    group_by(test, fix) %>%
     group_modify(~summary_stats(.x)) %>%
-    left_join(sst_signif, by = c("test", "index_vals", "var")) %>%
+    left_join(sst_signif, by = c("test", "fix", "index_vals", "var")) %>%
     mutate(difference = replace_na(difference, FALSE))
-    # mutate(difference = as.integer(difference),
-    #        difference = replace_na(difference, 0))
-) # 1 seconds
+) # 1 second
+
+# Effect on focus MHW
+sst_focus <- sst_clim_metric %>%
+  filter(id == "focus_event") %>%
+  group_by(test, fix) %>%
+  group_modify(~summary_stats_focus(.x))
 
 ## Visualise
 
@@ -74,7 +89,7 @@ ggplot(sst_summary, aes(x = index_vals, y = mean)) +
   geom_point(data = filter(sst_summary, difference == TRUE),
              colour = "red", size = 1, alpha = 0.4) +
   # scale_colour_manual(values = c("black", "red")) +
-  facet_grid(~test, scales = "free")# +
+  facet_grid(fix~test, scales = "free")# +
   # coord_cartesian(ylim = c(-2, 2))
 
 # Percent change away from control values
@@ -84,7 +99,7 @@ ggplot(sst_summary, aes(x = index_vals, y = mean_perc)) +
   geom_point(data = filter(sst_summary, difference == TRUE),
              colour = "red", size = 1, alpha = 0.4) +
   # scale_colour_manual(values = c("black", "red")) +
-  facet_grid(~test, scales = "free") +
+  facet_grid(fix~test, scales = "free") +
   coord_cartesian(ylim = c(-2, 2))
 
 # Change in count of MHWs

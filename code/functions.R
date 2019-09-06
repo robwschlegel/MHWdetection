@@ -74,8 +74,9 @@ control_length <- function(year_begin, df){
   res <- df %>%
     filter(year(t) >= year_begin) %>%
     mutate(index_vals = 2018-year_begin+1,
-           test = "length") %>%
-    dplyr::select(test, index_vals, t, temp)
+           test = "length",
+           fix = "none") %>%
+    dplyr::select(test, fix, index_vals, t, temp)
   return(res)
 }
 
@@ -89,8 +90,9 @@ control_missing <- function(prop, df){
     mutate(row_index = 1:n(),
            temp = replace(temp, which(row_index %in% miss_index), NA),
            test = "missing") %>%
-    mutate(index_vals = prop) %>%
-    dplyr::select(test, index_vals, t, temp)
+    mutate(index_vals = prop,
+           fix = "none") %>%
+    dplyr::select(test, fix, index_vals, t, temp)
   return(res)
 }
 
@@ -101,8 +103,9 @@ control_trend <- function(rate, df){
     mutate(row_index = 1:n(),
            temp = temp + (row_index*daily_step),
            test = "trend") %>%
-    mutate(index_vals = rate) %>%
-    dplyr::select(test, index_vals, t, temp)
+    mutate(index_vals = rate,
+           fix = "none") %>%
+    dplyr::select(test, fix, index_vals, t, temp)
   return(res)
 }
 
@@ -130,13 +133,27 @@ con_miss <- function(df){
 
 # Calculate clims and metrics ---------------------------------------------
 
-# df <- sst_WA
+# testers...
+# df <- sst_length
+# df <- filter(sst_interp, index_vals == 0.2)
+# df <- filter(sst_window_10, index_vals == 10)
+# set_window = 5
+# set_pad = F
+# min_date = "2009-01-01"
+# year_start = 0
+# year_end = 0
 clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-01-01",
-                             year_start = 0, year_end = 0){
+                             year_start = 0, year_end = 0, focus_dates){
 
   # First and last years for full clim period
   if(year_start == 0)  year_start <- min(lubridate::year(df$t))
   if(year_end == 0) year_end <- max(lubridate::year(df$t))
+
+  # See if a special test is being requested
+  fix_request <- unique(df$fix)
+  if(fix_request == "interp") set_pad = 9999
+  if(fix_request == "window_10") set_window = 10
+  if(fix_request == "window_20") set_window = 20
 
   # base calculation
   res <- ts2clm(df, windowHalfWidth = set_window, maxPadLength = set_pad, var = TRUE,
@@ -144,54 +161,44 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
     filter(t >= min_date) %>%
     detect_event()
 
-  # The metrics for the largest event
+  # The metrics for the event(s) occurring during the largest control event
   res_focus <- res$event %>%
-    filter(intensity_cumulative == max(intensity_cumulative)) %>%
-    mutate(event_no = paste0("event_no_",event_no))
+    filter(date_peak >= focus_dates$date_start,
+           date_peak <= focus_dates$date_end) %>%
+    summarise(count = n(),
+              duration = sum(duration),
+              intensity_max = max(intensity_max),
+              intensity_cumulative = sum(intensity_cumulative)) %>%
+    gather(var, val) %>%
+    mutate(id = "focus_event",
+           var = paste0("focus_",var),
+           fix = fix_request) %>%
+    select(fix, id, var, val)
 
-  # Extract desired values
+  # Extract desired clim values
   res_clim <- res$climatology %>%
     dplyr::select(doy, seas, thresh, var) %>%
     unique() %>%
     arrange(doy) %>%
     gather(var, val, -doy) %>%
     dplyr::rename(id = doy) %>%
-    mutate(id = paste0("doy_",id))
+    mutate(id = paste0("doy_",id),
+           fix = fix_request) %>%
+    select(fix, id, var, val)
+
+  # Extract desired metric values
   res_metric <- res$event %>%
     dplyr::select(event_no, duration, intensity_max) %>%
     gather(var, val, -event_no) %>%
     dplyr::rename(id = event_no) %>%
-    mutate(id = paste0("event_no_",id))
+    mutate(id = paste0("event_no_",id),
+           fix = fix_request)%>%
+    select(fix, id, var, val)
 
   # Combine and exit
-  res_all <- rbind(res_clim, res_metric) %>%
-    mutate(val = round(val, 3)) %>%
-    left_join(res_focus, by = c("id" = "event_no"))
+  res_all <- rbind(res_clim, res_metric, res_focus) %>%
+    mutate(val = round(val, 3))
   return(res_all)
-}
-
-
-# Effect on focus event ---------------------------------------------------
-
-# The effect that the three tests have on the focus event
-effect_event_func <- function(df, date_guide, choice_rep = "1"){
-  res <- df %>%
-    filter(rep == choice_rep) %>%
-    select(-clim, -cat) %>%
-    unnest(event) %>%
-    left_join(date_guide, by = "site") %>%
-    filter(date_peak >= date_start_control,
-           date_peak <= date_end_control) %>%
-    group_by(site, test, index_vals) %>%
-    summarise(count = n(),
-              duration = sum(duration),
-              intensity_mean = mean(intensity_mean),
-              intensity_max = max(intensity_max),
-              intensity_cumulative = sum(intensity_cumulative)) %>%
-    mutate_if(is.numeric, round, 2) %>%
-    gather(key = "metric", value = "val", -site, -test, -index_vals) %>%
-    ungroup()
-  return(res)
 }
 
 
@@ -243,7 +250,7 @@ tukey_post_hoc <- function(df){
 #   return(mean(d))
 # }
 
-# Wrapper for extracting tidy summary statistics from any data
+# Summary stats for broad results
 # tester...
 # df <- sst_clim_metric %>%
 # ungroup() %>%
@@ -268,7 +275,6 @@ summary_stats <- function(df){
     data.frame()
 
   # Summary stats for each index_val
-  # event_count <- nrow(filter(df, grepl('event_no', id)))/2
   res_base <- df %>%
     group_by(index_vals, var) %>%
     summarise(min = min(val, na.rm = T),
@@ -289,13 +295,10 @@ summary_stats <- function(df){
     mutate(index_vals = as.numeric(index_vals))
 
   # Extract control row
-    # Make all vlaues absolute values
-  res_control <- filter(res_base, index_vals == control_val) #%>%
-    # mutate_if(is.numeric, abs)
+  res_control <- filter(res_base, index_vals == control_val)
 
   # Find proportions and exit
   res_perc <- res_base %>%
-    # group_by(index_vals, var) %>%
     mutate(min_perc = (min-res_control$min)/abs(res_control$min),
            median_perc = (median-res_control$median)/abs(res_control$median),
            mean_perc = (mean-res_control$mean)/abs(res_control$mean),
@@ -303,6 +306,37 @@ summary_stats <- function(df){
            sum_perc = (sum-res_control$sum)/abs(res_control$sum),
            sd_perc = (sd-res_control$sd)/abs(res_control$sd),
            n_diff = n-res_control$n)
+  return(res_perc)
+}
+
+# Summary stats for focus events only
+# df <- sst_clim_metric %>%
+# ungroup() %>%
+# filter(id == "focus_event", test == "missing") %>%
+# select(-test)
+summary_stats_focus <- function(df){
+
+  # Determine the control group
+  if(30 %in% df$index_vals){
+    control_val <- 30
+  } else{
+    control_val <- 0
+  }
+
+  # Extract control row
+  res_control <- filter(df, index_vals == control_val)
+
+  # Find proportions and exit
+  res_perc <- df %>%
+    select(-id) %>%
+    mutate(val_perc = round((val-res_control$val)/abs(res_control$val), 2))
+    # mutate(count = (focus_count-res_control$)/abs(res_control$min),
+           # median_perc = (median-res_control$median)/abs(res_control$median),
+           # mean_perc = (mean-res_control$mean)/abs(res_control$mean),
+           # max_perc = (max-res_control$max)/abs(res_control$max),
+           # sum_perc = (sum-res_control$sum)/abs(res_control$sum),
+           # sd_perc = (sd-res_control$sd)/abs(res_control$sd),
+           # n_diff = n-res_control$n)
   return(res_perc)
 }
 
