@@ -183,7 +183,8 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
 
   # Extract desired metric values
   res_metric <- res$event %>%
-    dplyr::select(event_no, duration, intensity_max) %>%
+    dplyr::select(event_no, duration,
+                  intensity_cumulative, intensity_max) %>%
     gather(var, val, -event_no) %>%
     dplyr::rename(id = event_no) %>%
     mutate(id = paste0("event_no_",id))%>%
@@ -359,15 +360,6 @@ summary_stats_focus <- function(df){
 #          r_sq = round(r_sq, 2)) %>%
 #   ungroup()
 
-# Convenience functions ---------------------------------------------------
-
-# Wrapper for creating plugs for smoother fig 2 - 4 plotting
-control_plug <- function(test_plug, site_plug){
-  plug <- data.frame(test = test_plug, site = site_plug, metric = unique(sst_ALL_plot_long$metric),
-                     index_vals = 30, p.value.min = 1.0, p.value.mean = 1.0,
-                     p.value.max = 1.0, p.value.sd = 0)
-}
-
 
 # Global functions --------------------------------------------------------
 
@@ -401,10 +393,132 @@ control_plug <- function(test_plug, site_plug){
 # having more missing data on one end of a time series over the other
 # should not be pronounced.
 
+# This single function runs through and outputs all of the desired tests
+single_analysis <- function(df){
+
+  # Calculate the secular trend
+  dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, df))[2,2]*3652.5), 3)
+
+  # Create base anomaly time series
+    # NB: Rather just calcuate this for the globe by itself
+    # It only takes a couple of hours to do this
+  # sst_anom <- df %>%
+  #   mutate(temp = round(temp-mean(temp), 2))
+  # sst_anom_MHW <- detect_event(ts2clm(sst_anom, climatologyPeriod = c("1982-01-01", "2018-12-31")))
+
+  # Create flat time series
+  # sst_flat <- detrend(df)
+
+  # Calculate MHWs from detrended
+  sst_flat_MHW <- detect_event(ts2clm(detrend(df), climatologyPeriod = c("1982-01-01", "2018-12-31")))
+
+  # Pull out the largest event in the ts
+  focus_event <- sst_flat_MHW$event %>%
+    filter(intensity_cumulative == max(intensity_cumulative)) %>%
+    select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max)
+
+  # Sub-optimise data
+  ## Length
+  sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat)
+  ## Missing data
+  sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
+  ## Decadal trend
+  sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
+
+  # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
+  system.time(
+    sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
+      group_by(test, index_vals) %>%
+      group_modify(~clim_metric_calc(.x, focus_dates = focus_event)) %>%
+      ungroup()
+  ) # 22 seconds
+
+  # Run the tests while also interpolating all gaps
+  system.time(
+    sst_interp_res <- sst_missing %>%
+      group_by(test, index_vals) %>%
+      group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
+      ungroup() %>%
+      mutate(test = "interp")
+  ) # 11 seconds
+
+  ### NB: It appears that increasing the window half width has a direct effect on reducing the MHW count
+  ### This means that this test must almost certainly not be performed
+  ### Need to first test this on several ts first before axing it
+
+  # Increase rolling mean window to 10
+  system.time(
+    sst_window_10_res <- sst_length %>%
+      group_by(test, index_vals) %>%
+      group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 10)) %>%
+      ungroup() %>%
+      mutate(test = "window_10")
+  ) # 5 seconds
+
+  # Increase rolling mean window to 20
+  system.time(
+    sst_window_20_res <- sst_length %>%
+      group_by(test, index_vals) %>%
+      group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 20)) %>%
+      ungroup() %>%
+      mutate(test = "window_20")
+  ) # 5 seconds
+
+  # Increase rolling mean window to 30
+  system.time(
+    sst_window_30_res <- sst_length %>%
+      group_by(test, index_vals) %>%
+      group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 30)) %>%
+      ungroup() %>%
+      mutate(test = "window_30")
+  ) # 5 seconds
+
+  # Combine for ease of use
+  sst_clim_metric <- rbind(sst_base_res, sst_interp_res, sst_window_10_res, sst_window_20_res,  sst_window_30_res)
+
+  # Run ANOVA/Tukey on MHW results for three different tests
+  system.time(
+    sst_signif <- sst_clim_metric %>%
+      filter(id != "focus_event") %>%
+      group_by(test, var) %>%
+      group_modify(~kruskal_post_hoc(.x))
+  ) # 1 second
+
+  # Create summary statistics of MHW results
+  system.time(
+    sst_summary <- sst_clim_metric %>%
+      filter(id != "focus_event") %>%
+      group_by(test) %>%
+      group_modify(~summary_stats(.x)) %>%
+      left_join(sst_signif, by = c("test", "index_vals", "var")) %>%
+      mutate(difference = replace_na(difference, FALSE))
+  ) # 1 second
+
+  # Effect on focus MHW
+  sst_focus <- sst_clim_metric %>%
+    filter(id == "focus_event") %>%
+    group_by(test) %>%
+    group_modify(~summary_stats_focus(.x))
+
+  # Count consecutive missing days
+    # NB: This would be useful information to have but it takes to long to calculate
+  # system.time(
+  #   sst_missing_count <- sst_missing %>%
+  #     group_by(index_vals) %>%
+  #     group_modify(~con_miss(.x))
+  # ) # 18 seconds
+
+  # Wrap it up
+  res <- list(dec_trend = dec_trend,
+              clim_metric = sst_clim_metric,
+              summary = sst_summary,
+              focus = sst_focus)
+  return(res)
+}
+
 # The function that runs all of the tests on a single pixel/time series
-# lat_step <- 78
 # nc_file <- OISST_files[100]
-global_analysis_sub <- function(lat_step, nc_file){
+global_analysis <- function(nc_file){
 
   sst <- tidync(nc_file) %>%
     hyper_tibble() %>%
@@ -648,6 +762,14 @@ global_model <- function(df){
 
 
 # Figure functions --------------------------------------------------------
+
+# Wrapper for creating plugs for smoother fig 2 - 4 plotting
+control_plug <- function(test_plug, site_plug){
+  plug <- data.frame(test = test_plug, site = site_plug, metric = unique(sst_ALL_plot_long$metric),
+                     index_vals = 30, p.value.min = 1.0, p.value.mean = 1.0,
+                     p.value.max = 1.0, p.value.sd = 0)
+}
+
 
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted

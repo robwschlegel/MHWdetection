@@ -9,191 +9,6 @@ options(scipen=999)
 
 # Rough outline -----------------------------------------------------------
 
-# Create base anomaly time series
-sst_anom <- sst_Med %>%
-  mutate(temp = round(temp-mean(temp), 2))
-
-# Create flat time series
-sst_flat <- detrend(sst_Med)
-
-# Calculate MHWs from these two time series
-sst_anom_MHW <- detect_event(ts2clm(sst_anom, climatologyPeriod = c("1982-01-01", "2018-12-31")))
-sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
-
-# Pull out the largest event in the ts
-focus_event <- sst_flat_MHW$event %>%
-  filter(intensity_cumulative == max(intensity_cumulative))
-
-# Sub-optimise data
-## Length
-sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat)
-# sst_window_10 <- mutate(sst_length, test = "window_10")
-# sst_window_20 <- mutate(sst_length, test = "window_20")
-
-## Missing data
-sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
-# sst_interp <- mutate(sst_missing, test = "interp")
-# Count consecutive missing days
-system.time(
-sst_missing_count <- sst_missing %>%
-  group_by(index_vals) %>%
-  group_modify(~con_miss(.x))
-) # 18 seconds
-
-## Decadal trend
-sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
-
-# Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
-system.time(
-  sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
-    group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event)) %>%
-    ungroup()
-) # 22 seconds
-
-# Run the tests while also interpolating all gaps
-system.time(
-  sst_interp_res <- sst_missing %>%
-    group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
-    ungroup() %>%
-    mutate(test = "interp")
-) # 11 seconds
-
-### NB: It appears that increasing the window half width has a direct effect on reducing the MHW count
-### This means that this test must almost certainly not be performed
-### Need to first test this on several ts first before axing it
-
-# Increase rolling mean window to 10
-system.time(
-  sst_window_10_res <- sst_length %>%
-    group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 10)) %>%
-    ungroup() %>%
-    mutate(test = "window_10")
-) # 5 seconds
-
-# Increase rolling mean window to 20
-system.time(
-  sst_window_20_res <- sst_length %>%
-    group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 20)) %>%
-    ungroup() %>%
-    mutate(test = "window_20")
-) # 5 seconds
-
-# Increase rolling mean window to 30
-system.time(
-  sst_window_30_res <- sst_length %>%
-    group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 30)) %>%
-    ungroup() %>%
-    mutate(test = "window_30")
-) # 5 seconds
-
-# Combine for ease of use
-sst_clim_metric <- rbind(sst_base_res, sst_interp_res, sst_window_10_res, sst_window_20_res,  sst_window_30_res)
-
-# Run ANOVA/Tukey on MHW results for three different tests
-system.time(
-  sst_signif <- sst_clim_metric %>%
-    select(test:val) %>%
-    filter(id != "focus_event") %>%
-    group_by(test, var) %>%
-    group_modify(~kruskal_post_hoc(.x))
-) # 1 second
-
-# Create summary statistics of MHW results
-system.time(
-  sst_summary <- sst_clim_metric %>%
-    select(test:val) %>%
-    filter(id != "focus_event") %>%
-    group_by(test) %>%
-    group_modify(~summary_stats(.x)) %>%
-    left_join(sst_signif, by = c("test", "index_vals", "var")) %>%
-    mutate(difference = replace_na(difference, FALSE))
-) # 1 second
-
-# Effect on focus MHW
-sst_focus <- sst_clim_metric %>%
-  filter(id == "focus_event") %>%
-  group_by(test) %>%
-  group_modify(~summary_stats_focus(.x))
-
-## Visualise
-
-# Overall mean values
-ggplot(sst_summary, aes(x = index_vals, y = mean)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-  geom_point(data = filter(sst_summary, difference == TRUE),
-             colour = "red", size = 1, alpha = 0.4) +
-  # scale_colour_manual(values = c("black", "red")) +
-  facet_grid(fix~test, scales = "free")# +
-  # coord_cartesian(ylim = c(-2, 2))
-
-# Percent change away from control valuesfor base three tests
-ggplot(filter(sst_summary, test %in% c("length", "missing", "trend")),
-              aes(x = index_vals, y = mean_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-  geom_point(data = filter(sst_summary, difference == TRUE),
-             colour = "red", size = 1, alpha = 0.4) +
-  # scale_colour_manual(values = c("black", "red")) +
-  facet_wrap(~test, scales = "free") +
-  coord_cartesian(ylim = c(-2, 2))
-
-# Percent change away from control values with interpolation
-ggplot(filter(sst_summary, test %in% c("missing", "interp")),
-       aes(x = index_vals, y = mean_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-  geom_point(data = filter(sst_summary, difference == TRUE),
-             colour = "red", size = 1, alpha = 0.4) +
-  # scale_colour_manual(values = c("black", "red")) +
-  facet_wrap(~test, scales = "free") +
-  coord_cartesian(ylim = c(-1, 1))
-
-# Change in count of MHWs
-ggplot(filter(sst_summary, test %in% c("missing", "interp")),
-       aes(x = index_vals, y = n_diff)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line() +
-  facet_grid(~test, scales = "free")
-
-# Percent change away from control values with interpolation
-ggplot(filter(sst_summary, test %in% c("length", "window_10", "window_20", "window_30")),
-       aes(x = index_vals, y = mean_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-  # geom_point(data = filter(sst_summary, difference == TRUE),
-  #            colour = "red", size = 1, alpha = 0.4) +
-  # scale_colour_manual(values = c("black", "red")) +
-  facet_wrap(~test, scales = "free") +
-  coord_cartesian(ylim = c(-1, 1))
-
-# Change in count of MHWs
-ggplot(filter(sst_summary, test %in% c("length", "window_10", "window_20", "window_30")),
-       aes(x = index_vals, y = n)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line() +
-  facet_grid(~test, scales = "free")
-
-# Change in percent of MHW days
-ggplot(filter(sst_summary, var == "duration"),
-       aes(x = index_vals, y = sum_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line() +
-  facet_grid(~test, scales = "free")
-
-# Change in focus event
-# ggplot(filter(sst_focus, var == "focus_duration"),
-ggplot(sst_focus,
-       aes(x = index_vals, y = val_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line() +
-  facet_grid(var~test, scales = "free")
-
 # Where on the x axis things go wrong is the main question to be answers
 
 # Create a map at which the year after which a threshold is exceeded in the change in the statistic in question
@@ -209,6 +24,100 @@ ggplot(sst_focus,
 
 # Need to run the above code on the three base ts and see what those results look like
 # If that looks good then it is time to go global
+
+# Combine three reference ts for first test run
+
+sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
+                 mutate(sst_NW_Atl, site = "NW_Atl"),
+                 mutate(sst_Med, site = "Med"))
+
+system.time(
+sst_test <- sst_ALL %>%
+  group_by(site) %>%
+  # group_map(~single_analysis(.x))
+  nest() %>%
+  mutate(res = map(data, single_analysis)) %>%
+  select(-data)
+) # 160 seconds
+
+system.time(
+  sst_test <- plyr::dlply(sst_ALL, c("site"), single_analysis, .parallel = T)
+) # 54 seconds
+
+
+# Test visuals ------------------------------------------------------------
+
+# Overall mean values
+ggplot(sst_test$Med$summary, aes(x = index_vals, y = mean)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+  geom_point(data = filter(sst_summary, difference == TRUE),
+             colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_grid(~test, scales = "free")# +
+  # coord_cartesian(ylim = c(-2, 2))
+
+# Percent change away from control valuesfor base three tests
+ggplot(filter(sst_test$Med$summary, test %in% c("length", "missing", "trend")),
+              aes(x = index_vals, y = mean_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+  # geom_point(data = filter(sst_summary, difference == TRUE),
+             # colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_wrap(~test, scales = "free") +
+  coord_cartesian(ylim = c(-2, 2))
+
+# Percent change away from control values with interpolation
+ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
+       aes(x = index_vals, y = mean_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+  # geom_point(data = filter(sst_summary, difference == TRUE),
+             # colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_wrap(~test, scales = "free") +
+  coord_cartesian(ylim = c(-1, 1))
+
+# Change in count of MHWs
+ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
+       aes(x = index_vals, y = n_diff)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line() +
+  facet_grid(~test, scales = "free")
+
+# Percent change away from control values with interpolation
+ggplot(filter(sst_test$Med$summary, test %in% c("length", "window_10", "window_20", "window_30")),
+       aes(x = index_vals, y = mean_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+  # geom_point(data = filter(sst_summary, difference == TRUE),
+  #            colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_wrap(~test, scales = "free") +
+  coord_cartesian(ylim = c(-1, 1))
+
+# Change in count of MHWs
+ggplot(filter(sst_test$WA$summary, test %in% c("length", "window_10", "window_20", "window_30")),
+       aes(x = index_vals, y = n)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line() +
+  facet_grid(~test, scales = "free")
+
+# Change in percent of MHW days
+ggplot(filter(sst_test$Med$summary, var == "duration"),
+       aes(x = index_vals, y = sum_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line() +
+  facet_grid(~test, scales = "free")
+
+# Change in focus event
+# ggplot(filter(sst_focus, var == "focus_duration"),
+ggplot(sst_test$Med$focus,
+       aes(x = index_vals, y = val_perc)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line() +
+  facet_grid(var~test, scales = "free")
 
 
 # Base data ---------------------------------------------------------------
