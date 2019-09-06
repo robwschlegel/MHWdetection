@@ -26,12 +26,12 @@ focus_event <- sst_flat_MHW$event %>%
 # Sub-optimise data
 ## Length
 sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat)
-sst_window_10 <- mutate(sst_length, fix = "window_10")
-sst_window_20 <- mutate(sst_length, fix = "window_20")
+sst_window_10 <- mutate(sst_length, test = "window_10")
+sst_window_20 <- mutate(sst_length, test = "window_20")
 
 ## Missing data
 sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
-sst_interp <- mutate(sst_missing, fix = "interp")
+sst_interp <- mutate(sst_missing, test = "interp")
 # Count consecutive missing days
 system.time(
 sst_missing_count <- sst_missing %>%
@@ -44,15 +44,33 @@ sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
 
 # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
 system.time(
-  sst_clim_metric <- rbind(sst_length, sst_missing, sst_trend) %>%
+  sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
     group_by(test, index_vals) %>%
     group_modify(~clim_metric_calc(.x, focus_dates = focus_event))
 ) # 26 seconds
 
+# Run the tests while also interpolating all gaps
+system.time(
+  sst_interp_res <- sst_interp %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_pad = 9999))
+) # 11 seconds
 
-test <- rbind(sst_length, sst_missing, sst_interp) %>%
-  group_by(test, index_vals) %>%
-  group_modify(~clim_metric_calc(.x, focus_dates = focus_event))
+# Increase rolling mean window to 10
+system.time(
+  sst_window_10_res <- sst_window_10 %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 10))
+) # 5 seconds
+
+# Increase rolling mean window to 20
+system.time(
+  sst_window_10_res <- sst_window_10 %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_window = 20))
+) # 5 seconds
+
+
 
 # Run ANOVA/Tukey on MHW results for three different tests
 system.time(

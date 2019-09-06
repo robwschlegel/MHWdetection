@@ -149,12 +149,6 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
   if(year_start == 0)  year_start <- min(lubridate::year(df$t))
   if(year_end == 0) year_end <- max(lubridate::year(df$t))
 
-  # See if a special test is being requested
-  fix_request <- unique(df$fix)
-  if(fix_request == "interp") set_pad = 9999
-  if(fix_request == "window_10") set_window = 10
-  if(fix_request == "window_20") set_window = 20
-
   # base calculation
   res <- ts2clm(df, windowHalfWidth = set_window, maxPadLength = set_pad, var = TRUE,
                 climatologyPeriod = c(paste0(year_start,"-01-01"), paste0(year_end,"-12-31"))) %>%
@@ -171,9 +165,8 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
               intensity_cumulative = sum(intensity_cumulative)) %>%
     gather(var, val) %>%
     mutate(id = "focus_event",
-           var = paste0("focus_",var),
-           fix = fix_request) %>%
-    select(fix, id, var, val)
+           var = paste0("focus_",var)) %>%
+    select(id, var, val)
 
   # Extract desired clim values
   res_clim <- res$climatology %>%
@@ -182,18 +175,16 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
     arrange(doy) %>%
     gather(var, val, -doy) %>%
     dplyr::rename(id = doy) %>%
-    mutate(id = paste0("doy_",id),
-           fix = fix_request) %>%
-    select(fix, id, var, val)
+    mutate(id = paste0("doy_",id)) %>%
+    select(id, var, val)
 
   # Extract desired metric values
   res_metric <- res$event %>%
     dplyr::select(event_no, duration, intensity_max) %>%
     gather(var, val, -event_no) %>%
     dplyr::rename(id = event_no) %>%
-    mutate(id = paste0("event_no_",id),
-           fix = fix_request)%>%
-    select(fix, id, var, val)
+    mutate(id = paste0("event_no_",id))%>%
+    select(id, var, val)
 
   # Combine and exit
   res_all <- rbind(res_clim, res_metric, res_focus) %>%
