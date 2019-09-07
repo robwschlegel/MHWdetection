@@ -445,7 +445,7 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F){
 # Global functions --------------------------------------------------------
 
 # The function that runs all of the tests on a single pixel/time series
-# nc_file <- OISST_files[1000]
+# nc_file <- OISST_files[167]
 global_analysis <- function(nc_file){
 
   sst <- tidync(nc_file) %>%
@@ -454,16 +454,16 @@ global_analysis <- function(nc_file){
     mutate(t = as.Date(t, origin = "1970-01-01")) %>%
     filter(t <= "2018-12-31") %>%
     na.omit() %>%
-    # Some ice pixels don't start on 1982-01-01, or go until 2018-12-31
-    # So for now we are simply removing them
     group_by(lon, lat) %>%
+    # Some ice pixels don't start on 1982-01-01, or go until 2018-12-31
+    # Also filter out pixels where there is 50% or more ice cover during the time series
     mutate(prop_ice = length(which(temp < -1.7))/n()) %>%
     filter(max(t) == "2018-12-31",
            min(t) == "1982-01-01",
            prop_ice < 0.5) %>%
-    select(lon, lat, t, temp)
+    select(lon, lat, t, temp) %>%
+    data.frame()
 
-  # Also filter out pixels where there is 50% or more ice cover during the time series
   # Run the analysis on each lon/lat pixel
   res <- plyr::dlply(sst, c("lon", "lat"), single_analysis, .parallel = T)
   return(res)
