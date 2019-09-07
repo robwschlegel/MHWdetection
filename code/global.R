@@ -23,7 +23,6 @@ OISST_files <- dir(path = "~/data/OISST", full.names = T)
 #   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
 #
 #   # Calculate tests etc.
-#   # NB: This runs the MKE and Eddy masks
 #   # system.time(
 #   slice_res <- global_analysis(OISST_slice)
 #   # ) # ~76 seconds for one
@@ -34,7 +33,7 @@ OISST_files <- dir(path = "~/data/OISST", full.names = T)
 #   gc()
 # } # ~ 80 seconds each
 
-# NB: I have not curremtly set this up to work
+# NB: I have not currently set this up to work
 # The for loop above is still the method for global calculation
 # plyr::l_ply(.data = OISST_files, .fun = global_analysis, .parallel = T)
 

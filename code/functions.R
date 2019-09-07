@@ -344,26 +344,40 @@ summary_stats_focus <- function(df){
 # Single full analysis ----------------------------------------------------
 
 # This single function runs through and outputs all of the desired tests as a list
-single_analysis <- function(df, count_miss = F){
+single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F){
 
   # Calculate the secular trend
   dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, df))[2,2]*3652.5), 3)
 
+  # Detrend the ts
+  sst_flat <- detrend(df)
+
   # Calculate MHWs from detrended ts
-  sst_flat_MHW <- detect_event(ts2clm(detrend(df), climatologyPeriod = c("1982-01-01", "2018-12-31")))
+  sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
 
   # Pull out the largest event in the ts
   focus_event <- sst_flat_MHW$event %>%
     filter(intensity_cumulative == max(intensity_cumulative)) %>%
     select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max)
 
+  # Create vectors for sub-optimal data
+  if(full_seq){
+    length_seq <- 1982:2009
+    missing_seq <- seq(0.00, 0.50, 0.01)
+    trend_seq <- seq(0.00, 0.30, 0.01)
+  } else{
+    length_seq <- seq(1984, 2009, 5)
+    missing_seq <- seq(0.00, 0.50, 0.1)
+    trend_seq <- seq(0.00, 0.30, 0.1)
+  }
+
   # Sub-optimise data
   ## Length
-  sst_length <- plyr::ldply(1982:2009, control_length, df = sst_flat)
+  sst_length <- plyr::ldply(length_seq, control_length, df = sst_flat)
   ## Missing data
-  sst_missing <- plyr::ldply(seq(0.00, 0.50, 0.01), control_missing, df = sst_flat)
+  sst_missing <- plyr::ldply(missing_seq, control_missing, df = sst_flat)
   ## Decadal trend
-  sst_trend <- plyr::ldply(seq(0.00, 0.30, 0.01), control_trend, df = sst_flat)
+  sst_trend <- plyr::ldply(trend_seq, control_trend, df = sst_flat)
 
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
   sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
@@ -405,9 +419,13 @@ single_analysis <- function(df, count_miss = F){
 
   # Merge all
   res <- list(dec_trend = dec_trend,
-              clim_metric = sst_clim_metric,
               summary = sst_summary,
               focus = sst_focus)
+
+  # Include clim/metric data if requested
+  if(clim_metric){
+    res <- c(res, list(clim_metric = sst_clim_metric,))
+  }
 
   # Count consecutive missing days
   # NB: This would be useful information to have but it takes to long to calculate
@@ -427,7 +445,7 @@ single_analysis <- function(df, count_miss = F){
 # Global functions --------------------------------------------------------
 
 # The function that runs all of the tests on a single pixel/time series
-# nc_file <- OISST_files[100]
+# nc_file <- OISST_files[1000]
 global_analysis <- function(nc_file){
 
   sst <- tidync(nc_file) %>%
@@ -439,99 +457,16 @@ global_analysis <- function(nc_file){
     # Some ice pixels don't start on 1982-01-01, or go until 2018-12-31
     # So for now we are simply removing them
     group_by(lon, lat) %>%
+    mutate(prop_ice = length(which(temp < -1.7))/n()) %>%
     filter(max(t) == "2018-12-31",
-           min(t) == "1982-01-01") %>%
-    select(lon, lat, t, temp) %>%
-    mutate(site = as.character(lat), rep = "1")
+           min(t) == "1982-01-01",
+           prop_ice < 0.5) %>%
+    select(lon, lat, t, temp)
 
   # Also filter out pixels where there is 50% or more ice cover during the time series
-
-  # Calculate the secular trend
-  dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, sst))[2,2]*3652.5), 3)
-
-  # Remove random data
-  # set.seed(666)
-  sst_knockout <- plyr::ldply(.data = c(0.10, 0.25, 0.50),
-                              .fun = random_knockout_global, df = sst)
-
-  # Manually force certain key dates to be present
-  sst_knockout$temp[sst_knockout$t == "1982-01-01"] <- sst$temp[sst$t == "1982-01-01"]
-  sst_knockout$temp[sst_knockout$t == "1989-01-01"] <- sst$temp[sst$t == "1989-01-01"]
-  sst_knockout$temp[sst_knockout$t == "1999-01-01"] <- sst$temp[sst$t == "1999-01-01"]
-  sst_knockout$temp[sst_knockout$t == "2009-01-01"] <- sst$temp[sst$t == "2009-01-01"]
-  sst_knockout$temp[sst_knockout$t == "2018-12-31"] <- sst$temp[sst$t == "2018-12-31"]
-
-  # Make base calculations
-  sst_res_base <- clim_event_cat_calc(sst) %>%
-    mutate(index_vals = 0, test = as.factor("missing"))
-  sst_res_base_fix <- sst_res_base %>%
-    mutate(test = as.factor("missing_fix"))
-
-  # Make missing data calculations
-  sst_res_missing <- plyr::ddply(sst_knockout, c("index_vals"),
-                                 clim_event_cat_calc) %>%
-    mutate(test = as.factor("missing"))
-
-  # Make missing data fix calculations
-  sst_res_missing_fix <- plyr::ddply(sst_knockout, c("index_vals"),
-                                     clim_event_cat_calc, fix = "missing") %>%
-    mutate(test = as.factor("missing_fix"))
-
-  # Make shortened time series calculations
-  sst_res_length <- plyr::ldply(.data = seq(1989, 2009, by = 10),
-                                .fun = shrinking_results_global, df = sst) %>%
-    mutate(test = as.factor("length"))
-
-  # Combine for upcoming tests
-  sst_res <- rbind(sst_res_base, sst_res_missing,
-                   sst_res_base_fix, sst_res_missing_fix,
-                   sst_res_length) %>%
-    select(test, index_vals, clim, event, cat) %>%
-    mutate(site = as.character(lat), rep = "1")
-
-
-  # Find the focus event
-  focus_event <-  sst_res_base %>%
-    select(-clim, -cat) %>%
-    unnest(event) %>%
-    filter(date_start >= "2009-01-01") %>%
-    filter(intensity_cumulative == max(intensity_cumulative)) %>%
-    mutate(site = as.character(lat)) %>%
-    select(site, date_start:date_end) %>%
-    dplyr::rename(date_start_control = date_start,
-                  date_peak_control = date_peak,
-                  date_end_control = date_end)
-
-  # Quantify changes caused by the two tests
-  effect_clim_res <- effect_clim_func(sst_res) %>%
-    select(-site)
-  effect_event_res <- effect_event_func(sst_res, focus_event) %>%
-    select(-site)
-  effect_cat_res <- effect_cat_func(sst_res, focus_event) %>%
-    select(-site)
-
-  # Wrap it up
-  res <- list(lat = lat, lon = lon, dec_trend = dec_trend,
-              effect_clim = effect_clim_res,
-              effect_event = effect_event_res,
-              effect_cat = effect_cat_res)
+  # Run the analysis on each lon/lat pixel
+  res <- plyr::dlply(sst, c("lon", "lat"), single_analysis, .parallel = T)
   return(res)
-}
-
-# One function to rule them all
-# nc_file <- OISST_files[20]
-global_analysis <- function(nc_file){
-
-  # test_run <- global_analysis_sub()
-  # system.time(
-    suppressWarnings( # Ignore the coercing factor to character messages
-      res_pixel <- plyr::llply(.data = seq(1, 720),
-                               .fun = global_analysis_sub,
-                               nc_file = nc_file, .parallel = T)
-    )
-  # )  # ~7 seconds for one, ~78 seconds for 720
-  # save(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rdata"))
-  return(res_pixel)
 }
 
 # The function that unpacks global resuls as desired
@@ -569,48 +504,27 @@ global_unpack <- function(){
                                   .parallel = T, sub_level = 3)
   save(global_dec_trend, file = "data/global_dec_trend.Rdata")
   rm(global_dec_trend); gc()
-  # KS climatology results
-  print("Unpacking KS climatology results")
-  global_KS_clim <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                               .parallel = T, sub_level = 4)
-  colnames(global_KS_clim) <- gsub("KS_clim.", "", colnames(global_KS_clim))
-  save(global_KS_clim, file = "data/global_KS_clim.Rdata")
-  rm(global_KS_clim); gc()
-  # KS event results
-  print("Unpacking KS event results")
-  global_KS_event <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                               .parallel = T, sub_level = 5)
-  colnames(global_KS_event) <- gsub("KS_event.", "", colnames(global_KS_event))
-  save(global_KS_event, file = "data/global_KS_event.Rdata")
-  rm(global_KS_event); gc()
-  # KS category results
-  print("Unpacking KS category results")
-  global_KS_cat <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                               .parallel = T, sub_level = 6)
-  colnames(global_KS_cat) <- gsub("KS_cat.", "", colnames(global_KS_cat))
-  save(global_KS_cat, file = "data/global_KS_cat.Rdata")
-  rm(global_KS_cat); gc()
-  # Single event climatology results
+  # Clims and metrics
   print("Unpacking event climatology results")
   global_effect_clim <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
                                .parallel = T, sub_level = 7)
   colnames(global_effect_clim) <- gsub("effect_clim.", "", colnames(global_effect_clim))
   save(global_effect_clim, file = "data/global_effect_clim.Rdata")
   rm(global_effect_clim); gc()
-  # Single evnt metric results
+  # Summary stats
   print("Unpacking event metric results")
   global_effect_event <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
                                .parallel = T, sub_level = 8)
   colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
   save(global_effect_event, file = "data/global_effect_event.Rdata")
   rm(global_effect_event); gc()
-  # Single event category results
-  print("Unpacking event category results")
-  global_effect_cat <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                               .parallel = T, sub_level = 9)
-  colnames(global_effect_cat) <- gsub("effect_cat.", "", colnames(global_effect_cat))
-  save(global_effect_cat, file = "data/global_effect_cat.Rdata")
-  rm(global_effect_cat); gc()
+  # Focus event
+  print("Unpacking event metric results")
+  global_effect_event <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                                     .parallel = T, sub_level = 8)
+  colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
+  save(global_effect_event, file = "data/global_effect_event.Rdata")
+  rm(global_effect_event); gc()
 }
 
 # Function for calculating R2 values for sub-optimal results
@@ -654,21 +568,6 @@ global_model <- function(df){
       # unnest()
   )
 }
-
-# Length fix --------------------------------------------------------------
-
-# Below are the functions used to perform post-hoc corrections on events
-# detected in shorter time series
-
-# To correct for the effect of time series length on event metrics we need
-# two things:
-  # The length of the time series
-  # The decadal trend in the region
-# It may be that rather than correcting the value, we should provide a CI instead
-
-# The relationship may be better aided by the known variance in the time series
-
-# Must see what the R2 + SE is between decadal trend and change in duration/max.int.
 
 
 # Figure functions --------------------------------------------------------

@@ -3,11 +3,14 @@
 
 # Libraries ---------------------------------------------------------------
 
+# Load all meta-data and functions
 source("code/functions.R")
-options(scipen=999)
+
+# Remove scientific notation from results
+# options(scipen=999)
 
 
-# Rough outline -----------------------------------------------------------
+# Analyses ----------------------------------------------------------------
 
 # Where on the x axis things go wrong is the main question to be answers
 
@@ -26,129 +29,150 @@ options(scipen=999)
 # If that looks good then it is time to go global
 
 # Combine the three reference ts, run results, and save
-sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
-                 mutate(sst_NW_Atl, site = "NW_Atl"),
-                 mutate(sst_Med, site = "Med"))
-system.time(
-  sst_ALL_results <- plyr::dlply(sst_ALL, c("site"), single_analysis, count_miss = T, .parallel = T)
-) # 54 seconds
-saveRDS(sst_ALL_results, "data/sst_ALL_results.Rds")
+# sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
+#                  mutate(sst_NW_Atl, site = "NW_Atl"),
+#                  mutate(sst_Med, site = "Med"))
+# system.time(
+  # sst_ALL_results <- plyr::dlply(sst_ALL, c("site"), single_analysis,
+                                 # full_seq = T, clim_metric = T, count_miss = T, .parallel = T)
+# ) # 54 seconds
+# saveRDS(sst_ALL_results, "data/sst_ALL_results.Rds")
 
-system.time(
-  sst_test_no_miss <- plyr::dlply(sst_ALL, c("site"), single_analysis, .parallel = T)
-) # 37 seconds
+## Global run
+# Run sequentially so that each lon slice can be saved en route
+# i <- 6
+for(i in 1:length(OISST_files)){
+# for(i in 333){
 
-# Global run
+  # Determine file
+  OISST_slice <- OISST_files[i]
+  lon_row_pad <- str_pad(i, width = 4, pad = "0", side = "left")
+  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+
+  # Calculate tests etc.
+  # system.time(
+  slice_res <- global_analysis(OISST_slice)
+  # ) # ~ 3 - 4 minutes
+  saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rds"))
+  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+
+  # Clear up some RAM
+  rm(slice_res); gc()
+} # ~ 3 - 4 minutes each
+
+# I project that this may take 3 - 4 days...
+
+# This took ~xxx hours to run
 
 
 # Test visuals ------------------------------------------------------------
 
 # Overall mean values
-ggplot(sst_test$Med$summary, aes(x = index_vals, y = mean)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-  geom_point(data = filter(sst_summary, difference == TRUE),
-             colour = "red", size = 1, alpha = 0.4) +
-  # scale_colour_manual(values = c("black", "red")) +
-  facet_grid(~test, scales = "free")# +
-  # coord_cartesian(ylim = c(-2, 2))
+# ggplot(sst_test$Med$summary, aes(x = index_vals, y = mean)) +
+#   geom_hline(aes(yintercept = 0), colour = "grey") +
+#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+#   geom_point(data = filter(sst_summary, difference == TRUE),
+#              colour = "red", size = 1, alpha = 0.4) +
+#   # scale_colour_manual(values = c("black", "red")) +
+#   facet_grid(~test, scales = "free")# +
+#   # coord_cartesian(ylim = c(-2, 2))
 
 # Percent change away from control valuesfor base three tests
-ggplot(filter(sst_test$Med$summary, test %in% c("length", "missing", "trend")),
-              aes(x = index_vals, y = mean_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-  # geom_point(data = filter(sst_summary, difference == TRUE),
-             # colour = "red", size = 1, alpha = 0.4) +
-  # scale_colour_manual(values = c("black", "red")) +
-  facet_wrap(~test, scales = "free") +
-  coord_cartesian(ylim = c(-2, 2))
+# ggplot(filter(sst_test$Med$summary, test %in% c("length", "missing", "trend")),
+#               aes(x = index_vals, y = mean_perc)) +
+#   geom_hline(aes(yintercept = 0), colour = "grey") +
+#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+#   # geom_point(data = filter(sst_summary, difference == TRUE),
+#              # colour = "red", size = 1, alpha = 0.4) +
+#   # scale_colour_manual(values = c("black", "red")) +
+#   facet_wrap(~test, scales = "free") +
+#   coord_cartesian(ylim = c(-2, 2))
 
 # Percent change away from control values with interpolation
-ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
-       aes(x = index_vals, y = mean_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-  # geom_point(data = filter(sst_summary, difference == TRUE),
-             # colour = "red", size = 1, alpha = 0.4) +
-  # scale_colour_manual(values = c("black", "red")) +
-  facet_wrap(~test, scales = "free") +
-  coord_cartesian(ylim = c(-1, 1))
+# ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
+#        aes(x = index_vals, y = mean_perc)) +
+#   geom_hline(aes(yintercept = 0), colour = "grey") +
+#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+#   # geom_point(data = filter(sst_summary, difference == TRUE),
+#              # colour = "red", size = 1, alpha = 0.4) +
+#   # scale_colour_manual(values = c("black", "red")) +
+#   facet_wrap(~test, scales = "free") +
+#   coord_cartesian(ylim = c(-1, 1))
 
 # Change in count of MHWs
-ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
-       aes(x = index_vals, y = n_diff)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line() +
-  facet_grid(~test, scales = "free")
+# ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
+#        aes(x = index_vals, y = n_diff)) +
+#   geom_hline(aes(yintercept = 0), colour = "grey") +
+#   geom_line() +
+#   facet_grid(~test, scales = "free")
 
 # Percent change away from control values with interpolation
-ggplot(filter(sst_test$Med$summary, test %in% c("length", "window_10", "window_20", "window_30")),
-       aes(x = index_vals, y = mean_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-  # geom_point(data = filter(sst_summary, difference == TRUE),
-  #            colour = "red", size = 1, alpha = 0.4) +
-  # scale_colour_manual(values = c("black", "red")) +
-  facet_wrap(~test, scales = "free") +
-  coord_cartesian(ylim = c(-1, 1))
+# ggplot(filter(sst_test$Med$summary, test %in% c("length", "window_10", "window_20", "window_30")),
+#        aes(x = index_vals, y = mean_perc)) +
+#   geom_hline(aes(yintercept = 0), colour = "grey") +
+#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
+#   # geom_point(data = filter(sst_summary, difference == TRUE),
+#   #            colour = "red", size = 1, alpha = 0.4) +
+#   # scale_colour_manual(values = c("black", "red")) +
+#   facet_wrap(~test, scales = "free") +
+#   coord_cartesian(ylim = c(-1, 1))
 
 # Change in count of MHWs
-ggplot(filter(sst_test$WA$summary, test %in% c("length", "window_10", "window_20", "window_30")),
-       aes(x = index_vals, y = n)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line() +
-  facet_grid(~test, scales = "free")
+# ggplot(filter(sst_test$WA$summary, test %in% c("length", "window_10", "window_20", "window_30")),
+#        aes(x = index_vals, y = n)) +
+#   geom_hline(aes(yintercept = 0), colour = "grey") +
+#   geom_line() +
+#   facet_grid(~test, scales = "free")
 
 # Change in percent of MHW days
-ggplot(filter(sst_test$Med$summary, var == "duration"),
-       aes(x = index_vals, y = sum_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line() +
-  facet_grid(~test, scales = "free")
+# ggplot(filter(sst_test$Med$summary, var == "duration"),
+#        aes(x = index_vals, y = sum_perc)) +
+#   geom_hline(aes(yintercept = 0), colour = "grey") +
+#   geom_line() +
+#   facet_grid(~test, scales = "free")
 
 # Change in focus event
 # ggplot(filter(sst_focus, var == "focus_duration"),
-ggplot(sst_test$Med$focus,
-       aes(x = index_vals, y = val_perc)) +
-  geom_hline(aes(yintercept = 0), colour = "grey") +
-  geom_line() +
-  facet_grid(var~test, scales = "free")
+# ggplot(sst_test$Med$focus,
+#        aes(x = index_vals, y = val_perc)) +
+#   geom_hline(aes(yintercept = 0), colour = "grey") +
+#   geom_line() +
+#   facet_grid(var~test, scales = "free")
 
 
 # Visuals -----------------------------------------------------------------
 
 # Prep event data for pretty plotting
-effect_event_pretty <- effect_event %>%
-  filter(metric %in% c("count", "duration", "intensity_max"),
-         !index_vals %in% seq(1, 9),
-         index_vals <= 0.5 | index_vals >= 10) %>%
-  mutate(panel_label = case_when(metric == "count" & test == "length" ~ "A",
-                                 metric == "count" & test == "missing" ~ "B",
-                                 metric == "count" & test == "trended" ~ "C",
-                                 metric == "duration" & test == "length" ~ "D",
-                                 metric == "duration" & test == "missing" ~ "E",
-                                 metric == "duration" & test == "trended" ~ "F",
-                                 metric == "intensity_max" & test == "length" ~ "H",
-                                 metric == "intensity_max" & test == "missing" ~ "I",
-                                 metric == "intensity_max" & test == "trended" ~ "J"),
-         metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
-                            metric == "duration" ~ "duration (days)",
-                            metric == "count" ~ "count (event)"),
-         test = case_when(test == "length" ~ "length (years)",
-                          test == "missing" ~ "missing data (proportion)" ,
-                          test == "trended" ~ "added trend (°C/dec)"),
-         test = as.factor(test),
-         test = factor(test, levels = levels(test)[c(2,3,1)]),
-         site = as.character(site)) %>%
-  group_by(test) %>%
-  mutate(panel_label_x = min(index_vals)) %>%
-  group_by(metric) %>%
-  mutate(panel_label_y = max(val)) %>%
-  ungroup()
-effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
-effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
-effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
+# effect_event_pretty <- effect_event %>%
+#   filter(metric %in% c("count", "duration", "intensity_max"),
+#          !index_vals %in% seq(1, 9),
+#          index_vals <= 0.5 | index_vals >= 10) %>%
+#   mutate(panel_label = case_when(metric == "count" & test == "length" ~ "A",
+#                                  metric == "count" & test == "missing" ~ "B",
+#                                  metric == "count" & test == "trended" ~ "C",
+#                                  metric == "duration" & test == "length" ~ "D",
+#                                  metric == "duration" & test == "missing" ~ "E",
+#                                  metric == "duration" & test == "trended" ~ "F",
+#                                  metric == "intensity_max" & test == "length" ~ "H",
+#                                  metric == "intensity_max" & test == "missing" ~ "I",
+#                                  metric == "intensity_max" & test == "trended" ~ "J"),
+#          metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
+#                             metric == "duration" ~ "duration (days)",
+#                             metric == "count" ~ "count (event)"),
+#          test = case_when(test == "length" ~ "length (years)",
+#                           test == "missing" ~ "missing data (proportion)" ,
+#                           test == "trended" ~ "added trend (°C/dec)"),
+#          test = as.factor(test),
+#          test = factor(test, levels = levels(test)[c(2,3,1)]),
+#          site = as.character(site)) %>%
+#   group_by(test) %>%
+#   mutate(panel_label_x = min(index_vals)) %>%
+#   group_by(metric) %>%
+#   mutate(panel_label_y = max(val)) %>%
+#   ungroup()
+# effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
+# effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
+# effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
 
 ### Visualise
 ## Climatologies
@@ -167,36 +191,36 @@ effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_
 
 ## Event metrics
 # Sub-optimal data
-plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
-  # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-  # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-  # stat_smooth(aes(y = val, colour = site), geom = "line",
-              # method = "lm", alpha = 0.5, size = 1) +
-  geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1) +
-  geom_text(aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
-  # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-  scale_colour_brewer(palette = "Dark2") +
-  facet_grid(metric~test, scales = "free", switch = "both") +
-  labs(x = NULL, y = NULL, colour = "Site") +
-  theme(legend.position = "bottom")
-plot_event_effect
-ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
-ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
-ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
-ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
-ggsave(plot_event_effect, filename = "LaTeX/fig_3.jpg", height = 5, width = 10)
+# plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
+#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
+#   # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
+#   # stat_smooth(aes(y = val, colour = site), geom = "line",
+#               # method = "lm", alpha = 0.5, size = 1) +
+#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1) +
+#   geom_text(aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
+#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+#   scale_colour_brewer(palette = "Dark2") +
+#   facet_grid(metric~test, scales = "free", switch = "both") +
+#   labs(x = NULL, y = NULL, colour = "Site") +
+#   theme(legend.position = "bottom")
+# plot_event_effect
+# ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
+# ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
+# ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
+# ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
+# ggsave(plot_event_effect, filename = "LaTeX/fig_3.jpg", height = 5, width = 10)
 
 # Fixed data
-ggplot(effect_event_fix, aes(x = index_vals)) +
-  # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-  geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-  stat_smooth(aes(y = val, colour = site), geom = "line",
-              method = "lm", alpha = 0.5, size = 1) +
-  geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
-  # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-  facet_grid(metric~test, scales = "free", switch = "both") +
-  labs(x = NULL, y = NULL, colour = "Site") +
-  theme(legend.position = "bottom")
+# ggplot(effect_event_fix, aes(x = index_vals)) +
+#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
+#   geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
+#   stat_smooth(aes(y = val, colour = site), geom = "line",
+#               method = "lm", alpha = 0.5, size = 1) +
+#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
+#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+#   facet_grid(metric~test, scales = "free", switch = "both") +
+#   labs(x = NULL, y = NULL, colour = "Site") +
+#   theme(legend.position = "bottom")
 
 # Missing data only + fix
 
@@ -229,3 +253,13 @@ ggplot(effect_event_fix, aes(x = index_vals)) +
 # data that are matching the temperatures around them so the problem of
 # having more missing data on one end of a time series over the other
 # should not be pronounced.
+
+# To correct for the effect of time series length on event metrics we need
+# two things:
+# The length of the time series
+# The decadal trend in the region
+# It may be that rather than correcting the value, we should provide a CI instead
+
+# The relationship may be better aided by the known variance in the time series
+
+# Must see what the R2 + SE is between decadal trend and change in duration/max.int.
