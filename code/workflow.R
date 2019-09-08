@@ -42,7 +42,7 @@ source("code/functions.R")
 # Run sequentially so that each lon slice can be saved en route
 # i <- 6
 for(i in 1:length(OISST_files)){
-# for(i in 333){
+# for(i in 273){
 
   # Determine file
   OISST_slice <- OISST_files[i]
@@ -58,9 +58,9 @@ for(i in 1:length(OISST_files)){
 
   # Clear up some RAM
   rm(slice_res); gc()
-} # ~ 3 - 4 minutes each
+} # ~ 2.5 minutes each
 
-# I project that this may take 3 - 4 days...
+# I project that this may take 3 days...
 
 # This took ~xxx hours to run
 

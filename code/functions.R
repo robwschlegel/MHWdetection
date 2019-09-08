@@ -359,6 +359,9 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F){
   focus_event <- sst_flat_MHW$event %>%
     filter(intensity_cumulative == max(intensity_cumulative)) %>%
     select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max)
+  if(nrow(focus_event) > 1){
+    focus_event <- slice(focus_event, nrow(focus_event))
+  }
 
   # Create vectors for sub-optimal data
   if(full_seq){
@@ -445,7 +448,7 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F){
 # Global functions --------------------------------------------------------
 
 # The function that runs all of the tests on a single pixel/time series
-# nc_file <- OISST_files[167]
+# nc_file <- OISST_files[273]
 global_analysis <- function(nc_file){
 
   sst <- tidync(nc_file) %>%
