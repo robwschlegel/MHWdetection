@@ -41,24 +41,41 @@ source("code/functions.R")
 ## Global run
 # Run sequentially so that each lon slice can be saved en route
 # i <- 6
-for(i in 1:length(OISST_files)){
-# for(i in 273){
+# for(i in 1:length(OISST_files)){
+# # for(i in 273){
+#
+#   # Determine file
+#   OISST_slice <- OISST_files[i]
+#   lon_row_pad <- str_pad(i, width = 4, pad = "0", side = "left")
+#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+#
+#   # Calculate tests etc.
+#   # system.time(
+#   slice_res <- global_analysis(OISST_slice)
+#   # ) # ~ 3 - 4 minutes
+#   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rds"))
+#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+#
+#   # Clear up some RAM
+#   rm(slice_res); gc()
+# } # ~ 2.5 minutes each
 
-  # Determine file
-  OISST_slice <- OISST_files[i]
-  lon_row_pad <- str_pad(i, width = 4, pad = "0", side = "left")
+# It appears as though we are experiencing some sort of core slippage when running
+# one file on multiple cores
+# So now we are going to try running multiple files on one core each
+# It may also be that the MHW Trackers scheduled run is knocking this script out of order
+
+global_analysis_single <- function(file_sub){
+  OISST_slice <- OISST_files[file_sub]
+  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-
-  # Calculate tests etc.
-  # system.time(
   slice_res <- global_analysis(OISST_slice)
-  # ) # ~ 3 - 4 minutes
   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rds"))
   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-
-  # Clear up some RAM
   rm(slice_res); gc()
-} # ~ 2.5 minutes each
+}
+
+plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
 
 # I project that this may take 3 days...
 

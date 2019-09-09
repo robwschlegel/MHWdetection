@@ -468,7 +468,7 @@ global_analysis <- function(nc_file){
     data.frame()
 
   # Run the analysis on each lon/lat pixel
-  res <- plyr::dlply(sst, c("lon", "lat"), single_analysis, .parallel = T)
+  res <- plyr::dlply(sst, c("lon", "lat"), single_analysis, .parallel = F, .progress = "text")
   return(res)
 }
 
