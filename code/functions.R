@@ -279,7 +279,7 @@ summary_stats <- function(df){
   # Extract control row
   res_control <- filter(res_base, index_vals == control_val)
 
-  # Find proportions and exit
+  # Find percentages of change and exit
   res_perc <- res_base %>%
     mutate(min_perc = (min-res_control$min)/abs(res_control$min),
            median_perc = (median-res_control$median)/abs(res_control$median),
