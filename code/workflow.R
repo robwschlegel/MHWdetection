@@ -29,40 +29,19 @@ source("code/functions.R")
 # If that looks good then it is time to go global
 
 # Combine the three reference ts, run results, and save
-# sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
-#                  mutate(sst_NW_Atl, site = "NW_Atl"),
-#                  mutate(sst_Med, site = "Med"))
-# system.time(
-  # sst_ALL_results <- plyr::dlply(sst_ALL, c("site"), single_analysis,
-                                 # full_seq = T, clim_metric = T, count_miss = T, .parallel = T)
-# ) # 54 seconds
-# saveRDS(sst_ALL_results, "data/sst_ALL_results.Rds")
+sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
+                 mutate(sst_NW_Atl, site = "NW_Atl"),
+                 mutate(sst_Med, site = "Med"))
+system.time(
+sst_ALL_results <- plyr::dlply(sst_ALL, c("site"), single_analysis,
+full_seq = T, clim_metric = T, count_miss = T, .parallel = T)
+) # 54 seconds
+saveRDS(sst_ALL_results, "data/sst_ALL_results.Rds")
 
 ## Global run
-# Run sequentially so that each lon slice can be saved en route
-# i <- 6
-# for(i in 1:length(OISST_files)){
-# # for(i in 273){
-#
-#   # Determine file
-#   OISST_slice <- OISST_files[i]
-#   lon_row_pad <- str_pad(i, width = 4, pad = "0", side = "left")
-#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-#
-#   # Calculate tests etc.
-#   # system.time(
-#   slice_res <- global_analysis(OISST_slice)
-#   # ) # ~ 3 - 4 minutes
-#   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rds"))
-#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-#
-#   # Clear up some RAM
-#   rm(slice_res); gc()
-# } # ~ 2.5 minutes each
-
 # It appears as though we are experiencing some sort of core slippage when running
 # one file on multiple cores
-# So now we are going to try running multiple files on one core each
+# So we are rather going to run multiple files on one core each
 # It may also be that the MHW Trackers scheduled run is knocking this script out of order
 
 global_analysis_single <- function(file_sub){
@@ -77,9 +56,7 @@ global_analysis_single <- function(file_sub){
 
 plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
 
-# I project that this may take 3 days...
-
-# This took ~xxx hours to run
+# This took ~2.5 days to run
 
 
 # Test visuals ------------------------------------------------------------
