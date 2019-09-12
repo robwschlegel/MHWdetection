@@ -10,213 +10,163 @@ source("code/functions.R")
 # options(scipen=999)
 
 
-# Analyses ----------------------------------------------------------------
-
-# Where on the x axis things go wrong is the main question to be answers
-
-# Create a map at which the year after which a threshold is exceeded in the change in the statistic in question
-
-# Include the maps showing the results with the trends left in as supplementary material
-
-# Write a paragraph in the discussion that talks about why using p-values for deciding what not to use is a bad idea/problematic
-
-# Show the difference in the moving 30 year clim vs. the preferred 30 year clim as an appendix figure
-
-# It may end up being best to offer advise based on the change in MHW count/days
-# Also the proportion shift in duration and max int based on something bio relevant in literature
-
-# Need to run the above code on the three base ts and see what those results look like
-# If that looks good then it is time to go global
+# Reference analysis ------------------------------------------------------
 
 # Combine the three reference ts, run results, and save
-sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
-                 mutate(sst_NW_Atl, site = "NW_Atl"),
-                 mutate(sst_Med, site = "Med"))
-system.time(
-sst_ALL_results <- plyr::dlply(sst_ALL, c("site"), single_analysis,
-full_seq = T, clim_metric = T, count_miss = T, .parallel = T)
-) # 54 seconds
-saveRDS(sst_ALL_results, "data/sst_ALL_results.Rds")
+# sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
+#                  mutate(sst_NW_Atl, site = "NW_Atl"),
+#                  mutate(sst_Med, site = "Med"))
+# system.time(
+# sst_ALL_results <- plyr::dlply(sst_ALL, c("site"), single_analysis,
+# full_seq = T, clim_metric = T, count_miss = T, .parallel = T)
+# ) # 54 seconds
+# saveRDS(sst_ALL_results, "data/sst_ALL_results.Rds")
 
-## Global run
-# It appears as though we are experiencing some sort of core slippage when running
-# one file on multiple cores
-# So we are rather going to run multiple files on one core each
-# It may also be that the MHW Trackers scheduled run is knocking this script out of order
 
-global_analysis_single <- function(file_sub){
-  OISST_slice <- OISST_files[file_sub]
-  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
-  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-  slice_res <- global_analysis(OISST_slice)
-  saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rds"))
-  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-  rm(slice_res); gc()
-}
+# Global analysis ---------------------------------------------------------
 
-plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
+# global_analysis_single <- function(file_sub){
+#   OISST_slice <- OISST_files[file_sub]
+#   lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
+#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+#   slice_res <- global_analysis(OISST_slice)
+#   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rds"))
+#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+#   rm(slice_res); gc()
+# }
+
+# plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
 
 # This took ~2.5 days to run
 
 
-# Test visuals ------------------------------------------------------------
+# Unpack global results ---------------------------------------------------
 
-# Overall mean values
-# ggplot(sst_test$Med$summary, aes(x = index_vals, y = mean)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-#   geom_point(data = filter(sst_summary, difference == TRUE),
-#              colour = "red", size = 1, alpha = 0.4) +
-#   # scale_colour_manual(values = c("black", "red")) +
-#   facet_grid(~test, scales = "free")# +
-#   # coord_cartesian(ylim = c(-2, 2))
-
-# Percent change away from control valuesfor base three tests
-# ggplot(filter(sst_test$Med$summary, test %in% c("length", "missing", "trend")),
-#               aes(x = index_vals, y = mean_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-#   # geom_point(data = filter(sst_summary, difference == TRUE),
-#              # colour = "red", size = 1, alpha = 0.4) +
-#   # scale_colour_manual(values = c("black", "red")) +
-#   facet_wrap(~test, scales = "free") +
-#   coord_cartesian(ylim = c(-2, 2))
-
-# Percent change away from control values with interpolation
-# ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
-#        aes(x = index_vals, y = mean_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-#   # geom_point(data = filter(sst_summary, difference == TRUE),
-#              # colour = "red", size = 1, alpha = 0.4) +
-#   # scale_colour_manual(values = c("black", "red")) +
-#   facet_wrap(~test, scales = "free") +
-#   coord_cartesian(ylim = c(-1, 1))
-
-# Change in count of MHWs
-# ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
-#        aes(x = index_vals, y = n_diff)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line() +
-#   facet_grid(~test, scales = "free")
-
-# Percent change away from control values with interpolation
-# ggplot(filter(sst_test$Med$summary, test %in% c("length", "window_10", "window_20", "window_30")),
-#        aes(x = index_vals, y = mean_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-#   # geom_point(data = filter(sst_summary, difference == TRUE),
-#   #            colour = "red", size = 1, alpha = 0.4) +
-#   # scale_colour_manual(values = c("black", "red")) +
-#   facet_wrap(~test, scales = "free") +
-#   coord_cartesian(ylim = c(-1, 1))
-
-# Change in count of MHWs
-# ggplot(filter(sst_test$WA$summary, test %in% c("length", "window_10", "window_20", "window_30")),
-#        aes(x = index_vals, y = n)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line() +
-#   facet_grid(~test, scales = "free")
-
-# Change in percent of MHW days
-# ggplot(filter(sst_test$Med$summary, var == "duration"),
-#        aes(x = index_vals, y = sum_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line() +
-#   facet_grid(~test, scales = "free")
-
-# Change in focus event
-# ggplot(filter(sst_focus, var == "focus_duration"),
-# ggplot(sst_test$Med$focus,
-#        aes(x = index_vals, y = val_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line() +
-#   facet_grid(var~test, scales = "free")
+# Unpack and save all of the different global bits
+# global_unpack()
 
 
-# Visuals -----------------------------------------------------------------
+# Process results ---------------------------------------------------------
 
-# Prep event data for pretty plotting
-# effect_event_pretty <- effect_event %>%
-#   filter(metric %in% c("count", "duration", "intensity_max"),
-#          !index_vals %in% seq(1, 9),
-#          index_vals <= 0.5 | index_vals >= 10) %>%
-#   mutate(panel_label = case_when(metric == "count" & test == "length" ~ "A",
-#                                  metric == "count" & test == "missing" ~ "B",
-#                                  metric == "count" & test == "trended" ~ "C",
-#                                  metric == "duration" & test == "length" ~ "D",
-#                                  metric == "duration" & test == "missing" ~ "E",
-#                                  metric == "duration" & test == "trended" ~ "F",
-#                                  metric == "intensity_max" & test == "length" ~ "H",
-#                                  metric == "intensity_max" & test == "missing" ~ "I",
-#                                  metric == "intensity_max" & test == "trended" ~ "J"),
-#          metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
-#                             metric == "duration" ~ "duration (days)",
-#                             metric == "count" ~ "count (event)"),
-#          test = case_when(test == "length" ~ "length (years)",
-#                           test == "missing" ~ "missing data (proportion)" ,
-#                           test == "trended" ~ "added trend (°C/dec)"),
-#          test = as.factor(test),
-#          test = factor(test, levels = levels(test)[c(2,3,1)]),
-#          site = as.character(site)) %>%
-#   group_by(test) %>%
-#   mutate(panel_label_x = min(index_vals)) %>%
-#   group_by(metric) %>%
-#   mutate(panel_label_y = max(val)) %>%
-#   ungroup()
-# effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
-# effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
-# effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
+# Calculate the simple linear slopes for the different tests at each pixel
+# Of primary interest here is the effect on individual events
 
-### Visualise
-## Climatologies
-# Sub-optimal data
-# ggplot(effect_clim, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-#   geom_line(aes(y = mean, colour = site)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free")
-# # Fixed data
-# ggplot(effect_clim_fix, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-#   geom_line(aes(y = mean, colour = site)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free")
+# Set cores
+doMC::registerDoMC(cores = 50)
 
-## Event metrics
-# Sub-optimal data
-# plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-#   # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-#   # stat_smooth(aes(y = val, colour = site), geom = "line",
-#               # method = "lm", alpha = 0.5, size = 1) +
-#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1) +
-#   geom_text(aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   scale_colour_brewer(palette = "Dark2") +
-#   facet_grid(metric~test, scales = "free", switch = "both") +
-#   labs(x = NULL, y = NULL, colour = "Site") +
-#   theme(legend.position = "bottom")
-# plot_event_effect
-# ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.jpg", height = 5, width = 10)
+# Load data
+global_focus <-readRDS("data/global_focus.Rda")
 
-# Fixed data
-# ggplot(effect_event_fix, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-#   geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-#   stat_smooth(aes(y = val, colour = site), geom = "line",
-#               method = "lm", alpha = 0.5, size = 1) +
-#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free", switch = "both") +
-#   labs(x = NULL, y = NULL, colour = "Site") +
-#   theme(legend.position = "bottom")
+# Calculate slopes
+global_focus_slope <- plyr::ddply(global_focus, .variables = c("lat"),
+                                  .fun = global_slope, .parallel = T)
+save(global_focus_slope, file = "data/global_effect_event_slope.Rdata")
 
-# Missing data only + fix
+
+# Global relationships ----------------------------------------------------
+
+# In this section we look at the relationships between certain global variables
+
+# Set cores
+doMC::registerDoMC(cores = 50)
+
+# Global decadal trends
+# load("data/global_dec_trend.Rdata")
+
+# The effect on single events
+# load("data/global_effect_event.Rdata")
+
+# The slope results for single events
+# load("data/global_effect_event_slope.Rdata")
+
+# Merge and filter data
+# event_slope_dec_trend <- left_join(global_effect_event_slope, global_dec_trend, by = c("lon", "lat")) %>%
+#   filter(test == "length") %>%
+#   na.omit() %>%
+#   droplevels()
+
+# Linear model of relationship
+# event_slope_dec_trend_model <- event_slope_dec_trend %>%
+#   group_by(test, metric) %>%
+#   do(model = broom::glance(lm(slope ~ dec_trend, data = .))) %>%
+#   unnest()
+
+# A regression scatterplot between decadal trend and duration/max.int. and ts length slope
+# event_dec_scatterplot <- ggplot(data = filter(event_slope_dec_trend,
+#                                               metric %in% c("duration", "intensity_max")),
+#                                 aes(x = dec_trend, y = slope)) +
+#   geom_point(aes(colour = metric)) +
+#   geom_smooth(method = "lm") +
+#   facet_wrap(~metric, scales = "free_y", ncol = 1)
+# event_dec_scatterplot
+
+# The spread of the results per year measured
+# effect_event_spread <- global_effect_event %>%
+#   filter(test == "length") %>%
+#   droplevels() %>%
+#   spread(key = index_vals, value = val) %>%
+#   mutate(val_spread = `30`-`10`)
+
+# Plot showing value spread between 30 and 10 years
+# duration_spread_plot <- ggplot(filter(effect_event_spread, metric == "intensity_max"),
+#                                aes(x = lon, y = lat)) +
+#   geom_raster(aes(fill = val_spread)) +
+#   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
+#   scale_fill_gradient2(low = "blue", high = "red") +
+#   coord_equal(expand = F) +
+#   # labs(fill = "Linear trend (°C/dec)") +
+#   theme_void() +
+#   theme(legend.position = "bottom",
+#         legend.key.width = unit(2, "cm"))
+# duration_spread_plot
+
+# Join in the event metrics detected from full 30 year time series
+# event_slope_prop <- left_join(event_slope_dec_trend, effect_event_spread,
+#                               by = c("lon", "lat", "test", "metric")) %>%
+#   na.omit() %>%
+#   mutate(slope_prop_10 = round(slope/`10`, 3),
+#          slope_prop_20 = round(slope/`20`, 3),
+#          slope_prop_30 = round(slope/`30`, 3))
+
+# Get just slope ten and change it for easy plotting
+# event_slope_prop_10 <- event_slope_prop %>%
+#   dplyr::select(lat:metric, slope_prop_10) %>%
+#   dplyr::rename(slope = slope_prop_10)
+
+# # Global map showing patterns of the slope as a proportion of the overall change
+# fig_4 <- global_effect_event_slope_plot(test_sub = "length", metric_sub = "intensity_max",
+#                                         df = event_slope_prop_10, prop = T)
+# # fig_4
+# ggsave(plot = fig_4, filename = "LaTeX/fig_4.pdf", height = 6, width = 10)
+# ggsave(plot = fig_4, filename = "LaTeX/fig_4.png", height = 6, width = 10)
+# ggsave(plot = fig_4, filename = "LaTeX/fig_4.jpg", height = 6, width = 10)
+#
+# fig_5 <- global_effect_event_slope_plot(test_sub = "length", metric_sub = "duration",
+#                                         df = event_slope_prop_10, prop = T)
+# # fig_5
+# ggsave(plot = fig_5, filename = "LaTeX/fig_5.pdf", height = 6, width = 10)
+# ggsave(plot = fig_5, filename = "LaTeX/fig_5.png", height = 6, width = 10)
+# ggsave(plot = fig_5, filename = "LaTeX/fig_5.jpg", height = 6, width = 10)
+
+
+# Boxplot showing spread of proportion values
+
+
+# Linear model of relationship between full event metric and rate of change from shortening
+# event_slope_prop_model <- event_slope_prop %>%
+#   group_by(test, metric) %>%
+#   filter(metric %in% c("duration", "intensity_max")) %>%
+#   do(model = broom::glance(lm(slope ~ dec_trend, data = .))) %>%
+#   unnest()
+
+# A regression scatterplot between decadal trend and duration/max.int. and ts length slope
+# event_slope_prop_scatterplot <- ggplot(data = filter(event_slope_prop,
+#                                                      metric %in% c("duration", "intensity_max")),
+#                                        aes(x = val, y = slope)) +
+#   geom_point(aes(colour = metric)) +
+#   geom_smooth(method = "lm") +
+#   facet_wrap(~metric, scales = "free", ncol = 1)
+# event_slope_prop_scatterplot
 
 
 # More thoughts -----------------------------------------------------------
@@ -257,3 +207,10 @@ plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
 # The relationship may be better aided by the known variance in the time series
 
 # Must see what the R2 + SE is between decadal trend and change in duration/max.int.
+
+# Where on the x axis things go wrong is the main question to be answers
+
+# Show the difference in the moving 30 year clim vs. the preferred 30 year clim as an appendix figure
+
+# It may end up being best to offer advise based on the change in MHW count/days
+# Also the proportion shift in duration and max int based on something bio relevant in literature

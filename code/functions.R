@@ -40,9 +40,12 @@ MHW_colours <- c(
 # Location of NOAA OISST files
 OISST_files <- dir(path = "~/data/OISST", full.names = T)
 
+# Location of global result files
+global_files <- dir(path = "data/global", full.names = T)
+
 # Loation of MHW category files
-category_files <- as.character(dir(path = "~/data/cat_clim", pattern = "cat.clim",
-                                   full.names = TRUE, recursive = TRUE))
+# category_files <- as.character(dir(path = "~/data/cat_clim", pattern = "cat.clim",
+#                                    full.names = TRUE, recursive = TRUE))
 
 # Reference site coordinates
 sst_ALL_coords <- data.frame(site = c("WA", "NW_Atl", "Med"),
@@ -475,22 +478,37 @@ global_analysis <- function(nc_file){
 # The function that unpacks global resuls as desired
 # testers...
 # global_file <- global_files[1]
+# sub_level <- 1
+# sub_level <- 2
 # sub_level <- 3
-# sub_level <- 5
-# sub_level <- 8
 global_unpack_sub <- function(global_file, sub_level){
+
   # Load the one slice
-  load(global_file)
+  slice_res <- readRDS(global_file)
+
+  # Pull it apart as desired
   slice_full <- data.frame()
-  for(i in 1:720){
+  for(i in 1:length(slice_res)){
     slice_step_1 <- slice_res[[i]]
+    slice_step_coords <- as.vector(strsplit(names(slice_res)[i], "[.]"))
+    slice_step_lon <- paste0(slice_step_coords[[1]][1],".",slice_step_coords[[1]][2])
+    slice_step_lat <- paste0(slice_step_coords[[1]][3],".",slice_step_coords[[1]][4])
     if(is.null(slice_step_1)){
-     # slice_full <- slice_full
-    } else if(nrow(as.data.frame(slice_step_1[sub_level])) > 0) {
-      slice_step_2 <- as.data.frame(slice_step_1[c(1, 2, sub_level)])
+    } else if(length(slice_step_1[sub_level]) > 0) {
+      names(slice_step_1) <- NULL # Prevents column names from being altered
+      slice_step_2 <- data.frame(slice_step_1[sub_level],
+                                 lon = slice_step_lon,
+                                 lat = slice_step_lat)
+      if(ncol(slice_step_2) == 3) colnames(slice_step_2)[1] <- "dec_trend"
       slice_full <- rbind(slice_full, slice_step_2)
     }
   }
+
+  # Sort it out and exit
+  slice_full <- slice_full %>%
+    select(lon, lat, everything()) %>%
+    mutate(lon = as.numeric(as.character(lon)),
+           lat = as.numeric(as.character(lat)))
   return(slice_full)
 }
 
@@ -500,34 +518,32 @@ global_unpack <- function(){
   # Point to files
   global_files <- dir("data/global", full.names = T)
 
-  ## Run unpacker, save, and clear one at a time due to RAM restrictions on laptop
+  ## Run unpacker, save, and clear one at a time to minimise RAM use
   # Decadal trends
-  print("Unpacking decadal trends")
+  print(paste0("Began unpacking decadal trends at ",Sys.time()))
   global_dec_trend <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                                  .parallel = T, sub_level = 3)
-  save(global_dec_trend, file = "data/global_dec_trend.Rdata")
+                                  .parallel = T, sub_level = 1)
+  saveRDS(global_dec_trend, file = "data/global_dec_trend.Rda")
   rm(global_dec_trend); gc()
-  # Clims and metrics
-  print("Unpacking event climatology results")
-  global_effect_clim <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                               .parallel = T, sub_level = 7)
-  colnames(global_effect_clim) <- gsub("effect_clim.", "", colnames(global_effect_clim))
-  save(global_effect_clim, file = "data/global_effect_clim.Rdata")
-  rm(global_effect_clim); gc()
+  print(paste0("Finished unpacking decadal trends at ",Sys.time()))
+
   # Summary stats
-  print("Unpacking event metric results")
-  global_effect_event <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                               .parallel = T, sub_level = 8)
-  colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
-  save(global_effect_event, file = "data/global_effect_event.Rdata")
-  rm(global_effect_event); gc()
+  print(paste0("Began unpacking summary stats at ",Sys.time()))
+  global_summary <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                                .parallel = T, sub_level = 2)
+  # colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
+  saveRDS(global_summary, file = "data/global_summary.Rda")
+  rm(global_summary); gc()
+  print(paste0("Finished unpacking summary stats at ",Sys.time()))
+
   # Focus event
-  print("Unpacking event metric results")
-  global_effect_event <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                                     .parallel = T, sub_level = 8)
-  colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
-  save(global_effect_event, file = "data/global_effect_event.Rdata")
+  print(paste0("Began unpacking focus event at ",Sys.time()))
+  global_focus <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
+                              .parallel = T, sub_level = 3)
+  # colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
+  saveRDS(global_focus, file = "data/global_focus.Rda")
   rm(global_effect_event); gc()
+  print(paste0("Finished unpacking focus event at ",Sys.time()))
 }
 
 # Function for calculating R2 values for sub-optimal results
@@ -582,6 +598,10 @@ control_plug <- function(test_plug, site_plug){
                      p.value.max = 1.0, p.value.sd = 0)
 }
 
+# Function for rounding decimal places of plot labels
+fmt_dcimals <- function(decimals = 0){
+  function(x) as.character(round(x, decimals))
+}
 
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted
@@ -590,22 +610,21 @@ control_plug <- function(test_plug, site_plug){
 # y_label <-  "Temperature (°C)"
 # spread <- 183
 fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
+
   # Create category breaks and select slice of data.frame
   clim_cat <- df %>%
     group_by(site_label) %>%
-    dplyr::mutate(diff = thresh - seas,
-                  thresh_2x = thresh + diff,
-                  thresh_3x = thresh_2x + diff,
-                  thresh_4x = thresh_3x + diff) %>%
+    # dplyr::mutate(diff = thresh - seas,
+                  # thresh_2x = thresh + diff,
+                  # thresh_3x = thresh_2x + diff,
+                  # thresh_4x = thresh_3x + diff) %>%
     dplyr::filter(t >= date_peak-spread, t <= date_peak+spread)
 
   # Peak event
   peak_event <- clim_cat %>%
     group_by(site_label) %>%
-    filter(event_no == clim_cat$event_no[clim_cat$t == date_peak]) %>%
-    mutate(date_start = min(t),
-           date_end = max(t),
-           start_point = thresh[t == min(t)],
+    filter(t >= date_start-1, t <= date_end+1) %>%
+    mutate(start_point = thresh[t == min(t)],
            peak_point = thresh[t == date_peak],
            end_point = thresh[t == max(t)])
 
@@ -620,21 +639,23 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
   )
 
   # Set category fill colours
-  fillColCat <- c(
-    "I Moderate" = "#ffc866",
-    "II Strong" = "#ff6900",
-    "III Severe" = "#9e0000",
-    "IV Extreme" = "#2d0000"
-  )
+  # fillColCat <- c(
+  #   "I Moderate" = "#ffc866",
+  #   "II Strong" = "#ff6900",
+  #   "III Severe" = "#9e0000",
+  #   "IV Extreme" = "#2d0000"
+  # )
 
   ggplot(data = clim_cat, aes(x = t, y = temp)) +
-    geom_flame(aes(y2 = thresh, fill = "I Moderate"), n = 5, n_gap = 2) +
-    geom_flame(aes(y2 = thresh_2x, fill = "II Strong")) +
-    geom_flame(aes(y2 = thresh_3x, fill = "III Severe")) +
-    geom_flame(aes(y2 = thresh_4x, fill = "IV Extreme")) +
-    geom_line(aes(y = thresh_2x, col = "2x Threshold"), size = 0.7, linetype = "dashed") +
-    geom_line(aes(y = thresh_3x, col = "3x Threshold"), size = 0.7, linetype = "dotdash") +
-    geom_line(aes(y = thresh_4x, col = "4x Threshold"), size = 0.7, linetype = "dotted") +
+    geom_flame(aes(y2 = thresh), n = 5, n_gap = 2) +
+    geom_flame(data = peak_event, aes(y2 = thresh), fill = "red", n = 5, n_gap = 2) +
+    # geom_flame(aes(y2 = thresh, fill = "I Moderate"), n = 5, n_gap = 2) +
+    # geom_flame(aes(y2 = thresh_2x, fill = "II Strong")) +
+    # geom_flame(aes(y2 = thresh_3x, fill = "III Severe")) +
+    # geom_flame(aes(y2 = thresh_4x, fill = "IV Extreme")) +
+    # geom_line(aes(y = thresh_2x, col = "2x Threshold"), size = 0.7, linetype = "dashed") +
+    # geom_line(aes(y = thresh_3x, col = "3x Threshold"), size = 0.7, linetype = "dotdash") +
+    # geom_line(aes(y = thresh_4x, col = "4x Threshold"), size = 0.7, linetype = "dotted") +
     geom_line(aes(y = seas, col = "Climatology"), size = 0.7) +
     geom_line(aes(y = thresh, col = "Threshold"), size = 0.7) +
     geom_line(aes(y = temp, col = "Temperature"), size = 0.6) +
@@ -657,18 +678,19 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
     # geom_rug(data = peak_event, sides = "b", colour = "red3", size = 2,
     #          aes(x = c(min(peak_event$t), max(peak_event$t)), y = min(clim_cat$temp))) +
     scale_colour_manual(name = NULL, values = lineColCat,
-                        breaks = c("Climatology", "Threshold", "Temperature",
-                                   "2x Threshold", "3x Threshold", "4x Threshold")) +
-    scale_fill_manual(name = NULL, values = fillColCat,
-                      breaks = c("I Moderate", "II Strong",
-                                 "III Severe", "IV Extreme")) +
+                        breaks = c("Climatology", "Threshold", "Temperature")) +#,
+                                   # "2x Threshold", "3x Threshold", "4x Threshold")) +
+    # scale_fill_manual(name = NULL, values = fillColCat,
+                      # breaks = c("I Moderate", "II Strong",
+                                 # "III Severe", "IV Extreme")) +
     scale_x_date(date_labels = "%b %Y", expand = c(0, 0)) +
+    # scale_y_continuous(labels = fmt_dcimals()) +
     # scale_x_date(date_labels = "%b %Y", expand = c(0, 0),
     #              breaks = c(clim_cat$t[round(nrow(clim_cat)*0.25)],
     #                         clim_cat$t[round(nrow(clim_cat)*0.5)],
     #                         clim_cat$t[round(nrow(clim_cat)*0.75)])) +
-    guides(colour = guide_legend(override.aes = list(linetype = c("solid", "solid", "solid",
-                                                                  "dashed", "dotdash", "dotted")))) +
+    # guides(colour = guide_legend(override.aes = list(linetype = c("solid", "solid", "solid",
+                                                                  # "dashed", "dotdash", "dotted")))) +
     labs(y = y_label, x = NULL) +
     facet_wrap(~site_label, ncol = 1, scales = "free") +
     theme(legend.position = "top")

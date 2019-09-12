@@ -243,6 +243,8 @@ The decadal trends in times series have a large effect on the creation of climat
 
 <!-- RWS: Need to address how the increased heat content of sub-surface waters makes MHWs below the surface appear to last longer or be larger etc. -->
 
+<!-- RWS: Write a paragraph in the discussion that talks about why using p-values for deciding what not to use is a bad idea/problematic -->
+
 
 # Conclusions
 
