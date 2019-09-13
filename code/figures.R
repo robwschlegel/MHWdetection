@@ -4,17 +4,109 @@
 source("code/functions.R")
 
 
+# Test visuals ------------------------------------------------------------
+
+# The results from all tests
+sst_ALL_results <- readRDS("data/sst_ALL_results.Rds")
+
+# Overall mean values
+sst_ALL_results %>%
+  filter(id == "mean") %>%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+  # geom_point(data = filter(sst_ALL_summary, difference == TRUE),
+  # colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_grid(var~test, scales = "free")# +
+# coord_cartesian(ylim = c(-2, 2))
+
+# Percent change away from control values for base three tests
+sst_ALL_results %>%
+  filter(test %in% c("length", "missing", "trend"),
+         id == "mean_perc") %>%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+  # geom_point(data = filter(sst_summary, difference == TRUE),
+  # colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_grid(var~test, scales = "free") +
+  coord_cartesian(ylim = c(-3, 3))
+
+# Percent change away from control values with interpolation
+sst_ALL_results %>%
+  filter(test %in% c("missing", "interp"),
+         id == "mean_perc") %>%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+  # geom_point(data = filter(sst_summary, difference == TRUE),
+  # colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_grid(var~test, scales = "free") +
+  coord_cartesian(ylim = c(-3, 3))
+
+# Change in count of MHWs from interpolation
+sst_ALL_results %>%
+  filter(test %in% c("missing", "interp"),
+         id == "n_diff") %>%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_hline(aes(yintercept = 0), colour= "grey") +
+  geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+  facet_grid(var~test, scales = "free")
+
+# Percent change away from control values with widened windows
+sst_ALL_results %>%
+  filter(test %in% c("length", "window_10", "window_20", "window_30"),
+         id == "mean_perc") %>%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+  # geom_point(data = filter(sst_summary, difference == TRUE),
+  # colour = "red", size = 1, alpha = 0.4) +
+  # scale_colour_manual(values = c("black", "red")) +
+  facet_grid(var~test, scales = "free") +
+  coord_cartesian(ylim = c(-3, 3))
+
+# Change in count of MHWs from window size
+sst_ALL_results %>%
+  filter(test %in% c("length", "window_10", "window_20", "window_30"),
+         id == "n_diff") %>%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_hline(aes(yintercept = 0), colour= "grey") +
+  geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+  facet_grid(var~test, scales = "free")
+
+# Change in percent of MHW days
+sst_ALL_results %>%
+  filter(test %in% c("length", "window_10", "window_20", "window_30"),
+         id == "sum_perc") %>%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+  facet_grid(var~test, scales = "free")
+
+# Change in focus event
+sst_ALL_results %>%
+  filter(var == "focus_duration", id == "mean_perc") %>%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_hline(aes(yintercept = 0), colour = "grey") +
+  geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+  facet_grid(var~test, scales = "free")
+
+
 # Figure 1 ----------------------------------------------------------------
 
-# Show the 3 focus MHWs and the category layers
+# Show the 3 focus MHWs
+
+# It appears as though it would be best to show the largest MHW that occurred in the last ten years
+# This will ensure more consistency throughout the results
 
 # Combine the reference time series
 sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
                  mutate(sst_NW_Atl, site = "NW_Atl"),
                  mutate(sst_Med, site = "Med"))
-
-# Load reference results
-sst_ALL_results <- readRDS("data/sst_ALL_results.Rds")
 
 # Calculate base results
 sst_ALL_res <- sst_ALL %>%
@@ -93,31 +185,11 @@ ggsave(fig_1_flat, filename = "LaTeX/fig_1_flat.png", width = 8, height = 5)
 
 # Figure 2 ----------------------------------------------------------------
 
-# The results from the length tests
-
-
-# Combine for plotting
-sst_ALL_plot_long <- rbind(sst_ALL_KS_clim_long, sst_ALL_KS_event_long,
-                           sst_ALL_KS_cat_long, sst_ALL_KS_clim_fix_long,
-                           sst_ALL_KS_event_fix_long, sst_ALL_KS_cat_fix_long) %>%
-  filter(!metric %in% c("intensity_mean", "intensity_cumulative"),
-         index_vals <= 0.5 | index_vals >= 10) %>%
-  mutate(metric = factor(metric, levels = c("seas", "thresh",
-                                            "duration", "intensity_max")))
-
-# Create plugs for control time series
-control_plug_WA <- control_plug("length", "WA")
-control_plug_NW_Atl <- control_plug("length", "NW_Atl")
-control_plug_Med <- control_plug("length", "Med")
-
-# Plug-em
-sst_ALL_plot_long <- rbind(sst_ALL_plot_long, control_plug_WA, control_plug_NW_Atl, control_plug_Med)
-
 # Add label for panels
-sst_ALL_plot_long <- sst_ALL_plot_long %>%
-  mutate(site_label = case_when(site == "WA" ~ "A",
-                                site == "NW_Atl" ~ "B",
-                                site == "Med" ~ "C"))
+# sst_ALL_plot_long <- sst_ALL_plot_long %>%
+#   mutate(site_label = case_when(site == "WA" ~ "A",
+#                                 site == "NW_Atl" ~ "B",
+#                                 site == "Med" ~ "C"))
 
 # Create figure and save
 fig_2 <- fig_line_plot("length")
@@ -195,12 +267,6 @@ ggsave(plot = fig_8, filename = "LaTeX/fig_8.jpg", height = 4, width = 8)
 
 
 
-
-
-
-
-
-
 # Figure illustrating the change caused in the 90th perc. thresh.
 # against the seas. clim. in the reference time series
 
@@ -220,164 +286,4 @@ clim_change_plot <- ggplot(data = clim_only, aes(x = doy, y = temp)) +
   scale_colour_viridis_c(direction = -1) +
   facet_grid(metric~site)
 clim_change_plot
-
-
-# Test visuals ------------------------------------------------------------
-
-# Overall mean values
-# ggplot(sst_test$Med$summary, aes(x = index_vals, y = mean)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-#   geom_point(data = filter(sst_summary, difference == TRUE),
-#              colour = "red", size = 1, alpha = 0.4) +
-#   # scale_colour_manual(values = c("black", "red")) +
-#   facet_grid(~test, scales = "free")# +
-#   # coord_cartesian(ylim = c(-2, 2))
-
-# Percent change away from control values for base three tests
-# ggplot(filter(sst_test$Med$summary, test %in% c("length", "missing", "trend")),
-#               aes(x = index_vals, y = mean_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-#   # geom_point(data = filter(sst_summary, difference == TRUE),
-#              # colour = "red", size = 1, alpha = 0.4) +
-#   # scale_colour_manual(values = c("black", "red")) +
-#   facet_wrap(~test, scales = "free") +
-#   coord_cartesian(ylim = c(-2, 2))
-
-# Percent change away from control values with interpolation
-# ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
-#        aes(x = index_vals, y = mean_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-#   # geom_point(data = filter(sst_summary, difference == TRUE),
-#              # colour = "red", size = 1, alpha = 0.4) +
-#   # scale_colour_manual(values = c("black", "red")) +
-#   facet_wrap(~test, scales = "free") +
-#   coord_cartesian(ylim = c(-1, 1))
-
-# Change in count of MHWs
-# ggplot(filter(sst_test$Med$summary, test %in% c("missing", "interp")),
-#        aes(x = index_vals, y = n_diff)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line() +
-#   facet_grid(~test, scales = "free")
-
-# Percent change away from control values with widened windows
-# ggplot(filter(sst_test$Med$summary, test %in% c("length", "window_10", "window_20", "window_30")),
-#        aes(x = index_vals, y = mean_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line(aes(colour = var), size = 2, alpha = 0.7) +
-#   # geom_point(data = filter(sst_summary, difference == TRUE),
-#   #            colour = "red", size = 1, alpha = 0.4) +
-#   # scale_colour_manual(values = c("black", "red")) +
-#   facet_wrap(~test, scales = "free") +
-#   coord_cartesian(ylim = c(-1, 1))
-
-# Change in count of MHWs
-# ggplot(filter(sst_test$WA$summary, test %in% c("length", "window_10", "window_20", "window_30")),
-#        aes(x = index_vals, y = n)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line() +
-#   facet_grid(~test, scales = "free")
-
-# Change in percent of MHW days
-# ggplot(filter(sst_test$Med$summary, var == "duration"),
-#        aes(x = index_vals, y = sum_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line() +
-#   facet_grid(~test, scales = "free")
-
-# Change in focus event
-# ggplot(filter(sst_focus, var == "focus_duration"),
-# ggplot(sst_test$Med$focus,
-#        aes(x = index_vals, y = val_perc)) +
-#   geom_hline(aes(yintercept = 0), colour = "grey") +
-#   geom_line() +
-#   facet_grid(var~test, scales = "free")
-
-
-# Visuals -----------------------------------------------------------------
-
-# Prep event data for pretty plotting
-# effect_event_pretty <- effect_event %>%
-#   filter(metric %in% c("count", "duration", "intensity_max"),
-#          !index_vals %in% seq(1, 9),
-#          index_vals <= 0.5 | index_vals >= 10) %>%
-#   mutate(panel_label = case_when(metric == "count" & test == "length" ~ "A",
-#                                  metric == "count" & test == "missing" ~ "B",
-#                                  metric == "count" & test == "trended" ~ "C",
-#                                  metric == "duration" & test == "length" ~ "D",
-#                                  metric == "duration" & test == "missing" ~ "E",
-#                                  metric == "duration" & test == "trended" ~ "F",
-#                                  metric == "intensity_max" & test == "length" ~ "H",
-#                                  metric == "intensity_max" & test == "missing" ~ "I",
-#                                  metric == "intensity_max" & test == "trended" ~ "J"),
-#          metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
-#                             metric == "duration" ~ "duration (days)",
-#                             metric == "count" ~ "count (event)"),
-#          test = case_when(test == "length" ~ "length (years)",
-#                           test == "missing" ~ "missing data (proportion)" ,
-#                           test == "trended" ~ "added trend (°C/dec)"),
-#          test = as.factor(test),
-#          test = factor(test, levels = levels(test)[c(2,3,1)]),
-#          site = as.character(site)) %>%
-#   group_by(test) %>%
-#   mutate(panel_label_x = min(index_vals)) %>%
-#   group_by(metric) %>%
-#   mutate(panel_label_y = max(val)) %>%
-#   ungroup()
-# effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
-# effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
-# effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
-
-### Visualise
-## Climatologies
-# Sub-optimal data
-# ggplot(effect_clim, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-#   geom_line(aes(y = mean, colour = site)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free")
-# # Fixed data
-# ggplot(effect_clim_fix, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-#   geom_line(aes(y = mean, colour = site)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free")
-
-## Event metrics
-# Sub-optimal data
-# plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-#   # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-#   # stat_smooth(aes(y = val, colour = site), geom = "line",
-#               # method = "lm", alpha = 0.5, size = 1) +
-#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1) +
-#   geom_text(aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   scale_colour_brewer(palette = "Dark2") +
-#   facet_grid(metric~test, scales = "free", switch = "both") +
-#   labs(x = NULL, y = NULL, colour = "Site") +
-#   theme(legend.position = "bottom")
-# plot_event_effect
-# ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.jpg", height = 5, width = 10)
-
-# Fixed data
-# ggplot(effect_event_fix, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-#   geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-#   stat_smooth(aes(y = val, colour = site), geom = "line",
-#               method = "lm", alpha = 0.5, size = 1) +
-#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free", switch = "both") +
-#   labs(x = NULL, y = NULL, colour = "Site") +
-#   theme(legend.position = "bottom")
-
-# Missing data only + fix
 

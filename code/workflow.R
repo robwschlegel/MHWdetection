@@ -10,32 +10,51 @@ source("code/functions.R")
 # options(scipen=999)
 
 
+# Create ice mask ---------------------------------------------------------
+
+# Ice file downloaded from:
+# https://www.esrl.noaa.gov/psd/data/gridded/data.noaa.oisst.v2.html
+
+# Load and calculat ice cover means per pixel
+# ice_cover <- tidync("../../data/OISST/icec.mnmean.nc") %>%
+#   hyper_tibble() %>%
+#   mutate(time = as.Date(time, origin = "1800-1-1")) %>%
+#   filter(time >= "1982-01-01", time <= "2018-12-31") %>%
+#   group_by(lon, lat) %>%
+#   summarise(icec = round(mean(icec, na.rm = T), 2)) %>%
+#   ungroup() %>%
+#   mutate(lon = ifelse(lon > 180, lon-360, lon))
+
+# Save
+# saveRDS(ice_cover, "data/ice_cover.Rda")
+
+
 # Reference analysis ------------------------------------------------------
 
 # Combine the three reference ts, run results, and save
-# sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
-#                  mutate(sst_NW_Atl, site = "NW_Atl"),
-#                  mutate(sst_Med, site = "Med"))
-# system.time(
-# sst_ALL_results <- plyr::dlply(sst_ALL, c("site"), single_analysis,
-# full_seq = T, clim_metric = T, count_miss = T, .parallel = T)
-# ) # 54 seconds
-# saveRDS(sst_ALL_results, "data/sst_ALL_results.Rds")
+sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
+                 mutate(sst_NW_Atl, site = "NW_Atl"),
+                 mutate(sst_Med, site = "Med"))
+system.time(
+  sst_ALL_results <- plyr::ddply(sst_ALL, c("site"), single_analysis, .parallel = T,
+                                 full_seq = T, clim_metric = T, count_miss = T, windows = T)
+) # 72 seconds
+saveRDS(sst_ALL_results, "data/sst_ALL_results.Rds")
 
 
 # Global analysis ---------------------------------------------------------
 
-# global_analysis_single <- function(file_sub){
-#   OISST_slice <- OISST_files[file_sub]
-#   lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
-#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-#   slice_res <- global_analysis(OISST_slice)
-#   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rds"))
-#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-#   rm(slice_res); gc()
-# }
+global_analysis_single <- function(file_sub){
+  OISST_slice <- OISST_files[file_sub]
+  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
+  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+  slice_res <- global_analysis(OISST_slice)
+  saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rds"))
+  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+  rm(slice_res); gc()
+}
 
-# plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
+plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
 
 # This took ~2.5 days to run
 
@@ -54,13 +73,21 @@ source("code/functions.R")
 # Set cores
 doMC::registerDoMC(cores = 50)
 
-# Load data
-global_focus <-readRDS("data/global_focus.Rda")
+# Load summary data
+global_summary <- readRDS("data/global_summary.Rda")
 
-# Calculate slopes
+# Calculate summary slopes
+global_summary_slope <- plyr::ddply(global_summary, .variables = c("lat"),
+                                  .fun = global_slope, .parallel = T)
+saveRDS(global_summary_slope, "data/global_summary_slope.Rda")
+
+# Load focus data
+global_focus <- readRDS("data/global_focus.Rda")
+
+# Calculate focus slopes
 global_focus_slope <- plyr::ddply(global_focus, .variables = c("lat"),
                                   .fun = global_slope, .parallel = T)
-save(global_focus_slope, file = "data/global_effect_event_slope.Rdata")
+saveRDS(global_focus_slope, "data/global_focus_slope.Rda")
 
 
 # Global relationships ----------------------------------------------------

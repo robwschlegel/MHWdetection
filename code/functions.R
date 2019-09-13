@@ -23,6 +23,7 @@ library(doMC); doMC::registerDoMC(cores = 50)
 library(tidync, lib.loc = "~/R-packages/")
 library(rgdal, lib.loc = "~/R-packages/")
 library(pgirmess)
+library(tidync, lib.loc = "~/R-packages/")
 # library(egg)
 # library(rcompanion)
 
@@ -52,6 +53,11 @@ sst_ALL_coords <- data.frame(site = c("WA", "NW_Atl", "Med"),
                              lon = c(112.5, -67, 9),
                              lat = c(-29.5, 43, 43.5))
 
+# The ice mask
+ice_mask <- readRDS("data/ice_cover.Rda") %>%
+  filter(icec  == 0) %>%
+  select(-icec)
+
 # The base map
 map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE)) %>%
   dplyr::rename(lon = long) %>%
@@ -77,9 +83,8 @@ control_length <- function(year_begin, df){
   res <- df %>%
     filter(year(t) >= year_begin) %>%
     mutate(index_vals = 2018-year_begin+1,
-           test = "length",
-           fix = "none") %>%
-    dplyr::select(test, fix, index_vals, t, temp)
+           test = "length") %>%
+    dplyr::select(test, index_vals, t, temp)
   return(res)
 }
 
@@ -92,10 +97,9 @@ control_missing <- function(prop, df){
   res <- df %>%
     mutate(row_index = 1:n(),
            temp = replace(temp, which(row_index %in% miss_index), NA),
-           test = "missing") %>%
-    mutate(index_vals = prop,
-           fix = "none") %>%
-    dplyr::select(test, fix, index_vals, t, temp)
+           test = "missing",
+           index_vals = prop) %>%
+    dplyr::select(test, index_vals, t, temp)
   return(res)
 }
 
@@ -105,10 +109,9 @@ control_trend <- function(rate, df){
   res <- df %>%
     mutate(row_index = 1:n(),
            temp = temp + (row_index*daily_step),
-           test = "trend") %>%
-    mutate(index_vals = rate,
-           fix = "none") %>%
-    dplyr::select(test, fix, index_vals, t, temp)
+           test = "trend",
+           index_vals = rate) %>%
+    dplyr::select(test, index_vals, t, temp)
   return(res)
 }
 
@@ -147,7 +150,7 @@ con_miss <- function(df){
 # year_start = 0
 # year_end = 0
 # focus_dates = focus_event
-clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-01-01",
+clim_metric_focus_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-01-01",
                              year_start = 0, year_end = 0, focus_dates){
 
   # First and last years for full clim period
@@ -172,7 +175,7 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
     mutate(id = "focus_event",
            var = paste0("focus_",var),
            val = if_else(is.infinite(val), 0, val)) %>%
-    select(id, var, val)
+    select(var, id, val)
 
   # Extract desired clim values
   res_clim <- res$climatology %>%
@@ -182,7 +185,7 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
     gather(var, val, -doy) %>%
     dplyr::rename(id = doy) %>%
     mutate(id = paste0("doy_",id)) %>%
-    select(id, var, val)
+    select(var, id, val)
 
   # Extract desired metric values
   res_metric <- res$event %>%
@@ -191,12 +194,43 @@ clim_metric_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-0
     gather(var, val, -event_no) %>%
     dplyr::rename(id = event_no) %>%
     mutate(id = paste0("event_no_",id))%>%
-    select(id, var, val)
+    select(var, id, val)
 
   # Combine and exit
   res_all <- rbind(res_clim, res_metric, res_focus) %>%
     mutate(val = round(val, 3))
   return(res_all)
+}
+
+
+# Window manipulation -----------------------------------------------------
+
+window_test <- function(df, focus_event){
+
+  # Increase rolling mean window to 10
+  sst_window_10_res <- df %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event, set_window = 10)) %>%
+    ungroup() %>%
+    mutate(test = "window_10")
+
+  # Increase rolling mean window to 20
+  sst_window_20_res <- df %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event, set_window = 20)) %>%
+    ungroup() %>%
+    mutate(test = "window_20")
+
+  # Increase rolling mean window to 30
+  sst_window_30_res <- df %>%
+    group_by(test, index_vals) %>%
+    group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event, set_window = 30)) %>%
+    ungroup() %>%
+    mutate(test = "window_30")
+
+  # Exit
+  res <- rbind(sst_window_10_res, sst_window_20_res, sst_window_30_res)
+  return(res)
 }
 
 
@@ -219,9 +253,10 @@ kruskal_post_hoc <- function(df){
     separate(comp_index, into = c("control", "index_vals"),
              sep = '-', convert = T) %>%
     filter(control == levels(df$index_vals)[1]) %>%
-    # filter(grepl(levels(df$index_vals)[1], control)) %>%
-    select(-obs.dif, -critical.dif, -control) #%>%
-    # mutate(difference = replace_na(difference, FALSE))
+    dplyr::rename(val = difference) %>%
+    mutate(id = "difference",
+           val = as.numeric(val)) %>%
+    select(index_vals, id, val)
   return(res)
 }
 
@@ -244,7 +279,7 @@ tukey_post_hoc <- function(df){
 # tester...
 # df <- sst_clim_metric %>%
 # ungroup() %>%
-# filter(test == "missing") %>%
+# filter(test == "length") %>%
 # select(-test)
 summary_stats <- function(df){
 
@@ -262,7 +297,11 @@ summary_stats <- function(df){
     filter(var == "duration") %>%
     select(-var) %>%
     unique() %>%
-    data.frame()
+    mutate(var = "count",
+           n_diff = n-(nrow(filter(df,
+                                   index_vals == control_val,
+                                   var == "duration")))) %>%
+    gather(id, val, -index_vals, -var)
 
   # Summary stats for each index_val
   res_base <- df %>%
@@ -272,17 +311,19 @@ summary_stats <- function(df){
               mean = mean(val, na.rm = T),
               max = max(val, na.rm = T),
               sum = sum(val, na.rm = T),
-              sd = sd(val, na.rm = T)) %>%
-    ungroup() %>%
-    left_join(res_count, by = "index_vals") %>%
-    mutate(index_vals = as.character(index_vals)) %>%
-    mutate_if(is.numeric, round, 3) %>%
-    mutate(index_vals = as.numeric(index_vals))
+              sd = sd(val, na.rm = T),
+              sd = replace_na(sd, 0)) #%>%
+    # ungroup() %>%
+    # left_join(res_count, by = "index_vals") %>%
+    # mutate(index_vals = as.character(index_vals),
+    # sd = replace_na(sd, 0)) %>%
+    # mutate_if(is.numeric, round, 3) #%>%
+    # mutate(index_vals = as.numeric(index_vals))
 
   # Extract control row
   res_control <- filter(res_base, index_vals == control_val)
 
-  # Find percentages of change and exit
+  # Find percentages of change, attach counts, and exit
   res_perc <- res_base %>%
     mutate(min_perc = (min-res_control$min)/abs(res_control$min),
            median_perc = (median-res_control$median)/abs(res_control$median),
@@ -290,31 +331,10 @@ summary_stats <- function(df){
            max_perc = (max-res_control$max)/abs(res_control$max),
            sum_perc = (sum-res_control$sum)/abs(res_control$sum),
            sd_perc = (sd-res_control$sd)/abs(res_control$sd),
-           n_diff = n-res_control$n)
-  return(res_perc)
-}
-
-# Summary stats for focus events only
-# df <- sst_clim_metric %>%
-# ungroup() %>%
-# filter(id == "focus_event", test == "missing") %>%
-# select(-test)
-summary_stats_focus <- function(df){
-
-  # Determine the control group
-  if(30 %in% df$index_vals){
-    control_val <- 30
-  } else{
-    control_val <- 0
-  }
-
-  # Extract control row
-  res_control <- filter(df, index_vals == control_val)
-
-  # Find proportions and exit
-  res_perc <- df %>%
-    select(-id) %>%
-    mutate(val_perc = round((val-res_control$val)/abs(res_control$val), 2))
+           sd_perc = replace_na(sd_perc, 0)) %>%
+    gather(id, val, -index_vals, -var) %>%
+    mutate(val = round(val, 3)) %>%
+    rbind(res_count)
   return(res_perc)
 }
 
@@ -347,10 +367,17 @@ summary_stats_focus <- function(df){
 # Single full analysis ----------------------------------------------------
 
 # This single function runs through and outputs all of the desired tests as a list
-single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F){
+# testers...
+# df <- sst_Med
+# full_seq = T
+# clim_metric = T
+# count_miss = T
+# windows = T
+single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, windows = F){
 
   # Calculate the secular trend
-  dec_trend <- round(as.numeric(broom::tidy(lm(temp ~ t, df))[2,2]*3652.5), 3)
+  dec_trend <- data.frame(test = "length", index_vals = 37, var = "dec_trend", id = "slope",
+                          val = round(as.numeric(broom::tidy(lm(temp ~ t, df))[2,2]*3652.5), 3))
 
   # Detrend the ts
   sst_flat <- detrend(df)
@@ -360,8 +387,11 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F){
 
   # Pull out the largest event in the ts
   focus_event <- sst_flat_MHW$event %>%
+    filter(date_start >= "2009-01-01") %>%
     filter(intensity_cumulative == max(intensity_cumulative)) %>%
-    select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max)
+    select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max) %>%
+    mutate(intensity_cumulative = round(intensity_cumulative, 2),
+           intensity_max = round(intensity_max, 2))
   if(nrow(focus_event) > 1){
     focus_event <- slice(focus_event, nrow(focus_event))
   }
@@ -388,18 +418,23 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F){
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
   sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
     group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event)) %>%
+    group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event)) %>%
     ungroup()
 
   # Run the tests while also interpolating all gaps
   sst_interp_res <- sst_missing %>%
     group_by(test, index_vals) %>%
-    group_modify(~clim_metric_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
+    group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
     ungroup() %>%
     mutate(test = "interp")
 
   # Combine for ease of use
   sst_clim_metric <- data.frame(rbind(sst_base_res, sst_interp_res))
+
+  if(windows){
+    sst_windows <- window_test(sst_length, focus_event)
+    sst_clim_metric <- rbind(sst_clim_metric, sst_windows)
+  }
 
   # Run ANOVA/Tukey on MHW results for three different tests
   sst_signif <- sst_clim_metric %>%
@@ -409,42 +444,37 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F){
 
   # Create summary statistics of MHW results
   sst_summary <- sst_clim_metric %>%
-    filter(id != "focus_event") %>%
+    # filter(id != "focus_event") %>%
     group_by(test) %>%
     group_modify(~summary_stats(.x)) %>%
-    left_join(sst_signif, by = c("test", "index_vals", "var")) %>%
-    mutate(difference = replace_na(difference, FALSE)) %>%
+    rbind(sst_signif) %>%
     data.frame()
-
-  # Effect on focus MHW
-  sst_focus <- sst_clim_metric %>%
-    filter(id == "focus_event") %>%
-    group_by(test) %>%
-    group_modify(~summary_stats_focus(.x)) %>%
-    data.frame()
-
-  # Merge all
-  res <- list(dec_trend = dec_trend,
-              summary = sst_summary,
-              focus = sst_focus)
 
   # Include clim/metric data if requested
   if(clim_metric){
-    res <- c(res, list(clim_metric = sst_clim_metric,))
+    sst_summary <- rbind(sst_summary, sst_clim_metric)
   }
 
   # Count consecutive missing days
-  # NB: This would be useful information to have but it takes to long to calculate
+  # NB: This would be useful information to have for each pixel
+  # but it takes too long to calculate
   if(count_miss){
-    # system.time(
     sst_missing_count <- sst_missing %>%
-      group_by(index_vals) %>%
+      group_by(test, index_vals) %>%
       group_modify(~con_miss(.x)) %>%
+      dplyr::rename(id = duration,
+                    val = count) %>%
+      mutate(var = "con_miss",
+             id = as.character(id)) %>%
       data.frame()
-    # ) # 18 seconds
-    res <- c(res, list(missing_count = sst_missing_count))
+    sst_summary <- rbind(sst_summary, sst_missing_count)
   }
-  return(res)
+
+  # Add decadal trend to end of data.frame and exit
+  sst_summary <- rbind(sst_summary, dec_trend) %>%
+    mutate(test = as.factor(test)) %>%
+    data.frame()
+  return(sst_summary)
 }
 
 
@@ -523,7 +553,7 @@ global_unpack <- function(){
   print(paste0("Began unpacking decadal trends at ",Sys.time()))
   global_dec_trend <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
                                   .parallel = T, sub_level = 1)
-  saveRDS(global_dec_trend, file = "data/global_dec_trend.Rda")
+  saveRDS(global_dec_trend, "data/global_dec_trend.Rda")
   rm(global_dec_trend); gc()
   print(paste0("Finished unpacking decadal trends at ",Sys.time()))
 
@@ -532,7 +562,7 @@ global_unpack <- function(){
   global_summary <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
                                 .parallel = T, sub_level = 2)
   # colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
-  saveRDS(global_summary, file = "data/global_summary.Rda")
+  saveRDS(global_summary, "data/global_summary.Rda")
   rm(global_summary); gc()
   print(paste0("Finished unpacking summary stats at ",Sys.time()))
 
@@ -541,14 +571,14 @@ global_unpack <- function(){
   global_focus <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
                               .parallel = T, sub_level = 3)
   # colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
-  saveRDS(global_focus, file = "data/global_focus.Rda")
-  rm(global_effect_event); gc()
+  saveRDS(global_focus, "data/global_focus.Rda")
+  rm(global_focus); gc()
   print(paste0("Finished unpacking focus event at ",Sys.time()))
 }
 
 # Function for calculating R2 values for sub-optimal results
 global_slope_sub <- function(df){
-  if(nrow(df) >2){
+  if(nrow(df) > 2){
     round(broom::tidy(lm(val ~ index_vals, data = df))$estimate[2], 3)
   } else{
     return(NA)
@@ -557,34 +587,22 @@ global_slope_sub <- function(df){
 
 # This function expects to be given only one latitude slice at a time
 # tester...
-# df <- global_effect_event %>%
-  # filter(lon == lon[20], lat == lat[129])
-  # filter(lon == lon[20], lat == lat[129], test == "length", metric == "duration")
+# df <- global_focus %>%
+# filter(lon == lon[20], lat == lat[129])
+# filter(lon == lon[20], lat == lat[129], test == "length", var == "focus_duration")
+# filter(test == "length", var == "focus_duration")
+# df <- global_focus %>%
+# filter(lon == lon[20], lat == lat[129])
+# filter(lon == lon[20], lat == lat[129], test == "length", var == "duration")
 global_slope <- function(df){
   suppressWarnings( # Suppress perfect slope warnings
   df_slope <- df %>%
-    group_by(lon, test, metric) %>%
-    nest() %>%
-    mutate(slope = purrr::map(data, global_slope_sub)) %>%
-    select(-data) %>%
-    unnest()
-  )
-}
-
-# This function is the same as above but less picky about the output
-# tester...
-# df <- event_slope_dec_trend %>%
-  # filter(lon == lon[20], lat == lat[129])
-  # filter(lon == lon[20], lat == lat[129], test == "length", metric == "duration")
-global_model <- function(df){
-  suppressWarnings( # Suppress perfect slope warnings
-    df_slope <- df %>%
-      group_by(lon, test, metric) %>%
-      # nest() %>%
-      # mutate(slope = purrr::map(data, global_slope_sub)) %>%
-      do(model = broom::augment(lm(slope ~ dec_trend, data = .))) #%>%
-      # select(-data) %>%
-      # unnest()
+    group_by(lon, test, var) %>%
+    group_modify(~global_slope_sub(.x))
+    # nest() %>%
+    # mutate(slope = purrr::map(data, global_slope_sub)) %>%
+    # select(-data) %>%
+    # unnest()
   )
 }
 
@@ -756,11 +774,6 @@ fig_line_plot <- function(test_sub, df = sst_ALL_plot_long){
   return(fig_plot)
 }
 
-
-# Function that plots the effect on a single focus MHW
-
-
-
 # Function for easily plotting subsets from the global slope results
 # testers...
 # test_sub <- "length"
@@ -836,7 +849,7 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub,
   #   scale_x_continuous(expand = c(0,0))
   # slope_density
 
-  # The ridgwlinw plot
+  # The ridgeline plot
   # slope_ridge <- ggplot(base_sub, aes(x = slope, y = metric)) +
   #   stat_density_ridges(aes(fill = factor(..quantile..)),
   #                       geom = "density_ridges_gradient", calc_ecdf = TRUE,
@@ -856,104 +869,185 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub,
 
 # Expects a one row data.frame with a 'lon' and 'lat' column
 # df <- focus_WA
-map_point <- function(df){
-  category_data <- readRDS(category_files[grepl(pattern = as.character(df$date_peak),
-                                                x = category_files)])
-  map_out <- ggplot(data = df, aes(x = lon, y = lat)) +
-    geom_tile(data = category_data, aes(fill = category)) +
-    borders(fill = "grey80", colour = "black") +
-    geom_point(shape = 21, colour = "white", fill = "hotpink", size = 2) +
-    scale_fill_manual("Category",
-                      values = c("#ffc866", "#ff6900", "#9e0000", "#2d0000"),
-                      labels = c("I Moderate", "II Strong",
-                                 "III Severe", "IV Extreme")) +
-    coord_cartesian(xlim = c(df$lon[1]-20, df$lon[1]+20),
-                    ylim = c(df$lat[1]-20, df$lat[1]+20)) +
-    labs(x = NULL, y = NULL) +
-    theme(legend.position = "bottom")
-  return(map_out)
-}
+# map_point <- function(df){
+#   category_data <- readRDS(category_files[grepl(pattern = as.character(df$date_peak),
+#                                                 x = category_files)])
+#   map_out <- ggplot(data = df, aes(x = lon, y = lat)) +
+#     geom_tile(data = category_data, aes(fill = category)) +
+#     borders(fill = "grey80", colour = "black") +
+#     geom_point(shape = 21, colour = "white", fill = "hotpink", size = 2) +
+#     scale_fill_manual("Category",
+#                       values = c("#ffc866", "#ff6900", "#9e0000", "#2d0000"),
+#                       labels = c("I Moderate", "II Strong",
+#                                  "III Severe", "IV Extreme")) +
+#     coord_cartesian(xlim = c(df$lon[1]-20, df$lon[1]+20),
+#                     ylim = c(df$lat[1]-20, df$lat[1]+20)) +
+#     labs(x = NULL, y = NULL) +
+#     theme(legend.position = "bottom")
+#   return(map_out)
+# }
 
 # This function expects the output of the clim, event, cat pipe
 # df <- filter(sst_ALL_res, site == "NW_Atl")
-table_summary <- function(site_1){
-
-  df <- filter(sst_ALL_res, site == site_1)
-
-  # Seasonal min/mean/max
-  # Threshold min/mean/max
-  clim_long <- df %>%
-    select(clims) %>%
-    unnest() %>%
-    select(doy, seas, thresh) %>%
-    unique() %>%
-    select(seas, thresh) %>%
-    gather(key = "metric", value = "val")
-
-  event_long <- df %>%
-    select(events) %>%
-    unnest() %>%
-    filter(row_number() %% 2 == 0) %>%
-    unnest() %>%
-    select(duration, intensity_mean, intensity_max, intensity_cumulative) %>%
-    gather(key = "metric", value = "val")
-
-  event_count <- df %>%
-    select(cats) %>%
-    unnest() %>%
-    select(category) %>%
-    group_by(category) %>%
-    summarise(val = n()) %>%
-    mutate(metric = "count") %>%
-    spread(key = category, value = val)
-  if(!"IV Extreme" %in% colnames(event_count)){
-    event_count <- cbind(event_count, tibble('IV Extreme' = 0))
-  }
-  event_count <- event_count %>%
-    select(metric, 'I Moderate', 'II Strong', 'III Severe', 'IV Extreme') %>%
-    dplyr::rename(' ' = metric)
-
-  summary_res <- rbind(clim_long, event_long) %>%
-    group_by(metric) %>%
-    summarise_all(.funs = c("min", "mean", "max", "sd")) %>%
-    mutate_if(is.numeric, round, 2) %>%
-    arrange(metric)
-
-  tbl_1 <- gridExtra::tableGrob(summary_res, rows = NULL)
-  tbl_2 <- gridExtra::tableGrob(event_count, rows = NULL)
-
-  tbl_all <- gridExtra::grid.arrange(tbl_1, tbl_2,
-                                     nrow = 2, as.table = TRUE)
-
-  return(tbl_all)
-  # res_list <- list(summary_res = summary_res,
-                   # event_count = event_count)
-  # return(res_list)
-}
+# table_summary <- function(site_1){
+#
+#   df <- filter(sst_ALL_res, site == site_1)
+#
+#   # Seasonal min/mean/max
+#   # Threshold min/mean/max
+#   clim_long <- df %>%
+#     select(clims) %>%
+#     unnest() %>%
+#     select(doy, seas, thresh) %>%
+#     unique() %>%
+#     select(seas, thresh) %>%
+#     gather(key = "metric", value = "val")
+#
+#   event_long <- df %>%
+#     select(events) %>%
+#     unnest() %>%
+#     filter(row_number() %% 2 == 0) %>%
+#     unnest() %>%
+#     select(duration, intensity_mean, intensity_max, intensity_cumulative) %>%
+#     gather(key = "metric", value = "val")
+#
+#   event_count <- df %>%
+#     select(cats) %>%
+#     unnest() %>%
+#     select(category) %>%
+#     group_by(category) %>%
+#     summarise(val = n()) %>%
+#     mutate(metric = "count") %>%
+#     spread(key = category, value = val)
+#   if(!"IV Extreme" %in% colnames(event_count)){
+#     event_count <- cbind(event_count, tibble('IV Extreme' = 0))
+#   }
+#   event_count <- event_count %>%
+#     select(metric, 'I Moderate', 'II Strong', 'III Severe', 'IV Extreme') %>%
+#     dplyr::rename(' ' = metric)
+#
+#   summary_res <- rbind(clim_long, event_long) %>%
+#     group_by(metric) %>%
+#     summarise_all(.funs = c("min", "mean", "max", "sd")) %>%
+#     mutate_if(is.numeric, round, 2) %>%
+#     arrange(metric)
+#
+#   tbl_1 <- gridExtra::tableGrob(summary_res, rows = NULL)
+#   tbl_2 <- gridExtra::tableGrob(event_count, rows = NULL)
+#
+#   tbl_all <- gridExtra::grid.arrange(tbl_1, tbl_2,
+#                                      nrow = 2, as.table = TRUE)
+#
+#   return(tbl_all)
+#   # res_list <- list(summary_res = summary_res,
+#                    # event_count = event_count)
+#   # return(res_list)
+# }
 
 # Wrapper for time series + clims + event rug
-ts_clim_rug <- function(site_1){
-  ts_data <- filter(sst_ALL, site == site_1)
-  clim_data <- filter(sst_ALL_clim, site == site_1)
-  event_data <- filter(sst_ALL_event, site == site_1)
-  fig <- ggplot(data = ts_data, aes(x = t, y = temp)) +
-    geom_line(colour = "grey20") +
-    geom_line(data = clim_data, aes(y = seas),
-              linetype = "dashed", colour = "steelblue3") +
-    geom_line(data = clim_data, linetype = "dotted", colour = "tomato3",
-              aes(x = t, y = thresh)) +
-    geom_rug(data = event_data, sides = "b", colour = "red3", size = 2,
-             aes(x = date_peak, y = min(ts_data$temp))) +
-    labs(x = NULL, y = "Temperature (°C)")
-  return(fig)
-}
+# ts_clim_rug <- function(site_1){
+#   ts_data <- filter(sst_ALL, site == site_1)
+#   clim_data <- filter(sst_ALL_clim, site == site_1)
+#   event_data <- filter(sst_ALL_event, site == site_1)
+#   fig <- ggplot(data = ts_data, aes(x = t, y = temp)) +
+#     geom_line(colour = "grey20") +
+#     geom_line(data = clim_data, aes(y = seas),
+#               linetype = "dashed", colour = "steelblue3") +
+#     geom_line(data = clim_data, linetype = "dotted", colour = "tomato3",
+#               aes(x = t, y = thresh)) +
+#     geom_rug(data = event_data, sides = "b", colour = "red3", size = 2,
+#              aes(x = date_peak, y = min(ts_data$temp))) +
+#     labs(x = NULL, y = "Temperature (°C)")
+#   return(fig)
+# }
 
 # Wrapper for clim only line plot
-clim_line <-function(site_1){
-  clim_data <- filter(sst_ALL_clim_only, site == site_1)
-  ggplot(data = clim_data, aes(x = doy)) +
-    geom_line(aes(y = seas), colour = "steelblue3") +
-    geom_line(aes(y = thresh), colour = "tomato3") +
-    labs(x = NULL, y = "Temperature (°C)")
-}
+# clim_line <-function(site_1){
+#   clim_data <- filter(sst_ALL_clim_only, site == site_1)
+#   ggplot(data = clim_data, aes(x = doy)) +
+#     geom_line(aes(y = seas), colour = "steelblue3") +
+#     geom_line(aes(y = thresh), colour = "tomato3") +
+#     labs(x = NULL, y = "Temperature (°C)")
+# }
 
+# Prep event data for pretty plotting
+# effect_event_pretty <- effect_event %>%
+#   filter(metric %in% c("count", "duration", "intensity_max"),
+#          !index_vals %in% seq(1, 9),
+#          index_vals <= 0.5 | index_vals >= 10) %>%
+#   mutate(panel_label = case_when(metric == "count" & test == "length" ~ "A",
+#                                  metric == "count" & test == "missing" ~ "B",
+#                                  metric == "count" & test == "trended" ~ "C",
+#                                  metric == "duration" & test == "length" ~ "D",
+#                                  metric == "duration" & test == "missing" ~ "E",
+#                                  metric == "duration" & test == "trended" ~ "F",
+#                                  metric == "intensity_max" & test == "length" ~ "H",
+#                                  metric == "intensity_max" & test == "missing" ~ "I",
+#                                  metric == "intensity_max" & test == "trended" ~ "J"),
+#          metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
+#                             metric == "duration" ~ "duration (days)",
+#                             metric == "count" ~ "count (event)"),
+#          test = case_when(test == "length" ~ "length (years)",
+#                           test == "missing" ~ "missing data (proportion)" ,
+#                           test == "trended" ~ "added trend (°C/dec)"),
+#          test = as.factor(test),
+#          test = factor(test, levels = levels(test)[c(2,3,1)]),
+#          site = as.character(site)) %>%
+#   group_by(test) %>%
+#   mutate(panel_label_x = min(index_vals)) %>%
+#   group_by(metric) %>%
+#   mutate(panel_label_y = max(val)) %>%
+#   ungroup()
+# effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
+# effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
+# effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
+
+### Visualise
+## Climatologies
+# Sub-optimal data
+# ggplot(effect_clim, aes(x = index_vals)) +
+#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
+#   geom_line(aes(y = mean, colour = site)) +
+#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+#   facet_grid(metric~test, scales = "free")
+# # Fixed data
+# ggplot(effect_clim_fix, aes(x = index_vals)) +
+#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
+#   geom_line(aes(y = mean, colour = site)) +
+#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+#   facet_grid(metric~test, scales = "free")
+
+## Event metrics
+# Sub-optimal data
+# plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
+#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
+#   # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
+#   # stat_smooth(aes(y = val, colour = site), geom = "line",
+#               # method = "lm", alpha = 0.5, size = 1) +
+#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1) +
+#   geom_text(aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
+#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+#   scale_colour_brewer(palette = "Dark2") +
+#   facet_grid(metric~test, scales = "free", switch = "both") +
+#   labs(x = NULL, y = NULL, colour = "Site") +
+#   theme(legend.position = "bottom")
+# plot_event_effect
+# ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
+# ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
+# ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
+# ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
+# ggsave(plot_event_effect, filename = "LaTeX/fig_3.jpg", height = 5, width = 10)
+
+# Fixed data
+# ggplot(effect_event_fix, aes(x = index_vals)) +
+#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
+#   geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
+#   stat_smooth(aes(y = val, colour = site), geom = "line",
+#               method = "lm", alpha = 0.5, size = 1) +
+#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
+#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
+#   facet_grid(metric~test, scales = "free", switch = "both") +
+#   labs(x = NULL, y = NULL, colour = "Site") +
+#   theme(legend.position = "bottom")
+
+# Missing data only + fix
