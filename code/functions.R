@@ -53,11 +53,6 @@ sst_ALL_coords <- data.frame(site = c("WA", "NW_Atl", "Med"),
                              lon = c(112.5, -67, 9),
                              lat = c(-29.5, 43, 43.5))
 
-# The ice mask
-ice_mask <- readRDS("data/ice_cover.Rda") %>%
-  filter(icec  == 0) %>%
-  select(-icec)
-
 # The base map
 map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE)) %>%
   dplyr::rename(lon = long) %>%
@@ -312,30 +307,27 @@ summary_stats <- function(df){
               max = max(val, na.rm = T),
               sum = sum(val, na.rm = T),
               sd = sd(val, na.rm = T),
-              sd = replace_na(sd, 0)) #%>%
-    # ungroup() %>%
-    # left_join(res_count, by = "index_vals") %>%
-    # mutate(index_vals = as.character(index_vals),
-    # sd = replace_na(sd, 0)) %>%
-    # mutate_if(is.numeric, round, 3) #%>%
-    # mutate(index_vals = as.numeric(index_vals))
+              sd = replace_na(sd, 0)) %>%
+    gather(id, val, -index_vals, -var)
 
   # Extract control row
-  res_control <- filter(res_base, index_vals == control_val)
+  res_control <- filter(res_base, index_vals == control_val) %>%
+    ungroup() %>%
+    dplyr::rename(cont_val = val) %>%
+    select(-index_vals)
 
   # Find percentages of change, attach counts, and exit
-  res_perc <- res_base %>%
-    mutate(min_perc = (min-res_control$min)/abs(res_control$min),
-           median_perc = (median-res_control$median)/abs(res_control$median),
-           mean_perc = (mean-res_control$mean)/abs(res_control$mean),
-           max_perc = (max-res_control$max)/abs(res_control$max),
-           sum_perc = (sum-res_control$sum)/abs(res_control$sum),
-           sd_perc = (sd-res_control$sd)/abs(res_control$sd),
-           sd_perc = replace_na(sd_perc, 0)) %>%
-    gather(id, val, -index_vals, -var) %>%
-    mutate(val = round(val, 3)) %>%
-    rbind(res_count)
-  return(res_perc)
+  res_perc <- left_join(res_base, res_control, by = c("var", "id")) %>%
+    mutate(perc = (val-cont_val)/abs(cont_val),
+           perc = replace_na(perc, 0),
+           perc_name = paste0(id,"_perc")) %>%
+    select(index_vals, var, perc_name, perc) %>%
+    dplyr::rename(id = perc_name, val = perc)
+
+  # Combine, round, and exit
+  res <- rbind(res_base, res_perc, res_count) %>%
+    mutate(val = round(val, 3))
+  return(res)
 }
 
 
@@ -377,7 +369,8 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 
   # Calculate the secular trend
   dec_trend <- data.frame(test = "length", index_vals = 37, var = "dec_trend", id = "slope",
-                          val = round(as.numeric(broom::tidy(lm(temp ~ t, df))[2,2]*3652.5), 3))
+                          val = round(as.numeric(broom::tidy(lm(temp ~ t, df))[2,2]*3652.5), 3),
+                          stringsAsFactors = F)
 
   # Detrend the ts
   sst_flat <- detrend(df)
@@ -444,7 +437,6 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 
   # Create summary statistics of MHW results
   sst_summary <- sst_clim_metric %>%
-    # filter(id != "focus_event") %>%
     group_by(test) %>%
     group_modify(~summary_stats(.x)) %>%
     rbind(sst_signif) %>%
@@ -481,27 +473,31 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 # Global functions --------------------------------------------------------
 
 # The function that runs all of the tests on a single pixel/time series
-# nc_file <- OISST_files[273]
+# nc_file <- OISST_files[1]
 global_analysis <- function(nc_file){
 
   sst <- tidync(nc_file) %>%
     hyper_tibble() %>%
     dplyr::rename(t = time, temp = sst) %>%
     mutate(t = as.Date(t, origin = "1970-01-01")) %>%
-    filter(t <= "2018-12-31") %>%
+    filter(t <= "2018-12-31",
+           round(temp, 1) != -1.8) %>%
     na.omit() %>%
+    # Filter out pixels that don't cover the whole time series
+    # Filter out pixels with any ice cover during the time series
     group_by(lon, lat) %>%
-    # Some ice pixels don't start on 1982-01-01, or go until 2018-12-31
-    # Also filter out pixels where there is 50% or more ice cover during the time series
-    mutate(prop_ice = length(which(temp < -1.7))/n()) %>%
-    filter(max(t) == "2018-12-31",
-           min(t) == "1982-01-01",
-           prop_ice < 0.5) %>%
+    filter(n() == 13514) %>% # A full time series is 13,514 days long
+    ungroup() %>%
     select(lon, lat, t, temp) %>%
+    mutate(lon = ifelse(lon > 180, lon-360, lon)) %>%
     data.frame()
 
   # Run the analysis on each lon/lat pixel
-  res <- plyr::dlply(sst, c("lon", "lat"), single_analysis, .parallel = F, .progress = "text")
+  # system.time(
+  res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = F, .progress = "text")
+  # ) # 121 seconds in parallel, xxx seconds not in parallel
+  # ~5 seconds for one pixel, ~30 minutes not in parallel
+  # Times will vary by perhaps as much as 50% due to change in pixel count per longitude step
   return(res)
 }
 
@@ -609,13 +605,6 @@ global_slope <- function(df){
 
 # Figure functions --------------------------------------------------------
 
-# Wrapper for creating plugs for smoother fig 2 - 4 plotting
-control_plug <- function(test_plug, site_plug){
-  plug <- data.frame(test = test_plug, site = site_plug, metric = unique(sst_ALL_plot_long$metric),
-                     index_vals = 30, p.value.min = 1.0, p.value.mean = 1.0,
-                     p.value.max = 1.0, p.value.sd = 0)
-}
-
 # Function for rounding decimal places of plot labels
 fmt_dcimals <- function(decimals = 0){
   function(x) as.character(round(x, decimals))
@@ -650,37 +639,20 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
   lineColCat <- c(
     "Temperature" = "black",
     "Climatology" = "skyblue",
-    "Threshold" = "navy",
-    "2x Threshold" = "gray20",
-    "3x Threshold" = "gray30",
-    "4x Threshold" = "gray40"
-  )
+    "Threshold" = "navy")
 
   # Set category fill colours
-  # fillColCat <- c(
-  #   "I Moderate" = "#ffc866",
-  #   "II Strong" = "#ff6900",
-  #   "III Severe" = "#9e0000",
-  #   "IV Extreme" = "#2d0000"
-  # )
+  fillColCat <- c(
+    "Focus MHW" = "red",
+    "Other MHWs" = "salmon"
+  )
 
   ggplot(data = clim_cat, aes(x = t, y = temp)) +
-    geom_flame(aes(y2 = thresh), n = 5, n_gap = 2) +
-    geom_flame(data = peak_event, aes(y2 = thresh), fill = "red", n = 5, n_gap = 2) +
-    # geom_flame(aes(y2 = thresh, fill = "I Moderate"), n = 5, n_gap = 2) +
-    # geom_flame(aes(y2 = thresh_2x, fill = "II Strong")) +
-    # geom_flame(aes(y2 = thresh_3x, fill = "III Severe")) +
-    # geom_flame(aes(y2 = thresh_4x, fill = "IV Extreme")) +
-    # geom_line(aes(y = thresh_2x, col = "2x Threshold"), size = 0.7, linetype = "dashed") +
-    # geom_line(aes(y = thresh_3x, col = "3x Threshold"), size = 0.7, linetype = "dotdash") +
-    # geom_line(aes(y = thresh_4x, col = "4x Threshold"), size = 0.7, linetype = "dotted") +
+    geom_flame(aes(y2 = thresh, fill = "Other MHWs"), n = 5, n_gap = 2) +
+    geom_flame(data = peak_event, aes(y2 = thresh, fill = "Focus MHW"), n = 5, n_gap = 2) +
     geom_line(aes(y = seas, col = "Climatology"), size = 0.7) +
     geom_line(aes(y = thresh, col = "Threshold"), size = 0.7) +
     geom_line(aes(y = temp, col = "Temperature"), size = 0.6) +
-    # geom_segment(data = peak_event, arrow = arrow(),
-    #              aes(x = date_peak[1], xend = date_peak[1],
-    #                  y = max(peak_event$temp) + 2,
-    #                  yend = max(peak_event$temp))) +
     geom_segment(data = peak_event, colour = "springgreen",
                  aes(x = date_start-1, xend = date_start-1,
                      y = start_point-1,
@@ -693,84 +665,64 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
                  aes(x = date_peak, xend = date_peak,
                      y = peak_point-1,
                      yend = peak_point+1)) +
-    # geom_rug(data = peak_event, sides = "b", colour = "red3", size = 2,
-    #          aes(x = c(min(peak_event$t), max(peak_event$t)), y = min(clim_cat$temp))) +
     scale_colour_manual(name = NULL, values = lineColCat,
-                        breaks = c("Climatology", "Threshold", "Temperature")) +#,
-                                   # "2x Threshold", "3x Threshold", "4x Threshold")) +
-    # scale_fill_manual(name = NULL, values = fillColCat,
-                      # breaks = c("I Moderate", "II Strong",
-                                 # "III Severe", "IV Extreme")) +
+                        breaks = c("Climatology", "Threshold", "Temperature")) +
+    scale_fill_manual(name = NULL, values = fillColCat,
+                      breaks = c("Focus MHW", "Other MHWs")) +
     scale_x_date(date_labels = "%b %Y", expand = c(0, 0)) +
-    # scale_y_continuous(labels = fmt_dcimals()) +
-    # scale_x_date(date_labels = "%b %Y", expand = c(0, 0),
-    #              breaks = c(clim_cat$t[round(nrow(clim_cat)*0.25)],
-    #                         clim_cat$t[round(nrow(clim_cat)*0.5)],
-    #                         clim_cat$t[round(nrow(clim_cat)*0.75)])) +
-    # guides(colour = guide_legend(override.aes = list(linetype = c("solid", "solid", "solid",
-                                                                  # "dashed", "dotdash", "dotted")))) +
     labs(y = y_label, x = NULL) +
     facet_wrap(~site_label, ncol = 1, scales = "free") +
     theme(legend.position = "top")
 }
 
-# The code that creates figure 2 - 4
-# These show the p-values for the KS tests from different sub-optimal treatments
+# The code that creates Figure 2
+# This shows the percentage change in sea/thresh and dur/max.int
+# from control for the three base tests
 # testers...
-# df <- sst_ALL_plot_long
-# site_sub <- "WA"
-# test_sub <- "length"
-fig_line_plot <- function(test_sub, df = sst_ALL_plot_long){
+# df <- sst_ALL_results
+fig_line_plot <- function(df = sst_ALL_results){
 
-  # Create x -axis label
-  if(test_sub == "length"){
-    x_label <- "Time series length (years)"
-  } else if(test_sub == "missing" | test_sub == "missing_fix"){
-    x_label <- "Missing data (%)"
-  } else if(test_sub == "trended"){
-    x_label <- "Added linear trend (°C/dec)"
-  } else{
-    stop("Typos make baby pandas cry...")
-  }
+  # Prep data.frame for pretty plotting
+  df_prep <- df %>%
+    filter(test %in% c("length", "missing", "trend"),
+           var %in% c("seas", "thresh", "duration", "intensity_max")) %>%
+    mutate(val = val*100,
+           index_vals = ifelse(test == "missing", index_vals*100, index_vals),
+           site_label = case_when(site == "WA" ~ "A",
+                                  site == "NWA" ~ "B",
+                                  site == "Med" ~ "C"),
+           var_label = case_when(var == "duration" ~ "Duration (days)",
+                                 var == "intensity_max" ~ "Max intensity (°C)",
+                                 var == "seas" ~ "Seasonal clim. (°C)",
+                                 var == "thresh" ~ "Threshold clim. (°C)"),
+           test_label = case_when(test == "length" ~ "Time series length (years)",
+                                  test == "missing" ~ "Missing data (%)",
+                                  test == "trend" ~ "Trend (°C/dec)"),
+           var_label = factor(var_label,
+                              levels = c("Seasonal clim. (°C)",
+                                         "Threshold clim. (°C)",
+                                         "Duration (days)",
+                                         "Max intensity (°C)")))
 
-  # Filter data
-  df_sub <- df %>%
-    filter(test == test_sub)
+  # Mean values
+  df_mean <- df_prep %>%
+    filter(id == "mean_perc")
 
-  # Correct percentage missing index_vals
-  if(test_sub == "missing" | test_sub == "missing_fix"){
-    df_sub$index_vals <- df_sub$index_vals*100
-  }
+  # Significance points
+  df_sig <- df_prep %>%
+    filter(id == "difference", val == 1)
 
-  # Set label names and colours
-  colour_choice <- c("skyblue", "navy",
-                     "springgreen", "forestgreen",
-                     "#ffc866", "#ff6900", "#9e0000", "#2d0000")
-  label_choice <- c("Climatology", "Threshold",
-                   "Duration (days)", "Max. intensity (°C)",
-                   "Prop. moderate", "Prop. strong", "Prop. severe", "Prop. extreme")
   # Create figure
-  fig_plot <- ggplot(df_sub, aes(x = index_vals, y = p.value.mean, colour = metric)) +
-    geom_line() +
-    # geom_point() +
-    geom_ribbon(alpha = 0.1, colour = NA,
-                aes(ymin = p.value.mean-p.value.sd,
-                    ymax = p.value.mean+p.value.sd, fill = metric)) +
-    geom_point(data = filter(df_sub, p.value.mean <= 0.05), shape = 15, colour = "red", size = 2) +
-    geom_hline(yintercept = 0.05, colour = "red", linetype = "dashed") +
-    scale_colour_manual(values = colour_choice,
-                        labels = label_choice) +
-    scale_fill_manual(values = colour_choice,
-                      labels = label_choice) +
-    # scale_y_continuous(limits = c(0, 1)) +
-    coord_cartesian(ylim = c(0, 1), expand = F) +
-    # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-    # guides(colour = guide_legend(override.aes = list(shape = 15, linetype = NA, size = 3))) +
-    labs(y = "Mean p-value +- SD", x = x_label, colour = NULL, fill = NULL) +
-    # facet_grid(site~test, scales = "free_x", switch = "x") +
-    theme(legend.position = "top") +
-    facet_wrap(~site_label)
-  # fig_plot
+  fig_plot <- ggplot(df_mean, aes(x = index_vals, y = val)) +
+    geom_hline(aes(yintercept = 0), colour = "grey") +
+    geom_line(aes(colour = site), size = 2, alpha = 0.7) +
+    geom_point(data = df_sig, colour = "red", size = 1, alpha = 0.4) +
+    scale_colour_brewer(palette = "Dark2") +
+    facet_grid(var_label~test_label, scales = "free", switch = "x") +
+    labs(y = "Change from control value (%)", x = NULL, colour = "Site") +
+    # coord_cartesian(ylim = c(-3, 3)) +
+    theme(legend.position = "top")
+  fig_plot
   return(fig_plot)
 }
 
@@ -866,6 +818,13 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub,
 
 
 # Old figure functions ----------------------------------------------------
+
+# Wrapper for creating plugs for smoother fig 2 - 4 plotting
+# control_plug <- function(test_plug, site_plug){
+#   plug <- data.frame(test = test_plug, site = site_plug, metric = unique(sst_ALL_plot_long$metric),
+#                      index_vals = 30, p.value.min = 1.0, p.value.mean = 1.0,
+#                      p.value.max = 1.0, p.value.sd = 0)
+# }
 
 # Expects a one row data.frame with a 'lon' and 'lat' column
 # df <- focus_WA
@@ -969,74 +928,6 @@ global_effect_event_slope_plot <- function(test_sub, metric_sub,
 #     geom_line(aes(y = thresh), colour = "tomato3") +
 #     labs(x = NULL, y = "Temperature (°C)")
 # }
-
-# Prep event data for pretty plotting
-# effect_event_pretty <- effect_event %>%
-#   filter(metric %in% c("count", "duration", "intensity_max"),
-#          !index_vals %in% seq(1, 9),
-#          index_vals <= 0.5 | index_vals >= 10) %>%
-#   mutate(panel_label = case_when(metric == "count" & test == "length" ~ "A",
-#                                  metric == "count" & test == "missing" ~ "B",
-#                                  metric == "count" & test == "trended" ~ "C",
-#                                  metric == "duration" & test == "length" ~ "D",
-#                                  metric == "duration" & test == "missing" ~ "E",
-#                                  metric == "duration" & test == "trended" ~ "F",
-#                                  metric == "intensity_max" & test == "length" ~ "H",
-#                                  metric == "intensity_max" & test == "missing" ~ "I",
-#                                  metric == "intensity_max" & test == "trended" ~ "J"),
-#          metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
-#                             metric == "duration" ~ "duration (days)",
-#                             metric == "count" ~ "count (event)"),
-#          test = case_when(test == "length" ~ "length (years)",
-#                           test == "missing" ~ "missing data (proportion)" ,
-#                           test == "trended" ~ "added trend (°C/dec)"),
-#          test = as.factor(test),
-#          test = factor(test, levels = levels(test)[c(2,3,1)]),
-#          site = as.character(site)) %>%
-#   group_by(test) %>%
-#   mutate(panel_label_x = min(index_vals)) %>%
-#   group_by(metric) %>%
-#   mutate(panel_label_y = max(val)) %>%
-#   ungroup()
-# effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
-# effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
-# effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
-
-### Visualise
-## Climatologies
-# Sub-optimal data
-# ggplot(effect_clim, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-#   geom_line(aes(y = mean, colour = site)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free")
-# # Fixed data
-# ggplot(effect_clim_fix, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-#   geom_line(aes(y = mean, colour = site)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free")
-
-## Event metrics
-# Sub-optimal data
-# plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-#   # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-#   # stat_smooth(aes(y = val, colour = site), geom = "line",
-#               # method = "lm", alpha = 0.5, size = 1) +
-#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1) +
-#   geom_text(aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   scale_colour_brewer(palette = "Dark2") +
-#   facet_grid(metric~test, scales = "free", switch = "both") +
-#   labs(x = NULL, y = NULL, colour = "Site") +
-#   theme(legend.position = "bottom")
-# plot_event_effect
-# ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.jpg", height = 5, width = 10)
 
 # Fixed data
 # ggplot(effect_event_fix, aes(x = index_vals)) +
