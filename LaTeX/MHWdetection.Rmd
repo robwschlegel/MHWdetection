@@ -101,13 +101,11 @@ Some remotely sensed products suffer from 'gappiness' that result in missing dat
 
 # Methods
 
-<!-- RWS: Somewhere in here it needs to be stated that the focus event used in the three reference time series is actually the one from literature, and not the one from the last 10 years of data. -->
-
 To quantify the effects that time series length, missing data, and long-term trends have on MHW detection we will focus on the two outputs created by the MHW detection algorithm:  
   
-1) The climatologies derived from the daily SST records, which include both the seasonally-varying mean and 90th percentile threshold. 
-    - These are not a part of the MHWs themselves, but are necessary for their detection.
-2) The MHW events, which are defined by the metrics given in Table 2 of @Hobday2016.  
+<!-- 1) The climatologies derived from the daily SST records, which include both the seasonally-varying mean and 90th percentile threshold.  -->
+<!--     - These are not a part of the MHWs themselves, but are necessary for their detection. -->
+1) The MHW events, which are defined by the metrics given in Table 2 of @Hobday2016.  
     - We focus here on the duration (days) and maximum intensity (°C) metrics as the primary two decriptors of a MHW.
     - Only the results for MHWs in the final 10 years of data (2009 -- 2018) are used to allow for roughly equal sample sizes across all tests.
     

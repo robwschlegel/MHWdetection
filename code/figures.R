@@ -243,6 +243,7 @@ ggsave(fig_1_flat, filename = "LaTeX/fig_1_flat.png", width = 8, height = 5)
 
 
 # Figure 2 ----------------------------------------------------------------
+# The effect of the three base tests on the mean of the last 10 years of MHWs
 
 # The results from all tests
 sst_ALL_results <- readRDS("data/sst_ALL_results.Rda") %>%
@@ -253,102 +254,48 @@ full_results <- rbind(sst_ALL_results, random_results)
 rm(sst_ALL_results, random_results); gc()
 
 # Create figure and save
-fig_2 <- fig_2_plot()
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 6, width = 8)
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 6, width = 8)
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.jpg", height = 6, width = 8)
+fig_2 <- fig_line_plot(full_results, tests = "base", result_choice = "10_years")
+ggsave("LaTeX/fig_2.pdf", fig_2, height = 6, width = 8)
+ggsave("LaTeX/fig_2.png", fig_2, height = 6, width = 8)
+ggsave("LaTeX/fig_2.jpg", fig_2, height = 6, width = 8)
 
 
 # Figure 3 ----------------------------------------------------------------
-
 # The effects of the three sub-optimal tests on the focus MHW metrics
 
-
-# Prep event data for pretty plotting
-# effect_event_pretty <- effect_event %>%
-#   filter(metric %in% c("count", "duration", "intensity_max"),
-#          !index_vals %in% seq(1, 9),
-#          index_vals <= 0.5 | index_vals >= 10) %>%
-#   mutate(panel_label = case_when(metric == "count" & test == "length" ~ "A",
-#                                  metric == "count" & test == "missing" ~ "B",
-#                                  metric == "count" & test == "trended" ~ "C",
-#                                  metric == "duration" & test == "length" ~ "D",
-#                                  metric == "duration" & test == "missing" ~ "E",
-#                                  metric == "duration" & test == "trended" ~ "F",
-#                                  metric == "intensity_max" & test == "length" ~ "H",
-#                                  metric == "intensity_max" & test == "missing" ~ "I",
-#                                  metric == "intensity_max" & test == "trended" ~ "J"),
-#          metric = case_when(metric == "intensity_max" ~ "max. intensity (°C)",
-#                             metric == "duration" ~ "duration (days)",
-#                             metric == "count" ~ "count (event)"),
-#          test = case_when(test == "length" ~ "length (years)",
-#                           test == "missing" ~ "missing data (proportion)" ,
-#                           test == "trended" ~ "added trend (°C/dec)"),
-#          test = as.factor(test),
-#          test = factor(test, levels = levels(test)[c(2,3,1)]),
-#          site = as.character(site)) %>%
-#   group_by(test) %>%
-#   mutate(panel_label_x = min(index_vals)) %>%
-#   group_by(metric) %>%
-#   mutate(panel_label_y = max(val)) %>%
-#   ungroup()
-
-# plot_event_effect
-# ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.pdf", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.png", height = 5, width = 10)
-# ggsave(plot_event_effect, filename = "LaTeX/fig_3.jpg", height = 5, width = 10)
+fig_3 <- fig_line_plot(full_results, tests = "base", result_choice = "focus")
+ggsave("LaTeX/fig_3.pdf", fig_3, height = 6, width = 8)
+ggsave("LaTeX/fig_3.png", fig_3, height = 6, width = 8)
+ggsave("LaTeX/fig_3.jpg", fig_3, height = 6, width = 8)
 
 
 # Figure 4 ----------------------------------------------------------------
-
-# Create a map at which the year after which a threshold is exceeded in the change in the statistic in question
-
-
-# The global effect of length on max. intensity
+# The global effect of length on count, max. intensity, and duration
 
 # This figure is currently made in the global.R script
 
 
 # Figure 5 ----------------------------------------------------------------
-
-# The global effect of length on duration
+# The global effect of missing data on count, max. intensity, and duration
 
 # This figure is currently made in the global.R script
 
 
 # Figure 6 ----------------------------------------------------------------
-
-# The results from the 100 re-sampled missing data tests
-
-# Create and save
-fig_6 <- fig_line_plot("missing")
-ggsave(plot = fig_6, filename = "LaTeX/fig_6.pdf", height = 4, width = 8)
-ggsave(plot = fig_6, filename = "LaTeX/fig_6.png", height = 4, width = 8)
-ggsave(plot = fig_6, filename = "LaTeX/fig_6.jpg", height = 4, width = 8)
+# The global effect of decadal trend on count, max. intensity, and duration
 
 
 # Figure 7 ----------------------------------------------------------------
-
-# The fix for missing data
+# The effect of interpolating missing data
 
 # Create and save
-fig_7 <- fig_line_plot("missing_fix")
-ggsave(plot = fig_7, filename = "LaTeX/fig_7.pdf", height = 4, width = 8)
-ggsave(plot = fig_7, filename = "LaTeX/fig_7.png", height = 4, width = 8)
-ggsave(plot = fig_7, filename = "LaTeX/fig_7.jpg", height = 4, width = 8)
+fig_7 <- fig_line_plot(tests = "miss_comp", result_choice = "10_years")
+ggsave("LaTeX/fig_7.pdf", fig_7, height = 6, width = 8)
+ggsave("LaTeX/fig_7.png", fig_7, height = 6, width = 8)
+ggsave("LaTeX/fig_7.jpg", fig_7, height = 6, width = 8)
 
 
 # Figure 8 ----------------------------------------------------------------
-
-# The results from the 100 re-sampled added trend tests
-
-# Create and save
-fig_8 <- fig_line_plot("trended")
-ggsave(plot = fig_8, filename = "LaTeX/fig_8.pdf", height = 4, width = 8)
-ggsave(plot = fig_8, filename = "LaTeX/fig_8.png", height = 4, width = 8)
-ggsave(plot = fig_8, filename = "LaTeX/fig_8.jpg", height = 4, width = 8)
 
 
 # Figure 9 ----------------------------------------------------------------
@@ -357,29 +304,42 @@ ggsave(plot = fig_8, filename = "LaTeX/fig_8.jpg", height = 4, width = 8)
 
 # Figure 10 ---------------------------------------------------------------
 
-# The effect of added trends on the focus MHWs
-
-# Include the maps showing the results with the trends left in as supplementary material
-
-
 
 # Figure illustrating the change caused in the 90th perc. thresh.
 # against the seas. clim. in the reference time series
 
-load("data/sst_ALL_clim_event_cat.Rdata")
+# load("data/sst_ALL_clim_event_cat.Rdata")
+#
+# clim_only <- sst_ALL_clim_event_cat %>%
+#   # filter(rep == "1") %>%
+#   select(test:clim) %>%
+#   unnest() %>%
+#   filter(index_vals <= 30,
+#          test == "length") %>%
+#   gather(key = "metric", value = "temp", seas, thresh) %>%
+#   droplevels()
+#
+# clim_change_plot <- ggplot(data = clim_only, aes(x = doy, y = temp)) +
+#   geom_line(aes(colour = index_vals, group = index_vals)) +
+#   scale_colour_viridis_c(direction = -1) +
+#   facet_grid(metric~site)
+# clim_change_plot
 
-clim_only <- sst_ALL_clim_event_cat %>%
-  # filter(rep == "1") %>%
-  select(test:clim) %>%
-  unnest() %>%
-  filter(index_vals <= 30,
-         test == "length") %>%
-  gather(key = "metric", value = "temp", seas, thresh) %>%
-  droplevels()
 
-clim_change_plot <- ggplot(data = clim_only, aes(x = doy, y = temp)) +
-  geom_line(aes(colour = index_vals, group = index_vals)) +
-  scale_colour_viridis_c(direction = -1) +
-  facet_grid(metric~site)
-clim_change_plot
+# Appendix 1 --------------------------------------------------------------
+# The effect of the base tests on seas/thresh
+
+
+# Appendix 2 --------------------------------------------------------------
+# The effect of widening the clim window
+
+
+# Appendix 3 --------------------------------------------------------------
+# The other global figures
+
+
+# Appendix 4 --------------------------------------------------------------
+# The difference between the proper 30 year clim and all other 30 year clim periods
+
+
 

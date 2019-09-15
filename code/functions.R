@@ -571,32 +571,6 @@ fmt_dcimals <- function(decimals = 0){
 }
 
 
-# Function called within fig_line_plot() to reduce redundancy
-line_data_prep <- function(df, test_choice, test_levels, var_choice, var_levels){
-  res <- df %>%
-    filter(test %in% test_choice,
-           var %in% var_choice) %>%
-    mutate(val = val*100,
-           index_vals = ifelse(test == "missing", index_vals*100, index_vals),
-           index_vals = ifelse(test == "interp", index_vals*100, index_vals),
-           var_label = case_when(var == "duration" ~ "Duration (days)",
-                                 var == "focus_duration" ~ "Duration (days)",
-                                 var == "intensity_max" ~ "Max intensity (°C)",
-                                 var == "focus_intensity_max" ~ "Max intensity (°C)",
-                                 var == "count" ~ "Count",
-                                 var == "focus_count" ~ "Count",
-                                 var == "seas" ~ "Seasonal clim. (°C)",
-                                 var == "thresh" ~ "Threshold clim. (°C)"),
-           var_label = factor(var_label, levels = var_levels),
-           test_label = case_when(test == "length" ~ "Time series length (years)",
-                                  test == "missing" ~ "Missing data (%)",
-                                  test == "trend" ~ "Trend (°C/dec)",
-                                  test == "interp" ~ "Interpolated data (%)"),
-           test_label = factor(test_label, levels = test_levels))
-  return(res)
-}
-
-
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted
 # testers...
@@ -666,68 +640,103 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 # This shows the percentage change in sea/thresh and dur/max.int
 # from control for the three base tests
 # testers...
-# df_1 <- sst_ALL_results
-# df_2 <- random_results
-fig_line_plot <- function(df_1 = sst_ALL_results, df_2 = random_results,
-                          result_choice, miss_comp = FALSE){
+# df <- full_results
+# tests  = "base"
+# result_choice = "10_years"
+fig_line_plot <- function(df = full_results, tests, result_choice){
 
   # Chose if the figure will show the base tests or the interp. comp.
 
-  if(miss_comp){
-    test_choice <- c("missing", "interp")
-    test_levels <- c("Missing data (%)", "Interpolated data (%)")
-  } else{
+  if(tests == "base"){
     test_choice <- c("length", "missing", "trend")
     test_levels <- c("Time series length (years)", "Missing data (%)", "Trend (°C/dec)")
+  } else if(tests == "miss_comp"){
+    test_choice <- c("missing", "interp")
+    test_levels <- c("Missing data (%)", "Interpolated data (%)")
+  } else if(tests == "windows"){
+
   }
 
   # Prep data for focus or mean MHW results
   if(result_choice == "focus"){
     var_choice <- c("focus_count", "focus_duration", "focus_intensity_max")
-    var_labels <- c("Count", "Duration (days)", "Max intensity (°C)")
+    var_levels <- c("Count", "Duration (days)", "Max intensity (°C)")
+    y_axis_title <- "Change in largest MHW (%)"
   } else if(result_choice == "10_years"){
     var_choice <- c("count", "duration", "intensity_max")
-    var_labels <- c("Count", "Duration (days)", "Max intensity (°C)")
+    var_levels <- c("Count", "Duration (days)", "Max intensity (°C)")
+    y_axis_title <- "Mean change in MHWs (%)"
   } else if(result_choice == "clims"){
     var_choice <- c("seas", "thresh")
-    var_labels <- c("Seasonal clim. (°C)", "Threshold clim. (°C)")
+    var_levels <- c("Seasonal clim. (°C)", "Threshold clim. (°C)")
+    y_axis_title <- "Mean change in thresholds (%)"
   }
 
   # Prep reference results for pretty plotting
-  df_prep <- line_data_prep(df_1, test_choice, test_levels, var_choice, var_labels)
-
-  # Prep random results for pretty plotting
-  random_prep <- line_data_prep(df_2, test_choice, test_levels, var_choice, var_labels)
+  df_prep <- df %>%
+    filter(is.finite(val),
+           test %in% test_choice,
+           var %in% var_choice) %>%
+    mutate(val = val*100,
+           index_vals = ifelse(test == "missing", index_vals*100, index_vals),
+           index_vals = ifelse(test == "interp", index_vals*100, index_vals),
+           var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (days)",
+                                 var %in% c("intensity_max", "focus_intensity_max" ) ~ "Max intensity (°C)",
+                                 var %in% c("count", "focus_count") ~ "Count",
+                                 var == "seas" ~ "Seasonal clim. (°C)",
+                                 var == "thresh" ~ "Threshold clim. (°C)"),
+           var_label = factor(var_label, levels = var_levels),
+           test_label = case_when(test == "length" ~ "Time series length (years)",
+                                  test == "missing" ~ "Missing data (%)",
+                                  test == "trend" ~ "Trend (°C/dec)",
+                                  test == "interp" ~ "Interpolated data (%)"),
+           test_label = factor(test_label, levels = test_levels),
+           panel_label = case_when(var %in% c("count", "focus_count") & test == "length" ~ "A",
+                                   var %in% c("count", "focus_count") & test == "missing" ~ "B",
+                                   var %in% c("count", "focus_count") & test == "trend" ~ "C",
+                                   var %in% c("duration", "focus_duration") & test == "length" ~ "D",
+                                   var %in% c("duration", "focus_duration") & test == "missing" ~ "E",
+                                   var %in% c("duration", "focus_duration") & test == "trend" ~ "F",
+                                   var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "G",
+                                   var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "H",
+                                   var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I"))
 
   # Mean values
   df_mean <- df_prep %>%
-    filter(id == "mean_perc" | id == "n_diff",
-           var != "seas") # Remove seasonal clim line as it is crazy
-  random_mean <- random_prep %>%
-    filter(id == "mean_perc" | id == "n_diff",
-           var != "seas")
+    filter(id == "mean_perc" | id == "n_diff", site %in% c("WA", "NWA", "Med"))
+  random_mean <- df_prep %>%
+    filter(id == "mean_perc" | id == "n_diff", !(site %in% c("WA", "NWA", "Med"))) %>%
+    group_by(test) %>%
+    mutate(panel_label_x = quantile(index_vals, 0.05)) %>%
+    ungroup() %>%
+    group_by(var) %>%
+    mutate(panel_label_y = max(val)) %>%
+    ungroup()
 
   # Significance points
   df_sig <- df_prep %>%
     filter(id == "difference", val == 1, var != "seas")
-  random_sig <- random_prep %>%
+  random_sig <- df_prep %>%
     filter(id == "difference", val == 1, var != "seas")
 
   # Create figure
   fig_plot <- ggplot(df_mean, aes(x = index_vals, y = val)) +
     geom_hline(aes(yintercept = 0), colour = "grey") +
     # Random results
-    geom_line(data = random_mean, aes(group = lon_lat), size = 1, alpha = 0.1) +
+    geom_line(data = random_mean, aes(group = site), size = 1, alpha = 0.1) +
     geom_point(data = random_sig, colour = "red", size = 1, alpha = 1) +
     # Reference results
     geom_line(aes(colour = site), size = 1.5, alpha = 0.8) +
     geom_point(data = df_sig, colour = "red", size = 1, alpha = 1) +
+    geom_text(data = random_mean,
+              aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
     scale_colour_brewer(palette = "Dark2") +
-    facet_grid(var_label~test_label, scales = "free", switch = "x") +
-    labs(y = "Change from control value (%)", x = NULL, colour = "Site") +
+    scale_x_continuous(expand = c(0, 0)) +
+    facet_grid(var_label~test_label, scales = "free", switch = "both") +
+    labs(y = y_axis_title, x = NULL, colour = "Site") +
     # coord_cartesian(ylim = c(-3, 3)) +
     theme(legend.position = "top")
-  fig_plot
+  # fig_plot
   return(fig_plot)
 }
 

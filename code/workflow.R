@@ -54,7 +54,7 @@ source("code/functions.R")
 # missing_files <- setdiff(full_files, dir("data/global"))
 # missing_index <- as.numeric(sapply(str_split(sapply(str_split(missing_files, "_"),
 #                                                     "[[", 2), "[.]"), "[[", 1))
-# plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
+# plyr::l_ply(missing_index, global_analysis_single, .parallel = T)
 
 
 # Combine global results --------------------------------------------------
