@@ -61,6 +61,28 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
          lon = ifelse(lon > 180, lon-360, lon))
 
 
+# Load OISST --------------------------------------------------------------
+
+load_noice_OISST <- function(nc_file){
+  res <- tidync(nc_file) %>%
+    hyper_tibble() %>%
+    dplyr::rename(t = time, temp = sst) %>%
+    mutate(t = as.Date(t, origin = "1970-01-01")) %>%
+    filter(t <= "2018-12-31",
+           round(temp, 1) != -1.8) %>%
+    na.omit() %>%
+    # Filter out pixels that don't cover the whole time series
+    # Filter out pixels with any ice cover during the time series
+    group_by(lon, lat) %>%
+    filter(n() == 13514) %>% # A full time series is 13,514 days long
+    ungroup() %>%
+    select(lon, lat, t, temp) %>%
+    mutate(lon = ifelse(lon > 180, lon-360, lon)) %>%
+    data.frame()
+  return(res)
+}
+
+
 # De-trending -------------------------------------------------------------
 
 detrend <- function(df){
@@ -356,7 +378,8 @@ summary_stats <- function(df){
 #   ungroup()
 
 
-# Single full analysis ----------------------------------------------------
+
+# Full analyses -----------------------------------------------------------
 
 # This single function runs through and outputs all of the desired tests as a list
 # testers...
@@ -470,110 +493,47 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 }
 
 
-# Global functions --------------------------------------------------------
+# This function runs the full analysis on a randomly selected pixel
+  # NB: The use of `df` in the function is just to satisfy plyr::ldply
+random_analysis <- function(df){
 
-# The function that runs all of the tests on a single pixel/time series
+  # Load a random lon slice
+  sst <- load_noice_OISST(sample(OISST_files, 1))
+
+  # Randomly pick a lat slice
+  pixel <- filter(sst, lat == sample(sst$lat, 1))
+  rm(sst); gc()
+
+  # Run a full analysis and exit
+  res <- single_analysis(pixel, full_seq = T, clim_metric = T, count_miss = T, windows = T) %>%
+    mutate(lon = pixel$lon[1],
+           lat = pixel$lat[1]) %>%
+    select(lon, lat, everything())
+  return(res)
+}
+
+
+# This function runs the analysis on a full lon slice
 # nc_file <- OISST_files[1]
 global_analysis <- function(nc_file){
 
-  sst <- tidync(nc_file) %>%
-    hyper_tibble() %>%
-    dplyr::rename(t = time, temp = sst) %>%
-    mutate(t = as.Date(t, origin = "1970-01-01")) %>%
-    filter(t <= "2018-12-31",
-           round(temp, 1) != -1.8) %>%
-    na.omit() %>%
-    # Filter out pixels that don't cover the whole time series
-    # Filter out pixels with any ice cover during the time series
-    group_by(lon, lat) %>%
-    filter(n() == 13514) %>% # A full time series is 13,514 days long
-    ungroup() %>%
-    select(lon, lat, t, temp) %>%
-    mutate(lon = ifelse(lon > 180, lon-360, lon)) %>%
-    data.frame()
+  # Load and prep data
+  sst <- load_noice_OISST(nc_file)
 
   # Run the analysis on each lon/lat pixel
   # system.time(
   res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = F, .progress = "text")
   # ) # 121 seconds in parallel, xxx seconds not in parallel
   # ~5 seconds for one pixel, ~30 minutes not in parallel
-  # Times will vary by perhaps as much as 50% due to change in pixel count per longitude step
+  # Times may vary by 50% due to change in pixel count per longitude step
   return(res)
 }
 
-# The function that unpacks global resuls as desired
-# testers...
-# global_file <- global_files[1]
-# sub_level <- 1
-# sub_level <- 2
-# sub_level <- 3
-global_unpack_sub <- function(global_file, sub_level){
 
-  # Load the one slice
-  slice_res <- readRDS(global_file)
-
-  # Pull it apart as desired
-  slice_full <- data.frame()
-  for(i in 1:length(slice_res)){
-    slice_step_1 <- slice_res[[i]]
-    slice_step_coords <- as.vector(strsplit(names(slice_res)[i], "[.]"))
-    slice_step_lon <- paste0(slice_step_coords[[1]][1],".",slice_step_coords[[1]][2])
-    slice_step_lat <- paste0(slice_step_coords[[1]][3],".",slice_step_coords[[1]][4])
-    if(is.null(slice_step_1)){
-    } else if(length(slice_step_1[sub_level]) > 0) {
-      names(slice_step_1) <- NULL # Prevents column names from being altered
-      slice_step_2 <- data.frame(slice_step_1[sub_level],
-                                 lon = slice_step_lon,
-                                 lat = slice_step_lat)
-      if(ncol(slice_step_2) == 3) colnames(slice_step_2)[1] <- "dec_trend"
-      slice_full <- rbind(slice_full, slice_step_2)
-    }
-  }
-
-  # Sort it out and exit
-  slice_full <- slice_full %>%
-    select(lon, lat, everything()) %>%
-    mutate(lon = as.numeric(as.character(lon)),
-           lat = as.numeric(as.character(lat)))
-  return(slice_full)
-}
-
-# The function that crawls through all of the global results
-# unpacks them and then stitches them together before saving
-global_unpack <- function(){
-  # Point to files
-  global_files <- dir("data/global", full.names = T)
-
-  ## Run unpacker, save, and clear one at a time to minimise RAM use
-  # Decadal trends
-  print(paste0("Began unpacking decadal trends at ",Sys.time()))
-  global_dec_trend <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                                  .parallel = T, sub_level = 1)
-  saveRDS(global_dec_trend, "data/global_dec_trend.Rda")
-  rm(global_dec_trend); gc()
-  print(paste0("Finished unpacking decadal trends at ",Sys.time()))
-
-  # Summary stats
-  print(paste0("Began unpacking summary stats at ",Sys.time()))
-  global_summary <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                                .parallel = T, sub_level = 2)
-  # colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
-  saveRDS(global_summary, "data/global_summary.Rda")
-  rm(global_summary); gc()
-  print(paste0("Finished unpacking summary stats at ",Sys.time()))
-
-  # Focus event
-  print(paste0("Began unpacking focus event at ",Sys.time()))
-  global_focus <- plyr::ldply(.data = global_files, .fun = global_unpack_sub,
-                              .parallel = T, sub_level = 3)
-  # colnames(global_effect_event) <- gsub("effect_event.", "", colnames(global_effect_event))
-  saveRDS(global_focus, "data/global_focus.Rda")
-  rm(global_focus); gc()
-  print(paste0("Finished unpacking focus event at ",Sys.time()))
-}
+# Slope calculations ------------------------------------------------------
 
 # Function for calculating R2 values for sub-optimal results
-global_slope_sub <- function(df){
+pixel_slope_sub <- function(df){
   if(nrow(df) > 2){
     round(broom::tidy(lm(val ~ index_vals, data = df))$estimate[2], 3)
   } else{
@@ -590,7 +550,7 @@ global_slope_sub <- function(df){
 # df <- global_focus %>%
 # filter(lon == lon[20], lat == lat[129])
 # filter(lon == lon[20], lat == lat[129], test == "length", var == "duration")
-global_slope <- function(df){
+pixel_slope <- function(df){
   suppressWarnings( # Suppress perfect slope warnings
   df_slope <- df %>%
     group_by(lon, test, var) %>%
@@ -609,6 +569,33 @@ global_slope <- function(df){
 fmt_dcimals <- function(decimals = 0){
   function(x) as.character(round(x, decimals))
 }
+
+
+# Function called within fig_line_plot() to reduce redundancy
+line_data_prep <- function(df, test_choice, test_levels, var_choice, var_levels){
+  res <- df %>%
+    filter(test %in% test_choice,
+           var %in% var_choice) %>%
+    mutate(val = val*100,
+           index_vals = ifelse(test == "missing", index_vals*100, index_vals),
+           index_vals = ifelse(test == "interp", index_vals*100, index_vals),
+           var_label = case_when(var == "duration" ~ "Duration (days)",
+                                 var == "focus_duration" ~ "Duration (days)",
+                                 var == "intensity_max" ~ "Max intensity (°C)",
+                                 var == "focus_intensity_max" ~ "Max intensity (°C)",
+                                 var == "count" ~ "Count",
+                                 var == "focus_count" ~ "Count",
+                                 var == "seas" ~ "Seasonal clim. (°C)",
+                                 var == "thresh" ~ "Threshold clim. (°C)"),
+           var_label = factor(var_label, levels = var_levels),
+           test_label = case_when(test == "length" ~ "Time series length (years)",
+                                  test == "missing" ~ "Missing data (%)",
+                                  test == "trend" ~ "Trend (°C/dec)",
+                                  test == "interp" ~ "Interpolated data (%)"),
+           test_label = factor(test_label, levels = test_levels))
+  return(res)
+}
+
 
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted
@@ -679,44 +666,62 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 # This shows the percentage change in sea/thresh and dur/max.int
 # from control for the three base tests
 # testers...
-# df <- sst_ALL_results
-fig_line_plot <- function(df = sst_ALL_results){
+# df_1 <- sst_ALL_results
+# df_2 <- random_results
+fig_line_plot <- function(df_1 = sst_ALL_results, df_2 = random_results,
+                          result_choice, miss_comp = FALSE){
 
-  # Prep data.frame for pretty plotting
-  df_prep <- df %>%
-    filter(test %in% c("length", "missing", "trend"),
-           var %in% c("seas", "thresh", "duration", "intensity_max")) %>%
-    mutate(val = val*100,
-           index_vals = ifelse(test == "missing", index_vals*100, index_vals),
-           site_label = case_when(site == "WA" ~ "A",
-                                  site == "NWA" ~ "B",
-                                  site == "Med" ~ "C"),
-           var_label = case_when(var == "duration" ~ "Duration (days)",
-                                 var == "intensity_max" ~ "Max intensity (°C)",
-                                 var == "seas" ~ "Seasonal clim. (°C)",
-                                 var == "thresh" ~ "Threshold clim. (°C)"),
-           test_label = case_when(test == "length" ~ "Time series length (years)",
-                                  test == "missing" ~ "Missing data (%)",
-                                  test == "trend" ~ "Trend (°C/dec)"),
-           var_label = factor(var_label,
-                              levels = c("Seasonal clim. (°C)",
-                                         "Threshold clim. (°C)",
-                                         "Duration (days)",
-                                         "Max intensity (°C)")))
+  # Chose if the figure will show the base tests or the interp. comp.
+
+  if(miss_comp){
+    test_choice <- c("missing", "interp")
+    test_levels <- c("Missing data (%)", "Interpolated data (%)")
+  } else{
+    test_choice <- c("length", "missing", "trend")
+    test_levels <- c("Time series length (years)", "Missing data (%)", "Trend (°C/dec)")
+  }
+
+  # Prep data for focus or mean MHW results
+  if(result_choice == "focus"){
+    var_choice <- c("focus_count", "focus_duration", "focus_intensity_max")
+    var_labels <- c("Count", "Duration (days)", "Max intensity (°C)")
+  } else if(result_choice == "10_years"){
+    var_choice <- c("count", "duration", "intensity_max")
+    var_labels <- c("Count", "Duration (days)", "Max intensity (°C)")
+  } else if(result_choice == "clims"){
+    var_choice <- c("seas", "thresh")
+    var_labels <- c("Seasonal clim. (°C)", "Threshold clim. (°C)")
+  }
+
+  # Prep reference results for pretty plotting
+  df_prep <- line_data_prep(df_1, test_choice, test_levels, var_choice, var_labels)
+
+  # Prep random results for pretty plotting
+  random_prep <- line_data_prep(df_2, test_choice, test_levels, var_choice, var_labels)
 
   # Mean values
   df_mean <- df_prep %>%
-    filter(id == "mean_perc")
+    filter(id == "mean_perc" | id == "n_diff",
+           var != "seas") # Remove seasonal clim line as it is crazy
+  random_mean <- random_prep %>%
+    filter(id == "mean_perc" | id == "n_diff",
+           var != "seas")
 
   # Significance points
   df_sig <- df_prep %>%
-    filter(id == "difference", val == 1)
+    filter(id == "difference", val == 1, var != "seas")
+  random_sig <- random_prep %>%
+    filter(id == "difference", val == 1, var != "seas")
 
   # Create figure
   fig_plot <- ggplot(df_mean, aes(x = index_vals, y = val)) +
     geom_hline(aes(yintercept = 0), colour = "grey") +
-    geom_line(aes(colour = site), size = 2, alpha = 0.7) +
-    geom_point(data = df_sig, colour = "red", size = 1, alpha = 0.4) +
+    # Random results
+    geom_line(data = random_mean, aes(group = lon_lat), size = 1, alpha = 0.1) +
+    geom_point(data = random_sig, colour = "red", size = 1, alpha = 1) +
+    # Reference results
+    geom_line(aes(colour = site), size = 1.5, alpha = 0.8) +
+    geom_point(data = df_sig, colour = "red", size = 1, alpha = 1) +
     scale_colour_brewer(palette = "Dark2") +
     facet_grid(var_label~test_label, scales = "free", switch = "x") +
     labs(y = "Change from control value (%)", x = NULL, colour = "Site") +
@@ -726,14 +731,15 @@ fig_line_plot <- function(df = sst_ALL_results){
   return(fig_plot)
 }
 
+
 # Function for easily plotting subsets from the global slope results
 # testers...
 # test_sub <- "length"
 # metric_sub <- "intensity_max"
 # metric_sub <- "duration"
-global_effect_event_slope_plot <- function(test_sub, metric_sub,
-                                           df = global_effect_event_slope,
-                                           prop = FALSE) {
+effect_event_slope_plot <- function(test_sub, metric_sub,
+                                    df = global_effect_event_slope,
+                                    prop = FALSE) {
 
   # Prepare Viridis colour palette
   if(metric_sub == "duration") {

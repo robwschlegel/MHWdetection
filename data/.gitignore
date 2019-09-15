@@ -1,10 +1,3 @@
-sst_ALL_repl.Rdata
-sst_ALL_flat.Rdata
-sst_ALL_knockout.Rdata
-sst_ALL_add_trend.Rdata
-sst_ALL_aov_tukey.Rdata
-sst_ALL_length*
-sst_ALL_missing*
-sst_ALL_trended*
-sst_ALL_clim_event_cat*
+sst_ALL*
 global*
+random*

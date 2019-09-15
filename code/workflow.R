@@ -23,37 +23,68 @@ source("code/functions.R")
 # saveRDS(sst_ALL_results, "data/sst_ALL_results.Rda")
 
 
+# Random analysis ---------------------------------------------------------
+
+# Calculate the full analysis on 100 random pixels
+# doMC::registerDoMC(cores = 25) # NB: 50 cores uses too much RAM
+# set.seed(666)
+# system.time(
+#   random_results <- plyr::ldply(1:100, random_analysis, .parallel = T, .id = "random")
+# ) # 417 seconds
+# saveRDS(random_results, "data/random_results.Rda")
+
+
 # Global analysis ---------------------------------------------------------
 
 # Wrapper function with a chatty output as it chugs along
-global_analysis_single <- function(file_sub){
-  OISST_slice <- OISST_files[file_sub]
-  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
-  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-  slice_res <- global_analysis(OISST_slice)
-  saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
-  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-  rm(slice_res); gc()
-}
+# global_analysis_single <- function(file_sub){
+#   OISST_slice <- OISST_files[file_sub]
+#   lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
+#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+#   slice_res <- global_analysis(OISST_slice)
+#   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
+#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+#   rm(slice_res); gc()
+# }
+# plyr::l_ply(1:1440, global_analysis_single, .parallel = T) # This took 37.5 hours to run
 
-plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
+# The nightly running of the MHW Tracker seems to have interfered with the
+# calculation of several lon slices
+# full_files <- paste0("slice_",str_pad(1:1440, width = 4, pad = "0", side = "left"),".Rda")
+# missing_files <- setdiff(full_files, dir("data/global"))
+# missing_index <- as.numeric(sapply(str_split(sapply(str_split(missing_files, "_"),
+#                                                     "[[", 2), "[.]"), "[[", 1))
+# plyr::l_ply(1:1440, global_analysis_single, .parallel = T)
 
-# This took ~2.5 days to run
 
+# Combine global results --------------------------------------------------
 
-# Unpack global results ---------------------------------------------------
-
-# Unpack and save all of the different global bits
-# global_unpack()
+# Load and combine each longitude slice of results
+# NB: Uses too much RAM to load everything in one shot...
+# system.time(
+#   global_results_1 <- plyr::ldply(dir("data/global", full.names = T)[1:500], readRDS, .parallel = T)
+# ) # 184 seconds
+# system.time(
+#   global_results_2 <- plyr::ldply(dir("data/global", full.names = T)[501:1000], readRDS, .parallel = T)
+# ) # 312 seconds
+# global_results_1_2 <- rbind(global_results_1, global_results_2)
+# rm(global_results_1, global_results_2); gc()
+# system.time(
+#   global_results_3 <- plyr::ldply(dir("data/global", full.names = T)[1001:1440], readRDS, .parallel = T)
+# ) # xxx seconds
+# global_results <- rbind(global_results_1_2, global_results_3)
+# rm(global_results_1_2, global_results_3); gc()
+#
+# # Save
+# saveRDS(global_results, "data/global_results.Rda")
 
 
 # Process results ---------------------------------------------------------
 
 # Calculate the simple linear slopes for the different tests at each pixel
-# Of primary interest here is the effect on individual events
 
 # Set cores
-doMC::registerDoMC(cores = 50)
+# doMC::registerDoMC(cores = 50)
 
 # Load global data
 # global_summary <- map_dfr(readRDS, dir("data/global", full.names = T))
@@ -77,7 +108,7 @@ doMC::registerDoMC(cores = 50)
 # In this section we look at the relationships between certain global variables
 
 # Set cores
-doMC::registerDoMC(cores = 50)
+# doMC::registerDoMC(cores = 50)
 
 # Global decadal trends
 # load("data/global_dec_trend.Rdata")

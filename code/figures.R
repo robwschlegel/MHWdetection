@@ -101,7 +101,7 @@ sst_ALL_results %>%
 
 # Global test visuals -----------------------------------------------------
 
-slice_res <- readRDS("test.Rda")
+slice_res <- readRDS("data/global/slice_0001.Rda")
 
 # Overall mean values
 slice_res %>%
@@ -247,18 +247,16 @@ ggsave(fig_1_flat, filename = "LaTeX/fig_1_flat.png", width = 8, height = 5)
 # The results from all tests
 sst_ALL_results <- readRDS("data/sst_ALL_results.Rda") %>%
   mutate(site = ifelse(site == "NW_Atl", "NWA", site))
-
-# Add label for panels
-# sst_ALL_plot_long <- sst_ALL_plot_long %>%
-#   mutate(site_label = case_when(site == "WA" ~ "A",
-#                                 site == "NW_Atl" ~ "B",
-#                                 site == "Med" ~ "C"))
+random_results <- readRDS("data/random_results.Rda") %>%
+  unite("site", c(lon, lat))
+full_results <- rbind(sst_ALL_results, random_results)
+rm(sst_ALL_results, random_results); gc()
 
 # Create figure and save
-fig_2 <- fig_line_plot()
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 8, width = 6)
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 8, width = 6)
-ggsave(plot = fig_2, filename = "LaTeX/fig_2.jpg", height = 8, width = 6)
+fig_2 <- fig_2_plot()
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.pdf", height = 6, width = 8)
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.png", height = 6, width = 8)
+ggsave(plot = fig_2, filename = "LaTeX/fig_2.jpg", height = 6, width = 8)
 
 
 # Figure 3 ----------------------------------------------------------------
@@ -294,39 +292,7 @@ ggsave(plot = fig_2, filename = "LaTeX/fig_2.jpg", height = 8, width = 6)
 #   group_by(metric) %>%
 #   mutate(panel_label_y = max(val)) %>%
 #   ungroup()
-# effect_event_pretty$site[effect_event_pretty$site == "NW_Atl"] <- "NWA"
-# effect_event_pretty$site <- factor(effect_event_pretty$site, levels = c("WA", "NWA", "Med"))
-# effect_event_pretty$index_vals[effect_event_pretty$test == "missing"] <- effect_event_pretty$index_vals[effect_event_pretty$test == "missing"]*100
 
-### Visualise
-## Climatologies
-# Sub-optimal data
-# ggplot(effect_clim, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-#   geom_line(aes(y = mean, colour = site)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free")
-# # Fixed data
-# ggplot(effect_clim_fix, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = site), alpha = 0.2) +
-#   geom_line(aes(y = mean, colour = site)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free")
-
-## Event metrics
-# Sub-optimal data
-# plot_event_effect <- ggplot(effect_event_pretty, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-#   # geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-#   # stat_smooth(aes(y = val, colour = site), geom = "line",
-#               # method = "lm", alpha = 0.5, size = 1) +
-#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1) +
-#   geom_text(aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   scale_colour_brewer(palette = "Dark2") +
-#   facet_grid(metric~test, scales = "free", switch = "both") +
-#   labs(x = NULL, y = NULL, colour = "Site") +
-#   theme(legend.position = "bottom")
 # plot_event_effect
 # ggsave(plot_event_effect, filename = "output/effect_event.pdf", height = 5, width = 10)
 # ggsave(plot_event_effect, filename = "output/effect_event.png", height = 5, width = 10)
