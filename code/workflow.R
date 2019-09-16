@@ -12,7 +12,7 @@ source("code/functions.R")
 
 # Reference analysis ------------------------------------------------------
 
-# Combine the three reference ts, run results, and save
+# Combine the three reference time series, run analysis, and save
 # sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
 #                  mutate(sst_NW_Atl, site = "NW_Atl"),
 #                  mutate(sst_Med, site = "Med"))
@@ -37,11 +37,11 @@ source("code/functions.R")
 # Global analysis ---------------------------------------------------------
 
 # Wrapper function with a chatty output as it chugs along
-# global_analysis_single <- function(file_sub){
+# global_analysis_single <- function(file_sub, par_op = F){
 #   OISST_slice <- OISST_files[file_sub]
 #   lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
 #   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-#   slice_res <- global_analysis(OISST_slice)
+#   slice_res <- global_analysis(OISST_slice, par_op = par_op)
 #   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
 #   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
 #   rm(slice_res); gc()
@@ -54,13 +54,14 @@ source("code/functions.R")
 # missing_files <- setdiff(full_files, dir("data/global"))
 # missing_index <- as.numeric(sapply(str_split(sapply(str_split(missing_files, "_"),
 #                                                     "[[", 2), "[.]"), "[[", 1))
-# plyr::l_ply(missing_index, global_analysis_single, .parallel = T)
+# plyr::l_ply(missing_index, global_analysis_single, .parallel = F, par_op = T)
 
 
 # Combine global results --------------------------------------------------
 
 # Load and combine each longitude slice of results
 # NB: Uses too much RAM to load everything in one shot...
+# NB: Best to run this in a terminal and not RStudio
 # system.time(
 #   global_results_1 <- plyr::ldply(dir("data/global", full.names = T)[1:500], readRDS, .parallel = T)
 # ) # 184 seconds
@@ -74,139 +75,57 @@ source("code/functions.R")
 # ) # xxx seconds
 # global_results <- rbind(global_results_1_2, global_results_3)
 # rm(global_results_1_2, global_results_3); gc()
-#
-# # Save
+
+# Save
 # saveRDS(global_results, "data/global_results.Rda")
 
 
-# Process results ---------------------------------------------------------
-
-# Calculate the simple linear slopes for the different tests at each pixel
+# Global trends -----------------------------------------------------------
+# Calculate the simple linear trends for the different tests at each pixel
 
 # Set cores
 # doMC::registerDoMC(cores = 50)
 
 # Load global data
-# global_summary <- map_dfr(readRDS, dir("data/global", full.names = T))
+# system.time(
+#   global_results <- readRDS("data/global_results.Rda")
+# ) # 665 seconds
 
-# Calculate summary slopes
-# global_summary_slope <- plyr::ddply(global_summary, .variables = c("lat"),
-#                                   .fun = global_slope, .parallel = T)
-# saveRDS(global_summary_slope, "data/global_summary_slope.Rda")
+# Calculate trends and save
+# NB: Not run as it takes too long
+# system.time(
+#   global_trend <- plyr::ddply(global_results, .variables = c("lat"),
+#                               .fun = pixel_trend, .parallel = T)
+# ) # xxx seconds
+# saveRDS(global_trend, "data/global_trend.Rda")
 
-# Load focus data
-# global_focus <- readRDS("data/global_focus.Rda")
+# Filter down to more immediately necessary results
+# system.time(
+#   global_mean_perc <- global_results %>%
+#     filter(id %in% c("mean_perc", "n_diff"),
+#            var %in% c("count", "focus_count",
+#                       "duration", "focus_duration",
+#                       "intensity_max", "focus_intensity_max"))
+# ) # 91 seconds
 
-# Calculate focus slopes
-# global_focus_slope <- plyr::ddply(global_focus, .variables = c("lat"),
-#                                   .fun = global_slope, .parallel = T)
-# saveRDS(global_focus_slope, "data/global_focus_slope.Rda")
+# Calculate trends and save
+# NB: Not run in favour of the following chunk
+# system.time(
+#   global_mean_perc_trend <- plyr::ddply(global_mean_perc, .variables = c("lat"),
+#                                         .fun = pixel_trend, .parallel = T)
+# ) # 59 seconds for one lon slice,
+# saveRDS(global_mean_perc_trend, "data/global_mean_perc_trend.Rda")
 
-
-# Global relationships ----------------------------------------------------
-
-# In this section we look at the relationships between certain global variables
-
-# Set cores
-# doMC::registerDoMC(cores = 50)
-
-# Global decadal trends
-# load("data/global_dec_trend.Rdata")
-
-# The effect on single events
-# load("data/global_effect_event.Rdata")
-
-# The slope results for single events
-# load("data/global_effect_event_slope.Rdata")
-
-# Merge and filter data
-# event_slope_dec_trend <- left_join(global_effect_event_slope, global_dec_trend, by = c("lon", "lat")) %>%
-#   filter(test == "length") %>%
-#   na.omit() %>%
-#   droplevels()
-
-# Linear model of relationship
-# event_slope_dec_trend_model <- event_slope_dec_trend %>%
-#   group_by(test, metric) %>%
-#   do(model = broom::glance(lm(slope ~ dec_trend, data = .))) %>%
-#   unnest()
-
-# A regression scatterplot between decadal trend and duration/max.int. and ts length slope
-# event_dec_scatterplot <- ggplot(data = filter(event_slope_dec_trend,
-#                                               metric %in% c("duration", "intensity_max")),
-#                                 aes(x = dec_trend, y = slope)) +
-#   geom_point(aes(colour = metric)) +
-#   geom_smooth(method = "lm") +
-#   facet_wrap(~metric, scales = "free_y", ncol = 1)
-# event_dec_scatterplot
-
-# The spread of the results per year measured
-# effect_event_spread <- global_effect_event %>%
-#   filter(test == "length") %>%
-#   droplevels() %>%
-#   spread(key = index_vals, value = val) %>%
-#   mutate(val_spread = `30`-`10`)
-
-# Plot showing value spread between 30 and 10 years
-# duration_spread_plot <- ggplot(filter(effect_event_spread, metric == "intensity_max"),
-#                                aes(x = lon, y = lat)) +
-#   geom_raster(aes(fill = val_spread)) +
-#   geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
-#   scale_fill_gradient2(low = "blue", high = "red") +
-#   coord_equal(expand = F) +
-#   # labs(fill = "Linear trend (°C/dec)") +
-#   theme_void() +
-#   theme(legend.position = "bottom",
-#         legend.key.width = unit(2, "cm"))
-# duration_spread_plot
-
-# Join in the event metrics detected from full 30 year time series
-# event_slope_prop <- left_join(event_slope_dec_trend, effect_event_spread,
-#                               by = c("lon", "lat", "test", "metric")) %>%
-#   na.omit() %>%
-#   mutate(slope_prop_10 = round(slope/`10`, 3),
-#          slope_prop_20 = round(slope/`20`, 3),
-#          slope_prop_30 = round(slope/`30`, 3))
-
-# Get just slope ten and change it for easy plotting
-# event_slope_prop_10 <- event_slope_prop %>%
-#   dplyr::select(lat:metric, slope_prop_10) %>%
-#   dplyr::rename(slope = slope_prop_10)
-
-# # Global map showing patterns of the slope as a proportion of the overall change
-# fig_4 <- global_effect_event_slope_plot(test_sub = "length", metric_sub = "intensity_max",
-#                                         df = event_slope_prop_10, prop = T)
-# # fig_4
-# ggsave(plot = fig_4, filename = "LaTeX/fig_4.pdf", height = 6, width = 10)
-# ggsave(plot = fig_4, filename = "LaTeX/fig_4.png", height = 6, width = 10)
-# ggsave(plot = fig_4, filename = "LaTeX/fig_4.jpg", height = 6, width = 10)
-#
-# fig_5 <- global_effect_event_slope_plot(test_sub = "length", metric_sub = "duration",
-#                                         df = event_slope_prop_10, prop = T)
-# # fig_5
-# ggsave(plot = fig_5, filename = "LaTeX/fig_5.pdf", height = 6, width = 10)
-# ggsave(plot = fig_5, filename = "LaTeX/fig_5.png", height = 6, width = 10)
-# ggsave(plot = fig_5, filename = "LaTeX/fig_5.jpg", height = 6, width = 10)
+# system.time(
+#   global_mean_perc_trend <- plyr::ldply(dir("data/global", full.names = T),
+#                                         .fun = mean_perc_trend, .parallel = T)
+# ) # 2638 seconds for one lon slice,
+# saveRDS(global_mean_perc_trend, "data/global_mean_perc_trend.Rda")
 
 
-# Boxplot showing spread of proportion values
+# Figures -----------------------------------------------------------------
 
-
-# Linear model of relationship between full event metric and rate of change from shortening
-# event_slope_prop_model <- event_slope_prop %>%
-#   group_by(test, metric) %>%
-#   filter(metric %in% c("duration", "intensity_max")) %>%
-#   do(model = broom::glance(lm(slope ~ dec_trend, data = .))) %>%
-#   unnest()
-
-# A regression scatterplot between decadal trend and duration/max.int. and ts length slope
-# event_slope_prop_scatterplot <- ggplot(data = filter(event_slope_prop,
-#                                                      metric %in% c("duration", "intensity_max")),
-#                                        aes(x = val, y = slope)) +
-#   geom_point(aes(colour = metric)) +
-#   geom_smooth(method = "lm") +
-#   facet_wrap(~metric, scales = "free", ncol = 1)
-# event_slope_prop_scatterplot
+# All of the figures that use the above results are made in "code/figures.R"
 
 
 # More thoughts -----------------------------------------------------------

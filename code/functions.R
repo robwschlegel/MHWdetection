@@ -338,7 +338,7 @@ summary_stats <- function(df){
     dplyr::rename(cont_val = val) %>%
     select(-index_vals)
 
-  # Find percentages of change, attach counts, and exit
+  # Find proportion of change, attach counts, and exit
   res_perc <- left_join(res_base, res_control, by = c("var", "id")) %>%
     mutate(perc = (val-cont_val)/abs(cont_val),
            perc = replace_na(perc, 0),
@@ -384,6 +384,7 @@ summary_stats <- function(df){
 # This single function runs through and outputs all of the desired tests as a list
 # testers...
 # df <- sst_Med
+# df <- sst[sst$lat == sst$lat[1],]
 # full_seq = T
 # clim_metric = T
 # count_miss = T
@@ -408,6 +409,7 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
     select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max) %>%
     mutate(intensity_cumulative = round(intensity_cumulative, 2),
            intensity_max = round(intensity_max, 2))
+  if(nrow(focus_event) == 0) return() # Some nearly prozen pixels manage to slip through and cause issues
   if(nrow(focus_event) > 1){
     focus_event <- slice(focus_event, nrow(focus_event))
   }
@@ -514,52 +516,92 @@ random_analysis <- function(df){
 
 
 # This function runs the analysis on a full lon slice
-# nc_file <- OISST_files[1]
-global_analysis <- function(nc_file){
+# nc_file <- OISST_files[1118]
+global_analysis <- function(nc_file, par_op = F){
 
   # Load and prep data
   sst <- load_noice_OISST(nc_file)
 
   # Run the analysis on each lon/lat pixel
   # system.time(
-  res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = F, .progress = "text")
-  # ) # 121 seconds in parallel, xxx seconds not in parallel
-  # ~5 seconds for one pixel, ~30 minutes not in parallel
+  res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = par_op, .progress = "text")
+  # ) # 2 minutes in parallel, 30 minutes not in parallel
+  # ~5 seconds for one pixel, ~xxx seconds not in parallel
   # Times may vary by 50% due to change in pixel count per longitude step
   return(res)
 }
 
 
-# Slope calculations ------------------------------------------------------
+# Trend calculations ------------------------------------------------------
 
-# Function for calculating R2 values for sub-optimal results
-pixel_slope_sub <- function(df){
-  if(nrow(df) > 2){
-    round(broom::tidy(lm(val ~ index_vals, data = df))$estimate[2], 3)
+# Note: The slopes are in units of 1 by R default
+# So this makes sense for the length slope being in units of 1 year
+# But not for missing data, where 1 is 100%,
+# or for decadal trend where 1 is 1C/dec.
+# Therefore the missing/interp and decadal trend slopes need to be devided by 100
+# This produces slopes that represent 1% and 0.01C/dec changes
+
+# Function for calculating trend for sub-optimal results
+pixel_trend_sub <- function(df){
+  # Drawing linear trends doesn't work well with ts longer than 30 years
+  # As these values tend to go back down or do some other non-linear thing
+  df_filter <- filter(df, index_vals != 35,
+                      is.finite(val)) %>%
+    na.omit() #%>%
+    # Correct scale issue
+    # mutate()
+  if(nrow(df_filter) > 2){
+    res_model <- lm(val ~ index_vals, data = df_filter)
+    res <- data.frame(trend = round(broom::tidy(res_model)$estimate[2], 2),
+                      r2 = round(broom::glance(res_model)$adj.r.squared, 2),
+                      p = round(broom::tidy(res_model)$p.value[2], 2))
   } else{
-    return(NA)
+    res <- data.frame(trend = NA, r2 = NA, p = NA)
   }
+  return(res)
 }
 
 # This function expects to be given only one latitude slice at a time
 # tester...
-# df <- global_focus %>%
-# filter(lon == lon[20], lat == lat[129])
-# filter(lon == lon[20], lat == lat[129], test == "length", var == "focus_duration")
-# filter(test == "length", var == "focus_duration")
-# df <- global_focus %>%
-# filter(lon == lon[20], lat == lat[129])
-# filter(lon == lon[20], lat == lat[129], test == "length", var == "duration")
-pixel_slope <- function(df){
-  suppressWarnings( # Suppress perfect slope warnings
+# df <- global_mean_perc %>%
+# df <- res %>%
+# filter(lon == lon[1], lat == -51.125)
+# filter(lon == lon[1], lat == lat[129], test == "length", var == "duration", id == "mean_perc")
+# filter(lon == lon[1], lat == 	-51.625, test == "missing", var == "count", id == "n_diff")
+# filter(lon == lon[1], lat == 	-51.625, test == "interp", var == "count", id == "n_diff")
+pixel_trend <- function(df){
+  suppressWarnings( # Suppress perfect fit warnings
   df_slope <- df %>%
-    group_by(lon, test, var) %>%
-    group_modify(~global_slope_sub(.x))
-    # nest() %>%
-    # mutate(slope = purrr::map(data, global_slope_sub)) %>%
-    # select(-data) %>%
-    # unnest()
+    # Correct proportions into percentages
+    mutate(val = ifelse(id %in% c("mean_perc", "sum_perc"), val*100, val)) %>%
+    group_by(lon, test, var, id) %>%
+    group_modify(~pixel_trend_sub(.x)) %>%
+    # Correct the scale of linear trends away from the default value of 1
+    mutate(trend = ifelse(test %in% c("missing", "interp"), trend/100, trend),
+           trend = ifelse(test == "trend", trend/10, trend),
+           # The trends for length are in the direction of 10 to 30 years,
+           # which needs to be reversed to 30 to 10 years for consistency
+           trend = ifelse(test == "length", -trend, trend),
+           # Correct R2 values below 0, as this is not meant to be possible
+           r2 = ifelse(r2 < 0, 0, r2))
   )
+}
+
+# A convenience function to load a lon slice of global results
+# Then filter only to the minimum and run linear models
+focus_trend <- function(file_name){
+  # The subsetting index
+  var_choice <- data.frame(var = c("count", "duration", "intensity_max",
+                                   "focus_count", "focus_duration", "focus_intensity_max"),
+                           id = c("n_diff", "sum_perc", "mean_perc",
+                                  "mean_perc", "sum_perc", "mean_perc"))
+  system.time(
+    res <- readRDS(file_name) %>%
+      right_join(var_choice, by = c("var", "id")) %>%
+      group_by(lat) %>%
+      group_modify(~pixel_trend(.x))
+    ) # 41 seconds
+  return(res)
 }
 
 
@@ -582,10 +624,6 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
   # Create category breaks and select slice of data.frame
   clim_cat <- df %>%
     group_by(site_label) %>%
-    # dplyr::mutate(diff = thresh - seas,
-                  # thresh_2x = thresh + diff,
-                  # thresh_3x = thresh_2x + diff,
-                  # thresh_4x = thresh_3x + diff) %>%
     dplyr::filter(t >= date_peak-spread, t <= date_peak+spread)
 
   # Peak event
@@ -640,7 +678,7 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 # This shows the percentage change in sea/thresh and dur/max.int
 # from control for the three base tests
 # testers...
-# df <- full_results
+# df = full_results
 # tests  = "base"
 # result_choice = "10_years"
 fig_line_plot <- function(df = full_results, tests, result_choice){
@@ -659,30 +697,31 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
 
   # Prep data for focus or mean MHW results
   if(result_choice == "focus"){
-    var_choice <- c("focus_count", "focus_duration", "focus_intensity_max")
-    var_levels <- c("Count", "Duration (days)", "Max intensity (°C)")
-    y_axis_title <- "Change in largest MHW (%)"
+    var_choice <- data.frame(var = c("focus_count", "focus_duration", "focus_intensity_max"),
+                             id = c("mean_perc", "sum_perc", "mean_perc"))
+    var_levels <- c("Count (n)", "Duration (% sum of days)", "Max intensity (% of mean °C)")
+    y_axis_title <- "Change in largest MHW"
   } else if(result_choice == "10_years"){
-    var_choice <- c("count", "duration", "intensity_max")
-    var_levels <- c("Count", "Duration (days)", "Max intensity (°C)")
-    y_axis_title <- "Mean change in MHWs (%)"
+    var_choice <- data.frame(var = c("count", "duration", "intensity_max"),
+                             id = c("n_diff", "sum_perc", "mean_perc"))
+    var_levels <- c("Count (n)", "Duration (% sum of days)", "Max intensity (% of mean °C)")
+    y_axis_title <- "Change in MHWs"
   } else if(result_choice == "clims"){
     var_choice <- c("seas", "thresh")
     var_levels <- c("Seasonal clim. (°C)", "Threshold clim. (°C)")
-    y_axis_title <- "Mean change in thresholds (%)"
+    y_axis_title <- "Mean change in thresholds"
   }
 
   # Prep reference results for pretty plotting
   df_prep <- df %>%
     filter(is.finite(val),
-           test %in% test_choice,
-           var %in% var_choice) %>%
-    mutate(val = val*100,
-           index_vals = ifelse(test == "missing", index_vals*100, index_vals),
-           index_vals = ifelse(test == "interp", index_vals*100, index_vals),
-           var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (days)",
-                                 var %in% c("intensity_max", "focus_intensity_max" ) ~ "Max intensity (°C)",
-                                 var %in% c("count", "focus_count") ~ "Count",
+           test %in% test_choice) %>%
+    right_join(var_choice, by = c("var", "id")) %>%
+    mutate(val = ifelse(!(var %in% c("count", "focus_count")), val*100, val),
+           index_vals = ifelse(test %in% c("missing", "interp"), index_vals*100, index_vals),
+           var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (% sum of days)",
+                                 var %in% c("intensity_max", "focus_intensity_max" ) ~ "Max intensity (% of mean °C)",
+                                 var %in% c("count", "focus_count") ~ "Count (n)",
                                  var == "seas" ~ "Seasonal clim. (°C)",
                                  var == "thresh" ~ "Threshold clim. (°C)"),
            var_label = factor(var_label, levels = var_levels),
@@ -702,10 +741,10 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
                                    var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I"))
 
   # Mean values
-  df_mean <- df_prep %>%
-    filter(id == "mean_perc" | id == "n_diff", site %in% c("WA", "NWA", "Med"))
-  random_mean <- df_prep %>%
-    filter(id == "mean_perc" | id == "n_diff", !(site %in% c("WA", "NWA", "Med"))) %>%
+  reference_df <- df_prep %>%
+    filter(site %in% c("WA", "NWA", "Med"))
+  random_df <- df_prep %>%
+    filter(!(site %in% c("WA", "NWA", "Med"))) %>%
     group_by(test) %>%
     mutate(panel_label_x = quantile(index_vals, 0.05)) %>%
     ungroup() %>%
@@ -714,22 +753,30 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     ungroup()
 
   # Significance points
-  df_sig <- df_prep %>%
-    filter(id == "difference", val == 1, var != "seas")
+  reference_sig <- df_prep %>%
+    filter(site %in% c("WA", "NWA", "Med"),
+           id == "difference", val == 1, var != "seas")
   random_sig <- df_prep %>%
-    filter(id == "difference", val == 1, var != "seas")
+    filter(!(site %in% c("WA", "NWA", "Med")),
+           id == "difference", val == 1, var != "seas")
+
+  # Plot labels
+  labels_df <- random_df %>%
+    select(-site, -val, -index_vals) %>%
+    unique()
 
   # Create figure
-  fig_plot <- ggplot(df_mean, aes(x = index_vals, y = val)) +
+  fig_plot <- ggplot(reference_df, aes(x = index_vals, y = val)) +
     geom_hline(aes(yintercept = 0), colour = "grey") +
     # Random results
-    geom_line(data = random_mean, aes(group = site), size = 1, alpha = 0.1) +
+    geom_line(data = random_df, aes(group = site), size = 1, alpha = 0.1) +
     geom_point(data = random_sig, colour = "red", size = 1, alpha = 1) +
     # Reference results
     geom_line(aes(colour = site), size = 1.5, alpha = 0.8) +
-    geom_point(data = df_sig, colour = "red", size = 1, alpha = 1) +
-    geom_text(data = random_mean,
-              aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
+    geom_point(data = reference_sig, colour = "red", size = 1, alpha = 1) +
+    # Labels and scales
+    geom_label(data = labels_df,
+               aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
     scale_colour_brewer(palette = "Dark2") +
     scale_x_continuous(expand = c(0, 0)) +
     facet_grid(var_label~test_label, scales = "free", switch = "both") +
@@ -744,91 +791,102 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
 # Function for easily plotting subsets from the global slope results
 # testers...
 # test_sub <- "length"
-# metric_sub <- "intensity_max"
-# metric_sub <- "duration"
-effect_event_slope_plot <- function(test_sub, metric_sub,
-                                    df = global_effect_event_slope,
-                                    prop = FALSE) {
-
-  # Prepare Viridis colour palette
-  if(metric_sub == "duration") {
-    vir_op <- "C"
-    col_split <- c("purple", "forestgreen")
-  } else {
-    vir_op <- "A"
-    col_split <- c("blue", "red")
-  }
+# var_sub <- "intensity_max"
+# var_sub <- "duration"
+# var_sub <- "count"
+trend_plot <- function(test_sub, var_sub,
+                       df = global_mean_perc_trend,
+                       prop = TRUE) {
 
   # Filter base data
   base_sub <- df %>%
-    filter(test == test_sub, metric == metric_sub) #%>%
-    # Convert from proportion to percent
-    # mutate(slope = slope*100)
+    filter(test == test_sub, var == var_sub)
 
+  # Prepare legend title bits
   if(prop){
-    type_sub <- "prop"
-    base_sub$slope <- base_sub$slope*100
+    sen_change <- "Percent change "
+    if(!(var_sub %in% c("count", "focus_count"))){
+      base_sub$trend <- base_sub$trend * 100
+    }
   } else{
-    type_sub <- "slope"
+    sen_change <- "Change "
+  }
+  if(test_sub == "length"){
+    sen_test <- "per year"
+  } else if(test_sub == "missing"){
+    sen_test <- "per 1% missing data"
+  } else if(test_sub == "trend"){
+    sen_test <- "per 0.1°C/dec trend"
+  }
+
+  # Prepare colour palette
+  if(var_sub %in% c("duration", "focus_duration")) {
+    vir_op <- "C"
+    col_split <- c("purple", "forestgreen")
+    sen_var <- "\nin duration (days)"
+  } else if(var_sub %in% c("count", "focus_count")) {
+    vir_op <- "B"
+    col_split <- c("turquoise4", "chocolate")
+    sen_var <- "\nin count (n)"
+    sen_change <- "Change " # Intentional overwrite of above value
+  } else if(var_sub %in% c("intensity_max", "focus_intensity_max")){
+    vir_op <- "A"
+    col_split <- c("blue", "red")
+    sen_var <- "\nin max. intensity (°C)"
   }
 
   # Find quantiles
-  slope_quantiles <- quantile(base_sub$slope, na.rm = T,
+  trend_quantiles <- quantile(base_sub$trend, na.rm = T,
                               probs = c(0, 0.05, 0.1, 0.5, 0.9, 0.95, 1.0))
+
+  # Create legend break labels
+  # break_labels <- as.numeric(trend_quantiles[2:6])
 
   # Correct base data to quantiles as the tails are very long
   base_quantile <- base_sub %>%
-    mutate(slope = case_when(slope > slope_quantiles[6] ~ slope_quantiles[6],
-                             slope < slope_quantiles[2] ~ slope_quantiles[2],
-                             slope <= slope_quantiles[6] | slope >= slope_quantiles[2] ~ slope))
+    mutate(trend = case_when(trend > trend_quantiles[6] ~ trend_quantiles[6],
+                             trend < trend_quantiles[2] ~ trend_quantiles[2],
+                             trend <= trend_quantiles[6] | trend >= trend_quantiles[2] ~ trend))
 
   # The map
-  slope_map <- ggplot(base_quantile, aes(x = lon, y = lat)) +
-    geom_raster(aes(fill = slope)) +
+  trend_map <- ggplot(base_quantile, aes(x = lon, y = lat)) +
+    geom_raster(aes(fill = trend)) +
     geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
     # scale_fill_viridis_c(option = vir_op) +
     # scale_fill_gradientn(colors = scales::viridis_pal(option = vir_op)(9),
-    # limits = c(as.numeric(slope_quantiles[2]),
-    # as.numeric(slope_quantiles[4])),
-    # breaks = c(as.numeric(slope_quantiles[2:6]))) +
+    # limits = c(as.numeric(trend_quantiles[2]),
+    # as.numeric(trend_quantiles[4])),
+    # breaks = c(as.numeric(trend_quantiles[2:6]))) +
     scale_fill_gradient2(low = col_split[1], high = col_split[2],
-                         breaks = c(as.numeric(slope_quantiles[2:6]))) +
+                         breaks = c(round(as.numeric(trend_quantiles[2:6]), 2))) +
     coord_equal(expand = F) +
-    # labs(x = NULL, y = NULL) +
     theme_void() +
+    labs(fill = paste0(sen_change, sen_test, sen_var)) +
     theme(legend.position = "bottom",
-          legend.key.width = unit(3, "cm"))
-  if(metric_sub == "intensity_max" & prop == F){
-    slope_map <- slope_map + labs(fill = "Change in max. intensity (°C)\nper year")
-  } else if(metric_sub == "duration" & prop == F){
-    slope_map <- slope_map + labs(fill = "Change in duration (days)\nper year")
-  } else if(metric_sub == "intensity_max" & prop == T){
-    slope_map <- slope_map + labs(fill = "Percent change in max. intensity (°C)\n per year from 10 year value")
-  } else if(metric_sub == "duration" & prop == T){
-    slope_map <- slope_map + labs(fill = "Percent change in duration (days)\n per year from 10 year value")
-  }
-  # slope_map
+          legend.key.width = unit(2, "cm"),
+          panel.background = element_rect(fill = "grey80"))
+  # trend_map
 
   # The density polygon
-  # slope_density <- ggplot(base_sub, aes(x = slope)) +
-  #   geom_density(aes(fill = slope)) +
+  # trend_density <- ggplot(base_sub, aes(x = trend)) +
+  #   geom_density(aes(fill = trend)) +
   #   coord_flip() +
   #   scale_x_continuous(expand = c(0,0))
-  # slope_density
+  # trend_density
 
   # The ridgeline plot
-  # slope_ridge <- ggplot(base_sub, aes(x = slope, y = metric)) +
+  # trend_ridge <- ggplot(base_sub, aes(x = trend, y = var)) +
   #   stat_density_ridges(aes(fill = factor(..quantile..)),
   #                       geom = "density_ridges_gradient", calc_ecdf = TRUE,
   #                       quantiles = 4, quantile_lines = TRUE) +
   #   viridis::scale_fill_viridis(discrete = TRUE, name = "Quartiles", alpha = 0.7) +
   #   coord_flip(expand = F) +
   #   theme(axis.text.x = element_blank())
-  # slope_ridge
+  # trend_ridge
 
-  ggsave(slope_map,
-         filename = paste0("output/",test_sub,"_",metric_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
-  return(slope_map)
+  # ggsave(trend_map,
+  #        filename = paste0("output/",test_sub,"_",var_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
+  return(trend_map)
 }
 
 

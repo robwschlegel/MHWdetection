@@ -173,11 +173,11 @@ slice_res %>%
 
 
 # Figure 1 ----------------------------------------------------------------
+# Show the 3 focus MHWs, which also provides a reference for what MHWs look like
 
-# Show the 3 focus MHWs
-
-# It appears as though it would be best to show the largest MHW that occurred in the last ten years
-# This will ensure more consistency throughout the results
+# A choice was made to show the largest MHW in the past 10 years,
+# rather than the focus MHWs from the literature
+# The WA MHW is still the same but the NWA and Med events are different
 
 # Combine the reference time series
 sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
@@ -205,7 +205,7 @@ focus_ALL <- sst_ALL_event %>%
   filter(intensity_cumulative == max(intensity_cumulative)) %>%
   ungroup()
 
-# Manually grab each event and combine
+# The MHWs from the literature
 # focus_WA <- sst_ALL_event %>%
 #   filter(site == "WA", date_end <= "2013-01-01") %>%
 #   filter(intensity_max == max(intensity_max)) %>%
@@ -255,9 +255,9 @@ rm(sst_ALL_results, random_results); gc()
 
 # Create figure and save
 fig_2 <- fig_line_plot(full_results, tests = "base", result_choice = "10_years")
-ggsave("LaTeX/fig_2.pdf", fig_2, height = 6, width = 8)
-ggsave("LaTeX/fig_2.png", fig_2, height = 6, width = 8)
-ggsave("LaTeX/fig_2.jpg", fig_2, height = 6, width = 8)
+ggsave("LaTeX/fig_2.pdf", fig_2, height = 8, width = 10)
+ggsave("LaTeX/fig_2.png", fig_2, height = 8, width = 10)
+ggsave("LaTeX/fig_2.jpg", fig_2, height = 8, width = 10)
 
 
 # Figure 3 ----------------------------------------------------------------
@@ -272,17 +272,37 @@ ggsave("LaTeX/fig_3.jpg", fig_3, height = 6, width = 8)
 # Figure 4 ----------------------------------------------------------------
 # The global effect of length on count, max. intensity, and duration
 
-# This figure is currently made in the global.R script
+fig_4A <- trend_plot(test_sub = "length", var_sub = "count")
+fig_4B <- trend_plot(test_sub = "length", var_sub = "duration")
+fig_4C <- trend_plot(test_sub = "length", var_sub = "intensity_max")
+fig_4 <- ggarrange(fig_4A, fig_4B, fig_4C, ncol = 1, nrow = 3, labels = "AUTO")
+ggsave("LaTeX/fig_4.pdf", fig_4, height = 12, width = 8)
+ggsave("LaTeX/fig_4.png", fig_4, height = 12, width = 8)
+ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 8)
 
 
 # Figure 5 ----------------------------------------------------------------
 # The global effect of missing data on count, max. intensity, and duration
 
-# This figure is currently made in the global.R script
+fig_5A <- trend_plot(test_sub = "missing", var_sub = "count")
+fig_5B <- trend_plot(test_sub = "missing", var_sub = "duration")
+fig_5C <- trend_plot(test_sub = "missing", var_sub = "intensity_max")
+fig_5 <- ggarrange(fig_5A, fig_5B, fig_5C, ncol = 1, nrow = 3, labels = "AUTO")
+ggsave("LaTeX/fig_5.pdf", fig_5, height = 12, width = 8)
+ggsave("LaTeX/fig_5.png", fig_5, height = 12, width = 8)
+ggsave("LaTeX/fig_5.jpg", fig_5, height = 12, width = 8)
 
 
 # Figure 6 ----------------------------------------------------------------
 # The global effect of decadal trend on count, max. intensity, and duration
+
+fig_6A <- trend_plot(test_sub = "trend", var_sub = "count")
+fig_6B <- trend_plot(test_sub = "trend", var_sub = "duration")
+fig_6C <- trend_plot(test_sub = "trend", var_sub = "intensity_max")
+fig_6 <- ggarrange(fig_6A, fig_6B, fig_6C, ncol = 1, nrow = 3, labels = "AUTO")
+ggsave("LaTeX/fig_6.pdf", fig_6, height = 12, width = 8)
+ggsave("LaTeX/fig_6.png", fig_6, height = 12, width = 8)
+ggsave("LaTeX/fig_6.jpg", fig_6, height = 12, width = 8)
 
 
 # Figure 7 ----------------------------------------------------------------
@@ -299,7 +319,6 @@ ggsave("LaTeX/fig_7.jpg", fig_7, height = 6, width = 8)
 
 
 # Figure 9 ----------------------------------------------------------------
-
 
 
 # Figure 10 ---------------------------------------------------------------
@@ -325,21 +344,21 @@ ggsave("LaTeX/fig_7.jpg", fig_7, height = 6, width = 8)
 #   facet_grid(metric~site)
 # clim_change_plot
 
-
 # Appendix 1 --------------------------------------------------------------
+# The difference between the proper 30 year clim and all other 30 year clim periods
+# the difference between the focus results when using a 30 year base period vs. a 37 year base period
+
+# Appendix 2 --------------------------------------------------------------
 # The effect of the base tests on seas/thresh
 
 
-# Appendix 2 --------------------------------------------------------------
+# Appendix 3 --------------------------------------------------------------
 # The effect of widening the clim window
 
 
-# Appendix 3 --------------------------------------------------------------
+# Appendix 4 --------------------------------------------------------------
 # The other global figures
 
-
-# Appendix 4 --------------------------------------------------------------
-# The difference between the proper 30 year clim and all other 30 year clim periods
 
 
 
