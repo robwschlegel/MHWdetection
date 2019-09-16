@@ -164,39 +164,24 @@ There is no proposed _a-priori_ method to correct for the added linear decadal t
 
 ## Time series length
 
-Shortening the lengths of the time series had a noticeably negative effect on the comparability of the focus outputs, with the (Figure 2ADG).  
-
-<!-- Changing the length of a time series lowered the mean probability (_p_-value) from the 100 re-sampled tests for each reference time series, but was accompanied by a high level of variance.  -->
+Shortening the length of a time series from 30 to 10 years had a somewhat linear yet unpredictable effect on the count of MHW detected in the most recent 10 years of data (Figure 2A). We may see that the 10 year time series could have roughly 10 more to 10 fewer MHWs than the 30 year control. In Figure 2D we see that the change in the sum of the MHW days for a 10 year time series ranges primarily from 50% fewer to 50% more than the 30 year control. There is no point where any of these samples become significantly different (_p_-value <= 0.05) than the control sample.
 
 <!-- Figure 2 -->
 
-With the exception of the Western Australia (WA) time series we see that there is no point at which any of the outputs from the MHW algorithm on shortened time series became significantly different from the 30 year control time series. The WA time series, which is characterised by its large inter-annual variability, only shows significantly different threshold climatologies on average when 14 years of data or fewer are used (Figure2A). The seasonal climatology does not differ significantly on average until 11 years of data or fewer are used.
-<!-- RWS: Need to have more of a think about what to do with reporting on the seasonal & threshold climatologies. -->
+It is important to note that increasing the climatology period longer than 30 years had almost as rapid an effect on creating dissimilar outputs as using fewer years of data does. This was an unexpected result that stresses the importance of adhering to the WMO standard as closely as possible to ensure the comparability of results. 
 
-It is important to note that increasing the climatology period longer than 30 years has almost as rapid an effect on creating dissimilar outputs as using fewer years of data does. This was an unexpected result that stresses the importance of adhering to the WMO standard as closely as possible to ensure the comparability of results. 
+Looking at the effect that shortening time series length has on the duration and maximum intensity of the largest MHW from each time series we see that both values tend to decrease (Figure 3DG), while the count of MHWs within what should be the duration of the focus MHW increase (Figure3A). This is because the shortening of a time series usually increases the mean climatology, so the shorter a time series becomes, the lower the maximum intensity and shorter the duration of the MHWs become relative to the increasing mean climatology.
 
-Looking at the effect that shortening time series length has on the duration and maximum intensity of the largest MHW from each reference time series we see that both values tend to decrease (Figure 3). This is because the shortening of a time series tends to increase the mean climatology, so the shorter a time series becomes, the lower the maximum intensity and shorter the duration of the MHWs become relative to the increasing mean climatology (Figure 3DH). We also see that the Western Australia (WA) MHW is always being divided into at least two or more separate events due to the rising mean climatology (Figure 3A). The Mediterranean (Med) MHW isn't affected much by changes in time series length as this MHW has a much more even rise and fall above the 90th percentile threshold (Figure 1C).
+<!-- Figure 3 -->
 
-<!-- ![Figure 3: The effect of the three tests (columns) on the MHW metrics and count of events (rows). Each panel has three lines, one for each of the reference time series, shown in the legend at the bottom of the figure. These are the original data, not the randomly re-sampled time series. The lines track the change of just one metric for the focus MHWs seen in Figure 1 as the data are made increasingly sub-optimal, as shown along the x-axes. The y-axes show the unit of measurement for each metric. The top row, "count (event)" shows if the MHW has been divided up into multiple smaller MHWs due to changes in the values along the x-axes.](../LaTeX/fig_3.png) -->
+We see in Figure 4 that there are clear global patterns in the changes in MHW results as time series are shortened from 30 to 10 years. The median change in the count of MHWs due to time series length is nearly 0, but much of the western Pacific and northern Atlantic oceans show hugh rates of increasing MHW counts as time series are shortened (Figure 4A). The rates of change in the eastern Pacific, southern Atlantic, and the Indian Ocean shw a mix of both increasing and decreasing counts of MHWs as time series become shorter. The patterns of change in the sum of MHW days very closely resembles the change in the count of MHWs (Figure 4B). The decreasing maximum intensities of MHWs caused by decreasing time series lengths were also generally seen to occur throughout the oceans (Figure 4C). The median rate of change caused by decreasing time series length from 30 to 10 years is seen to be 0.21% per year. This means that, on average, a MHW detected in a 10 year time series will have a maximum intensity about 8.4% cooler than a MHW detected in a 30 year time series. This is a very small margin and shows the robustness of the MHW detection methodology. There are however areas of the oceans where decreasing a time series tends to increase the maximum intensities of the MHWs detected. These areas are roughly the same parts of the oceans where the shortening of a time series causes a decrease in the sum of MHW days detected. It is important to note that the long-term trends in these data were removed beforehand so the patterns observed in Figure 4 are due to the properties of the time series themselves and not the climate change signal that would otherwise be dominant in the results.
 
-The gently increasing maximum intensities caused by increasing the lengths of the time series were also generally seen to occur throughout the oceans (Figure 4). The median rate of change caused by increasing time series length from 10 to 30 years is seen to be 0.5% per year. This means that, on average, a MHW detected in a 10 year time series will have a maximum intensity about 10% cooler than a MHW detected in a 30 year time series. This is a very small margin and shows the robustness of the MHW detection methodology. We also see areas of decreasing MHW maximum intensity in most of the Southern Ocean, some parts of the open ocean in the Pacific and Atlantic, as well as in the Arctic. 
-
-Remember that the long-term trend in these data were not removed beforehand so it is not surprising that increasing the length of the time series into the past (where the data are cooler on average) will reduce the mean climatology and therefore increase the maximum intensity of the detected event. The relationship between warming or cooling maximum intensity and decadal trends in temperature (i.e. climate change) is significant (_p_-value < 0.001, R^2 = 0.33). We also see that areas with perennial ice coverage, and western boundary currents (WBCs), tend to show greater rates of change. This is likely due to these areas having larger amounts of variance, in addition to a stronger decadal warming trend.
-
-<!-- ![Figure 4: Map showing the percent increase per year in the maximum intensity of the largest MHW detected in the most recent ten years of data when an increasing number of years of data are used for the calculation of the MHW.](../LaTeX/fig_4.png) -->
-
-Looking at the effect of time series length on the duration of MHWs around the globe (Figure 5) we see a similar pattern to the effect on maximum intensity (Figure 4). The median increase is 1.4% per year over the duration of the MHW detected with 10 years of data. This is not surprising and supports the observation for maximum intensity.
-
-<!-- ![Figure 5: Map showing the percent increase per year in the duration of the largest MHW detected in the most recent ten years of data when progressively more years of data are used for the calculation of the MHW.](../LaTeX/fig_5.png) -->
-
-The _a priori_ fix proposed for shorter time series, that of creating a smoother seasonal signal, created results with more similar overall days of MHWs per year, but all of the focus results were less similar than without applying the fix (results not shown; RWS: Could include as an Appendix if desired). This happened because the over smoothing of the seasonal signal prevents the detection of the smaller MHWs in the time series while inflating the size of the larger MHWs. A larger issue causd by short time series is the amount that the centre of the climatology increases or decreases, more so than the increase in variability caused, which additional smoothing seeks to address. This is not something that can be controlled for _a-priori_ and is better controlled for in a _post-hoc_ manner along the same lines as the proposed fix for decadal trends (see below).
+<!-- Figure 4 -->
 
 
 ## Missing data
 
 The effects of missing data on the focus outputs were the largest of the three tests (Figure 6). Whereas the changes in time series length may affect the climatologies more rapidly (Figure 2), increases in missing data affect the MHW metrics and the focus MHW much more (Figure 2; Figure 6). The outputs most affected are the threshold climatology and the duration of the MHWs. The maximum intensities of the MHWs are also affected, but at 50% missing data these did not become significantly different from the control time series. The seasonal signal was affected very little by large proportions of missing data.
-
-<!-- ![Figure 6: The results from Kolmogorov-Smirnov (KS) tests on the similarity of the outputs from the MHW algorithm with optimal data against sub-optimal time series with increasing percentages of missing data. The climatology outputs are shown in blue, the event metrics in green, and the category proportions in yellow-red. The solid lines show the mean _p_-value from the tests on the 100 re-sampled time series for each step. The coloured ribbons show one standard deviation (SD) in the _p_-values for each step. The results for each reference time series are A) Western Australia (WA), B) Northwest Atlantic (NWA), C) Mediterranean (Med). The x-axis shows the percent of missing data in the time series being compared against the complete (0%; optimal) data. The y-axis shows the range of mean _p_-values from 1.0 (exact same) to 0.0 (completely different), with a horizontal dashed red line at _p_=0.05 (statistically significantly different). Any mean values at or below the _p_=0.05 line are highlighted with red squares.](../LaTeX/fig_6.png) -->
 
 The effect of random missing data on the single focus MHWs from the three reference time series are very jagged because the missing data at each step was only calculated once. This was done intentionally to highlight the range that this randomness can have on the results as compared to the changes in length (Figure 3ADH). The effect that missing data can have on the MHW metrics depends largely on the shape of the MHW, meaning the area above the threshold climatology and below the observed anomaly. The WA event has a very pronounced peak (Figure 1A), so when larger proportions of data are missing we see how likely it becomes that this peak is not being recorded. The maximum intensity measured in the control time series is 6.5°C, but we see that because very few days of this MHW were so intense, increasing proportions of missing data become more likely to remove these large values. In the NWA event we also see a jagged effect from missing data, though less than the WA event, this is also because of the peak in temperature for this event. The effect on the Med event is the least pronounced because the event is more even in its exceedance of the 90th percentile threshold. Missing data does not begin to have an appreciable effect on the Med event until there is an excess of 35% of the data missing.
 
@@ -204,14 +189,7 @@ The duration of the MHWs are all negatively impacted by missing data, with the l
 
 For the two shorter MHWs the increase in missing data never divides the event up into more than two separate MHWs (Figure 6B). The contiguity of the WA event however is affected greatly by missing data. With just 5% of the data in the time series missing this event was divided into 5 separate events. As missing data increased the count of the divided events tended to also increase up until 27% missing data. At that point the event began to be divided into fewer events again, not because they were forming back together, but rather because there was now not enough contiguous days in exceedence of the threshold to detect a MHW.
 
-The _a priori_ fix proposed for this issue, the linear interpolation of missing data, was very effective and could potentially allow for the use of time series missing up to 50% of their data (Figure 7), assuming that there is not so much missing data that the period of time during a MHW that one may be wanting to study/isolate is completely missing.
-
-<!-- ![Figure 7: The same information shown in Figure 6, but with the gaps introduced from the random missing data filled via linear interpolation before running the MHW detection algorithm.](../LaTeX/fig_7.png) -->
-
-<!-- RWS: A bit here about consecutive mssing days of data and how that interferes with linear interpolation.-->
-
-<!-- Figure 8: Consecutive missing days of data and how that relates to the efficacy of linear interpolation.-->
-
+<!-- Figure 5 -->
 
 ## Long-term trends
 
@@ -221,12 +199,24 @@ When adding a linear trend to the time series we see that the climatologies devi
 
 Adding linear long-term trends never caused the focus MHW to be dissected into multiple events (Figure 9), but the duration of the events were affected differently by the added linear trend. The Med shows practically no effect, the NWA has a very slight increase with a dramatic jump at an added trend of 0.04°C/dec, and the WA event sees a massive increase due primarily to one large jump at 0.42°C/dec. The effect that the linear trend has on the maximum intensity of each event is a simple linear function of the decadal trend and where in the time series the event occurs. The slope for the increase in maximum intensity for the Med MHW is more shallow than the other two because this MHW occurred in 2003, as opposed to 2010 (WA) and 2012 (NWA). 
 
+
+## Potential fixes
+
+<!-- RWS: A section, with a table, that shows the best practices for dealing with sub-optimal data. -->
+
+The _a priori_ fix proposed for shorter time series, that of creating a smoother seasonal signal, created results with more similar overall days of MHWs per year, but all of the focus results were less similar than without applying the fix (results not shown; RWS: Could include as an Appendix if desired). This happened because the over smoothing of the seasonal signal prevents the detection of the smaller MHWs in the time series while inflating the size of the larger MHWs. A larger issue causd by short time series is the amount that the centre of the climatology increases or decreases, more so than the increase in variability caused, which additional smoothing seeks to address. This is not something that can be controlled for _a-priori_ and is better controlled for in a _post-hoc_ manner along the same lines as the proposed fix for decadal trends (see below).
+
+The _a priori_ fix proposed for this issue, the linear interpolation of missing data, was very effective and could potentially allow for the use of time series missing up to 50% of their data (Figure 7), assuming that there is not so much missing data that the period of time during a MHW that one may be wanting to study/isolate is completely missing.
+
+<!-- ![Figure 7: The same information shown in Figure 6, but with the gaps introduced from the random missing data filled via linear interpolation before running the MHW detection algorithm.](../LaTeX/fig_7.png) -->
+
+<!-- RWS: A bit here about consecutive mssing days of data and how that interferes with linear interpolation.-->
+
+<!-- Figure 8: Consecutive missing days of data and how that relates to the efficacy of linear interpolation.-->
+
 Given the relationship between decadal trends and the focus outputs seen above, one may be able to apply a _post-hoc_ correction to one's results if the decadal trend in a given area is known. 
 <!-- RWS: Need to flesh this out. Maybe include a figure or table. -->
 
-## Best practices
-
-<!-- RWS: A section, with a table, that shows the best practices for dealing with sub-optimal data. -->
 
 # Discussion
 
@@ -293,13 +283,14 @@ The code and datasets generated for this study may be found at https://github.co
 
 Figure 1: The focus marine heatwaves (MHWs) shown in red for the three reference time series A) Western Australia, B) Northwest Atlantic, and C) Mediterranean. Other MHWs shown in salmon. Each panel is centred around the peak date of the focus MHW, which is highlighted by a dark green vertical segment. The beginning and end of each event are demarcated with light green vertical segments. The seasonal mean climatology for each time series is shown as a light blue line, while the threshold climatology is shown with a dark blue line. The observed temperatures are shown as a black line.
 
-Figure 2: The effect of sub-optimal data on the MHWs detected in the final 10 years of a time series. The climatology outputs are shown in blue, the event metrics in green, and the category proportions in yellow-red. The solid lines show the mean _p_-value from the tests on the 100 re-sampled time series for each step. The coloured ribbons show one standard deviation (SD) in the _p_-values for each step. The results for each reference time series are A) Western Australia (WA), B) Northwest Atlantic (NWA), C) Mediterranean (Med). The x-axis shows the length of the time series being compared against the 30-year (optimal) data. The y-axis shows the range of mean _p_-values from 1.0 (exact same) to 0.0 (completely different), with a horizontal dashed red line at _p_=0.05 (statistically significantly different). Any mean values at or below the _p_=0.05 line are highlighted with red squares.
+Figure 2: The effect of sub-optimal data on the MHWs detected in the final 10 years of a time series. The columns show the results for each of the three sub-optimal tests: time series length (10 -- 37 years), missing data (0 -- 50%), and added decadal trends (0.00 -- 0.30°C/dec). The rows show the three focus results from the MHW detection output: the change in the count of MHWs, the percentage of change in the sum of the MHW days, and the percentage change in the mean of the maximum intensities of the MHWs. Any samples that are significantly different (_p_-value <= 0.05) from the control are highlighted with red squares (there are none).
+
+Figure 3: This figure shows results from the same set of tests visualised in Figure 2, but focusses only on the effects the sub-optimal tests had on the single largest event in the final 10 years of data in each time series. Significant differences (_p_-value <= 0.05) are highlighted in red (there are none). The top row of panels, "Count (n)", shows the difference in the count of MHWs during what should be the duration of the focus event. A value of -1 means that no events were detected. The bottom two rows of panels show percentage changes  in the days of the focus MHW and its maximum intensity. A value 0f -100% means that no MHW was detected. 
 
 
+Figure 4: Global map showing changes in MHW detection as the time series at each pixel is shortened from 30 to 10 years. The left column shows the effect of time series length on all MHWs detected in the final 10 years of data, while the right column shows the effect on only the largest MHW.
 
-Figure 3: The effect of the three tests on the MHW metrics and count of events. Each panel has three lines, one for each of the reference time series, shown in the legend at the bottom of the figure. These are the original data, not the randomly re-sampled time series. The lines track the change of just one metric for the focus MHWs seen in Figure 1 as the data are made increasingly sub-optimal, as shown along the x-axes. The y-axes show the unit of measurement for each metric. The top row of panels, “count (event)” shows if the MHW has been divided up into multiple smaller MHWs due to changes in the values along the x-axes.  
-
-Figure 4: Map showing the percent increase per year in the maximum intensity of the largest MHW detected in the most recent ten years of data when an increasing number of years of data are used for the calculation of the MHW.  
+percent increase per year in the maximum intensity of the largest MHW detected in the most recent ten years of data when an increasing number of years of data are used for the calculation of the MHW.  
 
 Figure 5: Map showing the percent increase per year in the duration of the largest MHW detected in the most recent ten years of data when progressively more years of data are used for the calculation of the MHW.
 

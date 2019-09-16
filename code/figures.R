@@ -264,9 +264,9 @@ ggsave("LaTeX/fig_2.jpg", fig_2, height = 8, width = 10)
 # The effects of the three sub-optimal tests on the focus MHW metrics
 
 fig_3 <- fig_line_plot(full_results, tests = "base", result_choice = "focus")
-ggsave("LaTeX/fig_3.pdf", fig_3, height = 6, width = 8)
-ggsave("LaTeX/fig_3.png", fig_3, height = 6, width = 8)
-ggsave("LaTeX/fig_3.jpg", fig_3, height = 6, width = 8)
+ggsave("LaTeX/fig_3.pdf", fig_3, height = 8, width = 10)
+ggsave("LaTeX/fig_3.png", fig_3, height = 8, width = 10)
+ggsave("LaTeX/fig_3.jpg", fig_3, height = 8, width = 10)
 
 
 # Figure 4 ----------------------------------------------------------------
@@ -275,10 +275,14 @@ ggsave("LaTeX/fig_3.jpg", fig_3, height = 6, width = 8)
 fig_4A <- trend_plot(test_sub = "length", var_sub = "count")
 fig_4B <- trend_plot(test_sub = "length", var_sub = "duration")
 fig_4C <- trend_plot(test_sub = "length", var_sub = "intensity_max")
-fig_4 <- ggarrange(fig_4A, fig_4B, fig_4C, ncol = 1, nrow = 3, labels = "AUTO")
-ggsave("LaTeX/fig_4.pdf", fig_4, height = 12, width = 8)
-ggsave("LaTeX/fig_4.png", fig_4, height = 12, width = 8)
-ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 8)
+fig_4D <- trend_plot(test_sub = "length", var_sub = "focus_count")
+fig_4E <- trend_plot(test_sub = "length", var_sub = "focus_duration")
+fig_4F <- trend_plot(test_sub = "length", var_sub = "focus_intensity_max")
+fig_4 <- ggarrange(fig_4A, fig_4D, fig_4B, fig_4E, fig_4C, fig_4F, ncol = 2, nrow = 3,
+                   labels = c("A", "D", "B", "E", "C", "F"))
+ggsave("LaTeX/fig_4.pdf", fig_4, height = 12, width = 16)
+ggsave("LaTeX/fig_4.png", fig_4, height = 12, width = 16)
+ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 16)
 
 
 # Figure 5 ----------------------------------------------------------------

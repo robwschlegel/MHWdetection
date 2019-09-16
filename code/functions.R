@@ -742,15 +742,17 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
 
   # Mean values
   reference_df <- df_prep %>%
-    filter(site %in% c("WA", "NWA", "Med"))
+    filter(site %in% c("WA", "NWA", "Med"),
+           index_vals != 50) # For better plotting without a lot of fuss...
   random_df <- df_prep %>%
-    filter(!(site %in% c("WA", "NWA", "Med"))) %>%
     group_by(test) %>%
     mutate(panel_label_x = quantile(index_vals, 0.05)) %>%
     ungroup() %>%
     group_by(var) %>%
     mutate(panel_label_y = max(val)) %>%
-    ungroup()
+    ungroup() %>%
+    filter(!(site %in% c("WA", "NWA", "Med")),
+           index_vals != 50)
 
   # Significance points
   reference_sig <- df_prep %>%
@@ -794,23 +796,23 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
 # var_sub <- "intensity_max"
 # var_sub <- "duration"
 # var_sub <- "count"
+# var_sub <- "focus_count"
 trend_plot <- function(test_sub, var_sub,
-                       df = global_mean_perc_trend,
-                       prop = TRUE) {
+                       df = global_focus_trend) {
 
   # Filter base data
   base_sub <- df %>%
     filter(test == test_sub, var == var_sub)
 
   # Prepare legend title bits
-  if(prop){
-    sen_change <- "Percent change "
-    if(!(var_sub %in% c("count", "focus_count"))){
-      base_sub$trend <- base_sub$trend * 100
-    }
-  } else{
-    sen_change <- "Change "
-  }
+  # if(prop){
+    # sen_change <- "Percent change "
+    # if(!(var_sub %in% c("count", "focus_count"))){
+      # base_sub$trend <- base_sub$trend * 100
+    # }
+  # } else{
+    # sen_change <- "Change "
+  # }
   if(test_sub == "length"){
     sen_test <- "per year"
   } else if(test_sub == "missing"){

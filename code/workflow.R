@@ -117,10 +117,10 @@ source("code/functions.R")
 # saveRDS(global_mean_perc_trend, "data/global_mean_perc_trend.Rda")
 
 # system.time(
-#   global_mean_perc_trend <- plyr::ldply(dir("data/global", full.names = T),
-#                                         .fun = mean_perc_trend, .parallel = T)
-# ) # 2638 seconds for one lon slice,
-# saveRDS(global_mean_perc_trend, "data/global_mean_perc_trend.Rda")
+#   global_focus_trend <- plyr::ldply(dir("data/global", full.names = T),
+#                                         .fun = focus_trend, .parallel = T)
+# ) # 41 seconds for one lon slice, 44 minutes for all
+# saveRDS(global_focus_trend, "data/global_focus_trend.Rda")
 
 
 # Figures -----------------------------------------------------------------
