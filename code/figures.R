@@ -248,7 +248,7 @@ ggsave(fig_1_flat, filename = "LaTeX/fig_1_flat.png", width = 8, height = 5)
 # The results from all tests
 sst_ALL_results <- readRDS("data/sst_ALL_results.Rda") %>%
   mutate(site = ifelse(site == "NW_Atl", "NWA", site))
-random_results <- readRDS("data/random_results.Rda") %>%
+random_results <- readRDS("data/random_results_100.Rda") %>%
   unite("site", c(lon, lat))
 full_results <- rbind(sst_ALL_results, random_results)
 rm(sst_ALL_results, random_results); gc()
@@ -286,27 +286,10 @@ ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 16)
 
 
 # Figure 5 ----------------------------------------------------------------
-# The global effect of missing data on count, max. intensity, and duration
 
-fig_5A <- trend_plot(test_sub = "missing", var_sub = "count")
-fig_5B <- trend_plot(test_sub = "missing", var_sub = "duration")
-fig_5C <- trend_plot(test_sub = "missing", var_sub = "intensity_max")
-fig_5 <- ggarrange(fig_5A, fig_5B, fig_5C, ncol = 1, nrow = 3, labels = "AUTO")
-ggsave("LaTeX/fig_5.pdf", fig_5, height = 12, width = 8)
-ggsave("LaTeX/fig_5.png", fig_5, height = 12, width = 8)
-ggsave("LaTeX/fig_5.jpg", fig_5, height = 12, width = 8)
 
 
 # Figure 6 ----------------------------------------------------------------
-# The global effect of decadal trend on count, max. intensity, and duration
-
-fig_6A <- trend_plot(test_sub = "trend", var_sub = "count")
-fig_6B <- trend_plot(test_sub = "trend", var_sub = "duration")
-fig_6C <- trend_plot(test_sub = "trend", var_sub = "intensity_max")
-fig_6 <- ggarrange(fig_6A, fig_6B, fig_6C, ncol = 1, nrow = 3, labels = "AUTO")
-ggsave("LaTeX/fig_6.pdf", fig_6, height = 12, width = 8)
-ggsave("LaTeX/fig_6.png", fig_6, height = 12, width = 8)
-ggsave("LaTeX/fig_6.jpg", fig_6, height = 12, width = 8)
 
 
 # Figure 7 ----------------------------------------------------------------
@@ -359,6 +342,35 @@ ggsave("LaTeX/fig_7.jpg", fig_7, height = 6, width = 8)
 
 
 # Appendix 3 --------------------------------------------------------------
+
+# A: The global effect of missing data on count, max. intensity, and duration
+app_3A_A <- trend_plot(test_sub = "missing", var_sub = "count")
+app_3A_B <- trend_plot(test_sub = "missing", var_sub = "duration")
+app_3A_C <- trend_plot(test_sub = "missing", var_sub = "intensity_max")
+app_3A_D <- trend_plot(test_sub = "missing", var_sub = "focus_count")
+app_3A_E <- trend_plot(test_sub = "missing", var_sub = "focus_duration")
+app_3A_F <- trend_plot(test_sub = "missing", var_sub = "focus_intensity_max")
+app_3A <- ggarrange(app_3A_A, app_3A_D, app_3A_B, app_3A_E, app_3A_C, app_3A_F, ncol = 2, nrow = 3,
+                   labels = c("A", "D", "B", "E", "C", "F"))
+ggsave("LaTeX/app_3A.pdf", app_3A, height = 12, width = 16)
+ggsave("LaTeX/app_3A.png", app_3A, height = 12, width = 16)
+ggsave("LaTeX/app_3A.jpg", app_3A, height = 12, width = 16)
+
+# B: The global effect of decadal trend on count, max. intensity, and duration
+app_3B_A <- trend_plot(test_sub = "trend", var_sub = "count")
+app_3B_B <- trend_plot(test_sub = "trend", var_sub = "duration")
+app_3B_C <- trend_plot(test_sub = "trend", var_sub = "intensity_max")
+app_3B_D <- trend_plot(test_sub = "trend", var_sub = "focus_count")
+app_3B_E <- trend_plot(test_sub = "trend", var_sub = "focus_duration")
+app_3B_F <- trend_plot(test_sub = "trend", var_sub = "focus_intensity_max")
+app_3B <- ggarrange(app_3B_A, app_3B_D, app_3B_B, app_3B_E, app_3B_C, app_3B_F, ncol = 2, nrow = 3,
+                   labels = c("A", "D", "B", "E", "C", "F"))
+ggsave("LaTeX/app_3B.pdf", app_3B, height = 12, width = 16)
+ggsave("LaTeX/app_3B.png", app_3B, height = 12, width = 16)
+ggsave("LaTeX/app_3B.jpg", app_3B, height = 12, width = 16)
+
+
+# Appendix 4 --------------------------------------------------------------
 # The effect of widening the clim window
 
 

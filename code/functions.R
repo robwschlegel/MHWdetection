@@ -613,24 +613,14 @@ fmt_dcimals <- function(decimals = 0){
   function(x) as.character(round(x, decimals))
 }
 
-# Function used by bootstrap_CI
-b_mean <- function(data, indices) {
-  d <- data[indices] # allows boot to select sample
-  return(mean(d))
-}
-
 # Bootstrap CI calculations for Figure 2 & 3
-bootstrap_CI <- function(df){
-  df_conf <- df %>%
-    group_by(test, index_vals, var, id) %>%
-    summarise(lower = boot.ci(boot(data = val, statistic = b_mean, R = 1000),
-                              type = "basic")$basic[4],
-              mid = mean(val),
-              upper = boot.ci(boot(data = val, statistic = b_mean, R = 1000),
-                              type = "basic")$basic[5],
-              n = n()) %>%
-    mutate_if(is.numeric, round, 4)
-  return(df_conf)
+# NB: The problem with this is that we DONT want the CI for the mean
+# We want the CI for the range of values
+custom_boot <- function(df){
+  res <- data.frame(boot.ci(boot(data = df$val, function(x,i) mean(x[i]), R = 1000),
+                            type = "perc")$percent) %>%
+    select(V4, V5) %>%
+    dplyr::rename(lower = V4, upper = V5)
 }
 
 # The code that creates the figure 1 panels from detect_event output
@@ -732,10 +722,21 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     y_axis_title <- "Mean change in thresholds"
   }
 
+  # Manually remove a couple of rediculous pixels
+  # NB: These pixels were determined in the first run of the code to be anomalous
+  # due to the structure of the time series and should have been filtered earlier
+  bad_pixels <- c("140.375_0.625", "-73.625_-77.125")
+  # pixel_hunt <- filter(random_df,
+  #                test == "trend",
+  #                index_vals == 0.30,
+  #                var == "duration",
+  #                val > 500)
+
   # Prep reference results for pretty plotting
   df_prep <- df %>%
     filter(is.finite(val),
-           test %in% test_choice) %>%
+           test %in% test_choice,
+           !(site %in% bad_pixels)) %>%
     right_join(var_choice, by = c("var", "id")) %>%
     mutate(val = ifelse(!(var %in% c("count", "focus_count")), val*100, val),
            index_vals = ifelse(test %in% c("missing", "interp"), index_vals*100, index_vals),
@@ -758,8 +759,8 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
                                    var %in% c("duration", "focus_duration") & test == "trend" ~ "F",
                                    var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "G",
                                    var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "H",
-                                   var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I")) %>%
-    ungroup()
+                                   var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I"))
+
 
   # Mean values
   reference_df <- df_prep %>%
@@ -788,32 +789,21 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     select(-site, -val, -index_vals) %>%
     unique()
 
-  test <- df_prep %>%
-    filter(test == "length", index_vals == 10, var == "duration")
-  shapiro.test(test$val)
-  boot.ci(boot(data = test$val, statistic = b_mean, R = 10000, ),
-          type = "perc")
-
-  # CI values
-  CI_df <- df_prep %>%
+  # Upper and lower quantile values
+  quant_df <- df_prep %>%
     group_by(test, index_vals, var, id, test_label, var_label) %>%
-    summarise(lower = boot.ci(boot(data = val, statistic = b_mean, R = 1000),
-                              type = "basic")$basic[4],
-              mid = mean(val),
-              upper = boot.ci(boot(data = val, statistic = b_mean, R = 1000),
-                              type = "basic")$basic[5],
-              n = n()) %>%
-    mutate_if(is.numeric, round, 4) %>%
+    summarise(lower = quantile(val, 0.05),
+              upper = quantile(val, 0.95)) %>%
     ungroup() %>%
     filter(index_vals != 50)
 
   # Create figure
   fig_plot <- ggplot(reference_df, aes(x = index_vals, y = val)) +
-    geom_hline(aes(yintercept = 0), colour = "grey") +
-    # CI bars - need an individual line for each test due to the different x-axis interval sizes
-    geom_errorbar(data = filter(CI_df, test %in% c("length", "missing", "interp")),
+    # geom_hline(aes(yintercept = 0), colour = "grey") +
+    # Quantile bars - need different lines for tests due to the different x-axis interval sizes
+    geom_errorbar(data = filter(quant_df, test %in% c("length", "missing", "interp")),
                   aes(ymin = lower, y = NULL, ymax = upper), width = 1) +
-    geom_errorbar(data = filter(CI_df, test == "trend"),
+    geom_errorbar(data = filter(quant_df, test == "trend"),
                   aes(ymin = lower, y = NULL, ymax = upper), width = 0.01) +
     # geom_point(data = CI_df, aes(y = mid)) +
     # Random results
@@ -831,7 +821,7 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     labs(y = y_axis_title, x = NULL, colour = "Site") +
     # coord_cartesian(ylim = c(-3, 3)) +
     theme(legend.position = "top")
-  fig_plot
+  # fig_plot
   return(fig_plot)
 }
 
@@ -846,6 +836,8 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
 trend_plot <- function(test_sub, var_sub,
                        df = global_focus_trend) {
 
+  if(!exists("global_focus_trend")) global_focus_trend <- readRDS("data/global_focus_trend.Rda")
+
   # Filter base data
   base_sub <- df %>%
     filter(test == test_sub, var == var_sub) %>%
@@ -853,6 +845,8 @@ trend_plot <- function(test_sub, var_sub,
     mutate(trend = ifelse(var == "focus_count", trend/100, trend))
 
   # Prepare legend title bits
+  sen_change <- "Percent change "
+
   # if(prop){
     # sen_change <- "Percent change "
     # if(!(var_sub %in% c("count", "focus_count"))){
