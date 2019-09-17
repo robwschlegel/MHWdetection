@@ -320,6 +320,7 @@ ggsave("LaTeX/fig_7.jpg", fig_7, height = 6, width = 8)
 
 
 # Figure 8 ----------------------------------------------------------------
+# The count of consecutive missing days of data
 
 
 # Figure 9 ----------------------------------------------------------------
@@ -352,17 +353,12 @@ ggsave("LaTeX/fig_7.jpg", fig_7, height = 6, width = 8)
 # The difference between the proper 30 year clim and all other 30 year clim periods
 # the difference between the focus results when using a 30 year base period vs. a 37 year base period
 
+
 # Appendix 2 --------------------------------------------------------------
 # The effect of the base tests on seas/thresh
 
 
 # Appendix 3 --------------------------------------------------------------
 # The effect of widening the clim window
-
-
-# Appendix 4 --------------------------------------------------------------
-# The other global figures
-
-
 
 

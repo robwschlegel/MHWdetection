@@ -29,7 +29,7 @@ source("code/functions.R")
 # doMC::registerDoMC(cores = 25) # NB: 50 cores uses too much RAM
 # set.seed(666)
 # system.time(
-#   random_results <- plyr::ldply(1:100, random_analysis, .parallel = T, .id = "random")
+#   random_results <- plyr::ldply(1:1000, random_analysis, .parallel = T)
 # ) # 417 seconds
 # saveRDS(random_results, "data/random_results.Rda")
 
@@ -126,6 +126,15 @@ source("code/functions.R")
 # Figures -----------------------------------------------------------------
 
 # All of the figures that use the above results are made in "code/figures.R"
+
+# CI values at different steps in the sub-optimal tests
+# subopt_CI <- full_results %>%
+#   select(test:val) %>%
+#   bootstrap_CI()
+
+
+# Results -----------------------------------------------------------------
+# Code that generates numeric results referred to in the text outside of figures
 
 
 # More thoughts -----------------------------------------------------------

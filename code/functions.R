@@ -16,7 +16,7 @@ library(heatwaveR, lib.loc = "~/R-packages/")
 library(lubridate) # This is intentionally activated after data.table
 # library(fasttime)
 library(ggpubr)
-# library(boot)
+library(boot)
 # library(FNN)
 # library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
@@ -566,6 +566,7 @@ pixel_trend_sub <- function(df){
 # df <- global_mean_perc %>%
 # df <- res %>%
 # filter(lon == lon[1], lat == -51.125)
+# filter(lon == lon[1], var == "focus_count")
 # filter(lon == lon[1], lat == lat[129], test == "length", var == "duration", id == "mean_perc")
 # filter(lon == lon[1], lat == 	-51.625, test == "missing", var == "count", id == "n_diff")
 # filter(lon == lon[1], lat == 	-51.625, test == "interp", var == "count", id == "n_diff")
@@ -612,6 +613,25 @@ fmt_dcimals <- function(decimals = 0){
   function(x) as.character(round(x, decimals))
 }
 
+# Function used by bootstrap_CI
+b_mean <- function(data, indices) {
+  d <- data[indices] # allows boot to select sample
+  return(mean(d))
+}
+
+# Bootstrap CI calculations for Figure 2 & 3
+bootstrap_CI <- function(df){
+  df_conf <- df %>%
+    group_by(test, index_vals, var, id) %>%
+    summarise(lower = boot.ci(boot(data = val, statistic = b_mean, R = 1000),
+                              type = "basic")$basic[4],
+              mid = mean(val),
+              upper = boot.ci(boot(data = val, statistic = b_mean, R = 1000),
+                              type = "basic")$basic[5],
+              n = n()) %>%
+    mutate_if(is.numeric, round, 4)
+  return(df_conf)
+}
 
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted
@@ -738,7 +758,8 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
                                    var %in% c("duration", "focus_duration") & test == "trend" ~ "F",
                                    var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "G",
                                    var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "H",
-                                   var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I"))
+                                   var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I")) %>%
+    ungroup()
 
   # Mean values
   reference_df <- df_prep %>%
@@ -767,14 +788,39 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     select(-site, -val, -index_vals) %>%
     unique()
 
+  test <- df_prep %>%
+    filter(test == "length", index_vals == 10, var == "duration")
+  shapiro.test(test$val)
+  boot.ci(boot(data = test$val, statistic = b_mean, R = 10000, ),
+          type = "perc")
+
+  # CI values
+  CI_df <- df_prep %>%
+    group_by(test, index_vals, var, id, test_label, var_label) %>%
+    summarise(lower = boot.ci(boot(data = val, statistic = b_mean, R = 1000),
+                              type = "basic")$basic[4],
+              mid = mean(val),
+              upper = boot.ci(boot(data = val, statistic = b_mean, R = 1000),
+                              type = "basic")$basic[5],
+              n = n()) %>%
+    mutate_if(is.numeric, round, 4) %>%
+    ungroup() %>%
+    filter(index_vals != 50)
+
   # Create figure
   fig_plot <- ggplot(reference_df, aes(x = index_vals, y = val)) +
     geom_hline(aes(yintercept = 0), colour = "grey") +
+    # CI bars - need an individual line for each test due to the different x-axis interval sizes
+    geom_errorbar(data = filter(CI_df, test %in% c("length", "missing", "interp")),
+                  aes(ymin = lower, y = NULL, ymax = upper), width = 1) +
+    geom_errorbar(data = filter(CI_df, test == "trend"),
+                  aes(ymin = lower, y = NULL, ymax = upper), width = 0.01) +
+    # geom_point(data = CI_df, aes(y = mid)) +
     # Random results
-    geom_line(data = random_df, aes(group = site), size = 1, alpha = 0.1) +
+    geom_line(data = random_df, aes(group = site), size = 0.5, alpha = 0.05) +
     geom_point(data = random_sig, colour = "red", size = 1, alpha = 1) +
     # Reference results
-    geom_line(aes(colour = site), size = 1.5, alpha = 0.8) +
+    geom_line(aes(colour = site), size = 1.0, alpha = 0.8) +
     geom_point(data = reference_sig, colour = "red", size = 1, alpha = 1) +
     # Labels and scales
     geom_label(data = labels_df,
@@ -785,7 +831,7 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     labs(y = y_axis_title, x = NULL, colour = "Site") +
     # coord_cartesian(ylim = c(-3, 3)) +
     theme(legend.position = "top")
-  # fig_plot
+  fig_plot
   return(fig_plot)
 }
 
@@ -802,7 +848,9 @@ trend_plot <- function(test_sub, var_sub,
 
   # Filter base data
   base_sub <- df %>%
-    filter(test == test_sub, var == var_sub)
+    filter(test == test_sub, var == var_sub) %>%
+    # correct focus_count trend back to count from percentage
+    mutate(trend = ifelse(var == "focus_count", trend/100, trend))
 
   # Prepare legend title bits
   # if(prop){
