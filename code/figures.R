@@ -286,51 +286,16 @@ ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 16)
 
 
 # Figure 5 ----------------------------------------------------------------
+# The effect of interpolating missing data
 
+fig_5 <- fig_line_plot(tests = "miss_comp", result_choice = "10_years")
+ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 7)
+ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 7)
+ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 7)
 
 
 # Figure 6 ----------------------------------------------------------------
 
-
-# Figure 7 ----------------------------------------------------------------
-# The effect of interpolating missing data
-
-# Create and save
-fig_7 <- fig_line_plot(tests = "miss_comp", result_choice = "10_years")
-ggsave("LaTeX/fig_7.pdf", fig_7, height = 6, width = 8)
-ggsave("LaTeX/fig_7.png", fig_7, height = 6, width = 8)
-ggsave("LaTeX/fig_7.jpg", fig_7, height = 6, width = 8)
-
-
-# Figure 8 ----------------------------------------------------------------
-# The count of consecutive missing days of data
-
-
-# Figure 9 ----------------------------------------------------------------
-
-
-# Figure 10 ---------------------------------------------------------------
-
-
-# Figure illustrating the change caused in the 90th perc. thresh.
-# against the seas. clim. in the reference time series
-
-# load("data/sst_ALL_clim_event_cat.Rdata")
-#
-# clim_only <- sst_ALL_clim_event_cat %>%
-#   # filter(rep == "1") %>%
-#   select(test:clim) %>%
-#   unnest() %>%
-#   filter(index_vals <= 30,
-#          test == "length") %>%
-#   gather(key = "metric", value = "temp", seas, thresh) %>%
-#   droplevels()
-#
-# clim_change_plot <- ggplot(data = clim_only, aes(x = doy, y = temp)) +
-#   geom_line(aes(colour = index_vals, group = index_vals)) +
-#   scale_colour_viridis_c(direction = -1) +
-#   facet_grid(metric~site)
-# clim_change_plot
 
 # Appendix 1 --------------------------------------------------------------
 # The difference between the proper 30 year clim and all other 30 year clim periods
