@@ -305,6 +305,13 @@ ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 7)
 # Appendix 2 --------------------------------------------------------------
 # The effect of the base tests on seas/thresh
 
+# NB: This still needs some work
+
+app_2 <- fig_line_plot(tests = "base", result_choice = "clims")
+ggsave("LaTeX/app_2.pdf", app_2, height = 8, width = 7)
+ggsave("LaTeX/app_2.png", app_2, height = 8, width = 7)
+ggsave("LaTeX/app_2.jpg", app_2, height = 8, width = 7)
+
 
 # Appendix 3 --------------------------------------------------------------
 

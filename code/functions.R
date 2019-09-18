@@ -717,7 +717,8 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     var_levels <- c("Count (n)", "Duration (% sum of days)", "Max intensity (% of mean °C)")
     y_axis_title <- "Change in MHWs"
   } else if(result_choice == "clims"){
-    var_choice <- c("seas", "thresh")
+    var_choice <- data.frame(var = c("seas", "thresh"),
+                             id = c("mean_perc", "mean_perc"))
     var_levels <- c("Seasonal clim. (°C)", "Threshold clim. (°C)")
     y_axis_title <- "Mean change in thresholds"
   }
@@ -725,7 +726,7 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
   # Manually remove a couple of rediculous pixels
   # NB: These pixels were determined in the first run of the code to be anomalous
   # due to the structure of the time series and should have been filtered earlier
-  bad_pixels <- c("140.375_0.625", "-73.625_-77.125")
+  bad_pixels <- c("140.375_0.625", "-73.625_-77.125", "-44.375_1.125")
   # pixel_hunt <- filter(random_df,
   #                test == "trend",
   #                index_vals == 0.30,
