@@ -289,28 +289,51 @@ ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 16)
 # The effect of interpolating missing data
 
 fig_5 <- fig_line_plot(tests = "miss_comp", result_choice = "10_years")
-ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 7)
-ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 7)
-ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 7)
+ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 5)
+ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 5)
+ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 5)
+
+# The effect of interpolating on the focus event
+# NB: This isn't currently in the manuscript, but it should be...
+fig_5B <- fig_line_plot(tests = "miss_comp", result_choice = "focus")
 
 
 # Figure 6 ----------------------------------------------------------------
+# Consecutive count of missing data
 
 
 # Appendix 1 --------------------------------------------------------------
-# The difference between the proper 30 year clim and all other 30 year clim periods
-# the difference between the focus results when using a 30 year base period vs. a 37 year base period
+# The effect of the base tests on seas/thresh
+
+app_1 <- fig_line_plot(tests = "base", result_choice = "clims")
+ggsave("LaTeX/app_1.pdf", app_1, height = 5, width = 7)
+ggsave("LaTeX/app_1.png", app_1, height = 5, width = 7)
+ggsave("LaTeX/app_1.jpg", app_1, height = 5, width = 7)
 
 
 # Appendix 2 --------------------------------------------------------------
-# The effect of the base tests on seas/thresh
+# The difference between the proper 30 year base period and all other 30 year base periods
 
-# NB: This still needs some work
+# The results from all base period tests
+sst_ALL_results <- readRDS("data/sst_ALL_bp_results.Rda") %>%
+  mutate(site = ifelse(site == "NW_Atl", "NWA", site))
+random_results <- readRDS("data/random_bp_results_100.Rda") %>%
+  unite("site", c(lon, lat))
+full_results <- rbind(sst_ALL_results, random_results) %>%
+  mutate(test = "base_period")
+rm(sst_ALL_results, random_results); gc()
 
-app_2 <- fig_line_plot(tests = "base", result_choice = "clims")
-ggsave("LaTeX/app_2.pdf", app_2, height = 8, width = 7)
-ggsave("LaTeX/app_2.png", app_2, height = 8, width = 7)
-ggsave("LaTeX/app_2.jpg", app_2, height = 8, width = 7)
+# The effect on the 10 years of MHWs
+app_2A <- fig_line_plot(tests = "base_period", result_choice = "10_years")
+ggsave("LaTeX/app_2A.pdf", app_2A, height = 8, width = 4)
+ggsave("LaTeX/app_2A.png", app_2A, height = 8, width = 4)
+ggsave("LaTeX/app_2A.jpg", app_2A, height = 8, width = 4)
+
+# The effect on the focus MHW
+app_2B <- fig_line_plot(tests = "base_period", result_choice = "focus")
+ggsave("LaTeX/app_2B.pdf", app_2B, height = 8, width = 4)
+ggsave("LaTeX/app_2B.png", app_2B, height = 8, width = 4)
+ggsave("LaTeX/app_2B.jpg", app_2B, height = 8, width = 4)
 
 
 # Appendix 3 --------------------------------------------------------------
@@ -345,4 +368,15 @@ ggsave("LaTeX/app_3B.jpg", app_3B, height = 12, width = 16)
 # Appendix 4 --------------------------------------------------------------
 # The effect of widening the clim window
 
+# The effect on the 10 years of MHWs
+app_4A <- fig_line_plot(tests = "windows", result_choice = "10_years")
+ggsave("LaTeX/app_4A.pdf", app_4A, height = 8, width = 9)
+ggsave("LaTeX/app_4A.png", app_4A, height = 8, width = 9)
+ggsave("LaTeX/app_4A.jpg", app_4A, height = 8, width = 9)
+
+# The effect on the 10 years of MHWs
+app_4B <- fig_line_plot(tests = "windows", result_choice = "focus")
+ggsave("LaTeX/app_4B.pdf", app_4B, height = 8, width = 9)
+ggsave("LaTeX/app_4B.png", app_4B, height = 8, width = 9)
+ggsave("LaTeX/app_4B.jpg", app_4B, height = 8, width = 9)
 

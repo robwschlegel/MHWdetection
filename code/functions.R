@@ -168,7 +168,7 @@ con_miss <- function(df){
 # year_end = 0
 # focus_dates = focus_event
 clim_metric_focus_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-01-01",
-                             year_start = 0, year_end = 0, focus_dates){
+                                   year_start = 0, year_end = 0, focus_dates){
 
   # First and last years for full clim period
   if(year_start == 0)  year_start <- min(lubridate::year(df$t))
@@ -497,7 +497,7 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 
 # This function runs the full analysis on a randomly selected pixel
   # NB: The use of `df` in the function is just to satisfy plyr::ldply
-random_analysis <- function(df){
+random_analysis <- function(df, base_period = F){
 
   # Load a random lon slice
   sst <- load_noice_OISST(sample(OISST_files, 1))
@@ -507,10 +507,17 @@ random_analysis <- function(df){
   rm(sst); gc()
 
   # Run a full analysis and exit
-  res <- single_analysis(pixel, full_seq = T, clim_metric = T, count_miss = T, windows = T) %>%
-    mutate(lon = pixel$lon[1],
-           lat = pixel$lat[1]) %>%
-    select(lon, lat, everything())
+  if(base_period){
+    res <- base_period_analysis(pixel, clim_metric = T) %>%
+      mutate(lon = pixel$lon[1],
+             lat = pixel$lat[1]) %>%
+      select(lon, lat, everything())
+  } else{
+    res <- single_analysis(pixel, full_seq = T, clim_metric = T, count_miss = T, windows = T) %>%
+      mutate(lon = pixel$lon[1],
+             lat = pixel$lat[1]) %>%
+      select(lon, lat, everything())
+  }
   return(res)
 }
 
@@ -702,7 +709,13 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     test_choice <- c("missing", "interp")
     test_levels <- c("Missing data (%)", "Interpolated data (%)")
   } else if(tests == "windows"){
-
+    test_choice <- c("length", "window_10", "window_20", "window_30")
+    test_levels <- c("Time series length (years)", "Window width 10", "Window width 20", "Window width 30")
+  } else if(tests == "base_period"){
+    test_choice <- "base_period"
+    test_levels <- "Difference from WMO base period (years)"
+  } else{
+    stop("Provide a valid 'tests' argument")
   }
 
   # Prep data for focus or mean MHW results
@@ -718,9 +731,11 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     y_axis_title <- "Change in MHWs"
   } else if(result_choice == "clims"){
     var_choice <- data.frame(var = c("seas", "thresh"),
-                             id = c("mean_perc", "mean_perc"))
-    var_levels <- c("Seasonal clim. (°C)", "Threshold clim. (°C)")
-    y_axis_title <- "Mean change in thresholds"
+                             id = c("sd_perc", "mean_perc"))
+    var_levels <- c("Seasonal clim. (SD; °C)", "Threshold clim. (mean; °C)")
+    y_axis_title <- "Change in thresholds"
+  } else{
+    stop("Provide a valid 'result_choice' argument")
   }
 
   # Manually remove a couple of rediculous pixels
@@ -744,24 +759,68 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
            var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (% sum of days)",
                                  var %in% c("intensity_max", "focus_intensity_max" ) ~ "Max intensity (% of mean °C)",
                                  var %in% c("count", "focus_count") ~ "Count (n)",
-                                 var == "seas" ~ "Seasonal clim. (°C)",
-                                 var == "thresh" ~ "Threshold clim. (°C)"),
+                                 var == "seas" ~ "Seasonal clim. (SD; °C)",
+                                 var == "thresh" ~ "Threshold clim. (mean; °C)"),
            var_label = factor(var_label, levels = var_levels),
-           test_label = case_when(test == "length" ~ "Time series length (years)",
+           test_label = case_when(test == "length" & "length" %in% test_choice ~ "Time series length (years)",
                                   test == "missing" ~ "Missing data (%)",
                                   test == "trend" ~ "Trend (°C/dec)",
-                                  test == "interp" ~ "Interpolated data (%)"),
-           test_label = factor(test_label, levels = test_levels),
-           panel_label = case_when(var %in% c("count", "focus_count") & test == "length" ~ "A",
-                                   var %in% c("count", "focus_count") & test == "missing" ~ "B",
-                                   var %in% c("count", "focus_count") & test == "trend" ~ "C",
-                                   var %in% c("duration", "focus_duration") & test == "length" ~ "D",
-                                   var %in% c("duration", "focus_duration") & test == "missing" ~ "E",
-                                   var %in% c("duration", "focus_duration") & test == "trend" ~ "F",
-                                   var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "G",
-                                   var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "H",
-                                   var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I"))
+                                  test == "interp" ~ "Interpolated data (%)",
+                                  test == "base_period" ~ "Difference from WMO base period (years)",
+                                  test == "window_10" ~ "Window width 10",
+                                  test == "window_20" ~ "Window width 20",
+                                  test == "window_30" ~ "Window width 30"),
+           test_label = factor(test_label, levels = test_levels))
 
+  # Set the panel labels
+  if(tests == "base"){
+    df_prep <- df_prep %>%
+      mutate(panel_label = case_when(var %in% c("count", "focus_count") & test == "length" ~ "A",
+                                     var %in% c("count", "focus_count") & test == "missing" ~ "B",
+                                     var %in% c("count", "focus_count") & test == "trend" ~ "C",
+                                     var %in% c("duration", "focus_duration") & test == "length" ~ "D",
+                                     var %in% c("duration", "focus_duration") & test == "missing" ~ "E",
+                                     var %in% c("duration", "focus_duration") & test == "trend" ~ "F",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "G",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "H",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I"))
+  } else if(tests == "miss_comp"){
+    df_prep <- df_prep %>%
+      mutate(panel_label = case_when(var %in% c("count", "focus_count") & test == "missing" ~ "A",
+                                     var %in% c("count", "focus_count") & test == "interp" ~ "B",
+                                     var %in% c("duration", "focus_duration") & test == "missing" ~ "C",
+                                     var %in% c("duration", "focus_duration") & test == "interp" ~ "D",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "E",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "interp" ~ "F"))
+  } else if(tests == "windows"){
+    df_prep <- df_prep %>%
+      mutate(panel_label = case_when(var %in% c("count", "focus_count") & test == "length" ~ "A",
+                                     var %in% c("count", "focus_count") & test == "window_10" ~ "B",
+                                     var %in% c("count", "focus_count") & test == "window_20" ~ "C",
+                                     var %in% c("count", "focus_count") & test == "window_30" ~ "D",
+                                     var %in% c("duration", "focus_duration") & test == "length" ~ "E",
+                                     var %in% c("duration", "focus_duration") & test == "window_10" ~ "F",
+                                     var %in% c("duration", "focus_duration") & test == "window_20" ~ "G",
+                                     var %in% c("duration", "focus_duration") & test == "window_30" ~ "H",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "I",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "window_10" ~ "J",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "window_20" ~ "K",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "window_30" ~ "L"))
+  } else if(tests == "base_period"){
+    df_prep <- df_prep %>%
+      mutate(panel_label = case_when(var %in% c("count", "focus_count") ~ "A",
+                                     var %in% c("duration", "focus_duration") ~ "B",
+                                     var %in% c("intensity_max", "focus_intensity_max") ~ "C"))
+  }
+  if(result_choice == "clims"){
+    df_prep <- df_prep %>%
+      mutate(panel_label = case_when(var %in% c("seas") & test == "length" ~ "A",
+                                     var %in% c("seas") & test == "missing" ~ "B",
+                                     var %in% c("seas") & test == "trend" ~ "C",
+                                     var %in% c("thresh") & test == "length" ~ "D",
+                                     var %in% c("thresh") & test == "missing" ~ "E",
+                                     var %in% c("thresh") & test == "trend" ~ "F"))
+  }
 
   # Mean values
   reference_df <- df_prep %>%
@@ -798,11 +857,21 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     ungroup() %>%
     filter(index_vals != 50)
 
+  # if(result_choice == "clims"){
+  #   seas_val_limit <- max(random_df$val[random_df$test == "missing"])
+  #   reference_df <- reference_df %>%
+  #     mutate(val = ifelse(test == "trend" & val > seas_val_limit, NA, val))
+  #   random_df <- random_df %>%
+  #     mutate(val = ifelse(test == "trend" & val > seas_val_limit, NA, val))
+  #   labels_df <- labels_df %>%
+  #     mutate(panel_label_y = ifelse(panel_label_y > seas_val_limit, seas_val_limit, panel_label_y))
+  # }
+
   # Create figure
   fig_plot <- ggplot(reference_df, aes(x = index_vals, y = val)) +
     # geom_hline(aes(yintercept = 0), colour = "grey") +
     # Quantile bars - need different lines for tests due to the different x-axis interval sizes
-    geom_errorbar(data = filter(quant_df, test %in% c("length", "missing", "interp")),
+    geom_errorbar(data = filter(quant_df, test != "trend"),
                   aes(ymin = lower, y = NULL, ymax = upper), width = 1) +
     geom_errorbar(data = filter(quant_df, test == "trend"),
                   aes(ymin = lower, y = NULL, ymax = upper), width = 0.01) +
@@ -818,6 +887,8 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
                aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
     scale_colour_brewer(palette = "Dark2") +
     scale_x_continuous(expand = c(0, 0)) +
+    # scale_y_continuous(limits = c(-100, 100)) +
+    # coord_cartesian(ylim = c(-100, 100)) +
     facet_grid(var_label~test_label, scales = "free", switch = "both") +
     labs(y = y_axis_title, x = NULL, colour = "Site") +
     # coord_cartesian(ylim = c(-3, 3)) +
@@ -932,6 +1003,64 @@ trend_plot <- function(test_sub, var_sub,
   # ggsave(trend_map,
   #        filename = paste0("output/",test_sub,"_",var_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
   return(trend_map)
+}
+
+
+# Appendix 2 --------------------------------------------------------------
+
+# A convenience wrapper to use a vector to ply through a range of base periods
+control_base <- function(year_spread, df){
+  res <- clim_metric_focus_calc(df, focus_dates = focus_event,
+                                year_start = 1982 + year_spread, year_end = 2011 + year_spread) %>%
+    mutate(index_vals = year_spread)
+  return(res)
+}
+
+# This function compares results for different 30 year base periods
+base_period_analysis <- function(df, clim_metric = F){
+
+  # Detrend the ts
+  sst_flat <- detrend(df)
+
+  # Calculate MHWs from detrended ts
+  # NB: Note that the proper WMO base period is used here
+  sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2011-12-31")))
+
+  # Pull out the largest event in the ts
+  focus_event <- sst_flat_MHW$event %>%
+    filter(date_start >= "2009-01-01") %>%
+    filter(intensity_cumulative == max(intensity_cumulative)) %>%
+    select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max) %>%
+    mutate(intensity_cumulative = round(intensity_cumulative, 2),
+           intensity_max = round(intensity_max, 2))
+  if(nrow(focus_event) == 0) return() # Some nearly prozen pixels manage to slip through and cause issues
+  if(nrow(focus_event) > 1){
+    focus_event <- slice(focus_event, nrow(focus_event))
+  }
+
+  # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
+  sst_clim_metric <- plyr::ldply(0:7, control_base, df = sst_flat)
+
+  # Run ANOVA/Tukey on MHW results for three different tests
+  sst_signif <- sst_clim_metric %>%
+    filter(id != "focus_event") %>%
+    group_by(var) %>%
+    group_modify(~kruskal_post_hoc(.x))
+
+  # Create summary statistics of MHW results
+  sst_summary <- sst_clim_metric %>%
+    # group_by(test) %>%
+    group_modify(~summary_stats(.x)) %>%
+    rbind(sst_signif) %>%
+    data.frame()
+
+  # Include clim/metric data if requested
+  if(clim_metric){
+    sst_summary <- rbind(sst_summary, sst_clim_metric)
+  }
+
+  # Exit
+  return(sst_summary)
 }
 
 

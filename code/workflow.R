@@ -135,11 +135,6 @@ source("code/functions.R")
 
 # All of the figures that use the above results are made in "code/figures.R"
 
-# CI values at different steps in the sub-optimal tests
-# subopt_CI <- full_results %>%
-#   select(test:val) %>%
-#   bootstrap_CI()
-
 
 # Results -----------------------------------------------------------------
 # Code that generates numeric results referred to in the text outside of figures
@@ -159,6 +154,33 @@ quant_subopt <- full_results %>%
 quant_length <- filter(quant_subopt, test == "length")
 quant_miss <- filter(quant_subopt, test == "missing")
 quant_trend <- filter(quant_subopt, test == "trend")
+
+
+
+# Appendix 1 --------------------------------------------------------------
+
+# The effect of the sub-optimal tests on seas/thresh
+
+
+# Appendix 2 --------------------------------------------------------------
+# The difference between the proper 30 year base period and all other 30 year base periods
+
+# Combine the three reference time series, run analysis, and save
+# sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
+#                  mutate(sst_NW_Atl, site = "NW_Atl"),
+#                  mutate(sst_Med, site = "Med"))
+# system.time(
+#   sst_ALL_results <- plyr::ddply(sst_ALL, c("site"), base_period_analysis, .parallel = T, clim_metric = T)
+# ) # 3 seconds
+# saveRDS(sst_ALL_results, "data/sst_ALL_bp_results.Rda")
+
+# Calculate the base period analysis on 100 random pixels
+# doMC::registerDoMC(cores = 25) # NB: 50 cores uses too much RAM
+# set.seed(666)
+# system.time(
+#   random_results <- plyr::ldply(1:100, random_analysis, .parallel = T, base_period = T)
+# ) # 53 seconds
+# saveRDS(random_results, "data/random_bp_results_100.Rda")
 
 
 # More thoughts -----------------------------------------------------------
