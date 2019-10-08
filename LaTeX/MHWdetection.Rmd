@@ -1,6 +1,6 @@
 ---
 title: "Detecting marine heatwaves with sub-optimal data"
-author: Robert W. Schlegel1,2,*, Eric C. J. Oliver1, Alistair J. Hobday3, Albertus J. Smit2
+author: Robert W. Schlegel1,2,*,#, Eric C. J. Oliver1, Alistair J. Hobday3, Albertus J. Smit2
 # date: "April 30th, 2018"
 output:
   word_document:
@@ -22,12 +22,13 @@ knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
 __*Correspondence:__  
 Robert Schlegel  
 robert.schlegel@dal.ca  
+# Currently based at WHOI as a Postdoctoral Fellow  
 
 __Keywords: marine heatwaves, sea surface temperature, sub-optimal data, time series length, missing data, decadal trend__
 
 # Abstract
 
-Marine heatwaves (MHWs), or prolonged periods of anomalously warm sea water temperature, have been increasing in duration and intensity globally for decades. However, there are many coastal, oceanic, polar, and sub-surface regions where our ability to detect MHWs is uncertain due to the unavailability of high quality data. Here we investigate the effect that short time series length, missing data, or linear decadal temperature trends may have on the detection of MHWs. We show that MHWs detected in time series as short as 10 years did not have durations or intensities appreciably different from events detected in a standard 30 year long time series. We also show that the output of the MHW algorithm for time series missing less than 20% data did not differ appreciably, and that this could be increased to 40% when gaps were filled with linear interpolation. Linear decadal trends of 0.10°C/dec or greater added to a time series could cause worryingly large increases in the count and duration of detected MHWs, but this could be controlled for with reasonable confidence. The decadal trend in a time series has the largest effect on the detection of MHWs, but is also the easiest to correct for. Time series length has less of an effect on MHW detection than missing data, but is the most difficult to correct for. We provide suggestions for best practices to improve the accuracy of MHW detection with sub-optimal time series and show how the accuracy of these corrections may change regionally around the world.  
+Marine heatwaves (MHWs), or prolonged periods of anomalously warm sea water temperature, have been increasing in duration and intensity globally for decades. However, there are many coastal, oceanic, polar, and sub-surface regions where our ability to detect MHWs is uncertain due to limited high quality data. Here we investigate the effect that short time series length, missing data, or linear decadal temperature trends may have on the detection of MHWs. We show that MHWs detected in time series as short as 10 years did not have durations or intensities appreciably different from events detected in a standard 30 year long time series. We also show that the output of the MHW algorithm for time series missing less than 20% data did not differ appreciably, and that this could be increased to 40% when gaps were filled with linear interpolation. Linear decadal trends of 0.10°C/dec or greater added to a time series could cause worryingly large increases in the count and duration of detected MHWs, but this could be controlled for with reasonable confidence. The decadal trend in a time series has the largest effect on the detection of MHWs, but is also the easiest to correct for. Time series length has less of an effect on MHW detection than missing data, but is the most difficult to correct for. We provide suggestions for best practices to improve the accuracy of MHW detection with sub-optimal time series and show how the accuracy of these corrections may change regionally around the world.  
 <!-- (260 words) -->
 
 
@@ -63,6 +64,10 @@ We will use a combination of reference time series from specific locations and g
 The definition used in this paper for a MHW is "a prolonged discrete anomalously warm water event that can be described by its duration, intensity, rate of evolution, and spatial extent." [@Hobday2016]. This qualitative definition is quantified with an algorithm that calculates a suite of metrics. These metrics may then be used to characterise MHWs and to effectively compare them against known ecological/financial impacts. The calculation of these metrics is made possible by first determining the mean and 90th percentile temperature for each of the 366 calendar day-of-year (doy) in a time series. The mean doy temperatures, which also represent the seasonal signal in the time series, provide the expected baseline temperature whose daily exceedance is used to calculate the intensity of MHWs. The 90th percentile doy temperatures serve as the threshold that must be exceeded for 5 or more consecutive days for the anomalously warm temperatures to be classified as a MHW and for the calculation of the MHW metrics to begin.
 
 In this paper we will focus on the two metrics that most succinctly summarise a MHW. The first metric, _duration (days)_, is defined as the number of days that the temperature remains at or above the 90th percentile threshold without dipping below it for more than 2 consecutive days. The duration of an event may be used as a measurement of the chronic stress that a MHW may inflict upon a target species or ecosystem [e.g. citations needed]. The second metric, _maximum intensity (°C)_, is the single warmest day during the event and is calculated by subtracting the mean doy temperature on that day from the recorded temperature. This metric may be used as a measurement of acute stress [e.g. citations needed]. A third metric, _cumulative intensity (°C)_, will also be used in this paper to determine the 'largest' MHW in a time series (see Methods). This metric represents the sum of temperature anomalies over the duration of the MHW and is comparable to the degree heating days metric used in coral reef studies [citation needed]. There are many other MHW metrics and the full explanation for them may be found in Table 2 of @Hobday2016. 
+
+<!-- RWS: From IPCC SROCC: "To monitor and predict coral bleaching risk, the metric degree heating week (DHW; e.g., Eakin et al., 2010) is often used, which combines the effect of duration and magnitude of the heatwave." -->
+
+<!-- RWS: From IPCC SROCC: "The DHW describes how much heat has accumulated in an area over the past twelve weeks by adding up any temperatures that exceed 1°C above the maximum summertime mean (e.g., Eakin et al., 2010)" -->
 
 <!-- @Hobday2018 extended the MHW definition to include a categorisation scheme based on the intensity of an event. These categories were: I Moderate, II Strong, III Severe, and IV Extreme. The category of an event is determined by how many times the maximum intensity of the MHW is a multiple of the difference between the mean and 90th percentile doy temperatures (Figure 1). For example, if the difference between the mean and 90th percentile doy temperatures on the warmest day of a MHW is 1.5°C, and the temperature recorded on that warmest day was 3°C warmer than the mean doy temperature for that day, this would be considered a category II (Strong) MHW. Were the maximum temperature to be recorded at 4.5°C, this would be classified as a category III Severe MHW. To provide a more robust category quantification of a MHW, the categories are also calculated for each day of the event to provide a proportion of the days during which the MHW was within each of the categories. See Table 2 in @Hobday2018 for further examples. -->
 
@@ -204,7 +209,9 @@ The largest MHW in each time series was never dissected into multiple events due
 The global patterns in added decadal trends generally show that MHW metrics also increase (Appendix 3B).
 
 
-## Potential fixes
+# Best practices
+
+<!-- RWS: https://github.com/Tirgit/missCompare -->
 
 <!-- RWS: A section, with a table, that shows the best practices for dealing with sub-optimal data. -->
 RWS: I'll insert a table in this section that shows the slopes in the rates of change for the results. I'll also include examples of how one may perform fixes on sub-optimal results using examples. This may require that I create an additional figure to help illustrate the process.

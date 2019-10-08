@@ -698,6 +698,11 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 # df = full_results
 # tests  = "base"
 # result_choice = "10_years"
+
+## NB: This is to be replaced by a box plot like alternative
+# May also want to consider ggpointdensity in place of lines
+# https://github.com/LKremer/ggpointdensity
+
 fig_line_plot <- function(df = full_results, tests, result_choice){
 
   # Chose if the figure will show the base tests or the interp. comp.
