@@ -1,0 +1,33 @@
+Before compiling:
+- Check that the word 'event' is not used inccorectly
+- Check that 'doy' is always in '' marks
+- Check that the words 'will' and 'may' are only used in very specific situations
+- Check that 'maximum' is used instead of 'max'
+- Ensure no use of 'significant' in all of it's forms
+- Ensure that 'three' and 'two' are used correctly in the text as a couple of lists were changed around
+- Ensure that the reference/ordering to the Appendix sections is correct
+- Make sure that the issue of the long-term trend confusion w.r.t. anthropogenic version decadal oscilation has been addressed
+- Make sure a sentence has been added to the methods explaining that the 90% CI is used to measure the range of values per sub-optimal step
+  - Also explaining the use of R2 values to show linearity in the response
+- Methods needs another pass to ensure that the focus results: count, sum of duration, and mean max intensity is better outlined up front
+  - Specifically the concept of MHW days as a measure of the sum of durations needs to be laid out.
+  - This is probably best to do in the first paragraph
+- Ensure that figure legends reflect the changes to the figures
+  - Specifically make sure that the grey 'average' lines are explained
+- Double check all numbers in the results
+
+- Spell check
+
+Correct all bullet points:
+- Line ~115: Add numbered bullets to optimal data list
+
+Add text:
+- Line ~60: Add ', Table 12.3' inside of the brackets for the Harrison (2019) reference
+
+Citation:
+- Line ~64: Ensure that the citations are ordered in correct chronological order
+  - Check for this error throughout the manuscript
+- Line ~132 + ~135: Change 'Organization' to 'WMO'
+- Check that there are no janky in text citation fails
+- Check the reference section that all citations have been compiled correctly
+- Particularly worry about the WMO citations
