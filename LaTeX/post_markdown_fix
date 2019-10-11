@@ -17,11 +17,14 @@ Before compiling:
 - Double check all numbers in the results
 - The sentences explaining why the global pattern figures for missing and trend tests are in the supp need to be re-worked
 - Need to check the realtionship between the Var clim value and the change in the MHW results when a time series is lengthened past 30 years
+- Final check of References
 
 - Spell check
 
 Correct all bullet points:
-- Line ~115: Add numbered bullets to optimal data list
+- Lines ~67, ~115: Add numbered bullets to optimal data list
+- Line ~160: Add numbered bullets for main points and sub bullets for sub points
+- Correct spacing between bullets
 
 Add text:
 - Line ~60: Add ', Table 12.3' inside of the brackets for the Harrison (2019) reference
@@ -29,7 +32,8 @@ Add text:
 Citation:
 - Line ~64: Ensure that the citations are ordered in correct chronological order
   - Check for this error throughout the manuscript
-- Line ~132 + ~135: Change 'Organization' to 'WMO'
+- Line ~135 + ~138: Change 'Organization' to 'WMO'
 - Check that there are no janky in text citation fails
 - Check the reference section that all citations have been compiled correctly
 - Particularly worry about the WMO citations
+- Line ~592: Change'HeatwaveR' to 'heatwaveR'
