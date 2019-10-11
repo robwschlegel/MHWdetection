@@ -1,7 +1,7 @@
 Before compiling:
 - Check that the word 'event' is not used inccorectly
 - Check that 'doy' is always in '' marks
-- Check that the words 'will' and 'may' are only used in very specific situations
+- Check that the words 'will' and 'may' and 'decadal' are only used in very specific situations
 - Check that 'maximum' is used instead of 'max'
 - Ensure no use of 'significant' in all of it's forms
 - Ensure that 'three' and 'two' are used correctly in the text as a couple of lists were changed around
@@ -15,6 +15,8 @@ Before compiling:
 - Ensure that figure legends reflect the changes to the figures
   - Specifically make sure that the grey 'average' lines are explained
 - Double check all numbers in the results
+- The sentences explaining why the global pattern figures for missing and trend tests are in the supp need to be re-worked
+- Need to check the realtionship between the Var clim value and the change in the MHW results when a time series is lengthened past 30 years
 
 - Spell check
 
