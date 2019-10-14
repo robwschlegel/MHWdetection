@@ -254,19 +254,19 @@ full_results <- rbind(sst_ALL_results, random_results)
 rm(sst_ALL_results, random_results); gc()
 
 # Create figure and save
-fig_2 <- fig_line_plot(full_results, tests = "base", result_choice = "10_years")
-ggsave("LaTeX/fig_2.pdf", fig_2, height = 8, width = 10)
-ggsave("LaTeX/fig_2.png", fig_2, height = 8, width = 10)
-ggsave("LaTeX/fig_2.jpg", fig_2, height = 8, width = 10)
+fig_2 <- fig_box_plot(full_results, tests = "base", result_choice = "10_years")
+ggsave("LaTeX/fig_2.pdf", fig_2, height = 8, width = 12)
+ggsave("LaTeX/fig_2.png", fig_2, height = 8, width = 12)
+ggsave("LaTeX/fig_2.jpg", fig_2, height = 8, width = 12)
 
 
 # Figure 3 ----------------------------------------------------------------
 # The effects of the three sub-optimal tests on the focus MHW metrics
 
-fig_3 <- fig_line_plot(full_results, tests = "base", result_choice = "focus")
-ggsave("LaTeX/fig_3.pdf", fig_3, height = 8, width = 10)
-ggsave("LaTeX/fig_3.png", fig_3, height = 8, width = 10)
-ggsave("LaTeX/fig_3.jpg", fig_3, height = 8, width = 10)
+fig_3 <- fig_box_plot(full_results, tests = "base", result_choice = "focus")
+ggsave("LaTeX/fig_3.pdf", fig_3, height = 8, width = 12)
+ggsave("LaTeX/fig_3.png", fig_3, height = 8, width = 12)
+ggsave("LaTeX/fig_3.jpg", fig_3, height = 8, width = 12)
 
 
 # Figure 4 ----------------------------------------------------------------
@@ -286,16 +286,16 @@ ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 16)
 
 
 # Figure 5 ----------------------------------------------------------------
-# The effect of interpolating missing data
+# The effect of interpolating missing data on the last 10 years of MHWs
 
-fig_5 <- fig_line_plot(tests = "miss_comp", result_choice = "10_years")
-ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 5)
-ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 5)
-ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 5)
+fig_5 <- fig_box_plot(tests = "miss_comp", result_choice = "10_years")
+ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 6)
+ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 6)
+ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 6)
 
 # The effect of interpolating on the focus event
 # NB: This isn't currently in the manuscript, but it should be...
-fig_5B <- fig_line_plot(tests = "miss_comp", result_choice = "focus")
+fig_5B <- fig_box_plot(tests = "miss_comp", result_choice = "focus")
 
 
 # Figure 6 ----------------------------------------------------------------

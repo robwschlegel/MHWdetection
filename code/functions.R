@@ -22,7 +22,7 @@ library(boot)
 library(doMC); doMC::registerDoMC(cores = 50)
 library(tidync, lib.loc = "~/R-packages/")
 library(rgdal, lib.loc = "~/R-packages/")
-library(pgirmess)
+# library(pgirmess)
 library(tidync, lib.loc = "~/R-packages/")
 # library(egg)
 # library(rcompanion)
@@ -39,7 +39,7 @@ MHW_colours <- c(
 )
 
 # Location of NOAA OISST files
-OISST_files <- dir(path = "~/data/OISST", full.names = T)
+OISST_files <- dir(path = "~/data/OISST", full.names = T, pattern = "avhrr")
 
 # Location of global result files
 global_files <- dir(path = "data/global", full.names = T)
@@ -620,6 +620,7 @@ fmt_dcimals <- function(decimals = 0){
   function(x) as.character(round(x, decimals))
 }
 
+
 # Bootstrap CI calculations for Figure 2 & 3
 # NB: The problem with this is that we DONT want the CI for the mean
 # We want the CI for the range of values
@@ -629,6 +630,7 @@ custom_boot <- function(df){
     select(V4, V5) %>%
     dplyr::rename(lower = V4, upper = V5)
 }
+
 
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted
@@ -691,22 +693,22 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
     theme(legend.position = "top")
 }
 
-# The code that creates Figure 2
+
+# The code that creates most other figures
 # This shows the percentage change in sea/thresh and dur/max.int
 # from control for the three base tests
 # testers...
 # df = full_results
 # tests  = "base"
+# tests  = "miss_comp"
 # result_choice = "10_years"
 
-## NB: This is to be replaced by a box plot like alternative
 # May also want to consider ggpointdensity in place of lines
 # https://github.com/LKremer/ggpointdensity
 
-fig_line_plot <- function(df = full_results, tests, result_choice){
+fig_box_plot <- function(df = full_results, tests, result_choice){
 
-  # Chose if the figure will show the base tests or the interp. comp.
-
+  # Choose if the figure will show the base tests or the interp. comp.
   if(tests == "base"){
     test_choice <- c("length", "missing", "trend")
     test_levels <- c("Time series length (years)", "Missing data (%)", "Trend (°C/dec)")
@@ -727,12 +729,12 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
   if(result_choice == "focus"){
     var_choice <- data.frame(var = c("focus_count", "focus_duration", "focus_intensity_max"),
                              id = c("mean_perc", "sum_perc", "mean_perc"))
-    var_levels <- c("Count (n)", "Duration (% sum of days)", "Max intensity (% of mean °C)")
+    var_levels <- c("Count (n)", "Duration (% sum of days)", "Max. intensity (% of mean °C)")
     y_axis_title <- "Change in largest MHW"
   } else if(result_choice == "10_years"){
     var_choice <- data.frame(var = c("count", "duration", "intensity_max"),
                              id = c("n_diff", "sum_perc", "mean_perc"))
-    var_levels <- c("Count (n)", "Duration (% sum of days)", "Max intensity (% of mean °C)")
+    var_levels <- c("Count (n)", "Duration (% sum of days)", "Max. intensity (% of mean °C)")
     y_axis_title <- "Change in MHWs"
   } else if(result_choice == "clims"){
     var_choice <- data.frame(var = c("seas", "thresh"),
@@ -762,7 +764,7 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     mutate(val = ifelse(!(var %in% c("count", "focus_count")), val*100, val),
            index_vals = ifelse(test %in% c("missing", "interp"), index_vals*100, index_vals),
            var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (% sum of days)",
-                                 var %in% c("intensity_max", "focus_intensity_max" ) ~ "Max intensity (% of mean °C)",
+                                 var %in% c("intensity_max", "focus_intensity_max" ) ~ "Max. intensity (% of mean °C)",
                                  var %in% c("count", "focus_count") ~ "Count (n)",
                                  var == "seas" ~ "Seasonal clim. (SD; °C)",
                                  var == "thresh" ~ "Threshold clim. (mean; °C)"),
@@ -781,35 +783,35 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
   if(tests == "base"){
     df_prep <- df_prep %>%
       mutate(panel_label = case_when(var %in% c("count", "focus_count") & test == "length" ~ "A",
-                                     var %in% c("count", "focus_count") & test == "missing" ~ "B",
-                                     var %in% c("count", "focus_count") & test == "trend" ~ "C",
-                                     var %in% c("duration", "focus_duration") & test == "length" ~ "D",
+                                     var %in% c("duration", "focus_duration") & test == "length" ~ "B",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "C",
+                                     var %in% c("count", "focus_count") & test == "missing" ~ "D",
                                      var %in% c("duration", "focus_duration") & test == "missing" ~ "E",
-                                     var %in% c("duration", "focus_duration") & test == "trend" ~ "F",
-                                     var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "G",
-                                     var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "H",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "F",
+                                     var %in% c("count", "focus_count") & test == "trend" ~ "G",
+                                     var %in% c("duration", "focus_duration") & test == "trend" ~ "H",
                                      var %in% c("intensity_max", "focus_intensity_max") & test == "trend" ~ "I"))
   } else if(tests == "miss_comp"){
     df_prep <- df_prep %>%
       mutate(panel_label = case_when(var %in% c("count", "focus_count") & test == "missing" ~ "A",
-                                     var %in% c("count", "focus_count") & test == "interp" ~ "B",
-                                     var %in% c("duration", "focus_duration") & test == "missing" ~ "C",
-                                     var %in% c("duration", "focus_duration") & test == "interp" ~ "D",
-                                     var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "E",
+                                     var %in% c("duration", "focus_duration") & test == "missing" ~ "B",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "missing" ~ "C",
+                                     var %in% c("count", "focus_count") & test == "interp" ~ "D",
+                                     var %in% c("duration", "focus_duration") & test == "interp" ~ "E",
                                      var %in% c("intensity_max", "focus_intensity_max") & test == "interp" ~ "F"))
   } else if(tests == "windows"){
     df_prep <- df_prep %>%
       mutate(panel_label = case_when(var %in% c("count", "focus_count") & test == "length" ~ "A",
-                                     var %in% c("count", "focus_count") & test == "window_10" ~ "B",
-                                     var %in% c("count", "focus_count") & test == "window_20" ~ "C",
-                                     var %in% c("count", "focus_count") & test == "window_30" ~ "D",
-                                     var %in% c("duration", "focus_duration") & test == "length" ~ "E",
-                                     var %in% c("duration", "focus_duration") & test == "window_10" ~ "F",
-                                     var %in% c("duration", "focus_duration") & test == "window_20" ~ "G",
-                                     var %in% c("duration", "focus_duration") & test == "window_30" ~ "H",
-                                     var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "I",
-                                     var %in% c("intensity_max", "focus_intensity_max") & test == "window_10" ~ "J",
-                                     var %in% c("intensity_max", "focus_intensity_max") & test == "window_20" ~ "K",
+                                     var %in% c("duration", "focus_duration") & test == "length" ~ "B",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "length" ~ "C",
+                                     var %in% c("count", "focus_count") & test == "window_10" ~ "D",
+                                     var %in% c("duration", "focus_duration") & test == "window_10" ~ "E",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "window_10" ~ "F",
+                                     var %in% c("count", "focus_count") & test == "window_20" ~ "G",
+                                     var %in% c("duration", "focus_duration") & test == "window_20" ~ "H",
+                                     var %in% c("intensity_max", "focus_intensity_max") & test == "window_20" ~ "I",
+                                     var %in% c("count", "focus_count") & test == "window_30" ~ "J",
+                                     var %in% c("duration", "focus_duration") & test == "window_30" ~ "K",
                                      var %in% c("intensity_max", "focus_intensity_max") & test == "window_30" ~ "L"))
   } else if(tests == "base_period"){
     df_prep <- df_prep %>%
@@ -820,10 +822,10 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
   if(result_choice == "clims"){
     df_prep <- df_prep %>%
       mutate(panel_label = case_when(var %in% c("seas") & test == "length" ~ "A",
-                                     var %in% c("seas") & test == "missing" ~ "B",
-                                     var %in% c("seas") & test == "trend" ~ "C",
-                                     var %in% c("thresh") & test == "length" ~ "D",
-                                     var %in% c("thresh") & test == "missing" ~ "E",
+                                     var %in% c("thresh") & test == "length" ~ "B",
+                                     var %in% c("seas") & test == "missing" ~ "C",
+                                     var %in% c("thresh") & test == "missing" ~ "D",
+                                     var %in% c("seas") & test == "trend" ~ "E",
                                      var %in% c("thresh") & test == "trend" ~ "F"))
   }
 
@@ -832,62 +834,90 @@ fig_line_plot <- function(df = full_results, tests, result_choice){
     filter(site %in% c("WA", "NWA", "Med"),
            index_vals != 50) # For better plotting without a lot of fuss...
   random_df <- df_prep %>%
+    filter(!(site %in% c("WA", "NWA", "Med")),
+           index_vals != 50)
+
+  # Upper and lower quantile values
+  quant_df <- df_prep %>%
+    group_by(test, index_vals, var, id, test_label, var_label, panel_label) %>%
+    summarise(lower = quantile(val, 0.05),
+              upper = quantile(val, 0.95),
+              q25 = quantile(val, 0.25),
+              q50 = quantile(val, 0.50),
+              q75 = quantile(val, 0.75),
+              iqr = q75-q25) %>%
+    ungroup() %>%
+    filter(index_vals != 50)
+
+  # Plot labels
+  labels_df <- quant_df %>%
     group_by(test) %>%
     mutate(panel_label_x = quantile(index_vals, 0.05)) %>%
     ungroup() %>%
     group_by(var) %>%
-    mutate(panel_label_y = max(val)) %>%
+    mutate(panel_label_y = max(upper)*0.99) %>%
     ungroup() %>%
-    filter(!(site %in% c("WA", "NWA", "Med")),
-           index_vals != 50)
-
-  # Significance points
-  reference_sig <- df_prep %>%
-    filter(site %in% c("WA", "NWA", "Med"),
-           id == "difference", val == 1, var != "seas")
-  random_sig <- df_prep %>%
-    filter(!(site %in% c("WA", "NWA", "Med")),
-           id == "difference", val == 1, var != "seas")
-
-  # Plot labels
-  labels_df <- random_df %>%
-    select(-site, -val, -index_vals) %>%
+    select(test, var, panel_label_x, panel_label_y, panel_label, test_label, var_label) %>%
     unique()
 
-  # Upper and lower quantile values
-  quant_df <- df_prep %>%
-    group_by(test, index_vals, var, id, test_label, var_label) %>%
-    summarise(lower = quantile(val, 0.05),
-              upper = quantile(val, 0.95)) %>%
-    ungroup() %>%
-    filter(index_vals != 50)
+  # Coefficients of determination
+  # coef_det <- df_prep %>%
+    # group_by(test, index_vals, var, id, test_label, var_label)
 
-  # if(result_choice == "clims"){
-  #   seas_val_limit <- max(random_df$val[random_df$test == "missing"])
-  #   reference_df <- reference_df %>%
-  #     mutate(val = ifelse(test == "trend" & val > seas_val_limit, NA, val))
-  #   random_df <- random_df %>%
-  #     mutate(val = ifelse(test == "trend" & val > seas_val_limit, NA, val))
-  #   labels_df <- labels_df %>%
-  #     mutate(panel_label_y = ifelse(panel_label_y > seas_val_limit, seas_val_limit, panel_label_y))
-  # }
+  # geom_crosbar is not very clever, so we need to help it along with a logic gate...
+  if("trend" %in% quant_df$test){
+    # Create figure
+    fig_plot_base <- ggplot(quant_df, aes(x = index_vals, y = val)) +
+      # 90 CI crossbars
+      # Need different lines for tests due to the different x-axis interval sizes
+      geom_crossbar(data = filter(quant_df, test != "trend"),
+                    aes(x = index_vals, y = 0, ymin = lower, ymax = upper),
+                    fatten = 0, fill = "grey70", colour = NA, width = 1) +
+      geom_crossbar(data = filter(quant_df, test == "trend"),
+                    aes(x = index_vals, y = 0, ymin = lower, ymax = upper),
+                    fatten = 0, fill = "grey70", colour = NA, width = 0.01) +
+      # IQR Crossbars
+      geom_crossbar(data = filter(quant_df, test != "trend"),
+                    aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+                    fatten = 0, fill = "grey50", width = 1) +
+      geom_crossbar(data = filter(quant_df, test == "trend"),
+                    aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+                    fatten = 0, fill = "grey50", width = 0.01) +
+      # Median segments
+      geom_crossbar(data = filter(quant_df, test != "trend"),
+                    aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+                    fatten = 0, fill = NA, colour = "black", width = 1) +
+      geom_crossbar(data = filter(quant_df, test == "trend"),
+                    aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+                    fatten = 0, fill = NA, colour = "black", width = 0.01)
+  } else{
+    # Create figure
+    fig_plot_base <- ggplot(quant_df, aes(x = index_vals, y = val)) +
+      # 90 CI crossbars
+      geom_crossbar(data = quant_df, aes(x = index_vals, y = 0, ymin = lower, ymax = upper),
+                    fatten = 0, fill = "grey70", colour = NA, width = 1) +
+      # IQR Crossbars
+      geom_crossbar(data = quant_df, aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+                    fatten = 0, fill = "grey50", width = 1) +
+      # Median segments
+      geom_crossbar(data = quant_df, aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+                    fatten = 0, fill = NA, colour = "black", width = 1)
+  }
 
-  # Create figure
-  fig_plot <- ggplot(reference_df, aes(x = index_vals, y = val)) +
-    # geom_hline(aes(yintercept = 0), colour = "grey") +
-    # Quantile bars - need different lines for tests due to the different x-axis interval sizes
-    geom_errorbar(data = filter(quant_df, test != "trend"),
-                  aes(ymin = lower, y = NULL, ymax = upper), width = 1) +
-    geom_errorbar(data = filter(quant_df, test == "trend"),
-                  aes(ymin = lower, y = NULL, ymax = upper), width = 0.01) +
-    # geom_point(data = CI_df, aes(y = mid)) +
+
+  # Finish off the figure
+  fig_plot <- fig_plot_base +
     # Random results
-    geom_line(data = random_df, aes(group = site), size = 0.5, alpha = 0.05) +
-    geom_point(data = random_sig, colour = "red", size = 1, alpha = 1) +
+    # geom_line(data = random_df, aes(group = site), size = 0.5, alpha = 0.05) +
+    # geom_boxplot(data = random_df, aes(group = index_vals), outlier.colour = NA) +
+
     # Reference results
-    geom_line(aes(colour = site), size = 1.0, alpha = 0.8) +
-    geom_point(data = reference_sig, colour = "red", size = 1, alpha = 1) +
-    # Labels and scales
+    geom_line(data = reference_df, aes(colour = site), size = 1.0, alpha = 0.5) +
+
+    # Horizontal itercept at 0
+    geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
+
+    # Labels, scales, facets, and themes
     geom_label(data = labels_df,
                aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
     scale_colour_brewer(palette = "Dark2") +

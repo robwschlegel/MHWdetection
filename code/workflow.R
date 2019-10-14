@@ -157,14 +157,15 @@ quant_trend <- filter(quant_subopt, test == "trend")
 
 
 
-# Appendix 1 --------------------------------------------------------------
+# Supplementary 1 ---------------------------------------------------------
+
 
 # The effect of the sub-optimal tests on seas/thresh
 
 
-# Appendix 2 --------------------------------------------------------------
 # The difference between the proper 30 year base period and all other 30 year base periods
 
+# Supplementary 2 ---------------------------------------------------------
 # Combine the three reference time series, run analysis, and save
 # sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
 #                  mutate(sst_NW_Atl, site = "NW_Atl"),
