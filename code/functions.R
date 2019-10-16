@@ -8,10 +8,10 @@
 
 # library(jsonlite, lib.loc = "~/R-packages/")
 # library(dplyr, lib.loc = "~/R-packages/") # Development version for group_modify()
-library(tidyverse, lib.loc = "~/R-packages/")
+library(tidyverse)
 library(ggridges)
 # library(broom)
-library(heatwaveR, lib.loc = "~/R-packages/")
+library(heatwaveR)
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
 library(lubridate) # This is intentionally activated after data.table
 # library(fasttime)
@@ -20,10 +20,10 @@ library(boot)
 # library(FNN)
 # library(mgcv)
 library(doMC); doMC::registerDoMC(cores = 50)
-library(tidync, lib.loc = "~/R-packages/")
-library(rgdal, lib.loc = "~/R-packages/")
+library(tidync)
+library(rgdal)
 # library(pgirmess)
-library(tidync, lib.loc = "~/R-packages/")
+library(tidync)
 # library(egg)
 # library(rcompanion)
 
@@ -248,45 +248,6 @@ window_test <- function(df, focus_event){
   # Exit
   res <- rbind(sst_window_10_res, sst_window_20_res, sst_window_30_res)
   return(res)
-}
-
-
-# Significance tests ------------------------------------------------------
-
-# tester...
-# df <- sst_clim_metric %>%
-#   filter(test == "missing", var == "duration") %>%
-#   ungroup() %>%
-#   select(-test, -var)
-
-# Kruskal-Wallis post-hoc
-kruskal_post_hoc <- function(df){
-  df$index_vals <- factor(df$index_vals)
-  if("30" %in% levels(df$index_vals)){
-    df$index_vals <- relevel(df$index_vals, "30")
-  }
-  res <- kruskalmc(df$val, df$index_vals)$dif.com %>%
-    mutate(comp_index = row.names(.)) %>%
-    separate(comp_index, into = c("control", "index_vals"),
-             sep = '-', convert = T) %>%
-    filter(control == levels(df$index_vals)[1]) %>%
-    dplyr::rename(val = difference) %>%
-    mutate(id = "difference",
-           val = as.numeric(val)) %>%
-    select(index_vals, id, val)
-  return(res)
-}
-
-# Tukey post-hoc
-  # NB: Not used as the data are not normal
-tukey_post_hoc <- function(df){
-  res <- TukeyHSD(aov(val ~ as.factor(index_vals), df)) %>%
-    broom::tidy(.) %>%
-    separate(comparison, into = c("comp", "control"), sep = '-') %>%
-    mutate(p.value = round(adj.p.value, 4)) %>%
-    filter(control == levels(df$index_vals)[1]) %>%
-    arrange(adj.p.value)
-  return(aov_tukey)
 }
 
 
@@ -1008,8 +969,8 @@ trend_plot <- function(test_sub, var_sub,
     # limits = c(as.numeric(trend_quantiles[2]),
     # as.numeric(trend_quantiles[4])),
     # breaks = c(as.numeric(trend_quantiles[2:6]))) +
-    scale_fill_gradient2(low = col_split[1], high = col_split[2],
-                         breaks = c(round(as.numeric(trend_quantiles[2:6]), 2))) +
+    scale_fill_gradient2(low = col_split[1], high = col_split[2])#,
+                         #breaks = c(round(as.numeric(trend_quantiles[2:6]), 2))) +
     coord_equal(expand = F) +
     theme_void() +
     labs(fill = paste0(sen_change, sen_test, sen_var)) +
@@ -1017,23 +978,6 @@ trend_plot <- function(test_sub, var_sub,
           legend.key.width = unit(2, "cm"),
           panel.background = element_rect(fill = "grey80"))
   # trend_map
-
-  # The density polygon
-  # trend_density <- ggplot(base_sub, aes(x = trend)) +
-  #   geom_density(aes(fill = trend)) +
-  #   coord_flip() +
-  #   scale_x_continuous(expand = c(0,0))
-  # trend_density
-
-  # The ridgeline plot
-  # trend_ridge <- ggplot(base_sub, aes(x = trend, y = var)) +
-  #   stat_density_ridges(aes(fill = factor(..quantile..)),
-  #                       geom = "density_ridges_gradient", calc_ecdf = TRUE,
-  #                       quantiles = 4, quantile_lines = TRUE) +
-  #   viridis::scale_fill_viridis(discrete = TRUE, name = "Quartiles", alpha = 0.7) +
-  #   coord_flip(expand = F) +
-  #   theme(axis.text.x = element_blank())
-  # trend_ridge
 
   # ggsave(trend_map,
   #        filename = paste0("output/",test_sub,"_",var_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
@@ -1097,6 +1041,9 @@ base_period_analysis <- function(df, clim_metric = F){
   # Exit
   return(sst_summary)
 }
+
+
+# Visualise the consecutive count of missing days in a time series
 
 
 # Old figure functions ----------------------------------------------------
