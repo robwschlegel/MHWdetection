@@ -210,11 +210,11 @@ The _a priori_ fix proposed for shorter time series, that of creating a smoother
 
 Linear interpolation was proposed as an _a priori_ fix to address the issue of missing data and was very effective. This fix could potentially allow for the use of time series missing up to 40% of their data (Figure 4), assuming that there is not so much missing data that the period of time during a MHW that one may be wanting to study/isolate is completely missing.
 
-<!-- Figure 4 -->
+<!-- Figure 5 -->
 
 RWS: I'll write here about consecutive missing days of data and how that interferes with linear interpolation. This is shown as Figure 5.
 
-<!-- Figure 5 -->
+<!-- Figure 6 -->
 
 Given the relationship between decadal trends and the focus outputs seen above, one may be able to apply a _post-hoc_ correction to one's results if the decadal trend in a given area is known. 
 

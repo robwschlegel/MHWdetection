@@ -63,6 +63,12 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 
 # Load OISST --------------------------------------------------------------
 
+# Load an OISST NetCDF file and exclude pixels with any ice (-1.8C) cover
+# During iterations of this methodology it was found that there are pixels near
+# the ice edge that don't ever quite reach -1.8C but remain in a "slush" state
+# This was determined to be an artefact of the OISST process and so the new
+# "ice" limit was set to -1.6C
+
 # testers...
 # An Antarctic pixel that doesn't have a temp = -1.8 -"-78.375	-76.125"
 # which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -78.375) # 1127
@@ -85,19 +91,11 @@ load_noice_OISST <- function(nc_file){
     mutate(lon = ifelse(lon > 180, lon-360, lon)) %>%
     data.frame()
   )
-  # Filtering out frozen (-1.8C) pixels is only half the battle
-  # It is then necessary to do a "slush" check and remove pixels that spend
-  # the majority of the year in a near frozen state with little thermal variance
-  res_slush <- res %>%
-    group_by(lon, lat) %>%
-    mutate(min_slush = round(min(temp), 1)) %>%
-    select(-temp, -t) %>%
-    unique()
-  return(res_slush)
+  return(res)
 }
 
-test <- res_slush %>%
-  filter(lat == -76.125)
+# test <- res %>%
+#   filter(lat == -76.125)
 
 
 # De-trending -------------------------------------------------------------
@@ -177,6 +175,7 @@ con_miss <- function(df){
 # df <- filter(sst_length, index_vals == 30)
 # df <- filter(sst_interp, index_vals == 0.2)
 # df <- filter(sst_window_10, index_vals == 10)
+# df <- filter(sst_missing, index_vals == 0.50)
 # set_window = 5
 # set_window = 30
 # set_pad = F
@@ -274,7 +273,7 @@ window_test <- function(df, focus_event){
 # tester...
 # df <- sst_clim_metric %>%
 # ungroup() %>%
-# filter(test == "length") %>%
+# filter(test == "window_20") %>%
 # select(-test)
 summary_stats <- function(df){
 
@@ -285,6 +284,26 @@ summary_stats <- function(df){
     control_val <- 0
   }
 
+  # Create gapless index of test values
+  # This is necessary for the missing data as some steps have no MHWs
+  index_step <- unique(df$index_vals)[2]-unique(df$index_vals)[1]
+  if(control_val == 0){
+    if(max(df$index_vals) > 0.3){
+      gapless_vector <- seq(0, 0.5, by = index_step)
+    } else{
+      gapless_vector <- seq(0, 0.3, by = index_step)
+    }
+  } else if(control_val == 30){
+    gapless_vector <- seq(10, max(unique(df$index_vals)), by = index_step)
+  }
+  index_gapless <- data.frame(index_vals = gapless_vector)
+
+  # Count of control values
+  control_count <- df %>%
+    filter(index_vals == control_val,
+                var == "duration") %>%
+    nrow()
+
   # Count of values
   res_count <- df %>%
     group_by(index_vals) %>%
@@ -292,10 +311,11 @@ summary_stats <- function(df){
     filter(var == "duration") %>%
     select(-var) %>%
     unique() %>%
+    right_join(index_gapless, by = "index_vals") %>%
+    mutate(n = replace_na(n, 0)) %>%
     mutate(var = "count",
-           n_diff = n-(nrow(filter(df,
-                                   index_vals == control_val,
-                                   var == "duration")))) %>%
+           n_diff = n-control_count,
+           n_perc = (n-control_count)/abs(control_count)*100) %>%
     gather(id, val, -index_vals, -var)
 
   # Summary stats for each index_val
@@ -318,15 +338,17 @@ summary_stats <- function(df){
 
   # Find proportion of change
   res_perc <- left_join(res_base, res_control, by = c("var", "id")) %>%
-    mutate(perc = (val-cont_val)/abs(cont_val),
+    mutate(perc = (val-cont_val)/abs(cont_val)*100,
            perc = replace_na(perc, 0),
+           perc = if_else(is.infinite(perc), -1, perc), # Caused by non-existent focus MHW
            perc_name = paste0(id,"_perc")) %>%
     select(index_vals, var, perc_name, perc) %>%
     dplyr::rename(id = perc_name, val = perc)
 
   # Combine, round, and exit
   res <- rbind(res_base, res_perc, res_count) %>%
-    mutate(val = round(val, 3))
+    mutate(val = round(val, 3)) %>%
+    arrange(index_vals, var, id)
   return(res)
 }
 
@@ -363,13 +385,14 @@ summary_stats <- function(df){
 # df <- sst_Med
 # df <- sst[sst$lat == sst$lat[1],]
 # full_seq = T
-# clim_metric = T
+# clim_metric = F
 # count_miss = T
 # windows = T
-# A bad pixel for testing - "140.375_0.625"
-# which(seq(0.125, 179.875, by = 0.25) == 140.375) # 562
-# df <- load_noice_OISST(OISST_files[562]) %>%
-#   filter(lat == 0.625)
+# Bad pixels for testing - "140.375 0.625", "-73.625_-77.125", ", "-112.125 -28.875"(window width),
+# "-149.375 10.625"(focus event dissapears with large decadal trend value)
+# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -149.375)
+# df <- load_noice_OISST(OISST_files[843]) %>%
+# filter(lat == 10.625)
 
 single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, windows = F){
 
@@ -420,6 +443,8 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   sst_trend <- plyr::ldply(trend_seq, control_trend, df = sst_flat)
 
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
+  # NB: The warnings that pop up here are fine and are caused by missing data completely
+  # removing all of the MHWs from a time series. This is accounted for in the summary stats
   sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
     group_by(test, index_vals) %>%
     group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event)) %>%
@@ -492,7 +517,7 @@ random_analysis <- function(df, base_period = F){
              lat = pixel$lat[1]) %>%
       select(lon, lat, everything())
   } else{
-    res <- single_analysis(pixel, full_seq = T, clim_metric = T, count_miss = T, windows = T) %>%
+    res <- single_analysis(pixel, full_seq = T, clim_metric = F, count_miss = T, windows = T) %>%
       mutate(lon = pixel$lon[1],
              lat = pixel$lat[1]) %>%
       select(lon, lat, everything())
@@ -681,6 +706,7 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 # tests  = "base"
 # tests  = "miss_comp"
 # result_choice = "10_years"
+# result_choice = "focus"
 
 # May also want to consider ggpointdensity in place of lines
 # https://github.com/LKremer/ggpointdensity
@@ -707,17 +733,20 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
   # Prep data for focus or mean MHW results
   if(result_choice == "focus"){
     var_choice <- data.frame(var = c("focus_count", "focus_duration", "focus_intensity_max"),
-                             id = c("mean_perc", "sum_perc", "mean_perc"))
-    var_levels <- c("Count (n)", "Duration (% sum of days)", "Max. intensity (% of mean °C)")
+                             id = c("mean_perc", "sum_perc", "mean_perc"),
+                             stringsAsFactors = F)
+    var_levels <- c("Count (% n)", "Duration (% sum of days)", "Max. intensity (% of mean °C)")
     y_axis_title <- "Change in largest MHW"
   } else if(result_choice == "10_years"){
     var_choice <- data.frame(var = c("count", "duration", "intensity_max"),
-                             id = c("n_diff", "sum_perc", "mean_perc"))
-    var_levels <- c("Count (n)", "Duration (% sum of days)", "Max. intensity (% of mean °C)")
+                             id = c("n_perc", "sum_perc", "mean_perc"),
+                             stringsAsFactors = F)
+    var_levels <- c("Count (% n)", "Duration (% sum of days)", "Max. intensity (% of mean °C)")
     y_axis_title <- "Change in MHWs"
   } else if(result_choice == "clims"){
     var_choice <- data.frame(var = c("seas", "thresh"),
-                             id = c("sd_perc", "mean_perc"))
+                             id = c("sd_perc", "mean_perc"),
+                             stringsAsFactors = F)
     var_levels <- c("Seasonal clim. (SD; °C)", "Threshold clim. (mean; °C)")
     y_axis_title <- "Change in thresholds"
   } else{
@@ -727,24 +756,24 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
   # Manually remove a couple of rediculous pixels
   # NB: These pixels were determined in the first run of the code to be anomalous
   # due to the structure of the time series and should have been filtered earlier
-  bad_pixels <- c("140.375_0.625", "-73.625_-77.125", "-44.375_1.125")
-  # pixel_hunt <- filter(random_df,
-  #                test == "trend",
-  #                index_vals == 0.30,
-  #                var == "duration",
-  #                val > 500)
+  # bad_pixels <- c("140.375_0.625", "-73.625_-77.125", "-44.375_1.125", "-149.375_10.625")
+  pixel_hunt <- filter(df,
+                 test == "trend",
+                 index_vals == 0.20,
+                 var == "focus_duration",
+                 id == "mean_perc",
+                 val < -90)
 
   # Prep reference results for pretty plotting
   df_prep <- df %>%
-    filter(is.finite(val),
-           test %in% test_choice,
-           !(site %in% bad_pixels)) %>%
+    filter(test %in% test_choice) %>% #,
+           # is.finite(val),
+           #!(site %in% bad_pixels)) %>%
     right_join(var_choice, by = c("var", "id")) %>%
-    mutate(val = ifelse(!(var %in% c("count", "focus_count")), val*100, val),
-           index_vals = ifelse(test %in% c("missing", "interp"), index_vals*100, index_vals),
+    mutate(index_vals = ifelse(test %in% c("missing", "interp"), index_vals*100, index_vals),
            var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (% sum of days)",
                                  var %in% c("intensity_max", "focus_intensity_max" ) ~ "Max. intensity (% of mean °C)",
-                                 var %in% c("count", "focus_count") ~ "Count (n)",
+                                 var %in% c("count", "focus_count") ~ "Count (% n)",
                                  var == "seas" ~ "Seasonal clim. (SD; °C)",
                                  var == "thresh" ~ "Threshold clim. (mean; °C)"),
            var_label = factor(var_label, levels = var_levels),
@@ -835,6 +864,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
     ungroup() %>%
     group_by(var) %>%
     mutate(panel_label_y = max(upper)*0.99) %>%
+    # mutate(panel_label_y = ifelse(max(upper)*0.99 > ) %>%
     ungroup() %>%
     select(test, var, panel_label_x, panel_label_y, panel_label, test_label, var_label) %>%
     unique()
@@ -905,7 +935,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
     # coord_cartesian(ylim = c(-100, 100)) +
     facet_grid(var_label~test_label, scales = "free", switch = "both") +
     labs(y = y_axis_title, x = NULL, colour = "Site") +
-    # coord_cartesian(ylim = c(-3, 3)) +
+    # coord_cartesian(ylim = c(-3, 3)) + # Correct for extreme line overalys messing up labels by coord-ing to the 90CI range
     theme(legend.position = "top")
   # fig_plot
   return(fig_plot)
@@ -1041,17 +1071,10 @@ base_period_analysis <- function(df, clim_metric = F){
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
   sst_clim_metric <- plyr::ldply(0:7, control_base, df = sst_flat)
 
-  # Run ANOVA/Tukey on MHW results for three different tests
-  sst_signif <- sst_clim_metric %>%
-    filter(id != "focus_event") %>%
-    group_by(var) %>%
-    group_modify(~kruskal_post_hoc(.x))
-
   # Create summary statistics of MHW results
   sst_summary <- sst_clim_metric %>%
     # group_by(test) %>%
     group_modify(~summary_stats(.x)) %>%
-    rbind(sst_signif) %>%
     data.frame()
 
   # Include clim/metric data if requested

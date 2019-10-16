@@ -13,32 +13,32 @@ source("code/functions.R")
 # Reference analysis ------------------------------------------------------
 
 # Combine the three reference time series, run analysis, and save
-# sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
-#                  mutate(sst_NW_Atl, site = "NW_Atl"),
-#                  mutate(sst_Med, site = "Med"))
-# system.time(
-#   sst_ALL_results <- plyr::ddply(sst_ALL, c("site"), single_analysis, .parallel = T,
-#                                  full_seq = T, clim_metric = T, count_miss = T, windows = T)
-# ) # 72 seconds
-# saveRDS(sst_ALL_results, "data/sst_ALL_results.Rda")
+sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
+                 mutate(sst_NW_Atl, site = "NW_Atl"),
+                 mutate(sst_Med, site = "Med"))
+system.time(
+  sst_ALL_results <- plyr::ddply(sst_ALL, c("site"), single_analysis, .parallel = T,
+                                 full_seq = T, clim_metric = F, count_miss = T, windows = T)
+) # 65 seconds
+saveRDS(sst_ALL_results, "data/sst_ALL_results.Rda")
 
 
 # Random analysis ---------------------------------------------------------
 
 # Calculate the full analysis on 100 random pixels
-# doMC::registerDoMC(cores = 25) # NB: 50 cores uses too much RAM
-# set.seed(666)
-# system.time(
-#   random_results <- plyr::ldply(1:100, random_analysis, .parallel = T)
-# ) # 417 seconds
-# saveRDS(random_results, "data/random_results_100.Rda")
+doMC::registerDoMC(cores = 50)
+set.seed(666)
+system.time(
+  random_results <- plyr::ldply(1:100, random_analysis, .parallel = T)
+) # 275 seconds
+saveRDS(random_results, "data/random_results_100.Rda")
 
 # Calculate the full analysis on 1000 random pixels
-# doMC::registerDoMC(cores = 25) # NB: 50 cores uses too much RAM
+# doMC::registerDoMC(cores = 50) # NB: 50 cores may be too much if there is more than 50GB already being used
 # set.seed(666)
 # system.time(
 #   random_results <- plyr::ldply(1:1000, random_analysis, .parallel = T)
-# ) # 417 seconds
+# ) # 3817 seconds
 # saveRDS(random_results, "data/random_results_1000.Rda")
 
 
@@ -65,27 +65,23 @@ source("code/functions.R")
 # plyr::l_ply(missing_index, global_analysis_single, .parallel = F, par_op = T)
 
 
-# Combine global results --------------------------------------------------
+# Testing the change to the ice/slush threshold of -1.6C
+test_single <- function(file_sub, par_op = F){
+  OISST_slice <- OISST_files[file_sub]
+  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
+  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+  slice_res <- global_analysis(OISST_slice, par_op = par_op)
+  saveRDS(slice_res, file = paste0("data/global/test_",lon_row_pad,".Rda"))
+  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+  rm(slice_res); gc()
+}
+plyr::l_ply(1130:1150, global_analysis_single, .parallel = T)
 
-# Load and combine each longitude slice of results
-# NB: Uses too much RAM to load everything in one shot...
-# NB: Best to run this in a terminal and not RStudio
-# system.time(
-#   global_results_1 <- plyr::ldply(dir("data/global", full.names = T)[1:500], readRDS, .parallel = T)
-# ) # 184 seconds
-# system.time(
-#   global_results_2 <- plyr::ldply(dir("data/global", full.names = T)[501:1000], readRDS, .parallel = T)
-# ) # 312 seconds
-# global_results_1_2 <- rbind(global_results_1, global_results_2)
-# rm(global_results_1, global_results_2); gc()
-# system.time(
-#   global_results_3 <- plyr::ldply(dir("data/global", full.names = T)[1001:1440], readRDS, .parallel = T)
-# ) # xxx seconds
-# global_results <- rbind(global_results_1_2, global_results_3)
-# rm(global_results_1_2, global_results_3); gc()
-
-# Save
-# saveRDS(global_results, "data/global_results.Rda")
+system.time(
+  global_test_trend <- plyr::ldply(dir("data/global", full.names = T, pattern = "test"),
+                                   .fun = var_trend, .parallel = T)
+) # 41 seconds for one lon slice, 44 minutes for all
+saveRDS(global_test_trend, "data/global_test_trend.Rda")
 
 
 # Global trends -----------------------------------------------------------
@@ -94,41 +90,12 @@ source("code/functions.R")
 # Set cores
 # doMC::registerDoMC(cores = 50)
 
-# Load global data
-# system.time(
-#   global_results <- readRDS("data/global_results.Rda")
-# ) # 665 seconds
-
 # Calculate trends and save
-# NB: Not run as it takes too long
 # system.time(
-#   global_trend <- plyr::ddply(global_results, .variables = c("lat"),
-#                               .fun = pixel_trend, .parallel = T)
-# ) # xxx seconds
-# saveRDS(global_trend, "data/global_trend.Rda")
-
-# Filter down to more immediately necessary results
-# system.time(
-#   global_mean_perc <- global_results %>%
-#     filter(id %in% c("mean_perc", "n_diff"),
-#            var %in% c("count", "focus_count",
-#                       "duration", "focus_duration",
-#                       "intensity_max", "focus_intensity_max"))
-# ) # 91 seconds
-
-# Calculate trends and save
-# NB: Not run in favour of the following chunk
-# system.time(
-#   global_mean_perc_trend <- plyr::ddply(global_mean_perc, .variables = c("lat"),
-#                                         .fun = pixel_trend, .parallel = T)
-# ) # 59 seconds for one lon slice,
-# saveRDS(global_mean_perc_trend, "data/global_mean_perc_trend.Rda")
-
-# system.time(
-#   global_focus_trend <- plyr::ldply(dir("data/global", full.names = T),
-#                                         .fun = focus_trend, .parallel = T)
+#   global_var_trend <- plyr::ldply(dir("data/global", full.names = T),
+#                                   .fun = var_trend, .parallel = T)
 # ) # 41 seconds for one lon slice, 44 minutes for all
-# saveRDS(global_focus_trend, "data/global_focus_trend.Rda")
+# saveRDS(global_var_trend, "data/global_var_trend.Rda")
 
 
 # Figures -----------------------------------------------------------------

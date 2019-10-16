@@ -248,8 +248,10 @@ ggsave(fig_1_flat, filename = "LaTeX/fig_1_flat.png", width = 8, height = 5)
 # The results from all tests
 sst_ALL_results <- readRDS("data/sst_ALL_results.Rda") %>%
   mutate(site = ifelse(site == "NW_Atl", "NWA", site))
-random_results <- readRDS("data/random_results_100.Rda") %>%
-  unite("site", c(lon, lat))
+system.time(
+  random_results <- readRDS("data/random_results_100.Rda") %>%
+    unite("site", c(lon, lat))
+) # 6 seconds
 full_results <- rbind(sst_ALL_results, random_results)
 rm(sst_ALL_results, random_results); gc()
 
@@ -300,6 +302,14 @@ fig_5B <- fig_box_plot(tests = "miss_comp", result_choice = "focus")
 
 # Figure 6 ----------------------------------------------------------------
 # Consecutive count of missing data
+
+ggplot(sst_ALL_con_plot, aes(x = as.numeric(miss), y = duration, colour = count)) +
+  geom_line(aes(group = miss)) +
+  geom_point(aes(group = miss)) +
+  scale_colour_viridis_c(trans = "log10", breaks = c(1, 10, 100, 1000, 2000)) +
+  scale_y_continuous(breaks = seq(1, 19, 2)) +
+  # scale_x_continuous(limits = c(1, 50)) +
+  labs(y = "Consecutive missing days", x = "Missing data (%)")
 
 
 # Appendix 1 --------------------------------------------------------------
