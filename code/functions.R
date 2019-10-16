@@ -63,24 +63,41 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 
 # Load OISST --------------------------------------------------------------
 
+# testers...
+# An Antarctic pixel that doesn't have a temp = -1.8 -"-78.375	-76.125"
+# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -78.375) # 1127
+# nc_file <- OISST_files[1127]
 load_noice_OISST <- function(nc_file){
+  suppressWarnings( # (2019-10-16) tidync started giving a meaningless warning message
   res <- tidync(nc_file) %>%
     hyper_tibble() %>%
     dplyr::rename(t = time, temp = sst) %>%
     mutate(t = as.Date(t, origin = "1970-01-01")) %>%
     filter(t <= "2018-12-31",
-           round(temp, 1) != -1.8) %>%
+           round(temp, 1) > -1.6) %>%
     na.omit() %>%
     # Filter out pixels that don't cover the whole time series
-    # Filter out pixels with any ice cover during the time series
+    # Filter out pixels with any ice/slush cover during the time series
     group_by(lon, lat) %>%
     filter(n() == 13514) %>% # A full time series is 13,514 days long
     ungroup() %>%
     select(lon, lat, t, temp) %>%
     mutate(lon = ifelse(lon > 180, lon-360, lon)) %>%
     data.frame()
-  return(res)
+  )
+  # Filtering out frozen (-1.8C) pixels is only half the battle
+  # It is then necessary to do a "slush" check and remove pixels that spend
+  # the majority of the year in a near frozen state with little thermal variance
+  res_slush <- res %>%
+    group_by(lon, lat) %>%
+    mutate(min_slush = round(min(temp), 1)) %>%
+    select(-temp, -t) %>%
+    unique()
+  return(res_slush)
 }
+
+test <- res_slush %>%
+  filter(lat == -76.125)
 
 
 # De-trending -------------------------------------------------------------
@@ -299,7 +316,7 @@ summary_stats <- function(df){
     dplyr::rename(cont_val = val) %>%
     select(-index_vals)
 
-  # Find proportion of change, attach counts, and exit
+  # Find proportion of change
   res_perc <- left_join(res_base, res_control, by = c("var", "id")) %>%
     mutate(perc = (val-cont_val)/abs(cont_val),
            perc = replace_na(perc, 0),
@@ -339,7 +356,6 @@ summary_stats <- function(df){
 #   ungroup()
 
 
-
 # Full analyses -----------------------------------------------------------
 
 # This single function runs through and outputs all of the desired tests as a list
@@ -350,6 +366,11 @@ summary_stats <- function(df){
 # clim_metric = T
 # count_miss = T
 # windows = T
+# A bad pixel for testing - "140.375_0.625"
+# which(seq(0.125, 179.875, by = 0.25) == 140.375) # 562
+# df <- load_noice_OISST(OISST_files[562]) %>%
+#   filter(lat == 0.625)
+
 single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, windows = F){
 
   # Calculate the secular trend
@@ -362,6 +383,10 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 
   # Calculate MHWs from detrended ts
   sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
+
+  # The MHW algorithm isn't designed to work in frozen and nearly frozen areas of the ocean
+  # For this reason we must screen out pixels with months of no seasonal variation
+  # seas_mean <- "a"
 
   # Pull out the largest event in the ts
   focus_event <- sst_flat_MHW$event %>%
@@ -415,17 +440,10 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
     sst_clim_metric <- rbind(sst_clim_metric, sst_windows)
   }
 
-  # Run ANOVA/Tukey on MHW results for three different tests
-  sst_signif <- sst_clim_metric %>%
-    filter(id != "focus_event") %>%
-    group_by(test, var) %>%
-    group_modify(~kruskal_post_hoc(.x))
-
   # Create summary statistics of MHW results
   sst_summary <- sst_clim_metric %>%
     group_by(test) %>%
     group_modify(~summary_stats(.x)) %>%
-    rbind(sst_signif) %>%
     data.frame()
 
   # Include clim/metric data if requested
@@ -557,8 +575,8 @@ pixel_trend <- function(df){
 }
 
 # A convenience function to load a lon slice of global results
-# Then filter only to the minimum and run linear models
-focus_trend <- function(file_name){
+# Then filter out the variables not used in the results and run linear models
+var_trend <- function(file_name){
   # The subsetting index
   var_choice <- data.frame(var = c("count", "duration", "intensity_max",
                                    "focus_count", "focus_duration", "focus_intensity_max"),
@@ -657,7 +675,7 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 
 # The code that creates most other figures
 # This shows the percentage change in sea/thresh and dur/max.int
-# from control for the three base tests
+# from control for any of the tests
 # testers...
 # df = full_results
 # tests  = "base"
@@ -985,7 +1003,10 @@ trend_plot <- function(test_sub, var_sub,
 }
 
 
-# Appendix 2 --------------------------------------------------------------
+# Visualise the consecutive count of missing days in a time series
+
+
+# Supplementary 2 ---------------------------------------------------------
 
 # A convenience wrapper to use a vector to ply through a range of base periods
 control_base <- function(year_spread, df){
@@ -1041,9 +1062,6 @@ base_period_analysis <- function(df, clim_metric = F){
   # Exit
   return(sst_summary)
 }
-
-
-# Visualise the consecutive count of missing days in a time series
 
 
 # Old figure functions ----------------------------------------------------
