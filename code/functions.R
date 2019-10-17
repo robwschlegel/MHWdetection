@@ -175,7 +175,9 @@ con_miss <- function(df){
 # df <- filter(sst_length, index_vals == 30)
 # df <- filter(sst_interp, index_vals == 0.2)
 # df <- filter(sst_window_10, index_vals == 10)
-# df <- filter(sst_missing, index_vals == 0.50)
+# df <- filter(sst_missing, index_vals == 0.37)
+# df <- sst_missing[sst_missing$index_vals == 0.36,]
+# df <- filter(sst_trend, index_vals == 0.20)
 # set_window = 5
 # set_window = 30
 # set_pad = F
@@ -187,7 +189,7 @@ clim_metric_focus_calc <- function(df, set_window = 5, set_pad = F, min_date = "
                                    year_start = 0, year_end = 0, focus_dates){
 
   # First and last years for full clim period
-  if(year_start == 0)  year_start <- min(lubridate::year(df$t))
+  if(year_start == 0) year_start <- min(lubridate::year(df$t))
   if(year_end == 0) year_end <- max(lubridate::year(df$t))
 
   # base calculation
@@ -196,10 +198,19 @@ clim_metric_focus_calc <- function(df, set_window = 5, set_pad = F, min_date = "
     filter(t >= min_date) %>%
     detect_event()
 
-  # The metrics for the event(s) occurring during the largest control event
-  res_focus <- res$event %>%
+  # Occasionally a large added trend will cause the focus event to become too large for the code to recognise
+  # So we must invert the search pattern and run it again
+  res_check <- res$event %>%
     filter(date_peak >= focus_dates$date_start,
-           date_peak <= focus_dates$date_end) %>%
+           date_peak <= focus_dates$date_end)
+  if(nrow(res_check) == 0){
+    res_check <- res$event %>%
+      filter(date_start <= focus_dates$date_start,
+             date_end >= focus_dates$date_end)
+  }
+
+  # The metrics for the event(s) occurring during the largest control event
+  res_focus <- res_check %>%
     summarise(count = n(),
               duration = sum(duration),
               intensity_max = max(intensity_max),
@@ -393,7 +404,6 @@ summary_stats <- function(df){
 # which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -149.375)
 # df <- load_noice_OISST(OISST_files[843]) %>%
 # filter(lat == 10.625)
-
 single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, windows = F){
 
   # Calculate the secular trend
@@ -406,10 +416,6 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 
   # Calculate MHWs from detrended ts
   sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
-
-  # The MHW algorithm isn't designed to work in frozen and nearly frozen areas of the ocean
-  # For this reason we must screen out pixels with months of no seasonal variation
-  # seas_mean <- "a"
 
   # Pull out the largest event in the ts
   focus_event <- sst_flat_MHW$event %>%

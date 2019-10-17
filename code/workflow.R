@@ -13,14 +13,14 @@ source("code/functions.R")
 # Reference analysis ------------------------------------------------------
 
 # Combine the three reference time series, run analysis, and save
-sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
-                 mutate(sst_NW_Atl, site = "NW_Atl"),
-                 mutate(sst_Med, site = "Med"))
-system.time(
-  sst_ALL_results <- plyr::ddply(sst_ALL, c("site"), single_analysis, .parallel = T,
-                                 full_seq = T, clim_metric = F, count_miss = T, windows = T)
-) # 65 seconds
-saveRDS(sst_ALL_results, "data/sst_ALL_results.Rda")
+# sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
+#                  mutate(sst_NW_Atl, site = "NW_Atl"),
+#                  mutate(sst_Med, site = "Med"))
+# system.time(
+#   sst_ALL_results <- plyr::ddply(sst_ALL, c("site"), single_analysis, .parallel = T,
+#                                  full_seq = T, clim_metric = F, count_miss = T, windows = T)
+# ) # 65 seconds
+# saveRDS(sst_ALL_results, "data/sst_ALL_results.Rda")
 
 
 # Random analysis ---------------------------------------------------------
