@@ -42,6 +42,89 @@ saveRDS(random_results, "data/random_results_100.Rda")
 # saveRDS(random_results, "data/random_results_1000.Rda")
 
 
+# Why do some focus MHW sink beneath a rising decadal trend? --------------
+
+# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -149.375)
+# This pixel loses it's focus event at a dec trend of 0.16, why?
+# ~5% begin to lose them at 0.2, and this increases slightly up to 0.3 but never becomes >25%
+sst <- load_noice_OISST(OISST_files[843]) %>%
+  filter(lat == 10.625)
+
+# Detrend the selected ts
+sst_flat <- detrend(sst)
+
+
+# Calculate MHWs from detrended ts
+sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
+
+# The MHW algorithm isn't designed to work in frozen and nearly frozen areas of the ocean
+# For this reason we must screen out pixels with months of no seasonal variation
+# seas_mean <- "a"
+
+# Pull out the largest event in the ts
+focus_event <- sst_flat_MHW$event %>%
+  filter(date_start >= "2009-01-01") %>%
+  filter(intensity_cumulative == max(intensity_cumulative)) %>%
+  select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max) %>%
+  mutate(intensity_cumulative = round(intensity_cumulative, 2),
+         intensity_max = round(intensity_max, 2))
+
+# Quickly visualise the largest heatwave in the last 10 years of data
+heatwaveR::event_line(sst_flat_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# Add decadal trends
+sst_trend <- plyr::ldply(seq(0, 0.3, by = 0.01), control_trend, df = sst_flat)
+
+# With no added trend
+trend_0_MHW <- detect_event(ts2clm(filter(sst_trend, index_vals == 0), climatologyPeriod = c("1982-01-01", "2018-12-31")))
+heatwaveR::event_line(trend_0_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# A 0.05 trend
+trend_0.05_MHW <- detect_event(ts2clm(filter(sst_trend, index_vals == 0.05), climatologyPeriod = c("1982-01-01", "2018-12-31")))
+heatwaveR::event_line(trend_0.05_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# A 0.10 trend
+trend_0.10_MHW <- detect_event(ts2clm(filter(sst_trend, index_vals == 0.10), climatologyPeriod = c("1982-01-01", "2018-12-31")))
+heatwaveR::event_line(trend_0.10_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# A 0.15 trend
+trend_0.15_MHW <- detect_event(ts2clm(filter(sst_trend, index_vals == 0.15), climatologyPeriod = c("1982-01-01", "2018-12-31")))
+heatwaveR::event_line(trend_0.15_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+# We see now that even though the focus MHW appeared to be increasing in size, suddenly a different event has become larger
+# But what happened to our focus event?
+# Let's look at each step individually
+
+# Calculate clims
+sst_clim <- sst_trend %>%
+  dplyr::rename(site_label = index_vals) %>%
+  group_by(site_label) %>%
+  group_modify(~ts2clm(.x, climatologyPeriod = c("1982-01-01", "2018-12-31")))
+
+# Climatologies doy
+sst_clim_only <- sst_clim %>%
+  select(-t, -temp) %>%
+  unique()
+
+# Calculate events
+sst_event <- sst_clim %>%
+  group_by(site_label) %>%
+  group_modify(~detect_event(.x)$event)
+
+# Find largest event in most recent ten years of data
+focus_event <- sst_event %>%
+  filter(date_start >= "2009-01-01") %>%
+  group_by(site_label) %>%
+  filter(intensity_cumulative == max(intensity_cumulative)) %>%
+  ungroup()
+
+# Merge with results for better plotting
+sst_focus <- left_join(sst_clim,
+                       focus_event[,c("site_label", "date_start", "date_peak", "date_end")], by = "site_label")
+
+trend_fig <- fig_1_plot(sst_focus, spread = 150)
+ggsave("LaTeX/supp_5.png", trend_fig, width = 10, height = 30)
+
+
 # Global analysis ---------------------------------------------------------
 
 # Wrapper function with a chatty output as it chugs along
