@@ -303,19 +303,37 @@ fig_5B <- fig_box_plot(tests = "miss_comp", result_choice = "focus")
 # Figure 6 ----------------------------------------------------------------
 # Consecutive count of missing data
 
-ggplot(sst_ALL_con_plot, aes(x = as.numeric(miss), y = duration, colour = count)) +
-  geom_line(aes(group = miss)) +
-  geom_point(aes(group = miss)) +
-  scale_colour_viridis_c(trans = "log10", breaks = c(1, 10, 100, 1000, 2000)) +
-  scale_y_continuous(breaks = seq(1, 19, 2)) +
-  # scale_x_continuous(limits = c(1, 50)) +
-  labs(y = "Consecutive missing days", x = "Missing data (%)")
+miss_results <- full_results %>%
+  filter(var == "con_miss")
+
+# Some ridgelines could be cool here
+# The y axis would be the different missing percentages
+# The x axis would show the increasing counts of larger gaps
+# fig1 <- ggplot(miss_results, aes(y = as.factor(index_vals), x = id, fill = val)) +
+  # stat_density_ridges(alpha = 0.7) +
+  # labs(y = "Missing data (%)", x = "Consecutive missing data points", fill = "Count") +
+  # theme_bw(base_size = 14) +
+  # theme(legend.position = 'bottom')
+# fig1
+
+ggplot(miss_results, aes(x = index_vals, y = as.numeric(id), colour = val)) +
+  # geom_line(aes(group = index_vals)) +
+  # geom_point(aes(group = index_vals)) +
+  # geom_segment() +
+  # geom_crossbar() +
+  geom_tile(aes(group = index_vals, fill = val), colour = NA) +
+  geom_hline(aes(yintercept = 2.5), colour = "red") +
+  # scale_colour_viridis_c(trans = "log10", breaks = c(1, 10, 100, 1000, 2000)) +
+  scale_fill_viridis_c(trans = "log10", breaks = c(1, 10, 100, 1000, 2000)) +
+  scale_y_continuous(breaks = seq(1, 23, 2)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(y = "Consecutive missing days", x = "Missing data (%)", fill = "Count")
 
 
 # Appendix 1 --------------------------------------------------------------
 # The effect of the base tests on seas/thresh
 
-app_1 <- fig_line_plot(tests = "base", result_choice = "clims")
+app_1 <- fig_box_plot(tests = "base", result_choice = "clims")
 ggsave("LaTeX/app_1.pdf", app_1, height = 5, width = 7)
 ggsave("LaTeX/app_1.png", app_1, height = 5, width = 7)
 ggsave("LaTeX/app_1.jpg", app_1, height = 5, width = 7)
@@ -334,7 +352,7 @@ full_results <- rbind(sst_ALL_results, random_results) %>%
 rm(sst_ALL_results, random_results); gc()
 
 # The effect on the 10 years of MHWs
-app_2A <- fig_line_plot(tests = "base_period", result_choice = "10_years")
+app_2A <- fig_box_plot(tests = "base_period", result_choice = "10_years")
 ggsave("LaTeX/app_2A.pdf", app_2A, height = 8, width = 4)
 ggsave("LaTeX/app_2A.png", app_2A, height = 8, width = 4)
 ggsave("LaTeX/app_2A.jpg", app_2A, height = 8, width = 4)
@@ -379,13 +397,15 @@ ggsave("LaTeX/app_3B.jpg", app_3B, height = 12, width = 16)
 # The effect of widening the clim window
 
 # The effect on the 10 years of MHWs
-app_4A <- fig_line_plot(tests = "windows", result_choice = "10_years")
+app_4A <- fig_box_plot(tests = "windows", result_choice = "10_years")
 ggsave("LaTeX/app_4A.pdf", app_4A, height = 8, width = 9)
 ggsave("LaTeX/app_4A.png", app_4A, height = 8, width = 9)
 ggsave("LaTeX/app_4A.jpg", app_4A, height = 8, width = 9)
 
 # The effect on the 10 years of MHWs
-app_4B <- fig_line_plot(tests = "windows", result_choice = "focus")
+# The partial changes (e.g. -33%) for the count of events from the 30 year control is possible
+# because the changing of the window is already splitting up the focus event into multiples in the control
+app_4B <- fig_box_plot(tests = "windows", result_choice = "focus")
 ggsave("LaTeX/app_4B.pdf", app_4B, height = 8, width = 9)
 ggsave("LaTeX/app_4B.png", app_4B, height = 8, width = 9)
 ggsave("LaTeX/app_4B.jpg", app_4B, height = 8, width = 9)

@@ -172,14 +172,14 @@ con_miss <- function(df){
 # Calculate clims and metrics ---------------------------------------------
 
 # testers...
-# df <- filter(sst_length, index_vals == 30)
+# df <- filter(sst_length, index_vals == 25)
 # df <- filter(sst_interp, index_vals == 0.2)
 # df <- filter(sst_window_10, index_vals == 10)
 # df <- filter(sst_missing, index_vals == 0.37)
 # df <- sst_missing[sst_missing$index_vals == 0.36,]
 # df <- filter(sst_trend, index_vals == 0.20)
 # set_window = 5
-# set_window = 30
+# set_window = 20
 # set_pad = F
 # min_date = "2009-01-01"
 # year_start = 0
@@ -401,9 +401,9 @@ summary_stats <- function(df){
 # windows = T
 # Bad pixels for testing - "140.375 0.625", "-73.625_-77.125", ", "-112.125 -28.875"(window width),
 # "-149.375 10.625"(focus event dissapears with large decadal trend value)
-# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -149.375)
-# df <- load_noice_OISST(OISST_files[843]) %>%
-# filter(lat == 10.625)
+# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -112.125)
+# df <- load_noice_OISST(OISST_files[992]) %>%
+# filter(lat == -28.875)
 single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, windows = F){
 
   # Calculate the secular trend
@@ -742,7 +742,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
                              id = c("mean_perc", "sum_perc", "mean_perc"),
                              stringsAsFactors = F)
     var_levels <- c("Count (% n)", "Duration (% sum of days)", "Max. intensity (% of mean °C)")
-    y_axis_title <- "Change in largest MHW"
+    y_axis_title <- "Change in focus MHW"
   } else if(result_choice == "10_years"){
     var_choice <- data.frame(var = c("count", "duration", "intensity_max"),
                              id = c("n_perc", "sum_perc", "mean_perc"),
@@ -763,12 +763,12 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
   # NB: These pixels were determined in the first run of the code to be anomalous
   # due to the structure of the time series and should have been filtered earlier
   # bad_pixels <- c("140.375_0.625", "-73.625_-77.125", "-44.375_1.125", "-149.375_10.625")
-  pixel_hunt <- filter(df,
-                 test == "trend",
-                 index_vals == 0.20,
-                 var == "focus_duration",
-                 id == "mean_perc",
-                 val < -90)
+  # pixel_hunt <- filter(df,
+  #                test == "trend",
+  #                index_vals == 0.20,
+  #                var == "focus_duration",
+  #                id == "mean_perc",
+  #                val < -90)
 
   # Prep reference results for pretty plotting
   df_prep <- df %>%
@@ -956,9 +956,9 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
 # var_sub <- "count"
 # var_sub <- "focus_count"
 trend_plot <- function(test_sub, var_sub,
-                       df = global_focus_trend) {
+                       df = global_var_trend) {
 
-  if(!exists("global_focus_trend")) global_focus_trend <- readRDS("data/global_focus_trend.Rda")
+  if(!exists("global_var_trend")) global_var_trend <- readRDS("data/global_var_trend.Rda")
 
   # Filter base data
   base_sub <- df %>%
