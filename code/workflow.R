@@ -42,18 +42,120 @@ system.time(
 saveRDS(random_results, "data/random_results_1000.Rda")
 
 
-test <- unite(random_results, lon, lat, col = "site")
-length(unique(test$site))
-
-
-test <- plyr::ldply(1:10, random_analysis, .parallel = F)
-
-test <- random_analysis(base_period = T)
-
-
 # Why do some MHWs dissapear from wider windows? --------------------------
 
+# -112.125 -28.875 # A pixel negatively affected by window widening
+which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -112.125)
 
+sst <- load_noice_OISST(OISST_files[992]) %>%
+  filter(lat == -28.875)
+
+# Detrend the selected ts
+sst_flat <- detrend(sst)
+
+# Calculate MHWs from detrended ts
+sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
+
+# The MHW algorithm isn't designed to work in frozen and nearly frozen areas of the ocean
+# For this reason we must screen out pixels with months of no seasonal variation
+# seas_mean <- "a"
+
+# Pull out the largest event in the ts
+focus_event <- sst_flat_MHW$event %>%
+  filter(date_start >= "2009-01-01") %>%
+  filter(intensity_cumulative == max(intensity_cumulative)) %>%
+  select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max) %>%
+  mutate(intensity_cumulative = round(intensity_cumulative, 2),
+         intensity_max = round(intensity_max, 2))
+
+# Quickly visualise the largest heatwave in the last 10 years of data
+heatwaveR::event_line(sst_flat_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# Normal window width
+window_5_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
+heatwaveR::event_line(window_5_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# 10 day window
+  # Already here we see why the event falls away
+  # The focus MHW was just staying above the down slope of the seasonal dive into winter
+  # When the window half width is expanded the seasonal decline becomes less steep and the
+  # observed temperature is no longer above the 90th percentile
+window_10_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31"), windowHalfWidth = 10))
+heatwaveR::event_line(window_10_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# 20 day window
+window_20_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31"), windowHalfWidth = 20))
+heatwaveR::event_line(window_20_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# 30 day window
+window_30_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31"), windowHalfWidth = 30))
+heatwaveR::event_line(window_30_MHW, start_date = "2009-01-01", metric = "intensity_cumulative")
+
+# Now let's have a peak at each step along the way, just for laughs
+ts2clm_window <- function(window_choice, df = sst_flat){
+  res <- ts2clm(df, climatologyPeriod = c("1982-01-01", "2018-12-31"), windowHalfWidth = window_choice) %>%
+    mutate(site_label = paste0("window_",window_choice))
+  return(res)
+}
+
+# Calculate clims
+sst_clim <- plyr::ldply(seq(5, 30, by = 5), ts2clm_window, .parallel = T)
+
+# Climatologies doy
+sst_clim_only <- sst_clim %>%
+  select(-t, -temp) %>%
+  unique()
+
+# Calculate events
+sst_event <- sst_clim %>%
+  group_by(site_label) %>%
+  group_modify(~detect_event(.x)$event)
+
+# Find largest event in most recent ten years of data
+focus_event <- sst_event %>%
+  filter(date_start >= "2009-01-01") %>%
+  group_by(site_label) %>%
+  filter(intensity_cumulative == max(intensity_cumulative)) %>%
+  ungroup()
+
+# Merge with results for better plotting
+sst_focus <- left_join(sst_clim,
+                       focus_event[,c("site_label", "date_start", "date_peak", "date_end")], by = "site_label") %>%
+  mutate(site_label = factor(site_label, levels = c("window_5", "window_10", "window_15",
+                                                    "window_20", "window_25", "window_30")))
+
+trend_fig <- fig_1_plot(sst_focus, spread = 150)
+trend_fig
+
+# Look at differences between the seas/thresh for each window
+sst_clim_only %>%
+  select(-doy) %>%
+  gather(key = "var", value = "val", seas, thresh) %>%
+  group_by(site_label, var) %>%
+  summarise_if(.predicate = is.numeric, .funs = c("min", "median", "mean", "max")) %>%
+  ungroup() %>%
+  gather(key = "stat", value = "val", -site_label, - var) %>%
+  mutate(site_label = factor(site_label, levels = c("window_5", "window_10", "window_15",
+                                                    "window_20", "window_25", "window_30"))) %>%
+  arrange(site_label) %>%
+  ggplot(aes(x = stat, y = val, colour = site_label)) +
+  geom_point() +
+  scale_colour_brewer() +
+  facet_wrap(~var)
+
+# Now let's look at all of the 100 random results to see how this shakes out
+random_results <- readRDS("data/random_results_100.Rda")
+unique(random_results$test)
+all_clims <- random_results %>%
+  filter(test %in% c("length", "window_10", "window_20", "window_30"),
+         index_vals == 30,
+         var %in% c("seas", "thresh"),
+         id %in% c("min", "median", "mean", "max", "sd")) %>%
+  ggplot(aes(x = id, y = val, fill = test)) +
+  geom_boxplot() +
+  scale_fill_brewer(palette = "YlOrRd") +
+  facet_wrap(~var)
+all_clims
 
 
 # Global analysis ---------------------------------------------------------

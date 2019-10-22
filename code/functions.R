@@ -403,7 +403,6 @@ summary_stats <- function(df){
 # windows = T
 # Bad pixels for testing - "140.375 0.625", "-73.625_-77.125", ", "-112.125 -28.875"(window width),
 # "-149.375 10.625"(focus event dissapears with large decadal trend value)
-# "34.625 -33.875" Focus event not found
 # which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == 34.625)
 # df <- load_noice_OISST(OISST_files[139]) %>%
 # filter(lat == -33.875)
