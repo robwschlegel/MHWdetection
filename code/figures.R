@@ -249,7 +249,7 @@ ggsave(fig_1_flat, filename = "LaTeX/fig_1_flat.png", width = 8, height = 5)
 sst_ALL_results <- readRDS("data/sst_ALL_results.Rda") %>%
   mutate(site = ifelse(site == "NW_Atl", "NWA", site))
 system.time(
-  random_results <- readRDS("data/random_results_100.Rda") %>%
+  random_results <- readRDS("data/random_results_1000.Rda") %>%
     unite("site", c(lon, lat))
 ) # 6 seconds
 full_results <- rbind(sst_ALL_results, random_results)
