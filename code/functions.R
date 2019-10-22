@@ -76,6 +76,7 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 load_noice_OISST <- function(nc_file){
   suppressWarnings( # (2019-10-16) tidync started giving a meaningless warning message
   res <- tidync(nc_file) %>%
+    hyper_filter(lat = between(lat, -70, 80)) %>% # No need to load the very poleward data
     hyper_tibble() %>%
     dplyr::rename(t = time, temp = sst) %>%
     mutate(t = as.Date(t, origin = "1970-01-01")) %>%
@@ -245,6 +246,7 @@ clim_metric_focus_calc <- function(df, set_window = 5, set_pad = F, min_date = "
     mutate(val = round(val, 3))
   return(res_all)
 }
+#
 
 
 # Window manipulation -----------------------------------------------------
@@ -401,9 +403,10 @@ summary_stats <- function(df){
 # windows = T
 # Bad pixels for testing - "140.375 0.625", "-73.625_-77.125", ", "-112.125 -28.875"(window width),
 # "-149.375 10.625"(focus event dissapears with large decadal trend value)
-# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -112.125)
-# df <- load_noice_OISST(OISST_files[992]) %>%
-# filter(lat == -28.875)
+# "34.625 -33.875" Focus event not found
+# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == 34.625)
+# df <- load_noice_OISST(OISST_files[139]) %>%
+# filter(lat == -33.875)
 single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, windows = F){
 
   # Calculate the secular trend
@@ -506,8 +509,8 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 
 
 # This function runs the full analysis on a randomly selected pixel
-  # NB: The use of `df` in the function is just to satisfy plyr::ldply
-random_analysis <- function(df, base_period = F){
+  # NB: empty_integer is here just to satisfy plyr::ldply()
+random_analysis <- function(empty_integer, base_period = F){
 
   # Load a random lon slice
   sst <- load_noice_OISST(sample(OISST_files, 1))
@@ -515,6 +518,9 @@ random_analysis <- function(df, base_period = F){
   # Randomly pick a lat slice
   pixel <- filter(sst, lat == sample(sst$lat, 1))
   rm(sst); gc()
+
+  # Make the function more chatty for error trapping
+  # print(paste0(pixel$lon[1],"_",pixel$lat[1]))
 
   # Run a full analysis and exit
   if(base_period){
@@ -1016,14 +1022,17 @@ trend_plot <- function(test_sub, var_sub,
 
   # The map
   trend_map <- ggplot(base_quantile, aes(x = lon, y = lat)) +
-    geom_raster(aes(fill = trend)) +
+    geom_tile(aes(fill = trend)) +
     geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
+    # Test latitudes
+    # geom_hline(aes(yintercept = 80)) +
+    # geom_hline(aes(yintercept = -70)) +
     # scale_fill_viridis_c(option = vir_op) +
     # scale_fill_gradientn(colors = scales::viridis_pal(option = vir_op)(9),
     # limits = c(as.numeric(trend_quantiles[2]),
     # as.numeric(trend_quantiles[4])),
     # breaks = c(as.numeric(trend_quantiles[2:6]))) +
-    scale_fill_gradient2(low = col_split[1], high = col_split[2])#,
+    scale_fill_gradient2(low = col_split[1], high = col_split[2]) +#,
                          #breaks = c(round(as.numeric(trend_quantiles[2:6]), 2))) +
     coord_equal(expand = F) +
     theme_void() +
@@ -1031,7 +1040,7 @@ trend_plot <- function(test_sub, var_sub,
     theme(legend.position = "bottom",
           legend.key.width = unit(2, "cm"),
           panel.background = element_rect(fill = "grey80"))
-  # trend_map
+  trend_map
 
   # ggsave(trend_map,
   #        filename = paste0("output/",test_sub,"_",var_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
@@ -1045,7 +1054,7 @@ trend_plot <- function(test_sub, var_sub,
 # Supplementary 2 ---------------------------------------------------------
 
 # A convenience wrapper to use a vector to ply through a range of base periods
-control_base <- function(year_spread, df){
+control_base <- function(year_spread, df, focus_event){
   res <- clim_metric_focus_calc(df, focus_dates = focus_event,
                                 year_start = 1982 + year_spread, year_end = 2011 + year_spread) %>%
     mutate(index_vals = year_spread)
@@ -1075,7 +1084,7 @@ base_period_analysis <- function(df, clim_metric = F){
   }
 
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
-  sst_clim_metric <- plyr::ldply(0:7, control_base, df = sst_flat)
+  sst_clim_metric <- plyr::ldply(0:7, control_base, df = sst_flat, focus_event = focus_event)
 
   # Create summary statistics of MHW results
   sst_summary <- sst_clim_metric %>%

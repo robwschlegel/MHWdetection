@@ -30,16 +30,25 @@ source("code/functions.R")
 # set.seed(666)
 # system.time(
 #   random_results <- plyr::ldply(1:100, random_analysis, .parallel = T)
-# ) # 313 seconds
+# ) # 262 seconds
 # saveRDS(random_results, "data/random_results_100.Rda")
 
 # Calculate the full analysis on 1000 random pixels
-# doMC::registerDoMC(cores = 50) # NB: 50 cores may be too much if there is more than 50GB already being used
-# set.seed(666)
-# system.time(
-#   random_results <- plyr::ldply(1:1000, random_analysis, .parallel = T)
-# ) # 3817 seconds
-# saveRDS(random_results, "data/random_results_1000.Rda")
+doMC::registerDoMC(cores = 25) # 50 appears to be too much
+set.seed(666)
+system.time(
+  random_results <- plyr::ldply(1:1000, random_analysis, .parallel = T)
+) # 3817 seconds
+saveRDS(random_results, "data/random_results_1000.Rda")
+
+
+test <- unite(random_results, lon, lat, col = "site")
+length(unique(test$site))
+
+
+test <- plyr::ldply(1:10, random_analysis, .parallel = F)
+
+test <- random_analysis(base_period = T)
 
 
 # Why do some MHWs dissapear from wider windows? --------------------------
@@ -71,22 +80,22 @@ source("code/functions.R")
 
 
 # Testing the change to the ice/slush threshold of -1.6C
-test_single <- function(file_sub, par_op = F){
-  OISST_slice <- OISST_files[file_sub]
-  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
-  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-  slice_res <- global_analysis(OISST_slice, par_op = par_op)
-  saveRDS(slice_res, file = paste0("data/global/test_",lon_row_pad,".Rda"))
-  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-  rm(slice_res); gc()
-}
-plyr::l_ply(1130:1150, global_analysis_single, .parallel = T)
-
-system.time(
-  global_test_trend <- plyr::ldply(dir("data/global", full.names = T, pattern = "test"),
-                                   .fun = var_trend, .parallel = T)
-) # 41 seconds for one lon slice, 44 minutes for all
-saveRDS(global_test_trend, "data/global_test_trend.Rda")
+# test_single <- function(file_sub, par_op = F){
+#   OISST_slice <- OISST_files[file_sub]
+#   lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
+#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+#   slice_res <- global_analysis(OISST_slice, par_op = par_op)
+#   saveRDS(slice_res, file = paste0("data/global/test_",lon_row_pad,".Rda"))
+#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+#   rm(slice_res); gc()
+# }
+# plyr::l_ply(1130:1150, global_analysis_single, .parallel = T)
+#
+# system.time(
+#   global_test_trend <- plyr::ldply(dir("data/global", full.names = T, pattern = "test"),
+#                                    .fun = var_trend, .parallel = T)
+# ) # 41 seconds for one lon slice, 44 minutes for all
+# saveRDS(global_test_trend, "data/global_test_trend.Rda")
 
 
 # Global trends -----------------------------------------------------------
@@ -113,19 +122,19 @@ saveRDS(global_test_trend, "data/global_test_trend.Rda")
 
 # Upper and lower quantile ranges for sub-optimal tests
 # NB: `full_results` created in Figure 2 section of code/figures.R
-bad_pixels <- c("140.375_0.625", "-73.625_-77.125")
-quant_subopt <- full_results %>%
-  filter(var %in% c("count", "duration", "intensity_max",
-                    "focus_count", "focus_duration", "focus_intensity_max"),
-         id %in% c("n_diff", "mean_perc", "sum_perc", "mean_perc"),
-         !(site %in% bad_pixels)) %>%
-  group_by(test, index_vals, var, id) %>%
-  summarise(lower = quantile(val, 0.05),
-            upper = quantile(val, 0.95)) %>%
-  ungroup()
-quant_length <- filter(quant_subopt, test == "length")
-quant_miss <- filter(quant_subopt, test == "missing")
-quant_trend <- filter(quant_subopt, test == "trend")
+# bad_pixels <- c("140.375_0.625", "-73.625_-77.125")
+# quant_subopt <- full_results %>%
+#   filter(var %in% c("count", "duration", "intensity_max",
+#                     "focus_count", "focus_duration", "focus_intensity_max"),
+#          id %in% c("n_diff", "mean_perc", "sum_perc", "mean_perc"),
+#          !(site %in% bad_pixels)) %>%
+#   group_by(test, index_vals, var, id) %>%
+#   summarise(lower = quantile(val, 0.05),
+#             upper = quantile(val, 0.95)) %>%
+#   ungroup()
+# quant_length <- filter(quant_subopt, test == "length")
+# quant_miss <- filter(quant_subopt, test == "missing")
+# quant_trend <- filter(quant_subopt, test == "trend")
 
 
 
