@@ -230,7 +230,7 @@ global_analysis_single <- function(file_sub, par_op = F){
   rm(slice_res); gc()
 }
 # plyr::l_ply(1:1440, global_analysis_single, .parallel = T) # This took 37.5 hours to run
-# plyr::l_ply(1:500, global_analysis_single, .parallel = T) # This took xxx hours to run
+plyr::l_ply(1:500, global_analysis_single, .parallel = T) # This took xxx hours to run
 
 # The nightly running of the MHW Tracker seems to have interfered with the
 # calculation of several lon slices
@@ -239,58 +239,6 @@ global_analysis_single <- function(file_sub, par_op = F){
 # missing_index <- as.numeric(sapply(str_split(sapply(str_split(missing_files, "_"),
 #                                                     "[[", 2), "[.]"), "[[", 1))
 # plyr::l_ply(missing_index, global_analysis_single, .parallel = F, par_op = T)
-
-
-# Testing the change to the ice/slush threshold of -1.6C
-test_single <- function(file_sub, par_op = F){
-  OISST_slice <- OISST_files[file_sub]
-  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
-  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-  slice_res <- global_analysis(OISST_slice, par_op = par_op)
-  saveRDS(slice_res, file = paste0("data/global/test_",lon_row_pad,".Rda"))
-  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-  rm(slice_res); gc()
-}
-# plyr::l_ply(1130:1140, test_single, par_op = T, .parallel = F)
-# plyr::l_ply(1130:1150, test_single, .parallel = T)
-
-system.time(
-  global_test_trend <- plyr::ldply(dir("data/global", full.names = T, pattern = "test"),
-                                   .fun = var_trend, .parallel = T)
-) # 41 seconds for one lon slice
-saveRDS(global_test_trend, "data/global_test_trend.Rda")
-
-## Test visual
-# Subset data
-base_sub <- global_test_trend %>%
-  filter(test == "length", var == "duration") #%>%
-  # correct focus_count trend back to count from percentage
-  # mutate(trend = ifelse(var == "focus_count", trend/100, trend))
-
-col_split <- c("purple", "forestgreen")
-
-# Find quantiles
-trend_quantiles <- quantile(base_sub$trend, na.rm = T,
-                            probs = c(0, 0.05, 0.1, 0.5, 0.9, 0.95, 1.0))
-
-# Correct base data to quantiles as the tails are very long
-base_quantile <- base_sub %>%
-  mutate(trend = case_when(trend > trend_quantiles[6] ~ trend_quantiles[6],
-                           trend < trend_quantiles[2] ~ trend_quantiles[2],
-                           trend <= trend_quantiles[6] | trend >= trend_quantiles[2] ~ trend))
-
-# Visualise
-ggplot(base_quantile, aes(x = lon, y = lat)) +
-  geom_tile(aes(fill = trend)) +
-  geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
-  # scale_fill_gradient2() +
-  coord_equal(expand = F) +
-  theme_void() +
-  scale_fill_gradient2(low = col_split[1], high = col_split[2]) +
-  # labs(fill = paste0(sen_change, sen_test, sen_var)) +
-  theme(legend.position = "bottom",
-        legend.key.width = unit(2, "cm"),
-        panel.background = element_rect(fill = "grey80"))
 
 
 # Global trends -----------------------------------------------------------
