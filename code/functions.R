@@ -538,7 +538,7 @@ random_analysis <- function(empty_integer, base_period = F){
 
 
 # This function runs the analysis on a full lon slice
-# nc_file <- OISST_files[1118]
+# nc_file <- OISST_files[1138]
 global_analysis <- function(nc_file, par_op = F){
 
   # Load and prep data
@@ -547,7 +547,7 @@ global_analysis <- function(nc_file, par_op = F){
   # Run the analysis on each lon/lat pixel
   # system.time(
   res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = par_op, .progress = "text")
-  # ) # 2 minutes in parallel, 30 minutes not in parallel
+  # ) # 2.5 minutes in parallel, 30 minutes not in parallel
   # ~5 seconds for one pixel, ~xxx seconds not in parallel
   # Times may vary by 50% due to change in pixel count per longitude step
   return(res)
@@ -596,12 +596,12 @@ pixel_trend <- function(df){
   suppressWarnings( # Suppress perfect fit warnings
   df_slope <- df %>%
     # Correct proportions into percentages
-    mutate(val = ifelse(id %in% c("mean_perc", "sum_perc"), val*100, val)) %>%
+    # mutate(val = ifelse(id %in% c("mean_perc", "sum_perc"), val*100, val)) %>%
     group_by(lon, test, var, id) %>%
     group_modify(~pixel_trend_sub(.x)) %>%
     # Correct the scale of linear trends away from the default value of 1
     mutate(trend = ifelse(test %in% c("missing", "interp"), trend/100, trend),
-           trend = ifelse(test == "trend", trend/10, trend),
+           trend = ifelse(test == "trend", trend/100, trend),
            # The trends for length are in the direction of 10 to 30 years,
            # which needs to be reversed to 30 to 10 years for consistency
            trend = ifelse(test == "length", -trend, trend),
@@ -612,11 +612,12 @@ pixel_trend <- function(df){
 
 # A convenience function to load a lon slice of global results
 # Then filter out the variables not used in the results and run linear models
+# file_name <- "data/global/test_1130.Rda"
 var_trend <- function(file_name){
   # The subsetting index
   var_choice <- data.frame(var = c("count", "duration", "intensity_max",
                                    "focus_count", "focus_duration", "focus_intensity_max"),
-                           id = c("n_diff", "sum_perc", "mean_perc",
+                           id = c("n_perc", "sum_perc", "mean_perc",
                                   "mean_perc", "sum_perc", "mean_perc"))
   system.time(
     res <- readRDS(file_name) %>%
@@ -1039,7 +1040,7 @@ trend_plot <- function(test_sub, var_sub,
     theme(legend.position = "bottom",
           legend.key.width = unit(2, "cm"),
           panel.background = element_rect(fill = "grey80"))
-  trend_map
+  # trend_map
 
   # ggsave(trend_map,
   #        filename = paste0("output/",test_sub,"_",var_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
