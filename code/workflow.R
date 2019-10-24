@@ -422,15 +422,15 @@ ggplot(random_quant) +
 # The slopes from 10 to 30 years are inverted, and the slopes from 30 to 37 years are too massive
 # Best to pull these things out 1-by-1
 slope_length <- random_quant %>%
-  filter(test == "length", var == "intensity_max", index_vals %in% 10:30) %>%
-  dplyr::select(test:id, q05) %>%
-  dplyr::rename(val = q05) %>%
-  mutate(index_vals = -(index_vals-30))
+  filter(test == "length", var == "intensity_max", index_vals %in% 30:37) %>%
+  dplyr::select(test:id, q95) %>%
+  dplyr::rename(val = q95) %>%
+  mutate(index_vals = abs(index_vals-30))
 slope_length <- trend_stats(slope_length) %>%
   mutate(start_val = 30,
-         end_val = 10,
+         end_val = 37,
          start_point = 0,
-         end_point = slope*20)
+         end_point = slope*7)
 
 
 # Visualise manual test runs
