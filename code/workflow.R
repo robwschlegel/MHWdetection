@@ -315,10 +315,10 @@ trend_stats <- function(df){
     res_model <- lm(val ~ index_vals, data = df)
     res <- data.frame(intercept = round(broom::tidy(res_model)$estimate[1], 4),
                       slope = round(broom::tidy(res_model)$estimate[2], 4),
-                      r2 = round(broom::glance(res_model)$adj.r.squared, 2),
+                      R2 = round(broom::glance(res_model)$adj.r.squared, 2),
                       p = round(broom::tidy(res_model)$p.value[2], 2)) %>%
-      mutate(r2 = ifelse(r2 < 0, 0, r2),
-             # r2 = ifelse(trend == 0, 1, r2),
+      mutate(R2 = ifelse(R2 < 0, 0, R2),
+             R2 = ifelse(slope == 0 & intercept == 0, 1, R2),
              p = ifelse(slope == 0, 1, p))
   return(res)
 }
@@ -458,7 +458,78 @@ random_quant %>%
 # The issue was getting at how the linear model wanted to interact with the length test data
 # Having now brought the statistics to Mohamad everything is swell
 
+# The function that will calculate the slopes correctly based on the name of the test
+# Custom function for trend calculation
+# testers...
+df <- random_quant %>%
+  filter(test == "missing",
+         var == "intensity_max",
+         id == "mean_perc") %>%
+  gather(key = "stat", value = "val", -c(test:id)) %>%
+  mutate(test2 = test) %>%
+  filter(stat == "q50") %>%
+  select(-test2, -var, -id, -stat)
+trend_correct <- function(df){
+  if(df$test[1] == "length"){
+    df_A <- df %>%
+      filter(index_vals %in% 10:30) %>%
+      mutate(index_vals = abs(index_vals-30))
+    df_B <- df %>%
+      filter(index_vals %in% 30:37) %>%
+      mutate(index_vals = abs(index_vals-30))
+    res_A <- trend_stats(df_A) %>%
+      mutate(range = "30 - 10")
+    res_B <- trend_stats(df_B) %>%
+      mutate(range = "30 - 37")
+    res <- rbind(res_A, res_B)
+  } else if(df$test[1] == "missing" & df$var[1] == "count"){
+    df_A <- df %>%
+      filter(index_vals %in% seq(0, 0.25, by = 0.01))
+    df_B <- df %>%
+      filter(index_vals %in% seq(0.26, 0.50, by = 0.01))
+    res_A <- trend_stats(df_A) %>%
+      mutate(range = "0.00 - 0.25")
+    res_B <- trend_stats(df_B) %>%
+      mutate(range = "0.26 - 0.50")
+    res <- rbind(res_A, res_B)
+  } else{
+    res <- trend_stats(df) %>%
+      mutate(range = paste0(min(df$index_vals),".00 - ",max(df$index_vals),"0"))
+  }
+  if(df$test[1] != "length"){
+    res$slope <- res$slope/100 # linear models default slope output is in steps of 1
+  }
+  return(res)
+}
+
 # Calculate the table for the Best Practices section
+slope_final <- random_quant %>%
+  gather(key = "stat", value = "val", -c(test:id)) %>%
+  mutate(test2 = test,
+         var2 = var) %>%
+  group_by(test2, var2, id, stat) %>%
+  group_modify(~trend_correct(.x)) %>%
+  dplyr::rename(test = test2,
+                var = var2) %>%
+  # unite(var, id, col = "var_id", sep = " - ") %>%
+  ungroup() %>%
+  select(-id) %>%
+  mutate(slope = round(slope, 2),
+         R2 = paste0("(",R2,")")) %>%
+  unite(slope, R2, col = "slope_R2", sep = " ") %>%
+  select(-intercept, -p) %>%
+  # gather(slope, R2, p, key = "var", value = "val") %>%
+  spread(stat, slope_R2) %>%
+  select(test, var, range, q50, iqr50, iqr90)
+
+# Smack it together to round this puppy out
+best_table_10_years <- slope_final %>%
+  filter(!grepl("focus", var))
+saveRDS(best_table_10_years, "data/best_table_10_years.Rda")
+
+best_table_focus <- slope_final %>%
+  filter(!grepl("focus", var))
+saveRDS(best_table_focus, "data/best_table_focus.Rda")
 
 
 # Supplementary 1 ---------------------------------------------------------

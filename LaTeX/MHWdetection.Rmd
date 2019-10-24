@@ -203,7 +203,19 @@ The global patterns in added decadal trends generally show that MHW metrics incr
 
 ## Talk about linearity of responses as seen in Fig 2 and 3
 
-## Table 1
+There is much in the detection of MHWs that cannot be predicted because these events are anomalous by nature. It is however possible to know what the range in confidence we may have in our results is. In Table 1 the increasing rates of uncertainty per step in our tests is shown. In Table 2 the rates of change for the focus MHW from each time series are shown. From this information it is possible to say that, if we have a 
+
+```{r}
+best_table_10_years <- readRDS("../data/best_table_10_years.Rda")
+
+knitr::kable(best_table_10_years, caption = "The rate of change in uncertainty as time series become increasingly sub-optimal. The columns containing numerical data show the slope (R^2^) of uncertainy for each step in the range column.")
+```
+
+```{r}
+best_table_focus <- readRDS("../data/best_table_focus.Rda")
+
+knitr::kable(best_table_focus, caption = "The rate of change in uncertainty as time series become increasingly sub-optimal.")
+```
 
 ## Explanations for why this is
 
