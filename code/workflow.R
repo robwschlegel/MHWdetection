@@ -298,6 +298,8 @@ var_choice <- data.frame(var = c("count", "duration", "intensity_max", "focus_co
                          stringsAsFactors = F)
 random_quant <- random_results %>%
   right_join(var_choice, by = c("var", "id")) %>%
+  mutate(test = as.character(test)) %>%
+  filter(test %in% c("length", "missing", "interp", "trend")) %>%
   group_by(test, index_vals, var, id) %>%
   summarise(q05 = quantile(val, 0.05),
             q25 = quantile(val, 0.25),
@@ -311,12 +313,12 @@ random_quant <- random_results %>%
 # Custom function for trend calculation
 trend_stats <- function(df){
     res_model <- lm(val ~ index_vals, data = df)
-    res <- data.frame(trend = round(broom::tidy(res_model)$estimate[2], 4),
+    res <- data.frame(slope = round(broom::tidy(res_model)$estimate[2], 4),
                       r2 = round(broom::glance(res_model)$adj.r.squared, 2),
                       p = round(broom::tidy(res_model)$p.value[2], 2)) %>%
       mutate(r2 = ifelse(r2 < 0, 0, r2),
-             r2 = ifelse(trend == 0, 1, r2),
-             p = ifelse(trend == 0, 1, p))
+             # r2 = ifelse(trend == 0, 1, r2),
+             p = ifelse(slope == 0, 1, p))
   return(res)
 }
 
@@ -325,7 +327,7 @@ trend_stats <- function(df){
 # testers...
 # end_int = 3
 # start_val = 30
-# start_val = 0
+# start_val = 0.25
 # test_sub = "length"
 # test_sub = "missing"
 # rev_trend = F
@@ -356,17 +358,77 @@ trend_test <- function(end_int = 3, test_sub = "length", start_val = 30, rev_tre
 # Run the linear models at each possible step to deduce where any inflections points may be
 # This is determined by tracking the change in R2 values, with lower values being bad
 quant_missing <- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = "missing", start_val = 0)
+quant_missing_A <- plyr::ldply(3:25, trend_test, .parallel = T, test_sub = "missing", start_val = 0)
+quant_missing_B <- plyr::ldply(3:24, trend_test, .parallel = T, test_sub = "missing", start_val = 0.26)
+quant_interp <- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = "interp", start_val = 0)
 quant_trend <- plyr::ldply(3:30, trend_test, .parallel = T, test_sub = "trend", start_val = 0)
 quant_length_A <- plyr::ldply(3:20, trend_test, .parallel = T, test_sub = "length")
 quant_length_B <- plyr::ldply(3:7, trend_test, .parallel = T, test_sub = "length", rev_trend = T)
-quant_ALL <- rbind(quant_missing, quant_trend, quant_length_A,quant_length_B)
+quant_ALL <- rbind(quant_missing_A, quant_missing_B, quant_interp, quant_trend, quant_length_A, quant_length_B)
 
 ## Test visuals to determine that the trends above are lekker
 # First create a line plot of the results
+quant_ALL %>%
+  filter(test == "missing") %>%
+  ggplot(aes(x = end_val, y = r2)) +
+  geom_point(aes(colour = var)) +
+  geom_line(aes(colour = var)) +
+  facet_grid(stat~test, scales = "free_x")
 
+# Filter out the trends that cover the correct ranges
+trend_filter <- data.frame(test = c("length", "length", "missing", "missing", "trend"),
+                           start_val = c(30, 30, 0, 0.26, 0),
+                           end_val = c(10, 37, 0.25, 0.5, 0.3))
+quant_filter <- quant_ALL %>%
+  right_join(trend_filter, by = c("test", "start_val", "end_val")) %>%
+  mutate(end_point = end_val*slope) %>%
+  filter(stat != "iqr50", stat != "iqr90")
 
 
 # Then project them onto the real data
+ggplot(random_quant) +
+  # 90 CI crossbars
+  # Need different lines for tests due to the different x-axis interval sizes
+  geom_crossbar(data = filter(random_quant, test == "length"),
+                aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
+                fatten = 0, fill = "grey70", colour = NA, width = 1) +
+  geom_crossbar(data = filter(random_quant, test != "length"),
+                aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
+                fatten = 0, fill = "grey70", colour = NA, width = 0.01) +
+  # IQR Crossbars
+  geom_crossbar(data = filter(random_quant, test == "length"),
+                aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+                fatten = 0, fill = "grey50", width = 1) +
+  geom_crossbar(data = filter(random_quant, test != "length"),
+                aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+                fatten = 0, fill = "grey50", width = 0.01) +
+  # Median segments
+  geom_crossbar(data = filter(random_quant, test == "length"),
+                aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+                fatten = 0, fill = NA, colour = "black", width = 1) +
+  geom_crossbar(data = filter(random_quant, test != "length"),
+                aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+                fatten = 0, fill = NA, colour = "black", width = 0.01) +
+
+  # Horizontal itercept at 0
+  geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
+
+  geom_segment(data = quant_filter, aes(x = start_val, y = 0, xend = end_val, yend = end_point)) +
+  # Labels, scales, facets, and themes
+  # geom_label(data = labels_df,
+             # aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_x_continuous(expand = c(0, 0)) +
+  # scale_y_continuous(limits = c(-100, 100)) +
+  # coord_cartesian(ylim = c(-100, 100)) +
+  facet_grid(var ~ test, scales = "free", switch = "both") +
+  # labs(y = y_axis_title, x = NULL, colour = "Site") +
+  # coord_cartesian(ylim = c(-3, 3)) + # Correct for extreme line overalys messing up labels by coord-ing to the 90CI range
+  theme(legend.position = "top")
+
+# These all look okay, but length is a little suspicious
+# Let's take a closer look
+
 
 
 # Supplementary 1 ---------------------------------------------------------
