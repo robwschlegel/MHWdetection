@@ -313,7 +313,8 @@ random_quant <- random_results %>%
 # Custom function for trend calculation
 trend_stats <- function(df){
     res_model <- lm(val ~ index_vals, data = df)
-    res <- data.frame(slope = round(broom::tidy(res_model)$estimate[2], 4),
+    res <- data.frame(intercept = round(broom::tidy(res_model)$estimate[1], 4),
+                      slope = round(broom::tidy(res_model)$estimate[2], 4),
                       r2 = round(broom::glance(res_model)$adj.r.squared, 2),
                       p = round(broom::tidy(res_model)$p.value[2], 2)) %>%
       mutate(r2 = ifelse(r2 < 0, 0, r2),
@@ -376,12 +377,13 @@ quant_ALL %>%
   facet_grid(stat~test, scales = "free_x")
 
 # Filter out the trends that cover the correct ranges
-trend_filter <- data.frame(test = c("length", "length", "missing", "missing", "trend"),
-                           start_val = c(30, 30, 0, 0.26, 0),
-                           end_val = c(10, 37, 0.25, 0.5, 0.3))
+trend_filter <- data.frame(test = c("length", "length", "missing", "missing", "interp", "trend"),
+                           start_val = c(30, 30, 0, 0.26, 0, 0),
+                           end_val = c(10, 37, 0.25, 0.5, 0.5, 0.3))
 quant_filter <- quant_ALL %>%
   right_join(trend_filter, by = c("test", "start_val", "end_val")) %>%
-  mutate(end_point = end_val*slope) %>%
+  mutate(slope = ifelse(test == "length" & end_val == 10, -slope, slope),
+         end_point = end_val*slope) %>%
   filter(stat != "iqr50", stat != "iqr90")
 
 
@@ -409,26 +411,54 @@ ggplot(random_quant) +
   geom_crossbar(data = filter(random_quant, test != "length"),
                 aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
                 fatten = 0, fill = NA, colour = "black", width = 0.01) +
-
-  # Horizontal itercept at 0
   geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
-
-  geom_segment(data = quant_filter, aes(x = start_val, y = 0, xend = end_val, yend = end_point)) +
-  # Labels, scales, facets, and themes
-  # geom_label(data = labels_df,
-             # aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
+  geom_segment(data = quant_filter, aes(x = start_val, y = intercept, xend = end_val, yend = end_point, colour = stat)) +
   scale_colour_brewer(palette = "Dark2") +
   scale_x_continuous(expand = c(0, 0)) +
-  # scale_y_continuous(limits = c(-100, 100)) +
-  # coord_cartesian(ylim = c(-100, 100)) +
   facet_grid(var ~ test, scales = "free", switch = "both") +
-  # labs(y = y_axis_title, x = NULL, colour = "Site") +
-  # coord_cartesian(ylim = c(-3, 3)) + # Correct for extreme line overalys messing up labels by coord-ing to the 90CI range
   theme(legend.position = "top")
 
 # These all look okay, but length is a little suspicious
-# Let's take a closer look
+# The slopes from 10 to 30 years are inverted, and the slopes from 30 to 37 years are too massive
+# Best to pull these things out 1-by-1
+slope_length <- random_quant %>%
+  filter(test == "length", var == "intensity_max", index_vals %in% 10:30) %>%
+  dplyr::select(test:id, q05) %>%
+  dplyr::rename(val = q05) %>%
+  mutate(index_vals = -(index_vals-30))
+slope_length <- trend_stats(slope_length) %>%
+  mutate(start_val = 30,
+         end_val = 10,
+         start_point = 0,
+         end_point = slope*20)
 
+
+# Visualise manual test runs
+random_quant %>%
+  filter(test == "length", var == "intensity_max") %>%
+  ggplot() +
+  # 90 CI crossbars
+  # Need different lines for tests due to the different x-axis interval sizes
+  geom_crossbar(aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
+                fatten = 0, fill = "grey70", colour = NA, width = 1) +
+  # IQR Crossbars
+  geom_crossbar(aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+                fatten = 0, fill = "grey50", width = 1) +
+  # Median segments
+  geom_crossbar(aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+                fatten = 0, fill = NA, colour = "black", width = 1) +
+  geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
+  geom_segment(data = slope_length, aes(x = start_val, y = start_point, xend = end_val, yend = end_point)) +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_x_continuous(expand = c(0, 0)) +
+  facet_grid(var ~ test, scales = "free", switch = "both") +
+  theme(legend.position = "top")
+
+# Okay, that is looking much better now
+# The issue was getting at how the linear model wanted to interact with the length test data
+# Having now brought the statistics to Mohamad everything is swell
+
+# Calculate the table for the Best Practices section
 
 
 # Supplementary 1 ---------------------------------------------------------
