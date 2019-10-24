@@ -201,6 +201,16 @@ The global patterns in added decadal trends generally show that MHW metrics incr
 
 # Best practices
 
+## Talk about linearity of responses as seen in Fig 2 and 3
+
+## Table 1
+
+## Explanations for why this is
+
+## Spatial relationships
+
+## Examples for how to correct this
+
 <!-- RWS: https://github.com/Tirgit/missCompare -->
 
 <!-- RWS: A section, with a table, that shows the best practices for dealing with sub-optimal data. -->

@@ -251,7 +251,7 @@ sst_ALL_results <- readRDS("data/sst_ALL_results.Rda") %>%
 system.time(
   random_results <- readRDS("data/random_results_1000.Rda") %>%
     unite("site", c(lon, lat))
-) # 6 seconds
+) # 68 seconds
 full_results <- rbind(sst_ALL_results, random_results)
 rm(sst_ALL_results, random_results); gc()
 

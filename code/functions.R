@@ -574,7 +574,7 @@ pixel_trend_sub <- function(df){
     # mutate()
   if(nrow(df_filter) > 2){
     res_model <- lm(val ~ index_vals, data = df_filter)
-    res <- data.frame(trend = round(broom::tidy(res_model)$estimate[2], 2),
+    res <- data.frame(trend = round(broom::tidy(res_model)$estimate[2], 4),
                       r2 = round(broom::glance(res_model)$adj.r.squared, 2),
                       p = round(broom::tidy(res_model)$p.value[2], 2))
   } else{

@@ -220,17 +220,17 @@ source("code/functions.R")
 # Global analysis ---------------------------------------------------------
 
 # Wrapper function with a chatty output as it chugs along
-global_analysis_single <- function(file_sub, par_op = F){
-  OISST_slice <- OISST_files[file_sub]
-  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
-  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-  slice_res <- global_analysis(OISST_slice, par_op = par_op)
-  saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
-  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-  rm(slice_res); gc()
-}
+# global_analysis_single <- function(file_sub, par_op = F){
+#   OISST_slice <- OISST_files[file_sub]
+#   lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
+#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+#   slice_res <- global_analysis(OISST_slice, par_op = par_op)
+#   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
+#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+#   rm(slice_res); gc()
+# }
 # plyr::l_ply(1:1440, global_analysis_single, .parallel = T) # This took 37.5 hours to run
-plyr::l_ply(1:500, global_analysis_single, .parallel = T) # This took xxx hours to run
+# plyr::l_ply(1:500, global_analysis_single, .parallel = T) # This took xxx hours to run
 
 # The nightly running of the MHW Tracker seems to have interfered with the
 # calculation of several lon slices
@@ -280,14 +280,102 @@ plyr::l_ply(1:500, global_analysis_single, .parallel = T) # This took xxx hours 
 # quant_trend <- filter(quant_subopt, test == "trend")
 
 
+# Best practices ----------------------------------------------------------
+# Code that produces the tables and supports the statements made in the Best Practices section
+
+# Load the random 1000 data
+system.time(
+  random_results <- readRDS("data/random_results_1000.Rda") %>%
+    unite("site", c(lon, lat))
+) # 68 seconds, 15 seconds without the "site" column
+
+# Create table showing the rates of change int the results
+# Find the 5th, 25th, 50th,75th, and 95th quantile at each step
+# Fit linear models to those and provide those trends + R2 values
+# Also show where the inflection points may be where the trends change
+var_choice <- data.frame(var = c("count", "duration", "intensity_max", "focus_count", "focus_duration", "focus_intensity_max"),
+                         id = c("n_perc", "sum_perc", "mean_perc", "mean_perc", "sum_perc", "mean_perc"),
+                         stringsAsFactors = F)
+random_quant <- random_results %>%
+  right_join(var_choice, by = c("var", "id")) %>%
+  group_by(test, index_vals, var, id) %>%
+  summarise(q05 = quantile(val, 0.05),
+            q25 = quantile(val, 0.25),
+            q50 = quantile(val, 0.50),
+            q75 = quantile(val, 0.75),
+            q95 = quantile(val, 0.95),
+            iqr50 = q75-q25,
+            iqr90 = q95-q05) %>%
+  ungroup()
+
+# Custom function for trend calculation
+trend_stats <- function(df){
+    res_model <- lm(val ~ index_vals, data = df)
+    res <- data.frame(trend = round(broom::tidy(res_model)$estimate[2], 4),
+                      r2 = round(broom::glance(res_model)$adj.r.squared, 2),
+                      p = round(broom::tidy(res_model)$p.value[2], 2)) %>%
+      mutate(r2 = ifelse(r2 < 0, 0, r2),
+             r2 = ifelse(trend == 0, 1, r2),
+             p = ifelse(trend == 0, 1, p))
+  return(res)
+}
+
+# Function that allows for plyr::ldply to iteratively look for best fits
+  # NB: It assumes that random_quant above has been created and is in the environment
+# testers...
+# end_int = 3
+# start_val = 30
+# start_val = 0
+# test_sub = "length"
+# test_sub = "missing"
+# rev_trend = F
+trend_test <- function(end_int = 3, test_sub = "length", start_val = 30, rev_trend = F){
+  df <- random_quant %>%
+    filter(test == test_sub)
+  df_index_vals <- unique(df$index_vals)
+  if(start_val == 30 & rev_trend == F){
+    end_val <- start_val-end_int
+    by_val <- -1
+  } else if(start_val == 30 & rev_trend == T){
+    end_val <- start_val+end_int
+    by_val <- 1
+  }else{
+    end_val <- start_val+(end_int*0.01)
+    by_val <- 0.01
+  }
+  df_model <- df %>%
+    filter(index_vals %in% seq(start_val, end_val, by = by_val)) %>%
+    gather(key = "stat", value = "val", -c(test:id)) %>%
+    group_by(test, var, id, stat) %>%
+    group_modify(~trend_stats(.x)) %>%
+    mutate(start_val = start_val,
+           end_val = end_val)
+  return(df_model)
+}
+
+# Run the linear models at each possible step to deduce where any inflections points may be
+# This is determined by tracking the change in R2 values, with lower values being bad
+quant_missing <- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = "missing", start_val = 0)
+quant_trend <- plyr::ldply(3:30, trend_test, .parallel = T, test_sub = "trend", start_val = 0)
+quant_length_A <- plyr::ldply(3:20, trend_test, .parallel = T, test_sub = "length")
+quant_length_B <- plyr::ldply(3:7, trend_test, .parallel = T, test_sub = "length", rev_trend = T)
+quant_ALL <- rbind(quant_missing, quant_trend, quant_length_A,quant_length_B)
+
+## Test visuals to determine that the trends above are lekker
+# First create a line plot of the results
+
+
+
+# Then project them onto the real data
+
 
 # Supplementary 1 ---------------------------------------------------------
-
 
 # The effect of the sub-optimal tests on seas/thresh
 
 
 # The difference between the proper 30 year base period and all other 30 year base periods
+
 
 # Supplementary 2 ---------------------------------------------------------
 # Combine the three reference time series, run analysis, and save
