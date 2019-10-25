@@ -532,15 +532,24 @@ best_table_focus <- slope_final %>%
 saveRDS(best_table_focus, "data/best_table_focus.Rda")
 
 
+# Discussion --------------------------------------------------------------
+
+# Support the claim about interannual variability relating to changes in results with 30+ year base periods
+
+# Support the claim about how many consecutive missing days is acceptable
+# Most claims about missing data need to be backed up
+
+# I don't think it is possible to be making the claims about max. intensity corrections that I am making
+
 # Supplementary 1 ---------------------------------------------------------
 
 # The effect of the sub-optimal tests on seas/thresh
 
 
+# Supplementary 2 ---------------------------------------------------------
+
 # The difference between the proper 30 year base period and all other 30 year base periods
 
-
-# Supplementary 2 ---------------------------------------------------------
 # Combine the three reference time series, run analysis, and save
 # sst_ALL <- rbind(mutate(sst_WA, site = "WA"),
 #                  mutate(sst_NW_Atl, site = "NW_Atl"),
@@ -557,6 +566,16 @@ saveRDS(best_table_focus, "data/best_table_focus.Rda")
 #   random_results <- plyr::ldply(1:100, random_analysis, .parallel = T, base_period = T)
 # ) # 53 seconds
 # saveRDS(random_results, "data/random_bp_results_100.Rda")
+
+
+# Supplementary 3 ---------------------------------------------------------
+
+# The global patterns in missing data are unremarkable and generally consistent across the oceans
+
+
+# Supplementary 4 ---------------------------------------------------------
+
+# The global patterns in added decadal trends generally show that MHW metrics increase
 
 
 # More thoughts -----------------------------------------------------------
