@@ -563,6 +563,86 @@ global_analysis <- function(nc_file, par_op = F){
 # Therefore the missing/interp and decadal trend slopes need to be devided by 100
 # This produces slopes that represent 1% and 0.01C/dec changes
 
+# Custom function for trend calculation
+trend_stats <- function(df){
+  # This function must first ensure that any gaps in the data are filled in explicitly
+    res_model <- lm(val ~ index_vals, data = df)
+    res <- data.frame(intercept = round(broom::tidy(res_model)$estimate[1], 4),
+                      slope = round(broom::tidy(res_model)$estimate[2], 4),
+                      R2 = round(broom::glance(res_model)$adj.r.squared, 2),
+                      p = round(broom::tidy(res_model)$p.value[2], 2)) %>%
+      mutate(R2 = ifelse(R2 < 0, 0, R2),
+             R2 = ifelse(slope == 0 & intercept == 0, 1, R2),
+             p = ifelse(slope == 0, 1, p))
+  return(res)
+}
+
+# The function that will calculate the slopes correctly based on the name of the test
+# Custom function for trend calculation
+# testers...
+# full_seq = T
+# full_seq = F
+# df <- random_quant %>%
+#   filter(test == "missing",
+#          var == "intensity_max",
+#          id == "mean_perc") %>%
+#   gather(key = "stat", value = "val", -c(test:id)) %>%
+#   mutate(test2 = test) %>%
+#   filter(stat == "q50") %>%
+#   select(-test2, -var, -id, -stat)
+# df <- res %>%
+#   filter(lat == -16.375,
+#          test == "length",
+#          var == "intensity_max",
+#          id == "mean_perc")
+trend_correct <- function(df, full_seq = T){
+  if(full_seq){
+
+  }
+  if(df$test[1] == "length"){
+    df_A <- df %>%
+      filter(index_vals %in% 10:30) %>%
+      mutate(index_vals = abs(index_vals-30))
+    res_A <- trend_stats(df_A) %>%
+      mutate(range = "30 - 10")
+    if(full_seq){
+      df_B <- df %>%
+        filter(index_vals %in% 30:37) %>%
+        mutate(index_vals = abs(index_vals-30))
+      res_B <- trend_stats(df_B) %>%
+        mutate(range = "30 - 37")
+      res <- rbind(res_A, res_B)
+    } else{
+     res <- res_A
+    }
+  } else if(df$test[1] == "missing" & df$var[1] == "count"){
+    if(full_seq){
+      miss_seq_A <- seq(0, 0.25, by = 0.01)
+      miss_seq_B <- seq(0.26, 0.50, by = 0.01)
+    } else{
+      miss_seq_A <- seq(0, 0.3, by = 0.1)
+      miss_seq_B <- seq(0.3, 0.5, by = 0.1)
+    }
+    df_A <- df %>%
+      filter(index_vals %in% miss_seq_A)
+    df_B <- df %>%
+      filter(index_vals %in% miss_seq_B)
+    res_A <- trend_stats(df_A) %>%
+      mutate(range = "0.00 - 0.25")
+    res_B <- trend_stats(df_B) %>%
+      mutate(range = "0.26 - 0.50")
+    res <- rbind(res_A, res_B)
+  } else{
+    res <- trend_stats(df) %>%
+      mutate(range = paste0(min(df$index_vals),".00 - ",max(df$index_vals),"0"))
+  }
+  if(df$test[1] != "length"){
+    res$slope <- res$slope/100 # linear models default slope output is in steps of 1
+  }
+  return(res)
+}
+
+
 # Function for calculating trend for sub-optimal results
 pixel_trend_sub <- function(df){
   # Drawing linear trends doesn't work well with ts longer than 30 years
@@ -613,18 +693,41 @@ pixel_trend <- function(df){
 # A convenience function to load a lon slice of global results
 # Then filter out the variables not used in the results and run linear models
 # file_name <- "data/global/test_1130.Rda"
+# file_name <- "data/global/slice_0001.Rda"
 var_trend <- function(file_name){
   # The subsetting index
   var_choice <- data.frame(var = c("count", "duration", "intensity_max",
                                    "focus_count", "focus_duration", "focus_intensity_max"),
-                           id = c("n_perc", "sum_perc", "mean_perc",
-                                  "mean_perc", "sum_perc", "mean_perc"))
-  system.time(
-    res <- readRDS(file_name) %>%
-      right_join(var_choice, by = c("var", "id")) %>%
-      group_by(lat) %>%
-      group_modify(~pixel_trend(.x))
-    ) # 41 seconds
+                           id = c("n", "sum_perc", "mean_perc",
+                                  "mean_perc", "sum_perc", "mean_perc"),
+                           stringsAsFactors = F)
+  # Still using an older run of the global output
+  # So need to calculate n_perc manually here first
+  lon_slice <- readRDS(file_name) %>%
+    right_join(var_choice, by = c("var", "id"))
+
+  # Find the control count values
+  control_count <- lon_slice %>%
+    filter(var == "count",
+           index_vals %in% c(0, 30)) %>%
+    dplyr::rename(control_val = val) %>%
+    select(-index_vals)
+
+  # Calculate n_perc
+  n_perc_df <- lon_slice %>%
+    filter(var == "count") %>%
+    left_join(control_count, by = c("lon", "lat", "test", "var", "id")) %>%
+    mutate(n_perc = val/control_val)
+
+  # Stick it back together
+  lon_correct <- rbind(lon_slice, n_perc_df) %>%
+    filter(id != "n")
+
+  system.time(res <- lon_correct %>%
+      mutate(test2 = test, var2 = var) %>%
+      group_by(lon, lat, test2, var2, id) %>%
+      group_modify(~trend_correct(.x, full_seq = F))
+    ) # 60 seconds
   return(res)
 }
 

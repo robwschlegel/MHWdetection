@@ -245,14 +245,14 @@ source("code/functions.R")
 # Calculate the simple linear trends for the different tests at each pixel
 
 # Set cores
-# doMC::registerDoMC(cores = 50)
+doMC::registerDoMC(cores = 50)
 
 # Calculate trends and save
-# system.time(
-#   global_var_trend <- plyr::ldply(dir("data/global", full.names = T),
-#                                   .fun = var_trend, .parallel = T)
-# ) # 41 seconds for one lon slice, 44 minutes for all
-# saveRDS(global_var_trend, "data/global_var_trend.Rda")
+system.time(
+  global_var_trend <- plyr::ldply(dir("data/global", full.names = T),
+                                  .fun = var_trend, .parallel = T)
+) # 71 seconds for one lon slice, ~80 minutes for all
+saveRDS(global_var_trend, "data/global_var_trend.Rda")
 
 
 # Figures -----------------------------------------------------------------
@@ -284,44 +284,34 @@ source("code/functions.R")
 # Code that produces the tables and supports the statements made in the Best Practices section
 
 # Load the random 1000 data
-system.time(
-  random_results <- readRDS("data/random_results_1000.Rda") %>%
-    unite("site", c(lon, lat))
-) # 68 seconds, 15 seconds without the "site" column
+# system.time(
+#   random_results <- readRDS("data/random_results_1000.Rda") %>%
+#     unite("site", c(lon, lat))
+# ) # 68 seconds, 15 seconds without the "site" column
 
 # Create table showing the rates of change int the results
 # Find the 5th, 25th, 50th,75th, and 95th quantile at each step
 # Fit linear models to those and provide those trends + R2 values
 # Also show where the inflection points may be where the trends change
-var_choice <- data.frame(var = c("count", "duration", "intensity_max", "focus_count", "focus_duration", "focus_intensity_max"),
-                         id = c("n_perc", "sum_perc", "mean_perc", "mean_perc", "sum_perc", "mean_perc"),
-                         stringsAsFactors = F)
-random_quant <- random_results %>%
-  right_join(var_choice, by = c("var", "id")) %>%
-  mutate(test = as.character(test)) %>%
-  filter(test %in% c("length", "missing", "interp", "trend")) %>%
-  group_by(test, index_vals, var, id) %>%
-  summarise(q05 = quantile(val, 0.05),
-            q25 = quantile(val, 0.25),
-            q50 = quantile(val, 0.50),
-            q75 = quantile(val, 0.75),
-            q95 = quantile(val, 0.95),
-            iqr50 = q75-q25,
-            iqr90 = q95-q05) %>%
-  ungroup()
+# var_choice <- data.frame(var = c("count", "duration", "intensity_max", "focus_count", "focus_duration", "focus_intensity_max"),
+#                          id = c("n_perc", "sum_perc", "mean_perc", "mean_perc", "sum_perc", "mean_perc"),
+#                          stringsAsFactors = F)
+# random_quant <- random_results %>%
+#   right_join(var_choice, by = c("var", "id")) %>%
+#   mutate(test = as.character(test)) %>%
+#   filter(test %in% c("length", "missing", "interp", "trend")) %>%
+#   group_by(test, index_vals, var, id) %>%
+#   summarise(q05 = quantile(val, 0.05),
+#             q25 = quantile(val, 0.25),
+#             q50 = quantile(val, 0.50),
+#             q75 = quantile(val, 0.75),
+#             q95 = quantile(val, 0.95),
+#             iqr50 = q75-q25,
+#             iqr90 = q95-q05) %>%
+#   ungroup()
 
 # Custom function for trend calculation
-trend_stats <- function(df){
-    res_model <- lm(val ~ index_vals, data = df)
-    res <- data.frame(intercept = round(broom::tidy(res_model)$estimate[1], 4),
-                      slope = round(broom::tidy(res_model)$estimate[2], 4),
-                      R2 = round(broom::glance(res_model)$adj.r.squared, 2),
-                      p = round(broom::tidy(res_model)$p.value[2], 2)) %>%
-      mutate(R2 = ifelse(R2 < 0, 0, R2),
-             R2 = ifelse(slope == 0 & intercept == 0, 1, R2),
-             p = ifelse(slope == 0, 1, p))
-  return(res)
-}
+# Moved to functions.R
 
 # Function that allows for plyr::ldply to iteratively look for best fits
   # NB: It assumes that random_quant above has been created and is in the environment
@@ -332,204 +322,161 @@ trend_stats <- function(df){
 # test_sub = "length"
 # test_sub = "missing"
 # rev_trend = F
-trend_test <- function(end_int = 3, test_sub = "length", start_val = 30, rev_trend = F){
-  df <- random_quant %>%
-    filter(test == test_sub)
-  df_index_vals <- unique(df$index_vals)
-  if(start_val == 30 & rev_trend == F){
-    end_val <- start_val-end_int
-    by_val <- -1
-  } else if(start_val == 30 & rev_trend == T){
-    end_val <- start_val+end_int
-    by_val <- 1
-  }else{
-    end_val <- start_val+(end_int*0.01)
-    by_val <- 0.01
-  }
-  df_model <- df %>%
-    filter(index_vals %in% seq(start_val, end_val, by = by_val)) %>%
-    gather(key = "stat", value = "val", -c(test:id)) %>%
-    group_by(test, var, id, stat) %>%
-    group_modify(~trend_stats(.x)) %>%
-    mutate(start_val = start_val,
-           end_val = end_val)
-  return(df_model)
-}
+# trend_test <- function(end_int = 3, test_sub = "length", start_val = 30, rev_trend = F){
+#   df <- random_quant %>%
+#     filter(test == test_sub)
+#   df_index_vals <- unique(df$index_vals)
+#   if(start_val == 30 & rev_trend == F){
+#     end_val <- start_val-end_int
+#     by_val <- -1
+#   } else if(start_val == 30 & rev_trend == T){
+#     end_val <- start_val+end_int
+#     by_val <- 1
+#   }else{
+#     end_val <- start_val+(end_int*0.01)
+#     by_val <- 0.01
+#   }
+#   df_model <- df %>%
+#     filter(index_vals %in% seq(start_val, end_val, by = by_val)) %>%
+#     gather(key = "stat", value = "val", -c(test:id)) %>%
+#     group_by(test, var, id, stat) %>%
+#     group_modify(~trend_stats(.x)) %>%
+#     mutate(start_val = start_val,
+#            end_val = end_val)
+#   return(df_model)
+# }
 
 # Run the linear models at each possible step to deduce where any inflections points may be
 # This is determined by tracking the change in R2 values, with lower values being bad
-quant_missing <- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = "missing", start_val = 0)
-quant_missing_A <- plyr::ldply(3:25, trend_test, .parallel = T, test_sub = "missing", start_val = 0)
-quant_missing_B <- plyr::ldply(3:24, trend_test, .parallel = T, test_sub = "missing", start_val = 0.26)
-quant_interp <- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = "interp", start_val = 0)
-quant_trend <- plyr::ldply(3:30, trend_test, .parallel = T, test_sub = "trend", start_val = 0)
-quant_length_A <- plyr::ldply(3:20, trend_test, .parallel = T, test_sub = "length")
-quant_length_B <- plyr::ldply(3:7, trend_test, .parallel = T, test_sub = "length", rev_trend = T)
-quant_ALL <- rbind(quant_missing_A, quant_missing_B, quant_interp, quant_trend, quant_length_A, quant_length_B)
+# quant_missing <- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = "missing", start_val = 0)
+# quant_missing_A <- plyr::ldply(3:25, trend_test, .parallel = T, test_sub = "missing", start_val = 0)
+# quant_missing_B <- plyr::ldply(3:24, trend_test, .parallel = T, test_sub = "missing", start_val = 0.26)
+# quant_interp <- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = "interp", start_val = 0)
+# quant_trend <- plyr::ldply(3:30, trend_test, .parallel = T, test_sub = "trend", start_val = 0)
+# quant_length_A <- plyr::ldply(3:20, trend_test, .parallel = T, test_sub = "length")
+# quant_length_B <- plyr::ldply(3:7, trend_test, .parallel = T, test_sub = "length", rev_trend = T)
+# quant_ALL <- rbind(quant_missing_A, quant_missing_B, quant_interp, quant_trend, quant_length_A, quant_length_B)
 
 ## Test visuals to determine that the trends above are lekker
 # First create a line plot of the results
-quant_ALL %>%
-  filter(test == "missing") %>%
-  ggplot(aes(x = end_val, y = r2)) +
-  geom_point(aes(colour = var)) +
-  geom_line(aes(colour = var)) +
-  facet_grid(stat~test, scales = "free_x")
+# quant_ALL %>%
+#   filter(test == "missing") %>%
+#   ggplot(aes(x = end_val, y = r2)) +
+#   geom_point(aes(colour = var)) +
+#   geom_line(aes(colour = var)) +
+#   facet_grid(stat~test, scales = "free_x")
 
 # Filter out the trends that cover the correct ranges
-trend_filter <- data.frame(test = c("length", "length", "missing", "missing", "interp", "trend"),
-                           start_val = c(30, 30, 0, 0.26, 0, 0),
-                           end_val = c(10, 37, 0.25, 0.5, 0.5, 0.3))
-quant_filter <- quant_ALL %>%
-  right_join(trend_filter, by = c("test", "start_val", "end_val")) %>%
-  mutate(slope = ifelse(test == "length" & end_val == 10, -slope, slope),
-         end_point = end_val*slope) %>%
-  filter(stat != "iqr50", stat != "iqr90")
-
+# trend_filter <- data.frame(test = c("length", "length", "missing", "missing", "interp", "trend"),
+#                            start_val = c(30, 30, 0, 0.26, 0, 0),
+#                            end_val = c(10, 37, 0.25, 0.5, 0.5, 0.3))
+# quant_filter <- quant_ALL %>%
+#   right_join(trend_filter, by = c("test", "start_val", "end_val")) %>%
+#   mutate(slope = ifelse(test == "length" & end_val == 10, -slope, slope),
+#          end_point = end_val*slope) %>%
+#   filter(stat != "iqr50", stat != "iqr90")
 
 # Then project them onto the real data
-ggplot(random_quant) +
-  # 90 CI crossbars
-  # Need different lines for tests due to the different x-axis interval sizes
-  geom_crossbar(data = filter(random_quant, test == "length"),
-                aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
-                fatten = 0, fill = "grey70", colour = NA, width = 1) +
-  geom_crossbar(data = filter(random_quant, test != "length"),
-                aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
-                fatten = 0, fill = "grey70", colour = NA, width = 0.01) +
-  # IQR Crossbars
-  geom_crossbar(data = filter(random_quant, test == "length"),
-                aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
-                fatten = 0, fill = "grey50", width = 1) +
-  geom_crossbar(data = filter(random_quant, test != "length"),
-                aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
-                fatten = 0, fill = "grey50", width = 0.01) +
-  # Median segments
-  geom_crossbar(data = filter(random_quant, test == "length"),
-                aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
-                fatten = 0, fill = NA, colour = "black", width = 1) +
-  geom_crossbar(data = filter(random_quant, test != "length"),
-                aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
-                fatten = 0, fill = NA, colour = "black", width = 0.01) +
-  geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
-  geom_segment(data = quant_filter, aes(x = start_val, y = intercept, xend = end_val, yend = end_point, colour = stat)) +
-  scale_colour_brewer(palette = "Dark2") +
-  scale_x_continuous(expand = c(0, 0)) +
-  facet_grid(var ~ test, scales = "free", switch = "both") +
-  theme(legend.position = "top")
+# ggplot(random_quant) +
+#   # 90 CI crossbars
+#   # Need different lines for tests due to the different x-axis interval sizes
+#   geom_crossbar(data = filter(random_quant, test == "length"),
+#                 aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
+#                 fatten = 0, fill = "grey70", colour = NA, width = 1) +
+#   geom_crossbar(data = filter(random_quant, test != "length"),
+#                 aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
+#                 fatten = 0, fill = "grey70", colour = NA, width = 0.01) +
+#   # IQR Crossbars
+#   geom_crossbar(data = filter(random_quant, test == "length"),
+#                 aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+#                 fatten = 0, fill = "grey50", width = 1) +
+#   geom_crossbar(data = filter(random_quant, test != "length"),
+#                 aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+#                 fatten = 0, fill = "grey50", width = 0.01) +
+#   # Median segments
+#   geom_crossbar(data = filter(random_quant, test == "length"),
+#                 aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+#                 fatten = 0, fill = NA, colour = "black", width = 1) +
+#   geom_crossbar(data = filter(random_quant, test != "length"),
+#                 aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+#                 fatten = 0, fill = NA, colour = "black", width = 0.01) +
+#   geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
+#   geom_segment(data = quant_filter, aes(x = start_val, y = intercept, xend = end_val, yend = end_point, colour = stat)) +
+#   scale_colour_brewer(palette = "Dark2") +
+#   scale_x_continuous(expand = c(0, 0)) +
+#   facet_grid(var ~ test, scales = "free", switch = "both") +
+#   theme(legend.position = "top")
 
 # These all look okay, but length is a little suspicious
 # The slopes from 10 to 30 years are inverted, and the slopes from 30 to 37 years are too massive
 # Best to pull these things out 1-by-1
-slope_length <- random_quant %>%
-  filter(test == "length", var == "intensity_max", index_vals %in% 30:37) %>%
-  dplyr::select(test:id, q95) %>%
-  dplyr::rename(val = q95) %>%
-  mutate(index_vals = abs(index_vals-30))
-slope_length <- trend_stats(slope_length) %>%
-  mutate(start_val = 30,
-         end_val = 37,
-         start_point = 0,
-         end_point = slope*7)
+# slope_length <- random_quant %>%
+#   filter(test == "length", var == "intensity_max", index_vals %in% 30:37) %>%
+#   dplyr::select(test:id, q95) %>%
+#   dplyr::rename(val = q95) %>%
+#   mutate(index_vals = abs(index_vals-30))
+# slope_length <- trend_stats(slope_length) %>%
+#   mutate(start_val = 30,
+#          end_val = 37,
+#          start_point = 0,
+#          end_point = slope*7)
 
 
 # Visualise manual test runs
-random_quant %>%
-  filter(test == "length", var == "intensity_max") %>%
-  ggplot() +
-  # 90 CI crossbars
-  # Need different lines for tests due to the different x-axis interval sizes
-  geom_crossbar(aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
-                fatten = 0, fill = "grey70", colour = NA, width = 1) +
-  # IQR Crossbars
-  geom_crossbar(aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
-                fatten = 0, fill = "grey50", width = 1) +
-  # Median segments
-  geom_crossbar(aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
-                fatten = 0, fill = NA, colour = "black", width = 1) +
-  geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
-  geom_segment(data = slope_length, aes(x = start_val, y = start_point, xend = end_val, yend = end_point)) +
-  scale_colour_brewer(palette = "Dark2") +
-  scale_x_continuous(expand = c(0, 0)) +
-  facet_grid(var ~ test, scales = "free", switch = "both") +
-  theme(legend.position = "top")
+# random_quant %>%
+#   filter(test == "length", var == "intensity_max") %>%
+#   ggplot() +
+#   # 90 CI crossbars
+#   # Need different lines for tests due to the different x-axis interval sizes
+#   geom_crossbar(aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
+#                 fatten = 0, fill = "grey70", colour = NA, width = 1) +
+#   # IQR Crossbars
+#   geom_crossbar(aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+#                 fatten = 0, fill = "grey50", width = 1) +
+#   # Median segments
+#   geom_crossbar(aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+#                 fatten = 0, fill = NA, colour = "black", width = 1) +
+#   geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
+#   geom_segment(data = slope_length, aes(x = start_val, y = start_point, xend = end_val, yend = end_point)) +
+#   scale_colour_brewer(palette = "Dark2") +
+#   scale_x_continuous(expand = c(0, 0)) +
+#   facet_grid(var ~ test, scales = "free", switch = "both") +
+#   theme(legend.position = "top")
 
 # Okay, that is looking much better now
 # The issue was getting at how the linear model wanted to interact with the length test data
 # Having now brought the statistics to Mohamad everything is swell
 
-# The function that will calculate the slopes correctly based on the name of the test
-# Custom function for trend calculation
-# testers...
-df <- random_quant %>%
-  filter(test == "missing",
-         var == "intensity_max",
-         id == "mean_perc") %>%
-  gather(key = "stat", value = "val", -c(test:id)) %>%
-  mutate(test2 = test) %>%
-  filter(stat == "q50") %>%
-  select(-test2, -var, -id, -stat)
-trend_correct <- function(df){
-  if(df$test[1] == "length"){
-    df_A <- df %>%
-      filter(index_vals %in% 10:30) %>%
-      mutate(index_vals = abs(index_vals-30))
-    df_B <- df %>%
-      filter(index_vals %in% 30:37) %>%
-      mutate(index_vals = abs(index_vals-30))
-    res_A <- trend_stats(df_A) %>%
-      mutate(range = "30 - 10")
-    res_B <- trend_stats(df_B) %>%
-      mutate(range = "30 - 37")
-    res <- rbind(res_A, res_B)
-  } else if(df$test[1] == "missing" & df$var[1] == "count"){
-    df_A <- df %>%
-      filter(index_vals %in% seq(0, 0.25, by = 0.01))
-    df_B <- df %>%
-      filter(index_vals %in% seq(0.26, 0.50, by = 0.01))
-    res_A <- trend_stats(df_A) %>%
-      mutate(range = "0.00 - 0.25")
-    res_B <- trend_stats(df_B) %>%
-      mutate(range = "0.26 - 0.50")
-    res <- rbind(res_A, res_B)
-  } else{
-    res <- trend_stats(df) %>%
-      mutate(range = paste0(min(df$index_vals),".00 - ",max(df$index_vals),"0"))
-  }
-  if(df$test[1] != "length"){
-    res$slope <- res$slope/100 # linear models default slope output is in steps of 1
-  }
-  return(res)
-}
+# The function for correct trend calculatoin was moved to the functions script
 
 # Calculate the table for the Best Practices section
-slope_final <- random_quant %>%
-  gather(key = "stat", value = "val", -c(test:id)) %>%
-  mutate(test2 = test,
-         var2 = var) %>%
-  group_by(test2, var2, id, stat) %>%
-  group_modify(~trend_correct(.x)) %>%
-  dplyr::rename(test = test2,
-                var = var2) %>%
-  # unite(var, id, col = "var_id", sep = " - ") %>%
-  ungroup() %>%
-  select(-id) %>%
-  mutate(slope = round(slope, 2),
-         R2 = paste0("(",R2,")")) %>%
-  unite(slope, R2, col = "slope_R2", sep = " ") %>%
-  select(-intercept, -p) %>%
-  # gather(slope, R2, p, key = "var", value = "val") %>%
-  spread(stat, slope_R2) %>%
-  select(test, var, range, q50, iqr50, iqr90)
+# slope_final <- random_quant %>%
+#   gather(key = "stat", value = "val", -c(test:id)) %>%
+#   mutate(test2 = test,
+#          var2 = var) %>%
+#   group_by(test2, var2, id, stat) %>%
+#   group_modify(~trend_correct(.x)) %>%
+#   dplyr::rename(test = test2,
+#                 var = var2) %>%
+#   # unite(var, id, col = "var_id", sep = " - ") %>%
+#   ungroup() %>%
+#   select(-id) %>%
+#   mutate(slope = round(slope, 2),
+#          R2 = paste0("(",R2,")")) %>%
+#   unite(slope, R2, col = "slope_R2", sep = " ") %>%
+#   select(-intercept, -p) %>%
+#   # gather(slope, R2, p, key = "var", value = "val") %>%
+#   spread(stat, slope_R2) %>%
+#   select(test, var, range, q50, iqr50, iqr90)
 
 # Smack it together to round this puppy out
-best_table_10_years <- slope_final %>%
-  filter(!grepl("focus", var))
-saveRDS(best_table_10_years, "data/best_table_10_years.Rda")
+# best_table_10_years <- slope_final %>%
+#   filter(!grepl("focus", var))
+# saveRDS(best_table_10_years, "data/best_table_10_years.Rda")
 
-best_table_focus <- slope_final %>%
-  filter(!grepl("focus", var))
-saveRDS(best_table_focus, "data/best_table_focus.Rda")
+# best_table_focus <- slope_final %>%
+#   filter(!grepl("focus", var))
+# saveRDS(best_table_focus, "data/best_table_focus.Rda")
 
 
 # Discussion --------------------------------------------------------------
