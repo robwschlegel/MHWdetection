@@ -581,35 +581,12 @@ gapless_data <- function(df){
   }
   index_gapless <- data.frame(index_vals = gapless_vector)
 
-  # Count of control values
-  # control_count <- df %>%
-  #   filter(index_vals == control_val,
-  #          var == "duration") %>%
-  #   nrow()
-
-  # Count of values
+  # Gapless data.frame
   df_full <- df %>%
-    # group_by(index_vals) %>%
-    # count(var) %>%
-    # filter(var == "duration") %>%
-    # select(-var) %>%
-    # unique() %>%
     right_join(index_gapless, by = "index_vals") %>%
-    mutate(val = replace_na(val, 0)) #%>%
-    # mutate(var = "count",
-           # n_diff = n-control_count,
-           # n_perc = (n-control_count)/abs(control_count)*100) %>%
-    # gather(id, val, -index_vals, -var)
+    mutate(val = replace_na(val, 0))
   return(df_full)
 }
-
-
-# Note: The slopes are in units of 1 by R default
-# So this makes sense for the length slope being in units of 1 year
-# But not for missing data, where 1 is 100%,
-# or for decadal trend where 1 is 1C/dec.
-# Therefore the missing/interp and decadal trend slopes need to be devided by 100
-# This produces slopes that represent 1% and 0.01C/dec changes
 
 # Custom function for trend calculation
 trend_stats <- function(df){
@@ -627,6 +604,12 @@ trend_stats <- function(df){
 
 # The function that will calculate the slopes correctly based on the name of the test
 # Custom function for trend calculation
+# Note: The slopes are in units of 1 by R default
+# So this makes sense for the length slope being in units of 1 year
+# But not for missing data, where 1 is 100%,
+# or for decadal trend where 1 is 1C/dec.
+# Therefore the missing/interp and decadal trend slopes need to be devided by 100
+# This produces slopes that represent 1% and 0.01C/dec changes
 # testers...
 # full_seq = T
 # full_seq = F
@@ -638,15 +621,12 @@ trend_stats <- function(df){
 #   mutate(test2 = test) %>%
 #   filter(stat == "q50") %>%
 #   select(-test2, -var, -id, -stat)
-# df <- res %>%
-#   filter(lat == -16.375,
-#          test == "length",
-#          var == "intensity_max",
-#          id == "mean_perc")
+# df <- lon_correct %>%
+#   filter(lat == 40.375,
+#          test == "missing",
+#          var == "count",
+#          id == "n_perc")
 trend_correct <- function(df, full_seq = T){
-  if(full_seq){
-
-  }
   if(df$test[1] == "length"){
     df_A <- df %>%
       filter(index_vals %in% 10:30) %>%
@@ -672,9 +652,9 @@ trend_correct <- function(df, full_seq = T){
       miss_seq_B <- seq(0.3, 0.5, by = 0.1)
     }
     df_A <- df %>%
-      filter(index_vals %in% miss_seq_A)
+      filter(index_vals <= max(miss_seq_A)+0.001) # There is some weird float rounding hapening off screen...
     df_B <- df %>%
-      filter(index_vals %in% miss_seq_B)
+      filter(index_vals  >= max(miss_seq_A)-0.001)
     res_A <- trend_stats(df_A) %>%
       mutate(range = "0.00 - 0.25")
     res_B <- trend_stats(df_B) %>%
@@ -687,61 +667,14 @@ trend_correct <- function(df, full_seq = T){
   if(df$test[1] != "length"){
     res$slope <- res$slope/100 # linear models default slope output is in steps of 1
   }
+  res$slope <- round(res$slope, 2)
   return(res)
-}
-
-
-# Function for calculating trend for sub-optimal results
-pixel_trend_sub <- function(df){
-  # Drawing linear trends doesn't work well with ts longer than 30 years
-  # As these values tend to go back down or do some other non-linear thing
-  df_filter <- filter(df, index_vals != 35,
-                      is.finite(val)) %>%
-    na.omit() #%>%
-    # Correct scale issue
-    # mutate()
-  if(nrow(df_filter) > 2){
-    res_model <- lm(val ~ index_vals, data = df_filter)
-    res <- data.frame(trend = round(broom::tidy(res_model)$estimate[2], 4),
-                      r2 = round(broom::glance(res_model)$adj.r.squared, 2),
-                      p = round(broom::tidy(res_model)$p.value[2], 2))
-  } else{
-    res <- data.frame(trend = NA, r2 = NA, p = NA)
-  }
-  return(res)
-}
-
-# This function expects to be given only one latitude slice at a time
-# tester...
-# df <- global_mean_perc %>%
-# df <- res %>%
-# filter(lon == lon[1], lat == -51.125)
-# filter(lon == lon[1], var == "focus_count")
-# filter(lon == lon[1], lat == lat[129], test == "length", var == "duration", id == "mean_perc")
-# filter(lon == lon[1], lat == 	-51.625, test == "missing", var == "count", id == "n_diff")
-# filter(lon == lon[1], lat == 	-51.625, test == "interp", var == "count", id == "n_diff")
-pixel_trend <- function(df){
-  suppressWarnings( # Suppress perfect fit warnings
-  df_slope <- df %>%
-    # Correct proportions into percentages
-    # mutate(val = ifelse(id %in% c("mean_perc", "sum_perc"), val*100, val)) %>%
-    group_by(lon, test, var, id) %>%
-    group_modify(~pixel_trend_sub(.x)) %>%
-    # Correct the scale of linear trends away from the default value of 1
-    mutate(trend = ifelse(test %in% c("missing", "interp"), trend/100, trend),
-           trend = ifelse(test == "trend", trend/100, trend),
-           # The trends for length are in the direction of 10 to 30 years,
-           # which needs to be reversed to 30 to 10 years for consistency
-           trend = ifelse(test == "length", -trend, trend),
-           # Correct R2 values below 0, as this is not meant to be possible
-           r2 = ifelse(r2 < 0, 0, r2))
-  )
 }
 
 # A convenience function to load a lon slice of global results
 # Then filter out the variables not used in the results and run linear models
 # file_name <- "data/global/test_1130.Rda"
-# file_name <- "data/global/slice_0003.Rda"
+# file_name <- "data/global/slice_0050.Rda"
 var_trend <- function(file_name){
   # The subsetting index
   var_choice <- data.frame(var = c("count", "duration", "intensity_max",
@@ -778,12 +711,13 @@ var_trend <- function(file_name){
     filter(id != "n") %>%
     mutate(val = ifelse(is.infinite(val), -100, val))
 
-  system.time(
+  # system.time(
     res <- lon_correct %>%
       mutate(test2 = test, var2 = var) %>%
       group_by(lon, lat, test2, var2, id) %>%
-      group_modify(~trend_correct(.x, full_seq = F))
-    ) # 58 seconds
+      group_modify(~trend_correct(.x, full_seq = F)) %>%
+      dplyr::rename(test = test2, var = var2)
+    # ) # 60 seconds
   return(res)
 }
 

@@ -286,7 +286,7 @@ The code and datasets generated for this study may be found at https://github.co
 Table 1: The rates of uncertainty in the average MHWs.
 
 ```{r}
-best_table_10_years <- readRDS("../data/best_table_10_years.Rda")
+best_table_average <- readRDS("../data/best_table_average.Rda")
 
 knitr::kable(best_table_10_years, caption = "The rate of change in uncertainty as time series become increasingly sub-optimal. The columns containing numerical data show the slope (R^2^) of uncertainy for each step in the range column.")
 ```
