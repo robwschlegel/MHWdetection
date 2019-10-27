@@ -556,6 +556,54 @@ global_analysis <- function(nc_file, par_op = F){
 
 # Trend calculations ------------------------------------------------------
 
+# Fills in gaps in data
+# This is expected to be fed a data.frame with only and `index_vals` and `val` column
+# This reduces the need to create larger more complex data.frames when plugging holes
+gapless_data <- function(df){
+  # Determine the control group
+  if(30 %in% df$index_vals){
+    control_val <- 30
+  } else{
+    control_val <- 0
+  }
+
+  # Create gapless index of test values
+  # This is necessary for the missing data as some steps have no MHWs
+  index_step <- unique(df$index_vals)[2]-unique(df$index_vals)[1]
+  if(control_val == 0){
+    if(max(df$index_vals) > 0.3){
+      gapless_vector <- seq(0, 0.5, by = index_step)
+    } else{
+      gapless_vector <- seq(0, 0.3, by = index_step)
+    }
+  } else if(control_val == 30){
+    gapless_vector <- seq(10, max(unique(df$index_vals)), by = index_step)
+  }
+  index_gapless <- data.frame(index_vals = gapless_vector)
+
+  # Count of control values
+  # control_count <- df %>%
+  #   filter(index_vals == control_val,
+  #          var == "duration") %>%
+  #   nrow()
+
+  # Count of values
+  df_full <- df %>%
+    # group_by(index_vals) %>%
+    # count(var) %>%
+    # filter(var == "duration") %>%
+    # select(-var) %>%
+    # unique() %>%
+    right_join(index_gapless, by = "index_vals") %>%
+    mutate(val = replace_na(val, 0)) #%>%
+    # mutate(var = "count",
+           # n_diff = n-control_count,
+           # n_perc = (n-control_count)/abs(control_count)*100) %>%
+    # gather(id, val, -index_vals, -var)
+  return(df_full)
+}
+
+
 # Note: The slopes are in units of 1 by R default
 # So this makes sense for the length slope being in units of 1 year
 # But not for missing data, where 1 is 100%,
@@ -693,7 +741,7 @@ pixel_trend <- function(df){
 # A convenience function to load a lon slice of global results
 # Then filter out the variables not used in the results and run linear models
 # file_name <- "data/global/test_1130.Rda"
-# file_name <- "data/global/slice_0001.Rda"
+# file_name <- "data/global/slice_0003.Rda"
 var_trend <- function(file_name){
   # The subsetting index
   var_choice <- data.frame(var = c("count", "duration", "intensity_max",
@@ -704,7 +752,9 @@ var_trend <- function(file_name){
   # Still using an older run of the global output
   # So need to calculate n_perc manually here first
   lon_slice <- readRDS(file_name) %>%
-    right_join(var_choice, by = c("var", "id"))
+    right_join(var_choice, by = c("var", "id")) %>%
+    group_by(lon, lat, test, var, id) %>%
+    group_modify(~gapless_data(.x))
 
   # Find the control count values
   control_count <- lon_slice %>%
@@ -717,17 +767,23 @@ var_trend <- function(file_name){
   n_perc_df <- lon_slice %>%
     filter(var == "count") %>%
     left_join(control_count, by = c("lon", "lat", "test", "var", "id")) %>%
-    mutate(n_perc = val/control_val)
+    ungroup() %>%
+    mutate(n_perc = round((val-control_val)/abs(control_val)*100, 3),
+           id = "n_perc") %>%
+    dplyr::select(-val, -control_val) %>%
+    dplyr::rename(val = n_perc)
 
   # Stick it back together
-  lon_correct <- rbind(lon_slice, n_perc_df) %>%
-    filter(id != "n")
+  lon_correct <- rbind(data.frame(lon_slice), n_perc_df) %>%
+    filter(id != "n") %>%
+    mutate(val = ifelse(is.infinite(val), -100, val))
 
-  system.time(res <- lon_correct %>%
+  system.time(
+    res <- lon_correct %>%
       mutate(test2 = test, var2 = var) %>%
       group_by(lon, lat, test2, var2, id) %>%
       group_modify(~trend_correct(.x, full_seq = F))
-    ) # 60 seconds
+    ) # 58 seconds
   return(res)
 }
 

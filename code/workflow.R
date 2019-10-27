@@ -251,7 +251,7 @@ doMC::registerDoMC(cores = 50)
 system.time(
   global_var_trend <- plyr::ldply(dir("data/global", full.names = T),
                                   .fun = var_trend, .parallel = T)
-) # 71 seconds for one lon slice, ~80 minutes for all
+) # 58 seconds for one lon slice, ~70 minutes for all
 saveRDS(global_var_trend, "data/global_var_trend.Rda")
 
 
@@ -470,9 +470,9 @@ saveRDS(global_var_trend, "data/global_var_trend.Rda")
 #   select(test, var, range, q50, iqr50, iqr90)
 
 # Smack it together to round this puppy out
-# best_table_10_years <- slope_final %>%
-#   filter(!grepl("focus", var))
-# saveRDS(best_table_10_years, "data/best_table_10_years.Rda")
+# best_table_average <- slope_final %>%
+  # filter(!grepl("focus", var))
+# saveRDS(best_table_average, "data/best_table_average.Rda")
 
 # best_table_focus <- slope_final %>%
 #   filter(!grepl("focus", var))
