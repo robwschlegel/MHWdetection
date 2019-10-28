@@ -251,7 +251,7 @@ doMC::registerDoMC(cores = 50)
 system.time(
   global_var_trend <- plyr::ldply(dir("data/global", full.names = T),
                                   .fun = var_trend, .parallel = T)
-) # 58 seconds for one lon slice, ~70 minutes for all
+) # 60 seconds for one lon slice, ~70 minutes for all
 saveRDS(global_var_trend, "data/global_var_trend.Rda")
 
 
@@ -450,33 +450,36 @@ saveRDS(global_var_trend, "data/global_var_trend.Rda")
 # The function for correct trend calculatoin was moved to the functions script
 
 # Calculate the table for the Best Practices section
-# slope_final <- random_quant %>%
-#   gather(key = "stat", value = "val", -c(test:id)) %>%
-#   mutate(test2 = test,
-#          var2 = var) %>%
-#   group_by(test2, var2, id, stat) %>%
-#   group_modify(~trend_correct(.x)) %>%
-#   dplyr::rename(test = test2,
-#                 var = var2) %>%
-#   # unite(var, id, col = "var_id", sep = " - ") %>%
-#   ungroup() %>%
-#   select(-id) %>%
-#   mutate(slope = round(slope, 2),
-#          R2 = paste0("(",R2,")")) %>%
-#   unite(slope, R2, col = "slope_R2", sep = " ") %>%
-#   select(-intercept, -p) %>%
-#   # gather(slope, R2, p, key = "var", value = "val") %>%
-#   spread(stat, slope_R2) %>%
-#   select(test, var, range, q50, iqr50, iqr90)
+slope_final <- random_quant %>%
+  gather(key = "stat", value = "val", -c(test:id)) %>%
+  mutate(test2 = test,
+         var2 = var) %>%
+  group_by(test2, var2, id, stat) %>%
+  group_modify(~trend_correct(.x)) %>%
+  dplyr::rename(test = test2,
+                var = var2) %>%
+  # unite(var, id, col = "var_id", sep = " - ") %>%
+  ungroup() %>%
+  select(-id) %>%
+  mutate(slope = round(slope, 2),
+         R2 = paste0("(",R2,")")) %>%
+  unite(slope, R2, col = "slope_R2", sep = " ") %>%
+  select(-intercept, -p) %>%
+  # gather(slope, R2, p, key = "var", value = "val") %>%
+  spread(stat, slope_R2) %>%
+  # select(test, var, range, q50, iqr50, iqr90) %>%
+  select(test, var, range, q05, q25, q50, q75, q95) %>%
+  mutate(test = factor(test, levels = c("length", "missing", "interp", "trend"))) %>%
+  arrange(test)
 
 # Smack it together to round this puppy out
-# best_table_average <- slope_final %>%
-  # filter(!grepl("focus", var))
-# saveRDS(best_table_average, "data/best_table_average.Rda")
+best_table_average <- slope_final %>%
+  filter(!grepl("focus", var))
+saveRDS(best_table_average, "data/best_table_average.Rda")
 
-# best_table_focus <- slope_final %>%
-#   filter(!grepl("focus", var))
-# saveRDS(best_table_focus, "data/best_table_focus.Rda")
+best_table_focus <- slope_final %>%
+  filter(grepl("focus", var))
+saveRDS(best_table_focus, "data/best_table_focus.Rda")
 
 
 # Discussion --------------------------------------------------------------

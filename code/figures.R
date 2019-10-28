@@ -256,7 +256,7 @@ full_results <- rbind(sst_ALL_results, random_results)
 rm(sst_ALL_results, random_results); gc()
 
 # Create figure and save
-fig_2 <- fig_box_plot(full_results, tests = "base", result_choice = "10_years")
+fig_2 <- fig_box_plot(full_results, tests = "base", result_choice = "average")
 ggsave("LaTeX/fig_2.pdf", fig_2, height = 8, width = 12)
 ggsave("LaTeX/fig_2.png", fig_2, height = 8, width = 12)
 ggsave("LaTeX/fig_2.jpg", fig_2, height = 8, width = 12)
@@ -288,19 +288,31 @@ ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 16)
 
 
 # Figure 5 ----------------------------------------------------------------
-# The effect of interpolating missing data on the last 10 years of MHWs
+# The effect of widening the clim window
 
-fig_5 <- fig_box_plot(tests = "miss_comp", result_choice = "10_years")
-ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 6)
-ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 6)
-ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 6)
-
-# The effect of interpolating on the focus event
-# NB: This isn't currently in the manuscript, but it should be...
-fig_5B <- fig_box_plot(tests = "miss_comp", result_choice = "focus")
+# The effect on the average MHWs
+fig_5 <- fig_box_plot(tests = "windows", result_choice = "average")
+ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 14)
+ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 14)
+ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 14)
 
 
 # Figure 6 ----------------------------------------------------------------
+
+# The effect of interpolating missing data on the average MHWs
+fig_6A <- fig_box_plot(tests = "miss_comp", result_choice = "average")
+
+# The effect of interpolating on the focus event
+fig_6B <- fig_box_plot(tests = "miss_comp", result_choice = "focus")
+
+# Stick them together
+fig_6 <- ggpubr::ggarrange(fig_6A, fig_6B, common.legend = T)
+ggsave("LaTeX/fig_6.pdf", fig_6, height = 8, width = 14)
+ggsave("LaTeX/fig_6.png", fig_6, height = 8, width = 14)
+ggsave("LaTeX/fig_6.jpg", fig_6, height = 8, width = 14)
+
+
+# Figure 7 ----------------------------------------------------------------
 # Consecutive count of missing data
 
 miss_results <- full_results %>%
@@ -325,21 +337,21 @@ ggplot(miss_results, aes(x = index_vals, y = as.numeric(id), colour = val)) +
   geom_hline(aes(yintercept = 2.5), colour = "red") +
   # scale_colour_viridis_c(trans = "log10", breaks = c(1, 10, 100, 1000, 2000)) +
   scale_fill_viridis_c(trans = "log10", breaks = c(1, 10, 100, 1000, 2000)) +
-  scale_y_continuous(breaks = seq(1, 23, 2)) +
+  scale_y_continuous(breaks = seq(1, 27, 2)) +
   scale_x_continuous(expand = c(0, 0)) +
   labs(y = "Consecutive missing days", x = "Missing data (%)", fill = "Count")
 
 
-# Appendix 1 --------------------------------------------------------------
+# Supplementary 1 ---------------------------------------------------------
 # The effect of the base tests on seas/thresh
 
-app_1 <- fig_box_plot(tests = "base", result_choice = "clims")
-ggsave("LaTeX/app_1.pdf", app_1, height = 5, width = 7)
-ggsave("LaTeX/app_1.png", app_1, height = 5, width = 7)
-ggsave("LaTeX/app_1.jpg", app_1, height = 5, width = 7)
+supp_1 <- fig_box_plot(tests = "base", result_choice = "clims")
+ggsave("LaTeX/supp_1.pdf", app_1, height = 5, width = 7)
+ggsave("LaTeX/supp_1.png", app_1, height = 5, width = 7)
+ggsave("LaTeX/supp_1.jpg", app_1, height = 5, width = 7)
 
 
-# Appendix 2 --------------------------------------------------------------
+# Supplementary 2 ---------------------------------------------------------
 # The difference between the proper 30 year base period and all other 30 year base periods
 
 # The results from all base period tests
@@ -352,61 +364,56 @@ full_results <- rbind(sst_ALL_results, random_results) %>%
 rm(sst_ALL_results, random_results); gc()
 
 # The effect on the 10 years of MHWs
-app_2A <- fig_box_plot(tests = "base_period", result_choice = "10_years")
-ggsave("LaTeX/app_2A.pdf", app_2A, height = 8, width = 4)
-ggsave("LaTeX/app_2A.png", app_2A, height = 8, width = 4)
-ggsave("LaTeX/app_2A.jpg", app_2A, height = 8, width = 4)
+supp_2A <- fig_box_plot(tests = "base_period", result_choice = "average")
+ggsave("LaTeX/supp_2A.pdf", supp_2A, height = 8, width = 4)
+ggsave("LaTeX/supp_2A.png", supp_2A, height = 8, width = 4)
+ggsave("LaTeX/supp_2A.jpg", supp_2A, height = 8, width = 4)
 
 # The effect on the focus MHW
-app_2B <- fig_line_plot(tests = "base_period", result_choice = "focus")
-ggsave("LaTeX/app_2B.pdf", app_2B, height = 8, width = 4)
-ggsave("LaTeX/app_2B.png", app_2B, height = 8, width = 4)
-ggsave("LaTeX/app_2B.jpg", app_2B, height = 8, width = 4)
+supp_2B <- fig_line_plot(tests = "base_period", result_choice = "focus")
+ggsave("LaTeX/supp_2B.pdf", supp_2B, height = 8, width = 4)
+ggsave("LaTeX/supp_2B.png", supp_2B, height = 8, width = 4)
+ggsave("LaTeX/supp_2B.jpg", supp_2B, height = 8, width = 4)
 
 
-# Appendix 3 --------------------------------------------------------------
+# Supplementary 3 ---------------------------------------------------------
 
-# A: The global effect of missing data on count, max. intensity, and duration
-app_3A_A <- trend_plot(test_sub = "missing", var_sub = "count")
-app_3A_B <- trend_plot(test_sub = "missing", var_sub = "duration")
-app_3A_C <- trend_plot(test_sub = "missing", var_sub = "intensity_max")
-app_3A_D <- trend_plot(test_sub = "missing", var_sub = "focus_count")
-app_3A_E <- trend_plot(test_sub = "missing", var_sub = "focus_duration")
-app_3A_F <- trend_plot(test_sub = "missing", var_sub = "focus_intensity_max")
-app_3A <- ggarrange(app_3A_A, app_3A_D, app_3A_B, app_3A_E, app_3A_C, app_3A_F, ncol = 2, nrow = 3,
+# The global effect of missing data on count, max. intensity, and duration
+supp_3_A <- trend_plot(test_sub = "missing", var_sub = "count")
+supp_3_B <- trend_plot(test_sub = "missing", var_sub = "duration")
+supp_3_C <- trend_plot(test_sub = "missing", var_sub = "intensity_max")
+supp_3_D <- trend_plot(test_sub = "missing", var_sub = "focus_count")
+supp_3_E <- trend_plot(test_sub = "missing", var_sub = "focus_duration")
+supp_3_F <- trend_plot(test_sub = "missing", var_sub = "focus_intensity_max")
+supp_3 <- ggarrange(supp_3_A, supp_3_D, supp_3_B, supp_3_E, supp_3_C, supp_3_F, ncol = 2, nrow = 3,
                    labels = c("A", "D", "B", "E", "C", "F"))
-ggsave("LaTeX/app_3A.pdf", app_3A, height = 12, width = 16)
-ggsave("LaTeX/app_3A.png", app_3A, height = 12, width = 16)
-ggsave("LaTeX/app_3A.jpg", app_3A, height = 12, width = 16)
+ggsave("LaTeX/supp_3.pdf", supp_3, height = 12, width = 16)
+ggsave("LaTeX/supp_3.png", supp_3, height = 12, width = 16)
+ggsave("LaTeX/supp_3.jpg", supp_3, height = 12, width = 16)
 
-# B: The global effect of decadal trend on count, max. intensity, and duration
-app_3B_A <- trend_plot(test_sub = "trend", var_sub = "count")
-app_3B_B <- trend_plot(test_sub = "trend", var_sub = "duration")
-app_3B_C <- trend_plot(test_sub = "trend", var_sub = "intensity_max")
-app_3B_D <- trend_plot(test_sub = "trend", var_sub = "focus_count")
-app_3B_E <- trend_plot(test_sub = "trend", var_sub = "focus_duration")
-app_3B_F <- trend_plot(test_sub = "trend", var_sub = "focus_intensity_max")
-app_3B <- ggarrange(app_3B_A, app_3B_D, app_3B_B, app_3B_E, app_3B_C, app_3B_F, ncol = 2, nrow = 3,
+
+# Supplementary 4 ---------------------------------------------------------
+
+# The global effect of long-term trend on count, max. intensity, and duration
+supp_4_A <- trend_plot(test_sub = "trend", var_sub = "count")
+supp_4_B <- trend_plot(test_sub = "trend", var_sub = "duration")
+supp_4_C <- trend_plot(test_sub = "trend", var_sub = "intensity_max")
+supp_4_D <- trend_plot(test_sub = "trend", var_sub = "focus_count")
+supp_4_E <- trend_plot(test_sub = "trend", var_sub = "focus_duration")
+supp_4_F <- trend_plot(test_sub = "trend", var_sub = "focus_intensity_max")
+supp_4 <- ggarrange(supp_4_A, supp_4_D, supp_4_B, supp_4_E, supp_4_C, supp_4_F, ncol = 2, nrow = 3,
                    labels = c("A", "D", "B", "E", "C", "F"))
-ggsave("LaTeX/app_3B.pdf", app_3B, height = 12, width = 16)
-ggsave("LaTeX/app_3B.png", app_3B, height = 12, width = 16)
-ggsave("LaTeX/app_3B.jpg", app_3B, height = 12, width = 16)
+ggsave("LaTeX/supp_4.pdf", supp_4, height = 12, width = 16)
+ggsave("LaTeX/supp_4.png", supp_4, height = 12, width = 16)
+ggsave("LaTeX/supp_4.jpg", supp_4, height = 12, width = 16)
 
 
-# Appendix 4 --------------------------------------------------------------
-# The effect of widening the clim window
+# Supplementary 5 ---------------------------------------------------------
 
-# The effect on the 10 years of MHWs
-app_4A <- fig_box_plot(tests = "windows", result_choice = "10_years")
-ggsave("LaTeX/app_4A.pdf", app_4A, height = 8, width = 9)
-ggsave("LaTeX/app_4A.png", app_4A, height = 8, width = 9)
-ggsave("LaTeX/app_4A.jpg", app_4A, height = 8, width = 9)
-
-# The effect on the 10 years of MHWs
+# The effect on the focus MHWs
 # The partial changes (e.g. -33%) for the count of events from the 30 year control is possible
 # because the changing of the window is already splitting up the focus event into multiples in the control
-app_4B <- fig_box_plot(tests = "windows", result_choice = "focus")
-ggsave("LaTeX/app_4B.pdf", app_4B, height = 8, width = 9)
-ggsave("LaTeX/app_4B.png", app_4B, height = 8, width = 9)
-ggsave("LaTeX/app_4B.jpg", app_4B, height = 8, width = 9)
-
+supp_5 <- fig_box_plot(tests = "windows", result_choice = "focus")
+ggsave("LaTeX/supp_5.pdf", supp_5, height = 8, width = 14)
+ggsave("LaTeX/supp_5.png", supp_5, height = 8, width = 14)
+ggsave("LaTeX/supp_5.jpg", supp_5, height = 8, width = 14)
