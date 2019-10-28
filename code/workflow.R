@@ -233,6 +233,10 @@ global_analysis_single <- function(file_sub, par_op = F){
 plyr::l_ply(1, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
 # plyr::l_ply(51:100, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
 
+# Error in do.ply(i) :
+  # task 1 failed - "Internal error in subset.c: column 1 is an ALTREP vector. Please see NEWS item 2 in v1.11.4 and report this as a bug."
+
+
 # The nightly running of the MHW Tracker seems to have interfered with the
 # calculation of several lon slices
 # full_files <- paste0("slice_",str_pad(1:1440, width = 4, pad = "0", side = "left"),".Rda")
