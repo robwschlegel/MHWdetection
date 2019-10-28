@@ -6,20 +6,8 @@ Before compiling:
 - Ensure that 'average' is used instead of 'collective'
 - Ensure that 'focus' is used instead of 'largest'
 - Ensure no use of 'significant' in all of it's forms
-- Ensure that 'three' and 'two' are used correctly in the text as a couple of lists were changed around
-- Ensure that the reference/ordering to the Supplementary sections is correct
-- Make sure that the issue of the long-term trend confusion w.r.t. anthropogenic version decadal oscilation has been addressed
-- Make sure a sentence has been added to the methods explaining that the 90% CI is used to measure the range of values per sub-optimal step
-  - Also explaining the use of R2 values to show linearity in the response
-- Methods needs another pass to ensure that the focus results: count, sum of duration, and mean max intensity is better outlined up front
-  - Specifically the concept of MHW days as a measure of the sum of durations needs to be laid out
-  - This is probably best to do in the first paragraph
-- Ensure that figure legends reflect the changes to the figures
-  - Specifically make sure that the grey 'average' lines are explained
-- Double check all numbers in the results
 - The sentences explaining why the global pattern figures for missing and trend tests are in the supp need to be re-worked
 - Need to check the relationship between the Var clim value and the change in the MHW results when a time series is lengthened past 30 years
-- Check that Supplemntary is used correctly
 - Final check of References
 
 Spell check

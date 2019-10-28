@@ -315,6 +315,8 @@ ggsave("LaTeX/fig_6.jpg", fig_6, height = 8, width = 14)
 # Figure 7 ----------------------------------------------------------------
 # Consecutive count of missing data
 
+# NB: This figured was not included in the final draft of the second round manuscript
+
 miss_results <- full_results %>%
   filter(var == "con_miss")
 
@@ -345,10 +347,10 @@ ggplot(miss_results, aes(x = index_vals, y = as.numeric(id), colour = val)) +
 # Supplementary 1 ---------------------------------------------------------
 # The effect of the base tests on seas/thresh
 
-supp_1 <- fig_box_plot(tests = "base", result_choice = "clims")
-ggsave("LaTeX/supp_1.pdf", app_1, height = 5, width = 7)
-ggsave("LaTeX/supp_1.png", app_1, height = 5, width = 7)
-ggsave("LaTeX/supp_1.jpg", app_1, height = 5, width = 7)
+fig_S1 <- fig_box_plot(tests = "base", result_choice = "clims")
+ggsave("LaTeX/fig_S1.pdf", fig_S1, height = 5, width = 7)
+ggsave("LaTeX/fig_S1.png", fig_S1, height = 5, width = 7)
+ggsave("LaTeX/fig_S1.jpg", fig_S1, height = 5, width = 7)
 
 
 # Supplementary 2 ---------------------------------------------------------
@@ -364,56 +366,67 @@ full_results <- rbind(sst_ALL_results, random_results) %>%
 rm(sst_ALL_results, random_results); gc()
 
 # The effect on the 10 years of MHWs
-supp_2A <- fig_box_plot(tests = "base_period", result_choice = "average")
-ggsave("LaTeX/supp_2A.pdf", supp_2A, height = 8, width = 4)
-ggsave("LaTeX/supp_2A.png", supp_2A, height = 8, width = 4)
-ggsave("LaTeX/supp_2A.jpg", supp_2A, height = 8, width = 4)
+fig_S2A <- fig_box_plot(tests = "base_period", result_choice = "average")
 
 # The effect on the focus MHW
-supp_2B <- fig_line_plot(tests = "base_period", result_choice = "focus")
-ggsave("LaTeX/supp_2B.pdf", supp_2B, height = 8, width = 4)
-ggsave("LaTeX/supp_2B.png", supp_2B, height = 8, width = 4)
-ggsave("LaTeX/supp_2B.jpg", supp_2B, height = 8, width = 4)
+fig_S2B <- fig_box_plot(tests = "base_period", result_choice = "focus")
+
+# Steek'em
+fig_S2 <- ggpubr::ggarrange(fig_S2A, fig_S2B)
+ggsave("LaTeX/fig_S2.pdf", fig_S2, height = 8, width = 8)
+ggsave("LaTeX/fig_S2.png", fig_S2, height = 8, width = 8)
+ggsave("LaTeX/fig_S2.jpg", fig_S2, height = 8, width = 8)
 
 
 # Supplementary 3 ---------------------------------------------------------
 
 # The global effect of missing data on count, max. intensity, and duration
-supp_3_A <- trend_plot(test_sub = "missing", var_sub = "count")
-supp_3_B <- trend_plot(test_sub = "missing", var_sub = "duration")
-supp_3_C <- trend_plot(test_sub = "missing", var_sub = "intensity_max")
-supp_3_D <- trend_plot(test_sub = "missing", var_sub = "focus_count")
-supp_3_E <- trend_plot(test_sub = "missing", var_sub = "focus_duration")
-supp_3_F <- trend_plot(test_sub = "missing", var_sub = "focus_intensity_max")
-supp_3 <- ggarrange(supp_3_A, supp_3_D, supp_3_B, supp_3_E, supp_3_C, supp_3_F, ncol = 2, nrow = 3,
+fig_S3_A <- trend_plot(test_sub = "missing", var_sub = "count")
+fig_S3_B <- trend_plot(test_sub = "missing", var_sub = "duration")
+fig_S3_C <- trend_plot(test_sub = "missing", var_sub = "intensity_max")
+fig_S3_D <- trend_plot(test_sub = "missing", var_sub = "focus_count")
+fig_S3_E <- trend_plot(test_sub = "missing", var_sub = "focus_duration")
+fig_S3_F <- trend_plot(test_sub = "missing", var_sub = "focus_intensity_max")
+fig_S3 <- ggarrange(fig_S3_A, fig_S3_D, fig_S3_B, fig_S3_E, fig_S3_C, fig_S3_F, ncol = 2, nrow = 3,
                    labels = c("A", "D", "B", "E", "C", "F"))
-ggsave("LaTeX/supp_3.pdf", supp_3, height = 12, width = 16)
-ggsave("LaTeX/supp_3.png", supp_3, height = 12, width = 16)
-ggsave("LaTeX/supp_3.jpg", supp_3, height = 12, width = 16)
+ggsave("LaTeX/fig_S3.pdf", fig_S3, height = 12, width = 16)
+ggsave("LaTeX/fig_S3.png", fig_S3, height = 12, width = 16)
+ggsave("LaTeX/fig_S3.jpg", fig_S3, height = 12, width = 16)
 
 
 # Supplementary 4 ---------------------------------------------------------
 
 # The global effect of long-term trend on count, max. intensity, and duration
-supp_4_A <- trend_plot(test_sub = "trend", var_sub = "count")
-supp_4_B <- trend_plot(test_sub = "trend", var_sub = "duration")
-supp_4_C <- trend_plot(test_sub = "trend", var_sub = "intensity_max")
-supp_4_D <- trend_plot(test_sub = "trend", var_sub = "focus_count")
-supp_4_E <- trend_plot(test_sub = "trend", var_sub = "focus_duration")
-supp_4_F <- trend_plot(test_sub = "trend", var_sub = "focus_intensity_max")
-supp_4 <- ggarrange(supp_4_A, supp_4_D, supp_4_B, supp_4_E, supp_4_C, supp_4_F, ncol = 2, nrow = 3,
+fig_S4_A <- trend_plot(test_sub = "trend", var_sub = "count")
+fig_S4_B <- trend_plot(test_sub = "trend", var_sub = "duration")
+fig_S4_C <- trend_plot(test_sub = "trend", var_sub = "intensity_max")
+fig_S4_D <- trend_plot(test_sub = "trend", var_sub = "focus_count")
+fig_S4_E <- trend_plot(test_sub = "trend", var_sub = "focus_duration")
+fig_S4_F <- trend_plot(test_sub = "trend", var_sub = "focus_intensity_max")
+fig_S4 <- ggarrange(fig_S4_A, fig_S4_D, fig_S4_B, fig_S4_E, fig_S4_C, fig_S4_F, ncol = 2, nrow = 3,
                    labels = c("A", "D", "B", "E", "C", "F"))
-ggsave("LaTeX/supp_4.pdf", supp_4, height = 12, width = 16)
-ggsave("LaTeX/supp_4.png", supp_4, height = 12, width = 16)
-ggsave("LaTeX/supp_4.jpg", supp_4, height = 12, width = 16)
+ggsave("LaTeX/fig_S4.pdf", fig_S4, height = 12, width = 16)
+ggsave("LaTeX/fig_S4.png", fig_S4, height = 12, width = 16)
+ggsave("LaTeX/fig_S4.jpg", fig_S4, height = 12, width = 16)
 
 
 # Supplementary 5 ---------------------------------------------------------
 
+# The results from all tests
+sst_ALL_results <- readRDS("data/sst_ALL_results.Rda") %>%
+  mutate(site = ifelse(site == "NW_Atl", "NWA", site))
+system.time(
+  random_results <- readRDS("data/random_results_1000.Rda") %>%
+    unite("site", c(lon, lat))
+) # 68 seconds
+full_results <- rbind(sst_ALL_results, random_results)
+rm(sst_ALL_results, random_results); gc()
+
 # The effect on the focus MHWs
 # The partial changes (e.g. -33%) for the count of events from the 30 year control is possible
 # because the changing of the window is already splitting up the focus event into multiples in the control
-supp_5 <- fig_box_plot(tests = "windows", result_choice = "focus")
-ggsave("LaTeX/supp_5.pdf", supp_5, height = 8, width = 14)
-ggsave("LaTeX/supp_5.png", supp_5, height = 8, width = 14)
-ggsave("LaTeX/supp_5.jpg", supp_5, height = 8, width = 14)
+fig_S5 <- fig_box_plot(tests = "windows", result_choice = "focus")
+ggsave("LaTeX/fig_S5.pdf", fig_S5, height = 8, width = 14)
+ggsave("LaTeX/fig_S5.png", fig_S5, height = 8, width = 14)
+ggsave("LaTeX/fig_S5.jpg", fig_S5, height = 8, width = 14)
+

@@ -264,20 +264,22 @@ saveRDS(global_var_trend, "data/global_var_trend.Rda")
 # Code that generates numeric results referred to in the text outside of figures
 
 # Upper and lower quantile ranges for sub-optimal tests
-# NB: `full_results` created in Figure 2 section of code/figures.R
+# NB: `random_results` created in Figure 2 section of code/figures.R
 # bad_pixels <- c("140.375_0.625", "-73.625_-77.125")
-# quant_subopt <- full_results %>%
-#   filter(var %in% c("count", "duration", "intensity_max",
-#                     "focus_count", "focus_duration", "focus_intensity_max"),
-#          id %in% c("n_diff", "mean_perc", "sum_perc", "mean_perc"),
-#          !(site %in% bad_pixels)) %>%
-#   group_by(test, index_vals, var, id) %>%
-#   summarise(lower = quantile(val, 0.05),
-#             upper = quantile(val, 0.95)) %>%
-#   ungroup()
-# quant_length <- filter(quant_subopt, test == "length")
-# quant_miss <- filter(quant_subopt, test == "missing")
-# quant_trend <- filter(quant_subopt, test == "trend")
+var_choice <- data.frame(var = c("count", "duration", "intensity_max",
+                                 "focus_count", "focus_duration", "focus_intensity_max"),
+                         id = c("n_perc", "sum_perc", "mean_perc",
+                                "mean_perc", "sum_perc", "mean_perc"),
+                         stringsAsFactors = F)
+quant_subopt <- random_results %>%
+  right_join(var_choice, by = c("var", "id")) %>%
+  group_by(test, index_vals, var, id) %>%
+  summarise(lower = round(quantile(val, 0.05), 2),
+            upper = round(quantile(val, 0.95), 2)) %>%
+  ungroup()
+quant_length <- filter(quant_subopt, test == "length")
+quant_miss <- filter(quant_subopt, test == "missing")
+quant_trend <- filter(quant_subopt, test == "trend")
 
 
 # Best practices ----------------------------------------------------------
@@ -510,11 +512,11 @@ saveRDS(best_table_focus, "data/best_table_focus.Rda")
 # saveRDS(sst_ALL_results, "data/sst_ALL_bp_results.Rda")
 
 # Calculate the base period analysis on 100 random pixels
-# doMC::registerDoMC(cores = 25) # NB: 50 cores uses too much RAM
+# doMC::registerDoMC(cores = 50)
 # set.seed(666)
 # system.time(
 #   random_results <- plyr::ldply(1:100, random_analysis, .parallel = T, base_period = T)
-# ) # 53 seconds
+# ) # 62 seconds
 # saveRDS(random_results, "data/random_bp_results_100.Rda")
 
 

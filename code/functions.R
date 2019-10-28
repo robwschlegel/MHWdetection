@@ -523,7 +523,7 @@ random_analysis <- function(empty_integer, base_period = F){
 
   # Run a full analysis and exit
   if(base_period){
-    res <- base_period_analysis(pixel, clim_metric = T) %>%
+    res <- base_period_analysis(pixel, clim_metric = F) %>%
       mutate(lon = pixel$lon[1],
              lat = pixel$lat[1]) %>%
       select(lon, lat, everything())
@@ -931,11 +931,16 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
                                      var %in% c("count", "focus_count") & test == "window_30" ~ "J",
                                      var %in% c("duration", "focus_duration") & test == "window_30" ~ "K",
                                      var %in% c("intensity_max", "focus_intensity_max") & test == "window_30" ~ "L"))
-  } else if(tests == "base_period"){
+  } else if(tests == "base_period" & result_choice == "average"){
     df_prep <- df_prep %>%
       mutate(panel_label = case_when(var %in% c("count", "focus_count") ~ "A",
                                      var %in% c("duration", "focus_duration") ~ "B",
                                      var %in% c("intensity_max", "focus_intensity_max") ~ "C"))
+  } else if(tests == "base_period" & result_choice == "focus"){
+    df_prep <- df_prep %>%
+      mutate(panel_label = case_when(var %in% c("count", "focus_count") ~ "D",
+                                     var %in% c("duration", "focus_duration") ~ "E",
+                                     var %in% c("intensity_max", "focus_intensity_max") ~ "F"))
   }
   if(result_choice == "clims"){
     df_prep <- df_prep %>%
