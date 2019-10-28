@@ -8,10 +8,10 @@
 
 # library(jsonlite, lib.loc = "~/R-packages/")
 # library(dplyr, lib.loc = "~/R-packages/") # Development version for group_modify()
-library(tidyverse)
-library(ggridges)
+library(tidyverse, lib.loc = "~/R-packages/")
+# library(ggridges)
 # library(broom)
-library(heatwaveR)
+library(heatwaveR, lib.loc = "~/R-packages/")
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
 library(lubridate) # This is intentionally activated after data.table
 # library(fasttime)
@@ -19,11 +19,10 @@ library(ggpubr)
 library(boot)
 # library(FNN)
 # library(mgcv)
-library(doMC); doMC::registerDoMC(cores = 50)
-library(tidync)
-library(rgdal)
+library(doMC); registerDoMC(cores = 50)
+library(tidync, lib.loc = "~/R-packages/")
+# library(rgdal)
 # library(pgirmess)
-library(tidync)
 # library(egg)
 # library(rcompanion)
 
@@ -538,7 +537,8 @@ random_analysis <- function(empty_integer, base_period = F){
 
 
 # This function runs the analysis on a full lon slice
-# nc_file <- OISST_files[1138]
+# nc_file <- OISST_files[1405]
+# par_op = T
 global_analysis <- function(nc_file, par_op = F){
 
   # Load and prep data
@@ -547,7 +547,7 @@ global_analysis <- function(nc_file, par_op = F){
   # Run the analysis on each lon/lat pixel
   # system.time(
   res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = par_op, .progress = "text")
-  # ) # 2.5 minutes in parallel, 30 minutes not in parallel
+  # ) # 2 minutes in parallel, 30 minutes not in parallel
   # ~5 seconds for one pixel, ~xxx seconds not in parallel
   # Times may vary by 50% due to change in pixel count per longitude step
   return(res)
@@ -1197,13 +1197,16 @@ base_period_analysis <- function(df, clim_metric = F){
   }
 
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
-  sst_clim_metric <- plyr::ldply(0:7, control_base, df = sst_flat, focus_event = focus_event)
+  sst_clim_metric <- plyr::ldply(0:7, control_base, df = sst_flat, focus_event = focus_event) %>%
+    mutate(index_vals = index_vals + 30) # Correct this to work with the project wide standard
 
   # Create summary statistics of MHW results
   sst_summary <- sst_clim_metric %>%
     # group_by(test) %>%
     group_modify(~summary_stats(.x)) %>%
-    data.frame()
+    data.frame() %>%
+    filter(index_vals >= 30) %>% # Convert back to the index_val exception used for these data
+    mutate(index_vals = index_vals - 30)
 
   # Include clim/metric data if requested
   if(clim_metric){

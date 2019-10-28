@@ -220,17 +220,18 @@ source("code/functions.R")
 # Global analysis ---------------------------------------------------------
 
 # Wrapper function with a chatty output as it chugs along
-# global_analysis_single <- function(file_sub, par_op = F){
-#   OISST_slice <- OISST_files[file_sub]
-#   lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
-#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-#   slice_res <- global_analysis(OISST_slice, par_op = par_op)
-#   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
-#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-#   rm(slice_res); gc()
-# }
+global_analysis_single <- function(file_sub, par_op = F){
+  OISST_slice <- OISST_files[file_sub]
+  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
+  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+  slice_res <- global_analysis(OISST_slice, par_op = par_op)
+  saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
+  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+  rm(slice_res); gc()
+}
 # plyr::l_ply(1:1440, global_analysis_single, .parallel = T) # This took 37.5 hours to run
-# plyr::l_ply(1:500, global_analysis_single, .parallel = T) # This took xxx hours to run
+plyr::l_ply(1, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
+# plyr::l_ply(51:100, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
 
 # The nightly running of the MHW Tracker seems to have interfered with the
 # calculation of several lon slices
@@ -245,14 +246,14 @@ source("code/functions.R")
 # Calculate the simple linear trends for the different tests at each pixel
 
 # Set cores
-doMC::registerDoMC(cores = 50)
+# doMC::registerDoMC(cores = 50)
 
 # Calculate trends and save
-system.time(
-  global_var_trend <- plyr::ldply(dir("data/global", full.names = T),
-                                  .fun = var_trend, .parallel = T)
-) # 60 seconds for one lon slice, ~70 minutes for all
-saveRDS(global_var_trend, "data/global_var_trend.Rda")
+# system.time(
+#   global_var_trend <- plyr::ldply(dir("data/global", full.names = T),
+#                                   .fun = var_trend, .parallel = T)
+# ) # 60 seconds for one lon slice, ~70 minutes for all
+# saveRDS(global_var_trend, "data/global_var_trend.Rda")
 
 
 # Figures -----------------------------------------------------------------
@@ -266,20 +267,20 @@ saveRDS(global_var_trend, "data/global_var_trend.Rda")
 # Upper and lower quantile ranges for sub-optimal tests
 # NB: `random_results` created in Figure 2 section of code/figures.R
 # bad_pixels <- c("140.375_0.625", "-73.625_-77.125")
-var_choice <- data.frame(var = c("count", "duration", "intensity_max",
-                                 "focus_count", "focus_duration", "focus_intensity_max"),
-                         id = c("n_perc", "sum_perc", "mean_perc",
-                                "mean_perc", "sum_perc", "mean_perc"),
-                         stringsAsFactors = F)
-quant_subopt <- random_results %>%
-  right_join(var_choice, by = c("var", "id")) %>%
-  group_by(test, index_vals, var, id) %>%
-  summarise(lower = round(quantile(val, 0.05), 2),
-            upper = round(quantile(val, 0.95), 2)) %>%
-  ungroup()
-quant_length <- filter(quant_subopt, test == "length")
-quant_miss <- filter(quant_subopt, test == "missing")
-quant_trend <- filter(quant_subopt, test == "trend")
+# var_choice <- data.frame(var = c("count", "duration", "intensity_max",
+#                                  "focus_count", "focus_duration", "focus_intensity_max"),
+#                          id = c("n_perc", "sum_perc", "mean_perc",
+#                                 "mean_perc", "sum_perc", "mean_perc"),
+#                          stringsAsFactors = F)
+# quant_subopt <- random_results %>%
+#   right_join(var_choice, by = c("var", "id")) %>%
+#   group_by(test, index_vals, var, id) %>%
+#   summarise(lower = round(quantile(val, 0.05), 2),
+#             upper = round(quantile(val, 0.95), 2)) %>%
+#   ungroup()
+# quant_length <- filter(quant_subopt, test == "length")
+# quant_miss <- filter(quant_subopt, test == "missing")
+# quant_trend <- filter(quant_subopt, test == "trend")
 
 
 # Best practices ----------------------------------------------------------
@@ -452,38 +453,38 @@ quant_trend <- filter(quant_subopt, test == "trend")
 # The function for correct trend calculatoin was moved to the functions script
 
 # Calculate the table for the Best Practices section
-slope_final <- random_quant %>%
-  gather(key = "stat", value = "val", -c(test:id)) %>%
-  mutate(test2 = test,
-         var2 = var) %>%
-  group_by(test2, var2, id, stat) %>%
-  group_modify(~trend_correct(.x)) %>%
-  dplyr::rename(test = test2,
-                var = var2) %>%
-  # unite(var, id, col = "var_id", sep = " - ") %>%
-  ungroup() %>%
-  select(-id) %>%
-  mutate(slope = round(slope, 2),
-         R2 = paste0("(",R2,")")) %>%
-  unite(slope, R2, col = "slope_R2", sep = " ") %>%
-  select(-intercept, -p) %>%
-  # gather(slope, R2, p, key = "var", value = "val") %>%
-  spread(stat, slope_R2) %>%
-  # select(test, var, range, q50, iqr50, iqr90) %>%
-  select(test, var, range, q05, q25, q50, q75, q95) %>%
-  mutate(test = factor(test, levels = c("length", "missing", "interp", "trend"))) %>%
-  arrange(test)
+# slope_final <- random_quant %>%
+#   gather(key = "stat", value = "val", -c(test:id)) %>%
+#   mutate(test2 = test,
+#          var2 = var) %>%
+#   group_by(test2, var2, id, stat) %>%
+#   group_modify(~trend_correct(.x)) %>%
+#   dplyr::rename(test = test2,
+#                 var = var2) %>%
+#   # unite(var, id, col = "var_id", sep = " - ") %>%
+#   ungroup() %>%
+#   select(-id) %>%
+#   mutate(slope = round(slope, 2),
+#          R2 = paste0("(",R2,")")) %>%
+#   unite(slope, R2, col = "slope_R2", sep = " ") %>%
+#   select(-intercept, -p) %>%
+#   # gather(slope, R2, p, key = "var", value = "val") %>%
+#   spread(stat, slope_R2) %>%
+#   # select(test, var, range, q50, iqr50, iqr90) %>%
+#   select(test, var, range, q05, q25, q50, q75, q95) %>%
+#   mutate(test = factor(test, levels = c("length", "missing", "interp", "trend"))) %>%
+#   arrange(test)
 
 # Smack it together to round this puppy out
-best_table_average <- slope_final %>%
-  filter(!grepl("focus", var))
-saveRDS(best_table_average, "data/best_table_average.Rda")
-write_csv(best_table_average, "data/best_table_average.csv")
+# best_table_average <- slope_final %>%
+#   filter(!grepl("focus", var))
+# saveRDS(best_table_average, "data/best_table_average.Rda")
+# write_csv(best_table_average, "data/best_table_average.csv")
 
-best_table_focus <- slope_final %>%
-  filter(grepl("focus", var))
-saveRDS(best_table_focus, "data/best_table_focus.Rda")
-write_csv(best_table_focus, "data/best_table_focus.csv")
+# best_table_focus <- slope_final %>%
+#   filter(grepl("focus", var))
+# saveRDS(best_table_focus, "data/best_table_focus.Rda")
+# write_csv(best_table_focus, "data/best_table_focus.csv")
 
 
 # Discussion --------------------------------------------------------------
@@ -509,7 +510,7 @@ write_csv(best_table_focus, "data/best_table_focus.csv")
 #                  mutate(sst_NW_Atl, site = "NW_Atl"),
 #                  mutate(sst_Med, site = "Med"))
 # system.time(
-#   sst_ALL_results <- plyr::ddply(sst_ALL, c("site"), base_period_analysis, .parallel = T, clim_metric = T)
+#   sst_ALL_results <- plyr::ddply(sst_ALL, c("site"), base_period_analysis, .parallel = T)
 # ) # 3 seconds
 # saveRDS(sst_ALL_results, "data/sst_ALL_bp_results.Rda")
 
@@ -517,9 +518,9 @@ write_csv(best_table_focus, "data/best_table_focus.csv")
 # doMC::registerDoMC(cores = 50)
 # set.seed(666)
 # system.time(
-#   random_results <- plyr::ldply(1:100, random_analysis, .parallel = T, base_period = T)
-# ) # 62 seconds
-# saveRDS(random_results, "data/random_bp_results_100.Rda")
+#   random_results <- plyr::ldply(1:1000, random_analysis, .parallel = T, base_period = T)
+# ) # 312 seconds
+# saveRDS(random_results, "data/random_bp_results_1000.Rda")
 
 
 # Supplementary 3 ---------------------------------------------------------

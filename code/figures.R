@@ -359,7 +359,7 @@ ggsave("LaTeX/fig_S1.jpg", fig_S1, height = 5, width = 7)
 # The results from all base period tests
 sst_ALL_results <- readRDS("data/sst_ALL_bp_results.Rda") %>%
   mutate(site = ifelse(site == "NW_Atl", "NWA", site))
-random_results <- readRDS("data/random_bp_results_100.Rda") %>%
+random_results <- readRDS("data/random_bp_results_1000.Rda") %>%
   unite("site", c(lon, lat))
 full_results <- rbind(sst_ALL_results, random_results) %>%
   mutate(test = "base_period")
