@@ -17,14 +17,12 @@ Add text:
 
 Correct all bullet points:
 - Lines ~67, ~115: Add numbered bullets to optimal data list
-- Line ~160: Add numbered bullets for main points and sub bullets for sub points
 - Correct spacing between bullets
 
 Citation:
-- Line ~64: Ensure that the citations are ordered in correct chronological order
-  - Check for this error throughout the manuscript
 - Line ~135 + ~138: Change 'Organization' to 'WMO'
+- Line ~592: Change'HeatwaveR' to 'heatwaveR'
+- Check that multiple citations for one point are ordered in correct chronological order
 - Check that there are no janky in text citation fails
 - Check the reference section that all citations have been compiled correctly
 - Particularly worry about the WMO citations
-- Line ~592: Change'HeatwaveR' to 'heatwaveR'
