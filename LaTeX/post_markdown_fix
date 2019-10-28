@@ -12,13 +12,13 @@ Before compiling:
 
 Spell check
 
+Add text:
+- Line ~60: Add ', Table 12.3' inside of the brackets for the Harrison (2019) reference
+
 Correct all bullet points:
 - Lines ~67, ~115: Add numbered bullets to optimal data list
 - Line ~160: Add numbered bullets for main points and sub bullets for sub points
 - Correct spacing between bullets
-
-Add text:
-- Line ~60: Add ', Table 12.3' inside of the brackets for the Harrison (2019) reference
 
 Citation:
 - Line ~64: Ensure that the citations are ordered in correct chronological order

@@ -281,21 +281,21 @@ The code and datasets generated for this study may be found at https://github.co
 
 # Tables
 
-<!-- Table 1: The rates of uncertainty in the average MHWs. -->
+Table 1: Table 1: The rate of change in uncertainty as time series become increasingly sub-optimal. The columns containing numerical data show the slope (R^2^) of uncertainty for each step in the range column as percentages. Starting from the left, the 'test' column shows which of the three sub-optimal tests the results are for. The rows labelled 'interp' are for the interpolation fix for the missing data tests. The 'var' column shows the MHW metric that was focussed on in the sub-optimal tests and are seen the other figures in this paper. The 'range' column shows the range of values over which the various uncertainty rates were measured. Note that their are two entries for each variable in the length test. This is done to show the difference in the uncertainty that increasing OR decreasing a time series past the 30 year standard affects the results. The final five columns show the rate of uncertainty in each variable at the five different quantile steps used in the boxplot figures in this paper.
 
-```{r}
-best_table_average <- readRDS("../data/best_table_average.Rda")
+<!-- # ```{r} -->
+<!-- # best_table_average <- readRDS("../data/best_table_average.Rda") -->
+<!-- #  -->
+<!-- # knitr::kable(best_table_average, caption = "Table 1: The rate of change in uncertainty as time series become increasingly sub-optimal. The columns containing numerical data show the slope (R^2^) of uncertainty for each step in the range column as percentages. Starting from the left, the 'test' column shows which of the three sub-optimal tests the results are for. The rows labelled 'interp' are for the interpolation fix for the missing data tests. The 'var' column shows the MHW metric that was focussed on in the sub-optimal tests and are seen the other figures in this paper. The 'range' column shows the range of values over which the various uncertainty rates were measured. Note that their are two entries for each variable in the length test. This is done to show the difference in the uncertainty that increasing OR decreasing a time series past the 30 year standard affects the results. The final five columns show the rate of uncertainty in each variable at the five different quantile steps used in the boxplot figures in this paper.") -->
+<!-- # ``` -->
 
-knitr::kable(best_table_average, caption = "Table 1: The rate of change in uncertainty as time series become increasingly sub-optimal. The columns containing numerical data show the slope (R^2^) of uncertainty for each step in the range column as percentages. Starting from the left, the 'test' column shows which of the three sub-optimal tests the results are for. The rows labelled 'interp' are for the interpolation fix for the missing data tests. The 'var' column shows the MHW metric that was focussed on in the sub-optimal tests and are seen the other figures in this paper. The 'range' column shows the range of values over which the various uncertainty rates were measured. Note that their are two entries for each variable in the length test. This is done to show the difference in the uncertainty that increasing OR decreasing a time series past the 30 year standard affects the results. The final five columns show the rate of uncertainty in each variable at the five different quantile steps used in the boxplot figures in this paper.")
-```
+Table 2: The rate of change in uncertainty in the measurements of the focus marine heatwave as a time series become increasingly sub-optimal. All elements of this table are the same as Table 1.
 
-<!-- Table 2: The rates of uncertainty in the focus MHWs. -->
-
-```{r}
-best_table_focus <- readRDS("../data/best_table_focus.Rda")
-
-knitr::kable(best_table_focus, caption = "Table 2: The rate of change in uncertainty in the measurements of the focus marine heatwave as a time series become increasingly sub-optimal. All elements of this table are the same as Table 1.")
-```
+<!-- # ```{r} -->
+<!-- # best_table_focus <- readRDS("../data/best_table_focus.Rda") -->
+<!-- #  -->
+<!-- # knitr::kable(best_table_focus, caption = "Table 2: The rate of change in uncertainty in the measurements of the focus marine heatwave as a time series become increasingly sub-optimal. All elements of this table are the same as Table 1.") -->
+<!-- # ``` -->
 
 
 # Figure legends

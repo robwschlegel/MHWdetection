@@ -478,10 +478,12 @@ slope_final <- random_quant %>%
 best_table_average <- slope_final %>%
   filter(!grepl("focus", var))
 saveRDS(best_table_average, "data/best_table_average.Rda")
+write_csv(best_table_average, "data/best_table_average.csv")
 
 best_table_focus <- slope_final %>%
   filter(grepl("focus", var))
 saveRDS(best_table_focus, "data/best_table_focus.Rda")
+write_csv(best_table_focus, "data/best_table_focus.csv")
 
 
 # Discussion --------------------------------------------------------------
