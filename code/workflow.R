@@ -230,11 +230,12 @@ global_analysis_single <- function(file_sub, par_op = F){
   rm(slice_res); gc()
 }
 # plyr::l_ply(1:1440, global_analysis_single, .parallel = T) # This took 37.5 hours to run
-plyr::l_ply(1, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
+# plyr::l_ply(3, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
+plyr::l_ply(1:500, global_analysis_single, .parallel = T, par_op = F) # This took ~xxx hours to run, started 20:30
 # plyr::l_ply(51:100, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
 
-# Error in do.ply(i) :
-  # task 1 failed - "Internal error in subset.c: column 1 is an ALTREP vector. Please see NEWS item 2 in v1.11.4 and report this as a bug."
+# It looks like the global calculations will limp along in spite of the data.table bug
+# but they will require a lot of spot fixes
 
 
 # The nightly running of the MHW Tracker seems to have interfered with the

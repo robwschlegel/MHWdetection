@@ -12,6 +12,7 @@ library(tidyverse, lib.loc = "~/R-packages/")
 # library(ggridges)
 # library(broom)
 library(heatwaveR, lib.loc = "~/R-packages/")
+library(data.table, lib.loc = "~/R-packages/")
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
 library(lubridate) # This is intentionally activated after data.table
 # library(fasttime)
@@ -73,7 +74,7 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 # which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -78.375) # 1127
 # nc_file <- OISST_files[1127]
 load_noice_OISST <- function(nc_file){
-  suppressWarnings( # (2019-10-16) tidync started giving a meaningless warning message
+  # suppressWarnings( # (2019-10-16) tidync started giving a meaningless warning message
   res <- tidync(nc_file) %>%
     hyper_filter(lat = between(lat, -70, 80)) %>% # No need to load the very poleward data
     hyper_tibble() %>%
@@ -90,7 +91,7 @@ load_noice_OISST <- function(nc_file){
     select(lon, lat, t, temp) %>%
     mutate(lon = ifelse(lon > 180, lon-360, lon)) %>%
     data.frame()
-  )
+  # )
   return(res)
 }
 
@@ -452,10 +453,12 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
   # NB: The warnings that pop up here are fine and are caused by missing data completely
   # removing all of the MHWs from a time series. This is accounted for in the summary stats
+  # system.time(
   sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
     group_by(test, index_vals) %>%
     group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event)) %>%
     ungroup()
+  # ) # 21 seconds, extensive testing of data.table was not faster
 
   # Run the tests while also interpolating all gaps
   sst_interp_res <- sst_missing %>%
@@ -537,7 +540,7 @@ random_analysis <- function(empty_integer, base_period = F){
 
 
 # This function runs the analysis on a full lon slice
-# nc_file <- OISST_files[1405]
+# nc_file <- OISST_files[0040]
 # par_op = T
 global_analysis <- function(nc_file, par_op = F){
 
