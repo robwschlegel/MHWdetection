@@ -229,7 +229,8 @@ global_analysis_single <- function(file_sub, par_op = F){
   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
   rm(slice_res); gc()
 }
-registerDoMC(cores = 50)
+# doMC::registerDoMC(cores = 50)
+doParallel::registerDoParallel(cores = 50)
 
 # Spot check
 # plyr::l_ply(93, global_analysis_single, .parallel = F, par_op = T) # This took ~2 minutes to run
@@ -247,8 +248,8 @@ registerDoMC(cores = 50)
 # but they will require a lot of spot fixes
 # To find these issues more easily an index of files not created before October 28th, 22:00 (UTC-3) is used
 # This must then be run repeatedly until no missing files remain
-  # NB: WHen the number of missing files falls below 50, switch to multiprocessing of a single file
-spot_fix_files <- file.info(dir("data/global", full.names = T)) %>%
+  # NB: When the number of missing files falls below 50, switch to multiprocessing of a single file
+spot_fix_files <- file.info(dir("data/global", full.names = T, pattern = "slice")) %>%
   mutate(file_name = row.names(.)) %>%
   select(file_name, mtime) %>%
   filter(mtime < "2019-10-28 22:00:00")

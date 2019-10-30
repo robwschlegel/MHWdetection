@@ -6,23 +6,30 @@
 
 .libPaths(c("~/R-packages", .libPaths()))
 
+# library(doMC); registerDoMC(cores = 50)
+# library(doParallel)
 # library(jsonlite, lib.loc = "~/R-packages/")
 # library(dplyr, lib.loc = "~/R-packages/") # Development version for group_modify()
 library(tidyverse, lib.loc = "~/R-packages/")
+# library(dplyr)
 # library(ggridges)
 # library(broom)
 library(heatwaveR, lib.loc = "~/R-packages/")
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
-library(data.table, lib.loc = "~/R-packages/")
+# library(data.table, lib.loc = "~/R-packages/")
 library(lubridate) # This is intentionally activated after data.table
 # library(fasttime)
 # library(ggpubr)
 # library(boot)
 # library(FNN)
 # library(mgcv)
-library(doMC); registerDoMC(cores = 50)
-library(tidync, lib.loc = "~/R-packages/")
+# library(tidync, lib.loc = "~/R-packages/")
 library(ncdf4)
+# library(doMC); registerDoMC(cores = 50)
+# library(doFuture)
+library(doParallel)
+# library(doSNOW)
+# options(mc.cores = 1) # This may work to constrain the core bleed that stats causes
 # library(rgdal)
 # library(pgirmess)
 # library(egg)
@@ -30,6 +37,29 @@ library(ncdf4)
 
 
 # Meta-data ---------------------------------------------------------------
+
+#### Cores
+
+## doFuture option
+# registerDoFuture()
+# plan(multiprocess, workers = availableCores() - 31)
+
+## doParallel option
+# parallel::detectCores()
+# no_cores <- detectCores() - 6
+# cl <- makeCluster(no_cores)
+# cl <- makeCluster(25) # same 1
+# registerDoParallel(cl) # same 1
+registerDoParallel(cores = 25) # same 2
+# getDoParWorkers()
+# stopCluster(cl)
+
+## doMC option
+# doMC::registerDoMC(cores = 25)
+
+## SNOW option
+# cl <- makeCluster(25, type="SOCK") # number of cores
+# registerDoSNOW(cl) # Register back end Cores for Parallel Computing
 
 # The MHW category colour palette
 MHW_colours <- c(
@@ -43,7 +73,7 @@ MHW_colours <- c(
 OISST_files <- dir(path = "~/data/OISST", full.names = T, pattern = "avhrr")
 
 # Location of global result files
-global_files <- dir(path = "data/global", full.names = T)
+global_files <- dir(path = "data/global", full.names = T, pattern = "slice")
 
 # Loation of MHW category files
 # category_files <- as.character(dir(path = "~/data/cat_clim", pattern = "cat.clim",
@@ -79,42 +109,38 @@ load_noice_OISST <- function(nc_file){
   # Perhaps this warning was a prelude to the memmory issues now plaguing this pipeline
   # The warnings are gone, but it appears that tidync() is the root of the memmory issue
   # res <- tidync(nc_file) %>%
-    # hyper_filter(lat = between(lat, -70, 80)) %>% # No need to load the very poleward data
-    # hyper_tibble() %>%
+  # hyper_filter(lat = between(lat, -70, 80)) %>% # No need to load the very poleward data
+  # hyper_tibble() %>%
   # OISST data
   nc_OISST <- nc_open(nc_file)
-  # tester...
-  # nc_OISST <- nc_open(dir("../data/test", pattern = "avhrr", full.names = T)[lon_row])
-  #
   lon_vals <- as.vector(nc_OISST$dim$lon$vals)
   lat_vals <- as.vector(nc_OISST$dim$lat$vals)
   lat_index <- c(which(lat_vals == -69.875), which(lat_vals == 79.875))
-  time_index <- as.Date(ncvar_get(nc_OISST, "time"), origin = "1970-01-01")
-  # time_old_index <- time_index[time_index <= max(current_dates)]
-  # time_extract_index <- time_index[which(start_date == time_index):length(time_index)]
-  sst_raw <- ncvar_get(nc_OISST, "sst", start = c(lat_index[1], 1, 1), count = c(lat_index[2]-lat_index[1]+1, -1, -1))
+  time_vals <- as.Date(ncvar_get(nc_OISST, "time"), origin = "1970-01-01")
+  time_index <- which(time_vals == as.Date("2018-12-31"))
+  sst_raw <- ncvar_get(nc_OISST, "sst", start = c(lat_index[1], 1, 1),
+                       count = c(lat_index[2]-lat_index[1]+1, -1, time_index))
   # if(length(time_extract_index) == 1) dim(sst_raw) <- c(720,1,1)
   dimnames(sst_raw) <- list(lat = nc_OISST$dim$lat$vals[lat_index[1]:lat_index[2]],
-                            t = time_index)
+                            t = time_vals[seq_len(time_index)])
   nc_close(nc_OISST)
 
   # Prep SST for further use
-  sst <- as.data.frame(reshape2::melt(sst_raw, value.name = "temp"), row.names = NULL) %>%
+  # system.time(
+  res <- as.data.frame(reshape2::melt(sst_raw, value.name = "temp"), row.names = NULL) %>%
     na.omit() %>%
     mutate(lon = lon_vals[1],
            t = as.Date(t, origin = "1970-01-01")) %>%
-    filter(t <= "2018-12-31",
-           round(temp, 1) > -1.6) %>%
-    na.omit() %>%
-    # Filter out pixels that don't cover the whole time series
     # Filter out pixels with any ice/slush cover during the time series
+    # Filter out pixels that don't cover the whole time series
     group_by(lon, lat) %>%
-    filter(n() == 13514) %>% # A full time series is 13,514 days long
+    filter(min(round(temp, 1)) > -1.6,
+           n() == 13514) %>%
     ungroup() %>%
     select(lon, lat, t, temp) %>%
     mutate(lon = ifelse(lon > 180, lon-360, lon)) %>%
     data.frame()
-  # )
+  # ) ~1.7 seconds
   return(res)
 }
 
@@ -449,7 +475,7 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
     select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max) %>%
     mutate(intensity_cumulative = round(intensity_cumulative, 2),
            intensity_max = round(intensity_max, 2))
-  if(nrow(focus_event) == 0) return() # Some nearly prozen pixels manage to slip through and cause issues
+  if(nrow(focus_event) == 0) return() # Some nearly frozen pixels manage to slip through and cause issues
   if(nrow(focus_event) > 1){
     focus_event <- slice(focus_event, nrow(focus_event))
   }
@@ -484,12 +510,13 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   #   group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event)) %>%
   #   ungroup()
   # ) # 21 seconds, extensive testing of data.table was not faster
-  # system.time(
+  system.time(
   sst_base_res <- plyr::ddply(rbind(sst_length, sst_missing, sst_trend),
                               .variables = c("test", "index_vals"),
                               .fun = clim_metric_focus_calc,
+                              .paropts = c(.inorder = FALSE),
                               .parallel = F, focus_dates = focus_event)
-  # ) 23 seconds
+  ) # 3 seconds
 
   # Run the tests while also interpolating all gaps
   # sst_interp_res <- sst_missing %>%
@@ -497,11 +524,13 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   #   group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
   #   ungroup() %>%
   #   mutate(test = "interp")
+  # system.time(
   sst_interp_res <- plyr::ddply(sst_missing, .variables = c("test", "index_vals"),
                                 .fun = clim_metric_focus_calc, .parallel = F,
+                                .paropts = c(.inorder = FALSE),
                                 set_pad = 9999, focus_dates = focus_event) %>%
     mutate(test = "interp")
-
+  # ) # ~1.1 seconds
 
   # Combine for ease of use
   sst_clim_metric <- data.frame(rbind(sst_base_res, sst_interp_res))
@@ -578,17 +607,21 @@ random_analysis <- function(empty_integer, base_period = F){
 
 
 # This function runs the analysis on a full lon slice
-# nc_file <- OISST_files[0093]
+# nc_file <- OISST_files[1197]
 # par_op = T
+# registerDoMC(25)
 global_analysis <- function(nc_file, par_op = F){
 
   # Load and prep data
+  system.time(
   sst <- load_noice_OISST(nc_file)
+  ) # ~1.8 seconds
 
   # Run the analysis on each lon/lat pixel
-  # system.time(
-  res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = par_op, .progress = "text")
-  # ) # 2 minutes in parallel, 30 minutes not in parallel
+  system.time(
+  res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = par_op, .progress = "text",
+                     .paropts = c(.inorder = FALSE))
+  ) # ~103 seconds in parallel, ~8.5 minutes not in parallel, this is misleading as multiple runs will slow each other down
   # ~5 seconds for one pixel, ~xxx seconds not in parallel
   # Times may vary by 50% due to change in pixel count per longitude step
   return(res)
