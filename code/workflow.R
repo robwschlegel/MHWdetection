@@ -229,14 +229,31 @@ global_analysis_single <- function(file_sub, par_op = F){
   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
   rm(slice_res); gc()
 }
+registerDoMC(cores = 50)
+
+# Spot check
+# plyr::l_ply(93, global_analysis_single, .parallel = F, par_op = T) # This took ~2 minutes to run
+
+# Run ALL
 # plyr::l_ply(1:1440, global_analysis_single, .parallel = T) # This took 37.5 hours to run
-# plyr::l_ply(3, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
-plyr::l_ply(1:500, global_analysis_single, .parallel = T, par_op = F) # This took ~xxx hours to run, started 20:30
-# plyr::l_ply(51:100, global_analysis_single, .parallel = F, par_op = T) # This took ~xxx hours to run
+
+# Run in stages
+# This took ~2.5 hours to run, but only got half-way before all of the core slippage stopped it entirely
+# plyr::l_ply(1:500, global_analysis_single, .parallel = T, par_op = F)
+# plyr::l_ply(301:400, global_analysis_single, .parallel = T, par_op = F) # This took ~2 hours to run
+# plyr::l_ply(301:400, global_analysis_single, .parallel = T, par_op = F) # This took ~2 hours to run
 
 # It looks like the global calculations will limp along in spite of the data.table bug
 # but they will require a lot of spot fixes
-
+# To find these issues more easily an index of files not created before October 28th, 22:00 (UTC-3) is used
+# This must then be run repeatedly until no missing files remain
+  # NB: WHen the number of missing files falls below 50, switch to multiprocessing of a single file
+spot_fix_files <- file.info(dir("data/global", full.names = T)) %>%
+  mutate(file_name = row.names(.)) %>%
+  select(file_name, mtime) %>%
+  filter(mtime < "2019-10-28 22:00:00")
+spot_fix_index <- which(dir("data/global", full.names = T) %in% spot_fix_files$file_name)
+plyr::l_ply(spot_fix_index, global_analysis_single, .parallel = T, par_op = F)
 
 # The nightly running of the MHW Tracker seems to have interfered with the
 # calculation of several lon slices
@@ -519,7 +536,7 @@ plyr::l_ply(1:500, global_analysis_single, .parallel = T, par_op = F) # This too
 # ) # 3 seconds
 # saveRDS(sst_ALL_results, "data/sst_ALL_bp_results.Rda")
 
-# Calculate the base period analysis on 100 random pixels
+# Calculate the base period analysis on 1000 random pixels
 # doMC::registerDoMC(cores = 50)
 # set.seed(666)
 # system.time(

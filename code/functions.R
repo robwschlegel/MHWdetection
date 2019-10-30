@@ -12,16 +12,17 @@ library(tidyverse, lib.loc = "~/R-packages/")
 # library(ggridges)
 # library(broom)
 library(heatwaveR, lib.loc = "~/R-packages/")
-library(data.table, lib.loc = "~/R-packages/")
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
+library(data.table, lib.loc = "~/R-packages/")
 library(lubridate) # This is intentionally activated after data.table
 # library(fasttime)
-library(ggpubr)
-library(boot)
+# library(ggpubr)
+# library(boot)
 # library(FNN)
 # library(mgcv)
 library(doMC); registerDoMC(cores = 50)
 library(tidync, lib.loc = "~/R-packages/")
+library(ncdf4)
 # library(rgdal)
 # library(pgirmess)
 # library(egg)
@@ -75,11 +76,33 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 # nc_file <- OISST_files[1127]
 load_noice_OISST <- function(nc_file){
   # suppressWarnings( # (2019-10-16) tidync started giving a meaningless warning message
-  res <- tidync(nc_file) %>%
-    hyper_filter(lat = between(lat, -70, 80)) %>% # No need to load the very poleward data
-    hyper_tibble() %>%
-    dplyr::rename(t = time, temp = sst) %>%
-    mutate(t = as.Date(t, origin = "1970-01-01")) %>%
+  # Perhaps this warning was a prelude to the memmory issues now plaguing this pipeline
+  # The warnings are gone, but it appears that tidync() is the root of the memmory issue
+  # res <- tidync(nc_file) %>%
+    # hyper_filter(lat = between(lat, -70, 80)) %>% # No need to load the very poleward data
+    # hyper_tibble() %>%
+  # OISST data
+  nc_OISST <- nc_open(nc_file)
+  # tester...
+  # nc_OISST <- nc_open(dir("../data/test", pattern = "avhrr", full.names = T)[lon_row])
+  #
+  lon_vals <- as.vector(nc_OISST$dim$lon$vals)
+  lat_vals <- as.vector(nc_OISST$dim$lat$vals)
+  lat_index <- c(which(lat_vals == -69.875), which(lat_vals == 79.875))
+  time_index <- as.Date(ncvar_get(nc_OISST, "time"), origin = "1970-01-01")
+  # time_old_index <- time_index[time_index <= max(current_dates)]
+  # time_extract_index <- time_index[which(start_date == time_index):length(time_index)]
+  sst_raw <- ncvar_get(nc_OISST, "sst", start = c(lat_index[1], 1, 1), count = c(lat_index[2]-lat_index[1]+1, -1, -1))
+  # if(length(time_extract_index) == 1) dim(sst_raw) <- c(720,1,1)
+  dimnames(sst_raw) <- list(lat = nc_OISST$dim$lat$vals[lat_index[1]:lat_index[2]],
+                            t = time_index)
+  nc_close(nc_OISST)
+
+  # Prep SST for further use
+  sst <- as.data.frame(reshape2::melt(sst_raw, value.name = "temp"), row.names = NULL) %>%
+    na.omit() %>%
+    mutate(lon = lon_vals[1],
+           t = as.Date(t, origin = "1970-01-01")) %>%
     filter(t <= "2018-12-31",
            round(temp, 1) > -1.6) %>%
     na.omit() %>%
@@ -453,19 +476,32 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
   # NB: The warnings that pop up here are fine and are caused by missing data completely
   # removing all of the MHWs from a time series. This is accounted for in the summary stats
+  # There may be a bug being caused somewhere between tidync and the sub-multicoring that group_modify
+  # does that when multicored in the presence of data.table calculations starts to go pear shaped
   # system.time(
-  sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
-    group_by(test, index_vals) %>%
-    group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event)) %>%
-    ungroup()
+  # sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
+  #   group_by(test, index_vals) %>%
+  #   group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event)) %>%
+  #   ungroup()
   # ) # 21 seconds, extensive testing of data.table was not faster
+  # system.time(
+  sst_base_res <- plyr::ddply(rbind(sst_length, sst_missing, sst_trend),
+                              .variables = c("test", "index_vals"),
+                              .fun = clim_metric_focus_calc,
+                              .parallel = F, focus_dates = focus_event)
+  # ) 23 seconds
 
   # Run the tests while also interpolating all gaps
-  sst_interp_res <- sst_missing %>%
-    group_by(test, index_vals) %>%
-    group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
-    ungroup() %>%
+  # sst_interp_res <- sst_missing %>%
+  #   group_by(test, index_vals) %>%
+  #   group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
+  #   ungroup() %>%
+  #   mutate(test = "interp")
+  sst_interp_res <- plyr::ddply(sst_missing, .variables = c("test", "index_vals"),
+                                .fun = clim_metric_focus_calc, .parallel = F,
+                                set_pad = 9999, focus_dates = focus_event) %>%
     mutate(test = "interp")
+
 
   # Combine for ease of use
   sst_clim_metric <- data.frame(rbind(sst_base_res, sst_interp_res))
@@ -476,10 +512,12 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   }
 
   # Create summary statistics of MHW results
-  sst_summary <- sst_clim_metric %>%
-    group_by(test) %>%
-    group_modify(~summary_stats(.x)) %>%
-    data.frame()
+  # sst_summary <- sst_clim_metric %>%
+  #   group_by(test) %>%
+  #   group_modify(~summary_stats(.x)) %>%
+  #   data.frame()
+  sst_summary <- plyr::ddply(sst_clim_metric, .variables = c("test"),
+                             .fun = summary_stats, .parallel = F)
 
   # Include clim/metric data if requested
   if(clim_metric){
@@ -540,7 +578,7 @@ random_analysis <- function(empty_integer, base_period = F){
 
 
 # This function runs the analysis on a full lon slice
-# nc_file <- OISST_files[0040]
+# nc_file <- OISST_files[0093]
 # par_op = T
 global_analysis <- function(nc_file, par_op = F){
 

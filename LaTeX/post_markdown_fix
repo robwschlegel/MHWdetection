@@ -1,4 +1,5 @@
 Before compiling:
+- Correct C/dec to C/decade
 - Check that the word 'event' is not used incorrectly
 - Check that 'doy' is always in '' marks
 - Check that the words 'will' and 'may' and 'decadal' and 'seen' are only used in very specific situations
@@ -12,12 +13,15 @@ Before compiling:
 
 Spell check
 
+Check that superscripting worked
+
 Add text:
 - Line ~60: Add ', Table 12.3' inside of the brackets for the Harrison (2019) reference
 
 Correct all bullet points:
 - Lines ~67, ~115: Add numbered bullets to optimal data list
 - Correct spacing between bullets
+- Correct bullet points in the conclusions
 
 Citation:
 - Line ~135 + ~138: Change 'Organization' to 'WMO'

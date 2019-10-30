@@ -1,6 +1,6 @@
 ---
 title: "Detecting marine heatwaves with sub-optimal data"
-author: Robert W. Schlegel1,2,*,#, Eric C. J. Oliver1, Alistair J. Hobday3, Albertus J. Smit2
+author: Robert W. Schlegel1,2,*, Eric C. J. Oliver1, Alistair J. Hobday3, Albertus J. Smit2
 # date: "April 30th, 2018"
 output:
   word_document:
@@ -15,14 +15,13 @@ knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       eval = TRUE, tidy = FALSE)
 ```
 
-1Department of Oceanography, Dalhousie University, Halifax, Nova Scotia, Canada  
-2Department of Biodiversity and Conservation Biology, University of the Western Cape, Bellville, South Africa  
-3CSIRO Oceans and Atmosphere, Hobart, Tasmania, 7000, Australia
+^1^Department of Oceanography, Dalhousie University, Halifax, Nova Scotia, Canada  
+^2^Department of Biodiversity and Conservation Biology, University of the Western Cape, Bellville, South Africa  
+^3^SIRO Oceans and Atmosphere, Hobart, Tasmania, 7000, Australia
 
 __*Correspondence:__  
 Robert Schlegel  
 robert.schlegel@dal.ca  
-# Currently based at the Department of Physical Oceanography, Woods Hole Oceanographic Institution, Woods Hole, Massachusetts, USA 
 
 __Keywords: marine heatwaves, sea surface temperature, sub-optimal data, time series length, missing data, long-term trend__
 
@@ -98,6 +97,8 @@ To quantify the effects that time series length, missing data, and long-term tre
 
 The amount of uncertainty that the sub-optimal tests (see sub-sections below) introduce into the results is calculated by measuring the percent of change in the results from the control (optimal) time series as the data become more sub-optimal. No significance test is used here, rather the increasing uncertainty range in the results is shown so as to provide a benchmark against which one may decide how much uncertainty is too much depending on ones applications. Linear models are used to quantify the increasing rates of uncertainty that these sub-optimal tests introduce. These rates are analysed at a global scale to investigate spatial patterns before being discussed in more depth in the Best Practices section.
 
+<!-- RWS: Need to state up front where the code may be accessed. -->
+
 <!-- The following two questions are used to further frame the results:   -->
 
 <!-- 1) By what percent are the average and focus MHW results changed by increasingly sub-optimal data? -->
@@ -169,7 +170,9 @@ The same global patterns of the effect of shortened time series on the average M
 
 The effects of increasing missing data on MHW detection were more linear than the effects of time series length, with the exception of MHW count, which was the least linear effect of all tests (Figure 2). Up to 25% missing data, the count of average MHWs in a times series decreases by 45% or increases by 38% (Figure 2D). Past this point the count of MHWs falls at a roughly linear rate until there are 33 -- 86% fewer MHWs when 50% data are missing. The effect of missing data on the sum of the average MHW days was linear at a rate of roughly 2% fewer MHW days in a time series for every 1% of missing data (Figure 2E). The effect of missing data on the maximum intensities of the average MHWs was also linear, but very noisy. The maximum intensities of average MHWs detected in time series missing 50% of their data could decrease by 33% or increase by 3%. 
 
-The effect of random missing data on the focus MHW in each time series was dramatic. As missing data in a time series increased, it becomes increasingly likely that the focus MHW is broken into multiple smaller events. It is not uncommon for this to begin with as little as 1% missing data, and increases in severity up to 25 -- 30% (Figure 3D). From this point the number of separate events the MHW is broken into decreases as the smaller events are completely missed due to the loss of data. The duration of the focus MHW was almost always negatively impacted by missing data (Figure 3E). The decrease in duration follows a linear trend of a reduction ranging from 1 -- 3% per 1% of missing data. At 26% missing data at least 5% of the time series had their focus MHW removed entirely from the time series, as seen by a reduction in maximum intensity of 100% (Figure 3F). At 41% missing data at least 25% of the time series had their focus MHW removed.
+The effect of random missing data on the focus MHW in each time series was dramatic. As missing data in a time series increased, it becomes increasingly likely that the focus MHW is broken into multiple smaller events. It is not uncommon for this to begin with as little as 1% missing data, and increases in severity up to 25 -- 30% (Figure 3D). From this point the number of separate events the MHW is broken into decreases as the smaller events are completely missed due to the loss of data. The duration of the focus MHW was almost always negatively impacted by missing data (Figure 3E). The decrease in duration follows a linear trend of a reduction ranging from 1 -- 3% per 1% of missing data. At 26% missing data at least 5% of the time series had their focus MHW removed entirely from the time series, as seen by a reduction in maximum intensity of 100% (Figure 3F). At 41% missing data at least 25% of the time series had their focus MHW removed. 
+
+<!-- RWS: Need a sentence in the above aparagraph discussing the effect of missing data on the peaks of pointy MHWs. -->
 
 The effect of missing data on a MHW depends largely on their shape, which is the area above the threshold climatology and below the observed anomaly. The WA event has a very pronounced peak (Figure 1A), so when more data are missing we see how likely it becomes that this peak is not being recorded. The maximum intensity measured in the control time series is 6.5°C, but because very few days of this MHW were so intense, increases in missing data become more likely to remove these large values and the maximum intensity of the WA event begins to decrease more rapidly than either the NWA or Med MHWs.
 
@@ -225,7 +228,9 @@ The MHW results from time series with 10 years of data are not appreciably diffe
 
 An unexpected result was that increasing the base period used for climatology creation to longer than 30 years reduced the probability that the outputs would be comparable by as much as shortening the base period did. This means that the common (often unspoken) assumption that using 30 years of data is the same as using > 30 years of data for a base period is incorrect. In other words, a 30 year time series is often thought of as the minimum length needed to constrain the climatology but we have shown here that using a climatology period greater than 30 years may create outputs as different as using fewer than 30 years. This is due to the decadal and multi-decadal variability in an environmental time series. In time series with less interannual variability there will be no appreciable difference between results calculated with a 30 year base period versus the 30+ years. In a time series with large interannual variability, such as the Western Australia reference time series, a base period of 30 years is not yet enough to completely average out the variability. It is therefore important to stress the adherence to the WMO standards for climatology periods as closely as possible, should one want one's results to be comparable to other studies. Increased smoothing of the climatologies derived from shortened time series was not an effective fix so it is recommend that the default climatology creation methodology in @Hobday2016 be adhered to if one's results are meant to be comparable to the growing body of literature that uses this methodology.
 
-The MHW algorithm proved to be resilient to missing data. Time series missing as much as 25% of their data may be used if necessary as the effect this may have on the count of MHWs is comparable to using a 10 year time series and the rate of increase in uncertainty can be modelled with some accuracy. Over 25% missing data and the count of average MHWs in a time series is affected too much and too unpredictably for the results to be reliable, while the focus MHWs may begin to disappear at 26% or more missing data. That being said, the effect that missing data has on the duration of average MHWs in a time series is very predictable and can be corrected for rather easily as seen in Table 1. We showed here that a simple correction for missing data in a time series is to linearly interpolate over the gaps. Hypothetically this may be done for more than 50% missing data and the results will have less uncertainty in them than using a 10 year time series would. Should one choose to use linear interpolation to fill gaps in a time series missing more than 25% missing data one must be very cautious that the period of time one is interested in is not being heavily interpolated. 
+The MHW algorithm proved to be resilient to randomly missing data. Time series missing as much as 25% of their data may be used if necessary as the effect this may have on the count of MHWs is comparable to using a 10 year time series and the rate of increase in uncertainty can be modelled with some accuracy. Over 25% missing data and the count of average MHWs in a time series is affected too much and too unpredictably for the results to be reliable, while the focus MHWs may begin to disappear at 26% or more missing data. That being said, the effect that missing data has on the duration of average MHWs in a time series is very predictable and can be corrected for rather easily as seen in Table 1. We showed here that a simple correction for missing data in a time series is to linearly interpolate over the gaps. Hypothetically this may be done for more than 50% missing data and the results will have less uncertainty in them than using a 10 year time series would. Should one choose to use linear interpolation to fill gaps in a time series missing more than 25% missing data one must be very cautious that the period of time one is interested in is not being heavily interpolated. 
+
+<!-- RWS: Need a sentence in the above aparagraph discussing the effect of missing data on the peaks of pointy MHWs. -->
 
 The long-term trends in times series have the largest potential effect on the MHWs detected. These effects are the most predictable of the three tests but also introduce the largest ranges of uncertainty. A concept to consider with the increase in duration from added long-term trends is that the temperatures in the time series usually increase "faster" than the 90th percentile threshold. So as the slope of the added trend increases, a given MHW effectively spreads outwards. If the rate of onset/decline for the MHW was more gradual (e.g. the NWA event) it will increase in duration more rapidly. If the rate of onset/decline was more rapid (e.g. the Med event), then the duration of the MHW won't change much with a larger long-term trend. If MHWs have close neighbours then as they spread outward they may encounter one another and merge into a single much larger event, as the NWA event is prone to do. This reduces the overall count of the MHWs detected in a time series while increasing the mean duration of the events detected.
 
