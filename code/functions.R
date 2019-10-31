@@ -844,13 +844,13 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 
   # Set category fill colours
   fillColCat <- c(
-    "Focus MHW" = "red",
+    "Focal MHW" = "red",
     "Other MHWs" = "salmon"
   )
 
   ggplot(data = clim_cat, aes(x = t, y = temp)) +
     geom_flame(aes(y2 = thresh, fill = "Other MHWs"), n = 5, n_gap = 2) +
-    geom_flame(data = peak_event, aes(y2 = thresh, fill = "Focus MHW"), n = 5, n_gap = 2) +
+    geom_flame(data = peak_event, aes(y2 = thresh, fill = "Focal MHW"), n = 5, n_gap = 2) +
     geom_line(aes(y = seas, col = "Climatology"), size = 0.7) +
     geom_line(aes(y = thresh, col = "Threshold"), size = 0.7) +
     geom_line(aes(y = temp, col = "Temperature"), size = 0.6) +
@@ -869,7 +869,7 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
     scale_colour_manual(name = NULL, values = lineColCat,
                         breaks = c("Climatology", "Threshold", "Temperature")) +
     scale_fill_manual(name = NULL, values = fillColCat,
-                      breaks = c("Focus MHW", "Other MHWs")) +
+                      breaks = c("Focal MHW", "Other MHWs")) +
     scale_x_date(date_labels = "%b %Y", expand = c(0, 0)) +
     labs(y = y_label, x = NULL) +
     facet_wrap(~site_label, ncol = 1, scales = "free") +
@@ -892,7 +892,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
   # Choose if the figure will show the base tests or the interp. comp.
   if(tests == "base"){
     test_choice <- c("length", "missing", "trend")
-    test_levels <- c("Time series length (years)", "Missing data (%)", "Trend (°C/dec)")
+    test_levels <- c("Time series length (years)", "Missing data (%)", "Trend (°C/decade)")
   } else if(tests == "miss_comp"){
     test_choice <- c("missing", "interp")
     test_levels <- c("Missing data (%)", "Interpolated data (%)")
@@ -912,7 +912,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
                              id = c("mean_perc", "sum_perc", "mean_perc"),
                              stringsAsFactors = F)
     var_levels <- c("Count (% n)", "Duration (% sum of days)", "Max. intensity (% of mean °C)")
-    y_axis_title <- "Change in focus MHW"
+    y_axis_title <- "Change in focal MHW"
   } else if(result_choice == "average"){
     var_choice <- data.frame(var = c("count", "duration", "intensity_max"),
                              id = c("n_perc", "sum_perc", "mean_perc"),
@@ -955,7 +955,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
            var_label = factor(var_label, levels = var_levels),
            test_label = case_when(test == "length" & "length" %in% test_choice ~ "Time series length (years)",
                                   test == "missing" ~ "Missing data (%)",
-                                  test == "trend" ~ "Trend (°C/dec)",
+                                  test == "trend" ~ "Trend (°C/decade)",
                                   test == "interp" ~ "Interpolated data (%)",
                                   test == "base_period" ~ "Difference from WMO base period (years)",
                                   test == "window_10" ~ "Window width 10",
@@ -1175,7 +1175,7 @@ trend_plot <- function(test_sub, var_sub,
   } else if(test_sub == "missing"){
     sen_test <- "per 1% missing data"
   } else if(test_sub == "trend"){
-    sen_test <- "per 0.1°C/dec trend"
+    sen_test <- "per 0.01°C/decade trend"
   }
 
   # Prepare colour palette
