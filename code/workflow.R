@@ -254,7 +254,7 @@ spot_fix_files <- file.info(dir("data/global", full.names = T, pattern = "slice"
   select(file_name, mtime) %>%
   filter(mtime < "2019-10-28 22:00:00")
 spot_fix_index <- which(dir("data/global", full.names = T) %in% spot_fix_files$file_name)
-plyr::l_ply(spot_fix_index, global_analysis_single, .parallel = T, par_op = F)
+plyr::l_ply(spot_fix_index, global_analysis_single, .parallel = F, par_op = T)
 
 # The nightly running of the MHW Tracker seems to have interfered with the
 # calculation of several lon slices
@@ -310,31 +310,31 @@ plyr::l_ply(spot_fix_index, global_analysis_single, .parallel = T, par_op = F)
 # Code that produces the tables and supports the statements made in the Best Practices section
 
 # Load the random 1000 data
-system.time(
-  random_results <- readRDS("data/random_results_1000.Rda") %>%
-    unite("site", c(lon, lat))
-) # 68 seconds, 15 seconds without the "site" column
+# system.time(
+#   random_results <- readRDS("data/random_results_1000.Rda") %>%
+#     unite("site", c(lon, lat))
+# ) # 68 seconds, 15 seconds without the "site" column
 
 # Create table showing the rates of change int the results
 # Find the 5th, 25th, 50th,75th, and 95th quantile at each step
 # Fit linear models to those and provide those trends + R2 values
 # Also show where the inflection points may be where the trends change
-var_choice <- data.frame(var = c("count", "duration", "intensity_max", "focus_count", "focus_duration", "focus_intensity_max"),
-                         id = c("n_perc", "sum_perc", "mean_perc", "mean_perc", "sum_perc", "mean_perc"),
-                         stringsAsFactors = F)
-random_quant <- random_results %>%
-  right_join(var_choice, by = c("var", "id")) %>%
-  mutate(test = as.character(test)) %>%
-  filter(test %in% c("length", "missing", "interp", "trend")) %>%
-  group_by(test, index_vals, var, id) %>%
-  summarise(q05 = quantile(val, 0.05),
-            q25 = quantile(val, 0.25),
-            q50 = quantile(val, 0.50),
-            q75 = quantile(val, 0.75),
-            q95 = quantile(val, 0.95),
-            iqr50 = q75-q25,
-            iqr90 = q95-q05) %>%
-  ungroup()
+# var_choice <- data.frame(var = c("count", "duration", "intensity_max", "focus_count", "focus_duration", "focus_intensity_max"),
+#                          id = c("n_perc", "sum_perc", "mean_perc", "mean_perc", "sum_perc", "mean_perc"),
+#                          stringsAsFactors = F)
+# random_quant <- random_results %>%
+#   right_join(var_choice, by = c("var", "id")) %>%
+#   mutate(test = as.character(test)) %>%
+#   filter(test %in% c("length", "missing", "interp", "trend")) %>%
+#   group_by(test, index_vals, var, id) %>%
+#   summarise(q05 = quantile(val, 0.05),
+#             q25 = quantile(val, 0.25),
+#             q50 = quantile(val, 0.50),
+#             q75 = quantile(val, 0.75),
+#             q95 = quantile(val, 0.95),
+#             iqr50 = q75-q25,
+#             iqr90 = q95-q05) %>%
+#   ungroup()
 
 # Custom function for trend calculation
 # Moved to functions.R
@@ -475,59 +475,45 @@ random_quant <- random_results %>%
 
 # The function for correct trend calculatoin was moved to the functions script
 
-# Function to ensure that each number has two significant digits
-two_sig <- function(num_val){
-  num_round <- plyr::round_any(num_val, 0.01)
-  # if(num_round == 0) num_round <- "0.0"
-  # if(num_round == 1) num_round <- "1.0"
-  # num_pad <- str_pad(num_round, width = 4, pad = "0", side = "right")
-}
-
 # Calculate the table for the Best Practices section
-slope_final <- random_quant %>%
-  gather(key = "stat", value = "val", -c(test:id)) %>%
-  mutate(test2 = test,
-         var2 = var) %>%
-  group_by(test2, var2, id, stat) %>%
-  group_modify(~trend_correct(.x)) %>%
-  dplyr::rename(Test = test2,
-                Variable = var2,
-                Range = range) %>%
-  ungroup() %>%
-  select(-id) %>%
-  select(-intercept, -p) %>%
-  filter(!(stat %in% c("iqr50", "iqr90"))) %>%
-  group_by(Test, Variable, Range, stat) %>%
-  mutate(slope = sprintf(slope, fmt = "%0.2f", how = "replace"),
-         R2 = sprintf(R2, fmt = "%0.2f", how = "replace")) %>%
-  # mutate(slope = signif(slope, 2),
-         # R2 = signif(R2, 2)) %>%
-  # mutate(slope = as.character(plyr::round_any(slope, 0.01)),
-  #        R2 = as.character(plyr::round_any(R2, 0.01))) %>%
-  mutate(slope = paste0(slope,"%"),
-         R2 = paste0("(",R2,")")) %>%
-  unite(slope, R2, col = "slope_R2", sep = " ") %>%
-  # gather(slope, R2, p, key = "var", value = "val") %>%
-  spread(stat, slope_R2) %>%
-  # select(test, var, range, q50, iqr50, iqr90) %>%
-  select(Test, Variable, Range, q05, q25, q50, q75, q95) %>%
-  ungroup() %>%
-  mutate(Test = factor(Test, levels = c("length", "missing", "interp", "trend"))) %>%
-  arrange(Test)
+# slope_final <- random_quant %>%
+#   gather(key = "stat", value = "val", -c(test:id)) %>%
+#   mutate(test2 = test,
+#          var2 = var) %>%
+#   group_by(test2, var2, id, stat) %>%
+#   group_modify(~trend_correct(.x)) %>%
+#   dplyr::rename(Test = test2,
+#                 Variable = var2,
+#                 Range = range) %>%
+#   ungroup() %>%
+#   select(-id) %>%
+#   select(-intercept, -p) %>%
+#   filter(!(stat %in% c("iqr50", "iqr90"))) %>%
+#   group_by(Test, Variable, Range, stat) %>%
+#   mutate(slope = sprintf(slope, fmt = "%0.2f", how = "replace"),
+#          R2 = sprintf(R2, fmt = "%0.2f", how = "replace")) %>%
+#   mutate(slope = paste0(slope,"%"),
+#          R2 = paste0("(",R2,")")) %>%
+#   unite(slope, R2, col = "slope_R2", sep = " ") %>%
+#   spread(stat, slope_R2) %>%
+#   select(Test, Variable, Range, q05, q25, q50, q75, q95) %>%
+#   ungroup() %>%
+#   mutate(Test = factor(Test, levels = c("length", "missing", "interp", "trend"))) %>%
+#   arrange(Test)
 
 # Smack it together to round this puppy out
-best_table_average <- slope_final %>%
-  filter(!grepl("focus", Variable)) %>%
-  mutate(Variable = str_replace(Variable, "intensity_max", "max. intensity"))
-saveRDS(best_table_average, "data/best_table_average.Rda")
-write_csv(best_table_average, "data/table_1.csv")
+# best_table_average <- slope_final %>%
+#   filter(!grepl("focus", Variable)) %>%
+#   mutate(Variable = str_replace(Variable, "intensity_max", "max. intensity"))
+# saveRDS(best_table_average, "data/best_table_average.Rda")
+# write_csv(best_table_average, "data/table_1.csv")
 
-best_table_focus <- slope_final %>%
-  filter(grepl("focus", Variable)) %>%
-  mutate(Variable = str_remove(Variable, "focus_"),
-         Variable = str_replace(Variable, "intensity_max", "max. intensity"))
-saveRDS(best_table_focus, "data/best_table_focus.Rda")
-write_csv(best_table_focus, "data/table_2.csv")
+# best_table_focus <- slope_final %>%
+#   filter(grepl("focus", Variable)) %>%
+#   mutate(Variable = str_remove(Variable, "focus_"),
+#          Variable = str_replace(Variable, "intensity_max", "max. intensity"))
+# saveRDS(best_table_focus, "data/best_table_focus.Rda")
+# write_csv(best_table_focus, "data/table_2.csv")
 
 
 # Discussion --------------------------------------------------------------
