@@ -94,17 +94,14 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 
 # Supplementary figure captions -------------------------------------------
 
-fig_cap_S1 <- as.character("Figure S1: The effect of the sub-optimal tests on the seasonal mean and threshold
-                           climatologies. The top row shows the percent change in the standard deviation (SD)
-                           of the seasonal climatology for each step in the respective sub-optimal tests. The
-                           percent change of the seasonal climatology is shown instead of the change in the mean
-                           because that value is 0 (or very close), so measuring a percent of change is not effective.
-                           The bottom row shows the percent change in the mean threshold climatology.
-                           The other elements are the same as Figure 2.")
+# NB: These have all been manually line separated here to best match the figures they are legends for
 
-fig_cap_S2 <- as.character("Figure S2: The effect of different 30 year climatology base periods on MHW results.
-                           The left column shows the effect on the average MHWs and the right column shows focal MHWs.
-                           The elements of this figure are the same as Figure 2.")
+fig_cap_S1 <- as.character("Figure S1: The effect of the sub-optimal tests on the seasonal mean and threshold climatologies.
+                           The top row shows the percent change in the standard deviation (SD) of the seasonal climatology for each step in the respective sub-optimal tests.
+                           The percent change of the seasonal climatology is shown instead of the change in the mean because that value is 0 (or very close), so measuring a percent of change is not effective.
+                           The bottom row shows the percent change in the mean threshold climatology. The other elements are the same as Figure 2.")
+
+fig_cap_S2 <- as.character("Figure S2: The effect of different 30 year climatology base periods on MHW results. The left column shows the effect on the average MHWs and the right column shows focal MHWs. The elements of this figure are the same as Figure 2.")
 
 fig_cap_S3 <- as.character("Figure S3: The global rates of change in MHW results due to increasing missing data
                            from 0 -- 50%. The elements of this figure are the same as Figure 4.")
@@ -637,15 +634,15 @@ random_analysis <- function(empty_integer, base_period = F){
 global_analysis <- function(nc_file, par_op = F){
 
   # Load and prep data
-  system.time(
+  # system.time(
   sst <- load_noice_OISST(nc_file)
-  ) # ~1.8 seconds
+  # ) # ~1.8 seconds
 
   # Run the analysis on each lon/lat pixel
-  system.time(
+  # system.time(
   res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = par_op, .progress = "text",
                      .paropts = c(.inorder = FALSE))
-  ) # ~103 seconds in parallel, ~8.5 minutes not in parallel, this is misleading as multiple runs will slow each other down
+  # ) # ~103 seconds in parallel, ~8.5 minutes not in parallel, this is misleading as multiple runs will slow each other down
   # ~5 seconds for one pixel, ~xxx seconds not in parallel
   # Times may vary by 50% due to change in pixel count per longitude step
   return(res)
@@ -657,46 +654,32 @@ global_analysis <- function(nc_file, par_op = F){
 # Fills in gaps in data
 # This is expected to be fed a data.frame with only and `index_vals` and `val` column
 # This reduces the need to create larger more complex data.frames when plugging holes
-gapless_data <- function(df){
-  # Determine the control group
-  if(30 %in% df$index_vals){
-    control_val <- 30
-  } else{
-    control_val <- 0
-  }
+gapless_data <- function(df, gapless_seq){
 
-  # Create gapless index of test values
-  # This is necessary for the missing data as some steps have no MHWs
-  index_step <- unique(df$index_vals)[2]-unique(df$index_vals)[1]
-  if(control_val == 0){
-    if(max(df$index_vals) > 0.3){
-      gapless_vector <- seq(0, 0.5, by = index_step)
-    } else{
-      gapless_vector <- seq(0, 0.3, by = index_step)
-    }
-  } else if(control_val == 30){
-    gapless_vector <- seq(10, max(unique(df$index_vals)), by = index_step)
-  }
-  index_gapless <- data.frame(index_vals = gapless_vector)
+  # Create gapless guide
+  index_gapless <- data.frame(index_vals = gapless_seq)
 
   # Gapless data.frame
   df_full <- df %>%
     right_join(index_gapless, by = "index_vals") %>%
-    mutate(val = replace_na(val, 0))
+    mutate(val = replace_na(val, 0),
+           # lon = lon[1],
+           # lat = lat[1],
+           test = test[1],
+           var = var[1])
   return(df_full)
 }
 
 # Custom function for trend calculation
 trend_stats <- function(df){
-  # This function must first ensure that any gaps in the data are filled in explicitly
-    res_model <- lm(val ~ index_vals, data = df)
-    res <- data.frame(intercept = round(broom::tidy(res_model)$estimate[1], 4),
-                      slope = round(broom::tidy(res_model)$estimate[2], 4),
-                      R2 = round(broom::glance(res_model)$adj.r.squared, 2),
-                      p = round(broom::tidy(res_model)$p.value[2], 2)) %>%
-      mutate(R2 = ifelse(R2 < 0, 0, R2),
-             R2 = ifelse(slope == 0 & intercept == 0, 1, R2),
-             p = ifelse(slope == 0, 1, p))
+  res_model <- lm(val ~ index_vals, data = df)
+  res <- data.frame(intercept = round(broom::tidy(res_model)$estimate[1], 4),
+                    slope = round(broom::tidy(res_model)$estimate[2], 4),
+                    R2 = round(broom::glance(res_model)$adj.r.squared, 2),
+                    p = round(broom::tidy(res_model)$p.value[2], 2)) %>%
+    mutate(R2 = ifelse(R2 < 0, 0, R2),
+           R2 = ifelse(slope == 0 & intercept == 0, 1, R2),
+           p = ifelse(slope == 0, 1, p))
   return(res)
 }
 
@@ -724,15 +707,27 @@ trend_stats <- function(df){
 #          test == "missing",
 #          var == "count",
 #          id == "n_perc")
+# df <- res %>%
+#   filter(lon == -160.125,
+#          lat == -58.125,
+#          test2 == "missing",
+#          var2 == "count")
 trend_correct <- function(df, full_seq = T){
+  df <- ungroup(df)
   if(df$test[1] == "length"){
-    df_A <- df %>%
+    if(full_seq){
+      length_seq <- 1:37
+    } else{
+      length_seq <- seq(10, 35, by = 5)
+    }
+    df_gapless <- gapless_data(df, length_seq)
+    df_A <- df_gapless %>%
       filter(index_vals %in% 10:30) %>%
       mutate(index_vals = abs(index_vals-30))
     res_A <- trend_stats(df_A) %>%
       mutate(range = "30 - 10")
     if(full_seq){
-      df_B <- df %>%
+      df_B <- df_gapless %>%
         filter(index_vals %in% 30:37) %>%
         mutate(index_vals = abs(index_vals-30))
       res_B <- trend_stats(df_B) %>%
@@ -741,24 +736,32 @@ trend_correct <- function(df, full_seq = T){
     } else{
      res <- res_A
     }
-  } else if(df$test[1] == "missing" & df$var[1] %in% c("count", "focus_count")){
+  } else if(df$test[1] %in% c("missing", "interp")){
     if(full_seq){
+      miss_seq <- seq(0, 0.50, by = 0.01)
       miss_seq_A <- seq(0, 0.25, by = 0.01)
       miss_seq_B <- seq(0.26, 0.50, by = 0.01)
     } else{
+      miss_seq <- seq(0, 0.5, by = 0.1)
       miss_seq_A <- seq(0, 0.3, by = 0.1)
       miss_seq_B <- seq(0.3, 0.5, by = 0.1)
     }
-    df_A <- df %>%
-      filter(index_vals <= max(miss_seq_A)+0.001) # There is some weird float rounding hapening off screen...
-    df_B <- df %>%
-      filter(index_vals  >= max(miss_seq_A)-0.001)
-    res_A <- trend_stats(df_A) %>%
-      mutate(range = "0.00 - 0.25")
-    res_B <- trend_stats(df_B) %>%
-      mutate(range = "0.26 - 0.50")
-    res <- rbind(res_A, res_B)
-  } else{
+    df_gapless <- gapless_data(df, miss_seq)
+    if(df$var[1] %in% c("count", "focus_count") & df$test[1] != "interp"){
+      df_A <- df_gapless %>%
+        filter(index_vals <= max(miss_seq_A)+0.001) # There is some weird float rounding hapening off screen...
+      df_B <- df_gapless %>%
+        filter(index_vals  >= max(miss_seq_A)-0.001)
+      res_A <- trend_stats(df_A) %>%
+        mutate(range = "0.00 - 0.25")
+      res_B <- trend_stats(df_B) %>%
+        mutate(range = "0.26 - 0.50")
+      res <- rbind(res_A, res_B)
+    } else{
+      res <- trend_stats(df_gapless) %>%
+        mutate(range = "0.00 - 0.50")
+    }
+  } else if(df$test[1] == "trend"){
     res <- trend_stats(df) %>%
       mutate(range = paste0(min(df$index_vals),".00 - ",max(df$index_vals),"0"))
   }
@@ -772,50 +775,24 @@ trend_correct <- function(df, full_seq = T){
 # A convenience function to load a lon slice of global results
 # Then filter out the variables not used in the results and run linear models
 # file_name <- "data/global/test_1130.Rda"
-# file_name <- "data/global/slice_0050.Rda"
+# file_name <- "data/global/slice_0700.Rda"
 var_trend <- function(file_name){
   # The subsetting index
   var_choice <- data.frame(var = c("count", "duration", "intensity_max",
                                    "focus_count", "focus_duration", "focus_intensity_max"),
-                           id = c("n", "sum_perc", "mean_perc",
+                           id = c("n_perc", "sum_perc", "mean_perc",
                                   "mean_perc", "sum_perc", "mean_perc"),
                            stringsAsFactors = F)
-  # Still using an older run of the global output
-  # So need to calculate n_perc manually here first
-  lon_slice <- readRDS(file_name) %>%
-    right_join(var_choice, by = c("var", "id")) %>%
-    group_by(lon, lat, test, var, id) %>%
-    group_modify(~gapless_data(.x))
-
-  # Find the control count values
-  control_count <- lon_slice %>%
-    filter(var == "count",
-           index_vals %in% c(0, 30)) %>%
-    dplyr::rename(control_val = val) %>%
-    select(-index_vals)
-
-  # Calculate n_perc
-  n_perc_df <- lon_slice %>%
-    filter(var == "count") %>%
-    left_join(control_count, by = c("lon", "lat", "test", "var", "id")) %>%
-    ungroup() %>%
-    mutate(n_perc = round((val-control_val)/abs(control_val)*100, 3),
-           id = "n_perc") %>%
-    dplyr::select(-val, -control_val) %>%
-    dplyr::rename(val = n_perc)
-
-  # Stick it back together
-  lon_correct <- rbind(data.frame(lon_slice), n_perc_df) %>%
-    filter(id != "n") %>%
-    mutate(val = ifelse(is.infinite(val), -100, val))
 
   # system.time(
-    res <- lon_correct %>%
+    res <- readRDS(file_name) %>%
+      right_join(var_choice, by = c("var", "id")) %>%
       mutate(test2 = test, var2 = var) %>%
       group_by(lon, lat, test2, var2, id) %>%
       group_modify(~trend_correct(.x, full_seq = F)) %>%
-      dplyr::rename(test = test2, var = var2)
-    # ) # 60 seconds
+      dplyr::rename(test = test2, var = var2) %>%
+      select(-intercept, -p)
+    # ) # 102 seconds
   return(res)
 }
 
@@ -1154,8 +1131,11 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
   # Add supplementary figure captions as desired
   # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
   if(supp_cap != FALSE){
+    caption <- paste0(strwrap(supp_cap, 160), sep="", collapse="\n")
     fig_plot <- fig_plot +
-      labs(caption = supp_cap)
+      labs(caption = caption) +
+      theme(plot.caption=element_text(size=8, hjust=0, margin=margin(t=15)))
+      # theme(plot.caption.position = "plot")
   }
 
   # Exit
@@ -1167,6 +1147,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 # testers...
 # test_sub <- "length"
 # var_sub <- "intensity_max"
+# var_sub <- "focus_intensity_max"
 # var_sub <- "duration"
 # var_sub <- "count"
 # var_sub <- "focus_count"
@@ -1174,16 +1155,14 @@ trend_plot <- function(test_sub, var_sub,
                        df = global_var_trend,
                        supp_cap = FALSE) {
 
-  if(!exists("global_var_trend")) global_var_trend <- readRDS("data/global_var_trend.Rda")
-
   # Filter base data
   base_sub <- df %>%
-    filter(test == test_sub, var == var_sub) %>%
+    filter(test == test_sub, var == var_sub)# %>%
     # correct focus_count trend back to count from percentage
-    mutate(trend = ifelse(var == "focus_count", trend/100, trend))
+    # mutate(trend = ifelse(var == "focus_count", trend/100, trend))
 
   # Prepare legend title bits
-  sen_change <- "Percent change "
+  # sen_change <- "Percent change "
 
   # if(prop){
     # sen_change <- "Percent change "
@@ -1194,11 +1173,11 @@ trend_plot <- function(test_sub, var_sub,
     # sen_change <- "Change "
   # }
   if(test_sub == "length"){
-    sen_test <- "per year"
+    sen_test <- "Change per year"
   } else if(test_sub == "missing"){
-    sen_test <- "per 1% missing data"
+    sen_test <- "Change per 1% missing data"
   } else if(test_sub == "trend"){
-    sen_test <- "per 0.01°C/decade trend"
+    sen_test <- "Change per 0.01°C/decade trend"
   }
 
   # Prepare colour palette
@@ -1210,7 +1189,7 @@ trend_plot <- function(test_sub, var_sub,
     vir_op <- "B"
     col_split <- c("turquoise4", "chocolate")
     sen_var <- "\nin count (n)"
-    sen_change <- "Change " # Intentional overwrite of above value
+    # sen_change <- "Change " # Intentional overwrite of above value
   } else if(var_sub %in% c("intensity_max", "focus_intensity_max")){
     vir_op <- "A"
     col_split <- c("blue", "red")
@@ -1218,7 +1197,7 @@ trend_plot <- function(test_sub, var_sub,
   }
 
   # Find quantiles
-  trend_quantiles <- quantile(base_sub$trend, na.rm = T,
+  slope_quantiles <- quantile(base_sub$slope, na.rm = T,
                               probs = c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0))
 
   # Create legend break labels
@@ -1226,27 +1205,20 @@ trend_plot <- function(test_sub, var_sub,
 
   # Correct base data to quantiles as the tails are very long
   base_quantile <- base_sub %>%
-    mutate(trend = case_when(trend > trend_quantiles[6] ~ trend_quantiles[6],
-                             trend < trend_quantiles[2] ~ trend_quantiles[2],
-                             trend <= trend_quantiles[6] | trend >= trend_quantiles[2] ~ trend))
+    mutate(slope = case_when(slope > slope_quantiles[6] ~ slope_quantiles[6],
+                             slope < slope_quantiles[2] ~ slope_quantiles[2],
+                             slope <= slope_quantiles[6] | slope >= slope_quantiles[2] ~ slope))
 
   # The map
   trend_map <- ggplot(base_quantile, aes(x = lon, y = lat)) +
-    geom_tile(aes(fill = trend)) +
+    geom_tile(aes(fill = slope)) +
     geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
-    # Test latitudes
-    # geom_hline(aes(yintercept = 80)) +
-    # geom_hline(aes(yintercept = -70)) +
-    # scale_fill_viridis_c(option = vir_op) +
-    # scale_fill_gradientn(colors = scales::viridis_pal(option = vir_op)(9),
-    # limits = c(as.numeric(trend_quantiles[2]),
-    # as.numeric(trend_quantiles[4])),
-    # breaks = c(as.numeric(trend_quantiles[2:6]))) +
     scale_fill_gradient2(low = col_split[1], high = col_split[2],
-                         breaks = c(round(as.numeric(trend_quantiles[2:6]), 2))) +
+                         breaks = c(round(as.numeric(slope_quantiles[2:6]), 2)),
+                         labels = paste0(c(round(as.numeric(slope_quantiles[2:6]), 2)),"%")) +
     coord_equal(expand = F) +
     theme_void() +
-    labs(fill = paste0(sen_change, sen_test, sen_var)) +
+    labs(fill = paste0(sen_test, sen_var)) +
     theme(legend.position = "bottom",
           legend.key.width = unit(2, "cm"),
           panel.background = element_rect(fill = "grey80"))

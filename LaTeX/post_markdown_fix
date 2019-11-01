@@ -14,13 +14,12 @@ Correct all bullet points:
       - Layers of bullets underneath
 
 Citation:
-- Line ~592: Change'HeatwaveR' to 'heatwaveR'
-- Line ~ 629: Ensure the Hobday et al 2018 citation is correct
 - Baumgartner 1992 -> "Santa Barbara basin, California"
+- Line ~ 629: Ensure the Hobday et al 2018 citation is correct
+- Mills 2013 -> "Chiang, F. S.,"
+- Line ~592: Change 'HeatwaveR' to 'heatwaveR'
 - Zhao 2019 -> MATLAB
     - Capitalise all proper nouns
-- Mills 2013 -> "Chiang, F. S.,"
-- Check that multiple citations for one point are ordered in correct chronological order
 - Check that there are no janky in text citation fails (???)
 - Check the reference section that all citations have been compiled correctly
 - Particularly worry about the WMO citations

@@ -220,17 +220,17 @@ source("code/functions.R")
 # Global analysis ---------------------------------------------------------
 
 # Wrapper function with a chatty output as it chugs along
-global_analysis_single <- function(file_sub, par_op = F){
-  OISST_slice <- OISST_files[file_sub]
-  lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
-  print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
-  slice_res <- global_analysis(OISST_slice, par_op = par_op)
-  saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
-  print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
-  rm(slice_res); gc()
-}
+# global_analysis_single <- function(file_sub, par_op = F){
+#   OISST_slice <- OISST_files[file_sub]
+#   lon_row_pad <- str_pad(file_sub, width = 4, pad = "0", side = "left")
+#   print(paste0("Began run on step ",lon_row_pad," at ",Sys.time()))
+#   slice_res <- global_analysis(OISST_slice, par_op = par_op)
+#   saveRDS(slice_res, file = paste0("data/global/slice_",lon_row_pad,".Rda"))
+#   print(paste0("Finished run on step ",lon_row_pad," at ",Sys.time()))
+#   rm(slice_res); gc()
+# }
 # doMC::registerDoMC(cores = 50)
-doParallel::registerDoParallel(cores = 50)
+# doParallel::registerDoParallel(cores = 50)
 
 # Spot check
 # plyr::l_ply(93, global_analysis_single, .parallel = F, par_op = T) # This took ~2 minutes to run
@@ -249,12 +249,12 @@ doParallel::registerDoParallel(cores = 50)
 # To find these issues more easily an index of files not created before October 28th, 22:00 (UTC-3) is used
 # This must then be run repeatedly until no missing files remain
   # NB: When the number of missing files falls below 50, switch to multiprocessing of a single file
-spot_fix_files <- file.info(dir("data/global", full.names = T, pattern = "slice")) %>%
-  mutate(file_name = row.names(.)) %>%
-  select(file_name, mtime) %>%
-  filter(mtime < "2019-10-28 22:00:00")
-spot_fix_index <- which(dir("data/global", full.names = T) %in% spot_fix_files$file_name)
-plyr::l_ply(spot_fix_index, global_analysis_single, .parallel = F, par_op = T)
+# spot_fix_files <- file.info(dir("data/global", full.names = T, pattern = "slice")) %>%
+#   mutate(file_name = row.names(.)) %>%
+#   select(file_name, mtime) %>%
+#   filter(mtime < "2019-10-28 22:00:00")
+# spot_fix_index <- which(dir("data/global", full.names = T) %in% spot_fix_files$file_name)
+# plyr::l_ply(spot_fix_index, global_analysis_single, .parallel = F, par_op = T)
 
 # The nightly running of the MHW Tracker seems to have interfered with the
 # calculation of several lon slices
@@ -270,13 +270,14 @@ plyr::l_ply(spot_fix_index, global_analysis_single, .parallel = F, par_op = T)
 
 # Set cores
 # doMC::registerDoMC(cores = 50)
+doParallel::registerDoParallel(cores = 50)
 
 # Calculate trends and save
-# system.time(
-#   global_var_trend <- plyr::ldply(dir("data/global", full.names = T),
-#                                   .fun = var_trend, .parallel = T)
-# ) # 60 seconds for one lon slice, ~70 minutes for all
-# saveRDS(global_var_trend, "data/global_var_trend.Rda")
+system.time(
+  global_var_trend <- plyr::ldply(dir("data/global", full.names = T, pattern = "slice"),
+                                  .fun = var_trend, .parallel = T)
+) # 102 seconds for one lon slice, ~90 minutes for all
+saveRDS(global_var_trend, "data/global_var_trend.Rda")
 
 
 # Figures -----------------------------------------------------------------
