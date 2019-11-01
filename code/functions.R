@@ -1130,13 +1130,13 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 
   # Add supplementary figure captions as desired
   # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
-  if(supp_cap != FALSE){
-    caption <- paste0(strwrap(supp_cap, 160), sep="", collapse="\n")
-    fig_plot <- fig_plot +
-      labs(caption = caption) +
-      theme(plot.caption=element_text(size=8, hjust=0, margin=margin(t=15)))
-      # theme(plot.caption.position = "plot")
-  }
+  # if(supp_cap != FALSE){
+  #   caption <- paste0(strwrap(supp_cap, 160), sep = "", collapse = "\n")
+  #   fig_plot <- fig_plot +
+  #     labs(caption = caption) +
+  #     theme(plot.caption = element_text(size = 10, hjust = 0))
+  #     # theme(plot.caption.position = "plot")
+  # }
 
   # Exit
   return(fig_plot)
@@ -1146,6 +1146,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 # Function for easily plotting subsets from the global slope results
 # testers...
 # test_sub <- "length"
+# test_sub <- "trend"
 # var_sub <- "intensity_max"
 # var_sub <- "focus_intensity_max"
 # var_sub <- "duration"
@@ -1157,21 +1158,8 @@ trend_plot <- function(test_sub, var_sub,
 
   # Filter base data
   base_sub <- df %>%
-    filter(test == test_sub, var == var_sub)# %>%
-    # correct focus_count trend back to count from percentage
-    # mutate(trend = ifelse(var == "focus_count", trend/100, trend))
+    filter(test == test_sub, var == var_sub)
 
-  # Prepare legend title bits
-  # sen_change <- "Percent change "
-
-  # if(prop){
-    # sen_change <- "Percent change "
-    # if(!(var_sub %in% c("count", "focus_count"))){
-      # base_sub$trend <- base_sub$trend * 100
-    # }
-  # } else{
-    # sen_change <- "Change "
-  # }
   if(test_sub == "length"){
     sen_test <- "Change per year"
   } else if(test_sub == "missing"){
@@ -1200,9 +1188,6 @@ trend_plot <- function(test_sub, var_sub,
   slope_quantiles <- quantile(base_sub$slope, na.rm = T,
                               probs = c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0))
 
-  # Create legend break labels
-  # break_labels <- as.numeric(trend_quantiles[2:6])
-
   # Correct base data to quantiles as the tails are very long
   base_quantile <- base_sub %>%
     mutate(slope = case_when(slope > slope_quantiles[6] ~ slope_quantiles[6],
@@ -1214,22 +1199,24 @@ trend_plot <- function(test_sub, var_sub,
     geom_tile(aes(fill = slope)) +
     geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
     scale_fill_gradient2(low = col_split[1], high = col_split[2],
-                         breaks = c(round(as.numeric(slope_quantiles[2:6]), 2)),
-                         labels = paste0(c(round(as.numeric(slope_quantiles[2:6]), 2)),"%")) +
+                         breaks = unique(c(round(as.numeric(slope_quantiles[2:6]), 2))),
+                         labels = paste0(c(unique(round(as.numeric(slope_quantiles[2:6]), 2))), "%")) +
     coord_equal(expand = F) +
     theme_void() +
     labs(fill = paste0(sen_test, sen_var)) +
     theme(legend.position = "bottom",
           legend.key.width = unit(2, "cm"),
+          legend.title = element_text(vjust = 1.5),
+          legend.title.align = 0,
           panel.background = element_rect(fill = "grey80"))
   # trend_map
 
   # Add supplementary figure captions as desired
   # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
-  if(supp_cap != FALSE){
-    trend_map <- trend_map +
-      labs(caption = supp_cap)
-  }
+  # if(supp_cap != FALSE){
+  #   trend_map <- trend_map +
+  #     labs(caption = supp_cap)
+  # }
 
   # Exit
   return(trend_map)

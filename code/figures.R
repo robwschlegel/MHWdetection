@@ -162,11 +162,17 @@ ggsave("LaTeX/fig_6.jpg", fig_6, height = 8, width = 12)
 # Supplementary 1 ---------------------------------------------------------
 # The effect of the base tests on seas/thresh
 
-fig_S1 <- fig_box_plot(tests = "base", result_choice = "clims",
-                       supp_cap = fig_cap_S1)
-ggsave("LaTeX/fig_S1.pdf", fig_S1, height = 6, width = 9)
-ggsave("LaTeX/fig_S1.png", fig_S1, height = 6, width = 9)
-ggsave("LaTeX/fig_S1.jpg", fig_S1, height = 6, width = 9)
+fig_S1 <- fig_box_plot(tests = "base", result_choice = "clims")
+
+# Create the caption
+fig_S1_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S1, 140), sep = "", collapse = "\n"),
+                              x = 0.01, just = "left", gp = grid::gpar(fontsize = 10))
+fig_S1_cap <- ggpubr::ggarrange(fig_S1, fig_S1_cap,
+                                heights = c(1, 0.15), nrow = 2)
+
+ggsave("LaTeX/fig_S1.pdf", fig_S1_cap, height = 6, width = 9)
+ggsave("LaTeX/fig_S1.png", fig_S1_cap, height = 6, width = 9)
+ggsave("LaTeX/fig_S1.jpg", fig_S1_cap, height = 6, width = 9)
 
 
 # Supplementary 2 ---------------------------------------------------------
@@ -188,10 +194,17 @@ fig_S2A <- fig_box_plot(tests = "base_period", result_choice = "average")
 fig_S2B <- fig_box_plot(tests = "base_period", result_choice = "focus")
 
 # Steek'em
-fig_S2 <- ggpubr::ggarrange(fig_S2A, fig_S2B)
-ggsave("LaTeX/fig_S2.pdf", fig_S2, height = 8, width = 8)
-ggsave("LaTeX/fig_S2.png", fig_S2, height = 8, width = 8)
-ggsave("LaTeX/fig_S2.jpg", fig_S2, height = 8, width = 8)
+fig_S2 <- ggpubr::ggarrange(fig_S2A, fig_S2B, common.legend = T)
+
+# Create the caption
+fig_S2_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S2, 140), sep = "", collapse = "\n"),
+                              x = 0.01, just = "left", gp = grid::gpar(fontsize = 10))
+fig_S2_cap <- ggpubr::ggarrange(fig_S2, fig_S2_cap,
+                                heights = c(1, 0.1), nrow = 2)
+
+ggsave("LaTeX/fig_S2.pdf", fig_S2_cap, height = 8, width = 9)
+ggsave("LaTeX/fig_S2.png", fig_S2_cap, height = 8, width = 9)
+ggsave("LaTeX/fig_S2.jpg", fig_S2_cap, height = 8, width = 9)
 
 
 # Supplementary 3 ---------------------------------------------------------
@@ -205,15 +218,18 @@ fig_S3_E <- trend_plot(test_sub = "missing", var_sub = "focus_duration")
 fig_S3_F <- trend_plot(test_sub = "missing", var_sub = "focus_intensity_max")
 fig_S3 <- ggpubr::ggarrange(fig_S3_A, fig_S3_D, fig_S3_B, fig_S3_E, fig_S3_C, fig_S3_F, ncol = 2, nrow = 3,
                             labels = c("A", "D", "B", "E", "C", "F"))
+# fig_S3 <- ggpubr::ggarrange(fig_S3_A, fig_S3_B, ncol = 2, nrow = 1,
+#                             labels = c("A", "B"))
 
 # Create the caption
-fig_S3_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S3, 160), sep = "", collapse = "\n"),
+fig_S3_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S3, 200), sep = "", collapse = "\n"),
                               x = 0.01, just = "left", gp = grid::gpar(fontsize = 12))
-fig_S3_cap <- ggpubr::ggarrange(fig_S3, fig_S3_cap, ncol = 1, heights = c(1, 0.01))
+fig_S3_cap <- ggpubr::ggarrange(fig_S3, fig_S3_cap,
+                                heights = c(1, 0.05), nrow = 2)
 
-ggsave("LaTeX/fig_S3.pdf", fig_S3_cap, height = 13, width = 16)
-ggsave("LaTeX/fig_S3.png", fig_S3_cap, height = 13, width = 16)
-ggsave("LaTeX/fig_S3.jpg", fig_S3_cap, height = 13, width = 16)
+ggsave("LaTeX/fig_S3.pdf", fig_S3_cap, height = 13, width = 17)
+ggsave("LaTeX/fig_S3.png", fig_S3_cap, height = 13, width = 17)
+ggsave("LaTeX/fig_S3.jpg", fig_S3_cap, height = 13, width = 17)
 
 
 # Supplementary 4 ---------------------------------------------------------
@@ -225,17 +241,18 @@ fig_S4_C <- trend_plot(test_sub = "trend", var_sub = "intensity_max")
 fig_S4_D <- trend_plot(test_sub = "trend", var_sub = "focus_count")
 fig_S4_E <- trend_plot(test_sub = "trend", var_sub = "focus_duration")
 fig_S4_F <- trend_plot(test_sub = "trend", var_sub = "focus_intensity_max")
-fig_S4 <- ggarrange(fig_S4_A, fig_S4_D, fig_S4_B, fig_S4_E, fig_S4_C, fig_S4_F, ncol = 2, nrow = 3,
-                   labels = c("A", "D", "B", "E", "C", "F"))
+fig_S4 <- ggpubr::ggarrange(fig_S4_A, fig_S4_D, fig_S4_B, fig_S4_E, fig_S4_C, fig_S4_F, ncol = 2, nrow = 3,
+                            labels = c("A", "D", "B", "E", "C", "F"))
 
 # Create the caption
-fig_S4_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S4, 160), sep = "", collapse = "\n"),
+fig_S4_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S4, 200), sep = "", collapse = "\n"),
                               x = 0.01, just = "left", gp = grid::gpar(fontsize = 12))
-fig_S4_cap <- ggpubr::ggarrange(fig_S3, fig_S3_cap, ncol = 1, heights = c(1, 0.01))
+fig_S4_cap <- ggpubr::ggarrange(fig_S4, fig_S4_cap,
+                                heights = c(1, 0.05), nrow = 2)
 
-ggsave("LaTeX/fig_S4.pdf", fig_S4_cap, height = 13, width = 16)
-ggsave("LaTeX/fig_S4.png", fig_S4_cap, height = 13, width = 16)
-ggsave("LaTeX/fig_S4.jpg", fig_S4_cap, height = 13, width = 16)
+ggsave("LaTeX/fig_S4.pdf", fig_S4_cap, height = 13, width = 17)
+ggsave("LaTeX/fig_S4.png", fig_S4_cap, height = 13, width = 17)
+ggsave("LaTeX/fig_S4.jpg", fig_S4_cap, height = 13, width = 17)
 
 
 # Supplementary 5 ---------------------------------------------------------
@@ -253,10 +270,17 @@ rm(sst_ALL_results, random_results); gc()
 # The effect on the focus MHWs
 # The partial changes (e.g. -33%) for the count of events from the 30 year control is possible
 # because the changing of the window is already splitting up the focus event into multiples in the control
-fig_S5 <- fig_box_plot(tests = "windows", result_choice = "focus", supp_cap = fig_cap_S5)
-ggsave("LaTeX/fig_S5.pdf", fig_S5, height = 9, width = 12)
-ggsave("LaTeX/fig_S5.png", fig_S5, height = 9, width = 12)
-ggsave("LaTeX/fig_S5.jpg", fig_S5, height = 9, width = 12)
+fig_S5 <- fig_box_plot(tests = "windows", result_choice = "focus")
+
+# Create the caption
+fig_S5_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S5, 140), sep = "", collapse = "\n"),
+                              x = 0.01, just = "left", gp = grid::gpar(fontsize = 10))
+fig_S5_cap <- ggpubr::ggarrange(fig_S5, fig_S5_cap,
+                                heights = c(1, 0.08), nrow = 2)
+
+ggsave("LaTeX/fig_S5.pdf", fig_S5_cap, height = 9, width = 12)
+ggsave("LaTeX/fig_S5.png", fig_S5_cap, height = 9, width = 12)
+ggsave("LaTeX/fig_S5.jpg", fig_S5_cap, height = 9, width = 12)
 
 
 # Reference test visuals --------------------------------------------------
