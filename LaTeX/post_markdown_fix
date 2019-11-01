@@ -1,13 +1,13 @@
 In text:
 - Superscript affiliations of authors
 - Make bold: *Correspondence
-- Check that R^2^ compiled correctlys
+- Check that R^2^ compiled correctly
 
 Add text:
-- Line ~60: Add ', Table 12.3' inside of the brackets for the Harrison (2019) reference
+- Line 58: Add ', Table 12.3' inside of the brackets for the Harrison (2019) reference
 
 Correct all bullet points:
-- Lines 65, 109: Add numbered bullets to optimal data list
+- Lines 64, 109: Add numbered bullets to optimal data list
 - Correct/remove spacing between bullets
 - Correct bullet points in the conclusions
   - Numbers at first
@@ -15,9 +15,9 @@ Correct all bullet points:
 
 Citation:
 - Baumgartner 1992 -> "Santa Barbara basin, California"
-- Line ~ 629: Ensure the Hobday et al 2018 citation is correct
+- Ensure the Hobday et al 2018 citation is correct
 - Mills 2013 -> "Chiang, F. S.,"
-- Line ~592: Change 'HeatwaveR' to 'heatwaveR'
+- Line 670: Change 'HeatwaveR' to 'heatwaveR'
 - Zhao 2019 -> MATLAB
     - Capitalise all proper nouns
 - Check that there are no janky in text citation fails (???)
