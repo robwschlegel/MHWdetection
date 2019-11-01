@@ -292,9 +292,9 @@ ggsave("LaTeX/fig_4.jpg", fig_4, height = 12, width = 16)
 
 # The effect on the average MHWs
 fig_5 <- fig_box_plot(tests = "windows", result_choice = "average")
-ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 14)
-ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 14)
-ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 14)
+ggsave("LaTeX/fig_5.pdf", fig_5, height = 8, width = 12)
+ggsave("LaTeX/fig_5.png", fig_5, height = 8, width = 12)
+ggsave("LaTeX/fig_5.jpg", fig_5, height = 8, width = 12)
 
 
 # Figure 6 ----------------------------------------------------------------
@@ -307,9 +307,9 @@ fig_6B <- fig_box_plot(tests = "miss_comp", result_choice = "focus")
 
 # Stick them together
 fig_6 <- ggpubr::ggarrange(fig_6A, fig_6B, common.legend = T)
-ggsave("LaTeX/fig_6.pdf", fig_6, height = 8, width = 14)
-ggsave("LaTeX/fig_6.png", fig_6, height = 8, width = 14)
-ggsave("LaTeX/fig_6.jpg", fig_6, height = 8, width = 14)
+ggsave("LaTeX/fig_6.pdf", fig_6, height = 8, width = 12)
+ggsave("LaTeX/fig_6.png", fig_6, height = 8, width = 12)
+ggsave("LaTeX/fig_6.jpg", fig_6, height = 8, width = 12)
 
 
 # Figure 7 ----------------------------------------------------------------
@@ -426,7 +426,7 @@ rm(sst_ALL_results, random_results); gc()
 # The partial changes (e.g. -33%) for the count of events from the 30 year control is possible
 # because the changing of the window is already splitting up the focus event into multiples in the control
 fig_S5 <- fig_box_plot(tests = "windows", result_choice = "focus")
-ggsave("LaTeX/fig_S5.pdf", fig_S5, height = 8, width = 14)
-ggsave("LaTeX/fig_S5.png", fig_S5, height = 8, width = 14)
-ggsave("LaTeX/fig_S5.jpg", fig_S5, height = 8, width = 14)
+ggsave("LaTeX/fig_S5.pdf", fig_S5, height = 8, width = 12)
+ggsave("LaTeX/fig_S5.png", fig_S5, height = 8, width = 12)
+ggsave("LaTeX/fig_S5.jpg", fig_S5, height = 8, width = 12)
 

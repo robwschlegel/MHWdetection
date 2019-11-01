@@ -92,6 +92,30 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
          lon = ifelse(lon > 180, lon-360, lon))
 
 
+# Supplementary figure captions -------------------------------------------
+
+fig_cap_S1 <- as.character("Figure S1: The effect of the sub-optimal tests on the seasonal mean and threshold
+                           climatologies. The top row shows the percent change in the standard deviation (SD)
+                           of the seasonal climatology for each step in the respective sub-optimal tests. The
+                           percent change of the seasonal climatology is shown instead of the change in the mean
+                           because that value is 0 (or very close), so measuring a percent of change is not effective.
+                           The bottom row shows the percent change in the mean threshold climatology.
+                           The other elements are the same as Figure 2.")
+
+fig_cap_S2 <- as.character("Figure S2: The effect of different 30 year climatology base periods on MHW results.
+                           The left column shows the effect on the average MHWs and the right column shows focal MHWs.
+                           The elements of this figure are the same as Figure 2.")
+
+fig_cap_S3 <- as.character("Figure S3: The global rates of change in MHW results due to increasing missing data
+                           from 0 -- 50%. The elements of this figure are the same as Figure 4.")
+
+fig_cap_S4 <- as.character("Figure S4: The global rates of change due to increasing long-term trends from 0.00 -- 0.30°C/dec.
+                           The elements of this figure are the same as Figure 4.")
+
+fig_cap_S5 <- as.character("Figure S5: The effect of increasing window half-widths on the focal MHWs.
+                           This elements in this figure are the same as Figure 5.")
+
+
 # Load OISST --------------------------------------------------------------
 
 # Load an OISST NetCDF file and exclude pixels with any ice (-1.8C) cover
@@ -887,7 +911,7 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 # result_choice = "average"
 # result_choice = "focus"
 
-fig_box_plot <- function(df = full_results, tests, result_choice){
+fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FALSE){
 
   # Choose if the figure will show the base tests or the interp. comp.
   if(tests == "base"){
@@ -898,7 +922,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
     test_levels <- c("Missing data (%)", "Interpolated data (%)")
   } else if(tests == "windows"){
     test_choice <- c("length", "window_10", "window_20", "window_30")
-    test_levels <- c("Time series length (years)", "Window width 10", "Window width 20", "Window width 30")
+    test_levels <- c("Time series length (years)", "Window half-width 10", "Window half-width 20", "Window half-width 30")
   } else if(tests == "base_period"){
     test_choice <- "base_period"
     test_levels <- "Difference from WMO base period (years)"
@@ -923,22 +947,11 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
     var_choice <- data.frame(var = c("seas", "thresh"),
                              id = c("sd_perc", "mean_perc"),
                              stringsAsFactors = F)
-    var_levels <- c("Seasonal clim. (SD; °C)", "Threshold clim. (mean; °C)")
+    var_levels <- c("Seasonal clim. (% SD of °C)", "Threshold clim. (% of mean °C)")
     y_axis_title <- "Change in thresholds"
   } else{
     stop("Provide a valid 'result_choice' argument")
   }
-
-  # Manually remove a couple of rediculous pixels
-  # NB: These pixels were determined in the first run of the code to be anomalous
-  # due to the structure of the time series and should have been filtered earlier
-  # bad_pixels <- c("140.375_0.625", "-73.625_-77.125", "-44.375_1.125", "-149.375_10.625")
-  # pixel_hunt <- filter(df,
-  #                test == "trend",
-  #                index_vals == 0.20,
-  #                var == "focus_duration",
-  #                id == "mean_perc",
-  #                val < -90)
 
   # Prep reference results for pretty plotting
   df_prep <- df %>%
@@ -950,17 +963,17 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
            var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (% sum of days)",
                                  var %in% c("intensity_max", "focus_intensity_max" ) ~ "Max. intensity (% of mean °C)",
                                  var %in% c("count", "focus_count") ~ "Count (% n)",
-                                 var == "seas" ~ "Seasonal clim. (SD; °C)",
-                                 var == "thresh" ~ "Threshold clim. (mean; °C)"),
+                                 var == "seas" ~ "Seasonal clim. (% SD of °C)",
+                                 var == "thresh" ~ "Threshold clim. (% of mean °C)"),
            var_label = factor(var_label, levels = var_levels),
            test_label = case_when(test == "length" & "length" %in% test_choice ~ "Time series length (years)",
                                   test == "missing" ~ "Missing data (%)",
                                   test == "trend" ~ "Trend (°C/decade)",
                                   test == "interp" ~ "Interpolated data (%)",
                                   test == "base_period" ~ "Difference from WMO base period (years)",
-                                  test == "window_10" ~ "Window width 10",
-                                  test == "window_20" ~ "Window width 20",
-                                  test == "window_30" ~ "Window width 30"),
+                                  test == "window_10" ~ "Window half-width 10",
+                                  test == "window_20" ~ "Window half-width 20",
+                                  test == "window_30" ~ "Window half-width 30"),
            test_label = factor(test_label, levels = test_levels))
 
   # Set the panel labels
@@ -1137,6 +1150,15 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
     # coord_cartesian(ylim = c(-3, 3)) + # Correct for extreme line overalys messing up labels by coord-ing to the 90CI range
     theme(legend.position = "top")
   # fig_plot
+
+  # Add supplementary figure captions as desired
+  # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
+  if(supp_cap != FALSE){
+    fig_plot <- fig_plot +
+      labs(caption = supp_cap)
+  }
+
+  # Exit
   return(fig_plot)
 }
 
@@ -1149,7 +1171,8 @@ fig_box_plot <- function(df = full_results, tests, result_choice){
 # var_sub <- "count"
 # var_sub <- "focus_count"
 trend_plot <- function(test_sub, var_sub,
-                       df = global_var_trend) {
+                       df = global_var_trend,
+                       supp_cap = FALSE) {
 
   if(!exists("global_var_trend")) global_var_trend <- readRDS("data/global_var_trend.Rda")
 
@@ -1229,8 +1252,14 @@ trend_plot <- function(test_sub, var_sub,
           panel.background = element_rect(fill = "grey80"))
   # trend_map
 
-  # ggsave(trend_map,
-  #        filename = paste0("output/",test_sub,"_",var_sub,"_",type_sub,"_plot.png"), height = 6, width = 10)
+  # Add supplementary figure captions as desired
+  # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
+  if(supp_cap != FALSE){
+    trend_map <- trend_map +
+      labs(caption = supp_cap)
+  }
+
+  # Exit
   return(trend_map)
 }
 

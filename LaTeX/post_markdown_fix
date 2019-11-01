@@ -1,39 +1,21 @@
-Before compiling:
-- ± +-
-- Correct C/dec to C/decade
-- 'focal' or 'focus', must decide paper-wide
-- Correct 'Northwest Atlantic' to 'NWA'
-- Check that the word 'event' is not used incorrectly
-- Check that 'doy' is always in '' marks
-- Check that the words 'will' and 'may' and 'decadal' and 'seen' are only used in very specific situations
-- Check that 'maximum' is used instead of 'max'
-- Ensure that 'average' is used instead of 'collective'
-- Ensure that 'focus' is used instead of 'largest'
-- Ensure no use of 'significant' in all of it's forms
-- The sentences explaining why the global pattern figures for missing and trend tests are in the supp need to be re-worked
-- Need to check the relationship between the Var clim value and the change in the MHW results when a time series is lengthened past 30 years
-- Final check of References
-- Delete all of the X's that pop-up at the end of URL address
-
-Spell check
-
 In text:
-- Check that R^2^ compiled correctly
-- Check for correct formating of 'xxx'
+- Superscript affiliations of authors
+- Make bold: *Correspondence
+- Check that R^2^ compiled correctlys
 
 Add text:
-- Line ~55 Hobday et al., 2016, Table 3
 - Line ~60: Add ', Table 12.3' inside of the brackets for the Harrison (2019) reference
 
 Correct all bullet points:
-- Lines ~67, ~115: Add numbered bullets to optimal data list
+- Lines 65, 109: Add numbered bullets to optimal data list
 - Correct/remove spacing between bullets
 - Correct bullet points in the conclusions
+  - Numbers at first
+      - Layers of bullets underneath
 
 Citation:
-- Line ~135 + ~138: Change 'Organization' to 'WMO'
 - Line ~592: Change'HeatwaveR' to 'heatwaveR'
-- Line ~ 629: ENsure the Hobday et al 2018 citation is correct
+- Line ~ 629: Ensure the Hobday et al 2018 citation is correct
 - Baumgartner 1992 -> "Santa Barbara basin, California"
 - Zhao 2019 -> MATLAB
     - Capitalise all proper nouns
