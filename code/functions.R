@@ -384,7 +384,7 @@ summary_stats <- function(df){
   # Count of control values
   control_count <- df %>%
     filter(index_vals == control_val,
-                var == "duration") %>%
+           var == "duration") %>%
     nrow()
 
   # Count of values
@@ -532,11 +532,11 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   #   ungroup()
   # ) # 21 seconds, extensive testing of data.table was not faster
   system.time(
-  sst_base_res <- plyr::ddply(rbind(sst_length, sst_missing, sst_trend),
-                              .variables = c("test", "index_vals"),
-                              .fun = clim_metric_focus_calc,
-                              .paropts = c(.inorder = FALSE),
-                              .parallel = F, focus_dates = focus_event)
+    sst_base_res <- plyr::ddply(rbind(sst_length, sst_missing, sst_trend),
+                                .variables = c("test", "index_vals"),
+                                .fun = clim_metric_focus_calc,
+                                .paropts = c(.inorder = FALSE),
+                                .parallel = F, focus_dates = focus_event)
   ) # 3 seconds
 
   # Run the tests while also interpolating all gaps
@@ -598,7 +598,7 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
 
 
 # This function runs the full analysis on a randomly selected pixel
-  # NB: empty_integer is here just to satisfy plyr::ldply()
+# NB: empty_integer is here just to satisfy plyr::ldply()
 random_analysis <- function(empty_integer, base_period = F){
 
   # Load a random lon slice
@@ -734,7 +734,7 @@ trend_correct <- function(df, full_seq = T){
         mutate(range = "30 - 37")
       res <- rbind(res_A, res_B)
     } else{
-     res <- res_A
+      res <- res_A
     }
   } else if(df$test[1] %in% c("missing", "interp")){
     if(full_seq){
@@ -785,14 +785,14 @@ var_trend <- function(file_name){
                            stringsAsFactors = F)
 
   # system.time(
-    res <- readRDS(file_name) %>%
-      right_join(var_choice, by = c("var", "id")) %>%
-      mutate(test2 = test, var2 = var) %>%
-      group_by(lon, lat, test2, var2, id) %>%
-      group_modify(~trend_correct(.x, full_seq = F)) %>%
-      dplyr::rename(test = test2, var = var2) %>%
-      select(-intercept, -p)
-    # ) # 102 seconds
+  res <- readRDS(file_name) %>%
+    right_join(var_choice, by = c("var", "id")) %>%
+    mutate(test2 = test, var2 = var) %>%
+    group_by(lon, lat, test2, var2, id) %>%
+    group_modify(~trend_correct(.x, full_seq = F)) %>%
+    dplyr::rename(test = test2, var = var2) %>%
+    select(-intercept, -p)
+  # ) # 102 seconds
   return(res)
 }
 
@@ -933,8 +933,8 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
   # Prep reference results for pretty plotting
   df_prep <- df %>%
     filter(test %in% test_choice) %>% #,
-           # is.finite(val),
-           #!(site %in% bad_pixels)) %>%
+    # is.finite(val),
+    #!(site %in% bad_pixels)) %>%
     right_join(var_choice, by = c("var", "id")) %>%
     mutate(index_vals = ifelse(test %in% c("missing", "interp"), index_vals*100, index_vals),
            var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (% sum of days)",
@@ -1060,7 +1060,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 
   # Coefficients of determination
   # coef_det <- df_prep %>%
-    # group_by(test, index_vals, var, id, test_label, var_label)
+  # group_by(test, index_vals, var, id, test_label, var_label)
 
   # geom_crosbar is not very clever, so we need to help it along with a logic gate...
   if("trend" %in% quant_df$test){
@@ -1130,13 +1130,13 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 
   # Add supplementary figure captions as desired
   # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
-  if(supp_cap != FALSE){
-    caption <- paste0(strwrap(supp_cap, 160), sep="", collapse="\n")
-    fig_plot <- fig_plot +
-      labs(caption = caption) +
-      theme(plot.caption=element_text(size=8, hjust=0, margin=margin(t=15)))
-      # theme(plot.caption.position = "plot")
-  }
+  # if(supp_cap != FALSE){
+  #   caption <- paste0(strwrap(supp_cap, 160), sep = "", collapse = "\n")
+  #   fig_plot <- fig_plot +
+  #     labs(caption = caption) +
+  #     theme(plot.caption = element_text(size = 10, hjust = 0))
+  #     # theme(plot.caption.position = "plot")
+  # }
 
   # Exit
   return(fig_plot)
@@ -1146,6 +1146,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 # Function for easily plotting subsets from the global slope results
 # testers...
 # test_sub <- "length"
+# test_sub <- "trend"
 # var_sub <- "intensity_max"
 # var_sub <- "focus_intensity_max"
 # var_sub <- "duration"
@@ -1157,21 +1158,8 @@ trend_plot <- function(test_sub, var_sub,
 
   # Filter base data
   base_sub <- df %>%
-    filter(test == test_sub, var == var_sub)# %>%
-    # correct focus_count trend back to count from percentage
-    # mutate(trend = ifelse(var == "focus_count", trend/100, trend))
+    filter(test == test_sub, var == var_sub)
 
-  # Prepare legend title bits
-  # sen_change <- "Percent change "
-
-  # if(prop){
-    # sen_change <- "Percent change "
-    # if(!(var_sub %in% c("count", "focus_count"))){
-      # base_sub$trend <- base_sub$trend * 100
-    # }
-  # } else{
-    # sen_change <- "Change "
-  # }
   if(test_sub == "length"){
     sen_test <- "Change per year"
   } else if(test_sub == "missing"){
@@ -1200,9 +1188,6 @@ trend_plot <- function(test_sub, var_sub,
   slope_quantiles <- quantile(base_sub$slope, na.rm = T,
                               probs = c(0, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0))
 
-  # Create legend break labels
-  # break_labels <- as.numeric(trend_quantiles[2:6])
-
   # Correct base data to quantiles as the tails are very long
   base_quantile <- base_sub %>%
     mutate(slope = case_when(slope > slope_quantiles[6] ~ slope_quantiles[6],
@@ -1214,22 +1199,24 @@ trend_plot <- function(test_sub, var_sub,
     geom_tile(aes(fill = slope)) +
     geom_polygon(data = map_base, aes(x = lon, y = lat, group = group)) +
     scale_fill_gradient2(low = col_split[1], high = col_split[2],
-                         breaks = c(round(as.numeric(slope_quantiles[2:6]), 2)),
-                         labels = paste0(c(round(as.numeric(slope_quantiles[2:6]), 2)),"%")) +
+                         breaks = unique(c(round(as.numeric(slope_quantiles[2:6]), 2))),
+                         labels = paste0(c(unique(round(as.numeric(slope_quantiles[2:6]), 2))), "%")) +
     coord_equal(expand = F) +
     theme_void() +
     labs(fill = paste0(sen_test, sen_var)) +
     theme(legend.position = "bottom",
           legend.key.width = unit(2, "cm"),
+          legend.title = element_text(vjust = 1.5),
+          legend.title.align = 0,
           panel.background = element_rect(fill = "grey80"))
   # trend_map
 
   # Add supplementary figure captions as desired
   # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
-  if(supp_cap != FALSE){
-    trend_map <- trend_map +
-      labs(caption = supp_cap)
-  }
+  # if(supp_cap != FALSE){
+  #   trend_map <- trend_map +
+  #     labs(caption = supp_cap)
+  # }
 
   # Exit
   return(trend_map)
