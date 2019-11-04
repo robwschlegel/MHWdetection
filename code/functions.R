@@ -634,6 +634,32 @@ var_trend <- function(file_name){
   return(res)
 }
 
+# Function that allows for plyr::ldply to iteratively look for best fits of linear models
+# NB: It assumes that random_quant has been created and is in the environment
+trend_test <- function(end_int = 3, test_sub = "length", start_val = 30, rev_trend = F){
+  df <- random_quant %>%
+    filter(test == test_sub)
+  df_index_vals <- unique(df$index_vals)
+  if(start_val == 30 & rev_trend == F){
+    end_val <- start_val-end_int
+    by_val <- -1
+  } else if(start_val == 30 & rev_trend == T){
+    end_val <- start_val+end_int
+    by_val <- 1
+  }else{
+    end_val <- start_val+(end_int*0.01)
+    by_val <- 0.01
+  }
+  df_model <- df %>%
+    filter(index_vals %in% seq(start_val, end_val, by = by_val)) %>%
+    gather(key = "stat", value = "val", -c(test:id)) %>%
+    group_by(test, var, id, stat) %>%
+    group_modify(~trend_stats(.x)) %>%
+    mutate(start_val = start_val,
+           end_val = end_val)
+  return(df_model)
+}
+
 
 # Figure functions --------------------------------------------------------
 
