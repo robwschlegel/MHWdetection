@@ -1,23 +1,25 @@
 name: "MHWdetection"
 output_dir: "../docs"
 navbar:
-  title: "MHW detection"
+  title: "MHW Detection"
   left:
     - text: "Overview"
       href: index.html
     - text: "Vignettes"
       menu:
-      - text: "Python vs. R - default outputs"
-        href: r_vs_python.html
-      - text: "Python vs. R - default arguments"
-        href: r_vs_python_arguments.html
-      - text: "Python vs. R - additional functions"
-        href: r_vs_python_additional.html
-      - text: "Effects of short time series"
+      - text: "Python vs. R"
+        menu:
+        - text: "Default outputs"
+          href: r_vs_python.html
+        - text: "Default arguments"
+          href: r_vs_python_arguments.html
+        - text: "Additional functions"
+          href: r_vs_python_additional.html
+      - text: "Time series length"
         href: time_series_length.html
-      - text: "Effects of missing data"
+      - text: "Missing data"
         href: missing_data.html
-      - text: "Effects of long-term trends"
+      - text: "Long-term trends"
         href: trend.html
       - text: "Best practices"
         href: best_practices.html
