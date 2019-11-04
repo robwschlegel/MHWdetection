@@ -1,0 +1,23 @@
+bibentry(bibtype = "Article",
+    	 title   = "Detecting marine heatwaves with sub-optimal data",
+    	 author  = c(person(given = c("Robert", "W."),
+                            family = "Schlegel",
+                            email = "robwschlegel@gmail.com"),
+                     person(given = c("Eric", "C.", "J."),
+                            family = "Oliver"),
+                     person(given = c("Alistait", "J."),
+                            family = "Hobday"),
+                     person(given = c("Albertus", "J."),
+                            family = "Smit")),
+    	 journal = "Frontiers in Marine Science",
+    	 year    = "In Review",
+    	 volume  = "xxx",
+    	 number  = "xxx",
+    	 pages   = "xxx",
+    	 doi     = "xxx",
+    	 header  = "Please cite this manuscript in publications as:",
+    	 textVersion = paste("Schlegel, R. W., Oliver, E. C. J., Hobday, A. J., Albertus, S. J., (In Review).",
+    	                     "Detecting marine heatwaves with sub-optimal data",
+    	                     "Frontiers in Marine Science, xxx(xxx), xxx, doi:xxx")
+)
+

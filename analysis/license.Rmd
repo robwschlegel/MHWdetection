@@ -29,7 +29,9 @@ SOFTWARE.
 
 # Citation
 
-There is currently no `CITATION` available for this project
+Please cite this manuscript in publications as:
+Schlegel, R. W., Oliver, E. C. J., Hobday, A. J., Albertus, S. J., (In Review).
+Detecting marine heatwaves with sub-optimal data. Frontiers in Marine Science, xxx(xxx), xxx, doi:xxx")
 
 <!-- How should others cite your work? It's a convention to save a file `CITATION` -->
 <!-- in the root of your Git repo that contains the citation information. -->
