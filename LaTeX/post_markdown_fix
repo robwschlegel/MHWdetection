@@ -1,4 +1,4 @@
-In text:
+﻿In text:
 - Superscript affiliations of authors
 - Make bold: *Correspondence
 - Check that R^2^ compiled correctly
@@ -18,6 +18,7 @@ Citation:
 - Ensure the Hobday et al 2018 citation is correct
 - Mills 2013 -> "Chiang, F. S.,"
 - Line 670: Change 'HeatwaveR' to 'heatwaveR'
+- Wernberg 2012 -> de Bettignies
 - Zhao 2019 -> MATLAB
     - Capitalise all proper nouns
 - Check that there are no janky in text citation fails (???)
