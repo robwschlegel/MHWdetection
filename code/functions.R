@@ -1,65 +1,33 @@
 # code/functions.R
 # This script contains all of the functions used throughout 'code/workflow.R'
+# NB: This script is made to run from a specific server as it accesses the global
+# NOAA OISST files saved in a directory outside of this project
+# This is also why the specific library path is added here,
+# the server has older version of some important packages that needed updating
+# If one is reproducing this anlaysis on a different machine the added R libraries
+# should not be necessary, meaning line 13 can be deleted/ commented out and the packages
+# that are pointed at it can be run from the normal library directory: lines 17 and 19
 
 
 # Libraries ---------------------------------------------------------------
 
 .libPaths(c("~/R-packages", .libPaths()))
 
-# library(doMC); registerDoMC(cores = 50)
-# library(doParallel)
-# library(jsonlite, lib.loc = "~/R-packages/")
-# library(dplyr, lib.loc = "~/R-packages/") # Development version for group_modify()
 library(tidyverse, lib.loc = "~/R-packages/")
-# library(dplyr)
-# library(ggridges)
-# library(broom)
+# library(tidyverse)
 library(heatwaveR, lib.loc = "~/R-packages/")
+# library(heatwaveR)
 # cat(paste0("heatwaveR version = ",packageDescription("heatwaveR")$Version))
-# library(data.table, lib.loc = "~/R-packages/")
-library(lubridate) # This is intentionally activated after data.table
-# library(fasttime)
-# library(ggpubr)
-# library(boot)
-# library(FNN)
-# library(mgcv)
-# library(tidync, lib.loc = "~/R-packages/")
+library(lubridate)
+# library(tidync, lib.loc = "~/R-packages/") # Alternative useful NetCDF approach
 library(ncdf4)
-# library(doMC); registerDoMC(cores = 50)
-# library(doFuture)
 library(doParallel)
-# library(doSNOW)
-# options(mc.cores = 1) # This may work to constrain the core bleed that stats causes
-# library(rgdal)
-# library(pgirmess)
-# library(egg)
-# library(rcompanion)
 
 
 # Meta-data ---------------------------------------------------------------
 
-#### Cores
-
-## doFuture option
-# registerDoFuture()
-# plan(multiprocess, workers = availableCores() - 31)
-
-## doParallel option
-# parallel::detectCores()
-# no_cores <- detectCores() - 6
-# cl <- makeCluster(no_cores)
-# cl <- makeCluster(25) # same 1
-# registerDoParallel(cl) # same 1
-registerDoParallel(cores = 25) # same 2
-# getDoParWorkers()
-# stopCluster(cl)
-
-## doMC option
-# doMC::registerDoMC(cores = 25)
-
-## SNOW option
-# cl <- makeCluster(25, type="SOCK") # number of cores
-# registerDoSNOW(cl) # Register back end Cores for Parallel Computing
+# Cores
+registerDoParallel(cores = 25) # Cores will vary between machines/servers
 
 # The MHW category colour palette
 MHW_colours <- c(
@@ -75,10 +43,6 @@ OISST_files <- dir(path = "~/data/OISST", full.names = T, pattern = "avhrr")
 # Location of global result files
 global_files <- dir(path = "data/global", full.names = T, pattern = "slice")
 
-# Loation of MHW category files
-# category_files <- as.character(dir(path = "~/data/cat_clim", pattern = "cat.clim",
-#                                    full.names = TRUE, recursive = TRUE))
-
 # Reference site coordinates
 sst_ALL_coords <- data.frame(site = c("WA", "NW_Atl", "Med"),
                              lon = c(112.5, -67, 9),
@@ -93,8 +57,6 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 
 
 # Supplementary figure captions -------------------------------------------
-
-# NB: These have all been manually line separated here to best match the figures they are legends for
 
 fig_cap_S1 <- as.character("Figure S1: The effect of the sub-optimal tests on the seasonal mean and threshold climatologies.
                            The top row shows the percent change in the standard deviation (SD) of the seasonal climatology for each step in the respective sub-optimal tests.
@@ -120,18 +82,8 @@ fig_cap_S5 <- as.character("Figure S5: The effect of increasing window half-widt
 # the ice edge that don't ever quite reach -1.8C but remain in a "slush" state
 # This was determined to be an artefact of the OISST process and so the new
 # "ice" limit was set to -1.6C
-
-# testers...
-# An Antarctic pixel that doesn't have a temp = -1.8 -"-78.375	-76.125"
-# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -78.375) # 1127
-# nc_file <- OISST_files[1127]
 load_noice_OISST <- function(nc_file){
-  # suppressWarnings( # (2019-10-16) tidync started giving a meaningless warning message
-  # Perhaps this warning was a prelude to the memmory issues now plaguing this pipeline
-  # The warnings are gone, but it appears that tidync() is the root of the memmory issue
-  # res <- tidync(nc_file) %>%
-  # hyper_filter(lat = between(lat, -70, 80)) %>% # No need to load the very poleward data
-  # hyper_tibble() %>%
+
   # OISST data
   nc_OISST <- nc_open(nc_file)
   lon_vals <- as.vector(nc_OISST$dim$lon$vals)
@@ -141,7 +93,6 @@ load_noice_OISST <- function(nc_file){
   time_index <- which(time_vals == as.Date("2018-12-31"))
   sst_raw <- ncvar_get(nc_OISST, "sst", start = c(lat_index[1], 1, 1),
                        count = c(lat_index[2]-lat_index[1]+1, -1, time_index))
-  # if(length(time_extract_index) == 1) dim(sst_raw) <- c(720,1,1)
   dimnames(sst_raw) <- list(lat = nc_OISST$dim$lat$vals[lat_index[1]:lat_index[2]],
                             t = time_vals[seq_len(time_index)])
   nc_close(nc_OISST)
@@ -164,9 +115,6 @@ load_noice_OISST <- function(nc_file){
   # ) ~1.7 seconds
   return(res)
 }
-
-# test <- res %>%
-#   filter(lat == -76.125)
 
 
 # De-trending -------------------------------------------------------------
@@ -242,20 +190,6 @@ con_miss <- function(df){
 
 # Calculate clims and metrics ---------------------------------------------
 
-# testers...
-# df <- filter(sst_length, index_vals == 25)
-# df <- filter(sst_interp, index_vals == 0.2)
-# df <- filter(sst_window_10, index_vals == 10)
-# df <- filter(sst_missing, index_vals == 0.37)
-# df <- sst_missing[sst_missing$index_vals == 0.36,]
-# df <- filter(sst_trend, index_vals == 0.20)
-# set_window = 5
-# set_window = 20
-# set_pad = F
-# min_date = "2009-01-01"
-# year_start = 0
-# year_end = 0
-# focus_dates = focus_event
 clim_metric_focus_calc <- function(df, set_window = 5, set_pad = F, min_date = "2009-01-01",
                                    year_start = 0, year_end = 0, focus_dates){
 
@@ -316,7 +250,6 @@ clim_metric_focus_calc <- function(df, set_window = 5, set_pad = F, min_date = "
     mutate(val = round(val, 3))
   return(res_all)
 }
-#
 
 
 # Window manipulation -----------------------------------------------------
@@ -352,12 +285,6 @@ window_test <- function(df, focus_event){
 
 # Summary stats -----------------------------------------------------------
 
-# Summary stats for broad results
-# tester...
-# df <- sst_clim_metric %>%
-# ungroup() %>%
-# filter(test == "window_20") %>%
-# select(-test)
 summary_stats <- function(df){
 
   # Determine the control group
@@ -436,46 +363,9 @@ summary_stats <- function(df){
 }
 
 
-# Model linear relationships ----------------------------------------------
-
-## Currently not calculating R2 for first global pass
-# Potentially will calculate these on the global results afterwards
-
-## Ideas:
-# Fit linear models to everything and extract R2 values
-# Look at relationship between change in seas/thresh and other metrics over time
-# Look at this relationship for the percentage values, too
-# Look at relationship between change in count of events and the percentage change of other summary stats
-
-## Clever way of calculating R2 for any number of paired columns
-# specify columns to regress
-# y_col <- colnames(sst_summary)#"disp"
-# y_col <- c("index_vals", "n", "n_diff", "mean")
-# x_col <- colnames(sst_summary)[-c(1:3)]
-#
-# test <- expand.grid(y = y_col, x = x_col, stringsAsFactors = F) %>%
-#   mutate(formula = paste(y,"~",x)) %>%
-#   group_by(formula) %>%
-#   mutate(r_sq = summary(lm(formula, data = filter(sst_summary, test == "missing", var == "seas")))$r.squared,
-#          r_sq = round(r_sq, 2)) %>%
-#   ungroup()
-
-
 # Full analyses -----------------------------------------------------------
 
-# This single function runs through and outputs all of the desired tests as a list
-# testers...
-# df <- sst_Med
-# df <- sst[sst$lat == sst$lat[1],]
-# full_seq = T
-# clim_metric = F
-# count_miss = T
-# windows = T
-# Bad pixels for testing - "140.375 0.625", "-73.625_-77.125", ", "-112.125 -28.875"(window width),
-# "-149.375 10.625"(focus event dissapears with large decadal trend value)
-# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == 34.625)
-# df <- load_noice_OISST(OISST_files[139]) %>%
-# filter(lat == -33.875)
+# This single function runs through and outputs all of the desired tests as a long data.frame
 single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, windows = F){
 
   # Calculate the secular trend
@@ -489,7 +379,7 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   # Calculate MHWs from detrended ts
   sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2018-12-31")))
 
-  # Pull out the largest event in the ts
+  # Pull out the focal event in the ts
   focus_event <- sst_flat_MHW$event %>%
     filter(date_start >= "2009-01-01") %>%
     filter(intensity_cumulative == max(intensity_cumulative)) %>%
@@ -523,28 +413,15 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   # Calculate MHWs in most recent 10 years of data and return the desired clims and metrics
   # NB: The warnings that pop up here are fine and are caused by missing data completely
   # removing all of the MHWs from a time series. This is accounted for in the summary stats
-  # There may be a bug being caused somewhere between tidync and the sub-multicoring that group_modify
-  # does that when multicored in the presence of data.table calculations starts to go pear shaped
-  # system.time(
-  # sst_base_res <- rbind(sst_length, sst_missing, sst_trend) %>%
-  #   group_by(test, index_vals) %>%
-  #   group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event)) %>%
-  #   ungroup()
-  # ) # 21 seconds, extensive testing of data.table was not faster
   system.time(
     sst_base_res <- plyr::ddply(rbind(sst_length, sst_missing, sst_trend),
                                 .variables = c("test", "index_vals"),
                                 .fun = clim_metric_focus_calc,
                                 .paropts = c(.inorder = FALSE),
                                 .parallel = F, focus_dates = focus_event)
-  ) # 3 seconds
+  ) # 3 seconds, extensive testing of data.table was not faster
 
   # Run the tests while also interpolating all gaps
-  # sst_interp_res <- sst_missing %>%
-  #   group_by(test, index_vals) %>%
-  #   group_modify(~clim_metric_focus_calc(.x, focus_dates = focus_event, set_pad = 9999)) %>%
-  #   ungroup() %>%
-  #   mutate(test = "interp")
   # system.time(
   sst_interp_res <- plyr::ddply(sst_missing, .variables = c("test", "index_vals"),
                                 .fun = clim_metric_focus_calc, .parallel = F,
@@ -562,10 +439,6 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   }
 
   # Create summary statistics of MHW results
-  # sst_summary <- sst_clim_metric %>%
-  #   group_by(test) %>%
-  #   group_modify(~summary_stats(.x)) %>%
-  #   data.frame()
   sst_summary <- plyr::ddply(sst_clim_metric, .variables = c("test"),
                              .fun = summary_stats, .parallel = F)
 
@@ -575,8 +448,6 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   }
 
   # Count consecutive missing days
-  # NB: This would be useful information to have for each pixel
-  # but it takes too long to calculate
   if(count_miss){
     sst_missing_count <- sst_missing %>%
       group_by(test, index_vals) %>%
@@ -596,7 +467,6 @@ single_analysis <- function(df, full_seq = F, clim_metric = F, count_miss = F, w
   return(sst_summary)
 }
 
-
 # This function runs the full analysis on a randomly selected pixel
 # NB: empty_integer is here just to satisfy plyr::ldply()
 random_analysis <- function(empty_integer, base_period = F){
@@ -607,9 +477,6 @@ random_analysis <- function(empty_integer, base_period = F){
   # Randomly pick a lat slice
   pixel <- filter(sst, lat == sample(sst$lat, 1))
   rm(sst); gc()
-
-  # Make the function more chatty for error trapping
-  # print(paste0(pixel$lon[1],"_",pixel$lat[1]))
 
   # Run a full analysis and exit
   if(base_period){
@@ -626,11 +493,7 @@ random_analysis <- function(empty_integer, base_period = F){
   return(res)
 }
 
-
 # This function runs the analysis on a full lon slice
-# nc_file <- OISST_files[1197]
-# par_op = T
-# registerDoMC(25)
 global_analysis <- function(nc_file, par_op = F){
 
   # Load and prep data
@@ -642,7 +505,7 @@ global_analysis <- function(nc_file, par_op = F){
   # system.time(
   res <- plyr::ddply(sst, c("lon", "lat"), single_analysis, .parallel = par_op, .progress = "text",
                      .paropts = c(.inorder = FALSE))
-  # ) # ~103 seconds in parallel, ~8.5 minutes not in parallel, this is misleading as multiple runs will slow each other down
+  # ) # ~103 seconds in parallel, ~8.5 minutes not in parallel
   # ~5 seconds for one pixel, ~xxx seconds not in parallel
   # Times may vary by 50% due to change in pixel count per longitude step
   return(res)
@@ -652,7 +515,7 @@ global_analysis <- function(nc_file, par_op = F){
 # Trend calculations ------------------------------------------------------
 
 # Fills in gaps in data
-# This is expected to be fed a data.frame with only and `index_vals` and `val` column
+# This is expected to be fed a data.frame with only 'index_vals', 'val', 'test', and 'var' columns
 # This reduces the need to create larger more complex data.frames when plugging holes
 gapless_data <- function(df, gapless_seq){
 
@@ -663,8 +526,6 @@ gapless_data <- function(df, gapless_seq){
   df_full <- df %>%
     right_join(index_gapless, by = "index_vals") %>%
     mutate(val = replace_na(val, 0),
-           # lon = lon[1],
-           # lat = lat[1],
            test = test[1],
            var = var[1])
   return(df_full)
@@ -683,35 +544,13 @@ trend_stats <- function(df){
   return(res)
 }
 
-# The function that will calculate the slopes correctly based on the name of the test
-# Custom function for trend calculation
+# This function calculates the slopes correctly based on the name of the test
 # Note: The slopes are in units of 1 by R default
 # So this makes sense for the length slope being in units of 1 year
 # But not for missing data, where 1 is 100%,
-# or for decadal trend where 1 is 1C/dec.
-# Therefore the missing/interp and decadal trend slopes need to be devided by 100
+# or for long-term trend where 1 is 1C/dec.
+# Therefore the missing/interp and long-term trend slopes need to be devided by 100
 # This produces slopes that represent 1% and 0.01C/dec changes
-# testers...
-# full_seq = T
-# full_seq = F
-# df <- random_quant %>%
-#   filter(test == "missing",
-#          var == "intensity_max",
-#          id == "mean_perc") %>%
-#   gather(key = "stat", value = "val", -c(test:id)) %>%
-#   mutate(test2 = test) %>%
-#   filter(stat == "q50") %>%
-#   select(-test2, -var, -id, -stat)
-# df <- lon_correct %>%
-#   filter(lat == 40.375,
-#          test == "missing",
-#          var == "count",
-#          id == "n_perc")
-# df <- res %>%
-#   filter(lon == -160.125,
-#          lat == -58.125,
-#          test2 == "missing",
-#          var2 == "count")
 trend_correct <- function(df, full_seq = T){
   df <- ungroup(df)
   if(df$test[1] == "length"){
@@ -772,11 +611,10 @@ trend_correct <- function(df, full_seq = T){
   return(res)
 }
 
-# A convenience function to load a lon slice of global results
-# Then filter out the variables not used in the results and run linear models
-# file_name <- "data/global/test_1130.Rda"
-# file_name <- "data/global/slice_0700.Rda"
+# A convenience function to load a lon slice of global results,
+# filter out the variables not used in the results, and run linear models
 var_trend <- function(file_name){
+
   # The subsetting index
   var_choice <- data.frame(var = c("count", "duration", "intensity_max",
                                    "focus_count", "focus_duration", "focus_intensity_max"),
@@ -799,29 +637,8 @@ var_trend <- function(file_name){
 
 # Figure functions --------------------------------------------------------
 
-# Function for rounding decimal places of plot labels
-fmt_dcimals <- function(decimals = 0){
-  function(x) as.character(round(x, decimals))
-}
-
-
-# Bootstrap CI calculations for Figure 2 & 3
-# NB: The problem with this is that we DONT want the CI for the mean
-# We want the CI for the range of values
-custom_boot <- function(df){
-  res <- data.frame(boot.ci(boot(data = df$val, function(x,i) mean(x[i]), R = 1000),
-                            type = "perc")$percent) %>%
-    select(V4, V5) %>%
-    dplyr::rename(lower = V4, upper = V5)
-}
-
-
 # The code that creates the figure 1 panels from detect_event output
 # The function expects to be given the dates that should be plotted
-# testers...
-# df <- sst_ALL_clim
-# y_label <-  "Temperature (°C)"
-# spread <- 183
 fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
 
   # Create category breaks and select slice of data.frame
@@ -877,17 +694,9 @@ fig_1_plot <- function(df, spread, y_label = "Temperature (°C)"){
     theme(legend.position = "top")
 }
 
-
 # The code that creates most other figures
-# This shows the percentage change in sea/thresh and dur/max.int
+# This shows the percentage change in sea/thresh and count/dur/max.int
 # from control for any of the tests
-# testers...
-# df = full_results
-# tests  = "base"
-# tests  = "miss_comp"
-# result_choice = "average"
-# result_choice = "focus"
-
 fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FALSE){
 
   # Choose if the figure will show the base tests or the interp. comp.
@@ -932,9 +741,7 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 
   # Prep reference results for pretty plotting
   df_prep <- df %>%
-    filter(test %in% test_choice) %>% #,
-    # is.finite(val),
-    #!(site %in% bad_pixels)) %>%
+    filter(test %in% test_choice) %>%
     right_join(var_choice, by = c("var", "id")) %>%
     mutate(index_vals = ifelse(test %in% c("missing", "interp"), index_vals*100, index_vals),
            var_label = case_when(var %in% c("duration", "focus_duration") ~ "Duration (% sum of days)",
@@ -1049,7 +856,6 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
     ungroup() %>%
     group_by(var) %>%
     mutate(panel_label_y = max(q95)*0.99) %>%
-    # mutate(panel_label_y = ifelse(max(upper)*0.99 > ) %>%
     ungroup() %>%
     select(test, var, panel_label_x, panel_label_y, panel_label, test_label, var_label) %>%
     unique() %>%
@@ -1057,10 +863,6 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
     mutate(panel_label_y = ifelse(max_val > panel_label_y, max_val*0.99, panel_label_y),
            panel_label_y = round(panel_label_y, 2)) %>%
     select(-max_val)
-
-  # Coefficients of determination
-  # coef_det <- df_prep %>%
-  # group_by(test, index_vals, var, id, test_label, var_label)
 
   # geom_crosbar is not very clever, so we need to help it along with a logic gate...
   if("trend" %in% quant_df$test){
@@ -1105,38 +907,18 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 
   # Finish off the figure
   fig_plot <- fig_plot_base +
-    # Random results
-    # geom_line(data = random_df, aes(group = site), size = 0.5, alpha = 0.05) +
-    # geom_boxplot(data = random_df, aes(group = index_vals), outlier.colour = NA) +
-
     # Reference results
     geom_line(data = reference_df, aes(colour = site), size = 1.0, alpha = 0.5) +
-
     # Horizontal itercept at 0
     geom_hline(aes(yintercept = 0), colour = "black", linetype = "dashed") +
-
     # Labels, scales, facets, and themes
     geom_label(data = labels_df,
                aes(label = panel_label, y = panel_label_y, x = panel_label_x)) +
     scale_colour_brewer(palette = "Dark2") +
     scale_x_continuous(expand = c(0, 0)) +
-    # scale_y_continuous(limits = c(-100, 100)) +
-    # coord_cartesian(ylim = c(-100, 100)) +
     facet_grid(var_label~test_label, scales = "free", switch = "both") +
     labs(y = y_axis_title, x = NULL, colour = "Site") +
-    # coord_cartesian(ylim = c(-3, 3)) + # Correct for extreme line overalys messing up labels by coord-ing to the 90CI range
     theme(legend.position = "top")
-  # fig_plot
-
-  # Add supplementary figure captions as desired
-  # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
-  # if(supp_cap != FALSE){
-  #   caption <- paste0(strwrap(supp_cap, 160), sep = "", collapse = "\n")
-  #   fig_plot <- fig_plot +
-  #     labs(caption = caption) +
-  #     theme(plot.caption = element_text(size = 10, hjust = 0))
-  #     # theme(plot.caption.position = "plot")
-  # }
 
   # Exit
   return(fig_plot)
@@ -1144,14 +926,6 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
 
 
 # Function for easily plotting subsets from the global slope results
-# testers...
-# test_sub <- "length"
-# test_sub <- "trend"
-# var_sub <- "intensity_max"
-# var_sub <- "focus_intensity_max"
-# var_sub <- "duration"
-# var_sub <- "count"
-# var_sub <- "focus_count"
 trend_plot <- function(test_sub, var_sub,
                        df = global_var_trend,
                        supp_cap = FALSE) {
@@ -1177,7 +951,6 @@ trend_plot <- function(test_sub, var_sub,
     vir_op <- "B"
     col_split <- c("turquoise4", "chocolate")
     sen_var <- "\nin count (n)"
-    # sen_change <- "Change " # Intentional overwrite of above value
   } else if(var_sub %in% c("intensity_max", "focus_intensity_max")){
     vir_op <- "A"
     col_split <- c("blue", "red")
@@ -1209,21 +982,10 @@ trend_plot <- function(test_sub, var_sub,
           legend.title = element_text(vjust = 1.5),
           legend.title.align = 0,
           panel.background = element_rect(fill = "grey80"))
-  # trend_map
-
-  # Add supplementary figure captions as desired
-  # FMarS style is to uplaod supp figures as standalone files so need the full figure caption included
-  # if(supp_cap != FALSE){
-  #   trend_map <- trend_map +
-  #     labs(caption = supp_cap)
-  # }
 
   # Exit
   return(trend_map)
 }
-
-
-# Visualise the consecutive count of missing days in a time series
 
 
 # Supplementary 2 ---------------------------------------------------------
@@ -1243,7 +1005,7 @@ base_period_analysis <- function(df, clim_metric = F){
   sst_flat <- detrend(df)
 
   # Calculate MHWs from detrended ts
-  # NB: Note that the proper WMO base period is used here
+  # NB: Note that the closest thing to a proper WMO base period is used here
   sst_flat_MHW <- detect_event(ts2clm(sst_flat, climatologyPeriod = c("1982-01-01", "2011-12-31")))
 
   # Pull out the largest event in the ts
@@ -1264,7 +1026,6 @@ base_period_analysis <- function(df, clim_metric = F){
 
   # Create summary statistics of MHW results
   sst_summary <- sst_clim_metric %>%
-    # group_by(test) %>%
     group_modify(~summary_stats(.x)) %>%
     data.frame() %>%
     filter(index_vals >= 30) %>% # Convert back to the index_val exception used for these data
@@ -1279,129 +1040,3 @@ base_period_analysis <- function(df, clim_metric = F){
   return(sst_summary)
 }
 
-
-# Old figure functions ----------------------------------------------------
-
-# Wrapper for creating plugs for smoother fig 2 - 4 plotting
-# control_plug <- function(test_plug, site_plug){
-#   plug <- data.frame(test = test_plug, site = site_plug, metric = unique(sst_ALL_plot_long$metric),
-#                      index_vals = 30, p.value.min = 1.0, p.value.mean = 1.0,
-#                      p.value.max = 1.0, p.value.sd = 0)
-# }
-
-# Expects a one row data.frame with a 'lon' and 'lat' column
-# df <- focus_WA
-# map_point <- function(df){
-#   category_data <- readRDS(category_files[grepl(pattern = as.character(df$date_peak),
-#                                                 x = category_files)])
-#   map_out <- ggplot(data = df, aes(x = lon, y = lat)) +
-#     geom_tile(data = category_data, aes(fill = category)) +
-#     borders(fill = "grey80", colour = "black") +
-#     geom_point(shape = 21, colour = "white", fill = "hotpink", size = 2) +
-#     scale_fill_manual("Category",
-#                       values = c("#ffc866", "#ff6900", "#9e0000", "#2d0000"),
-#                       labels = c("I Moderate", "II Strong",
-#                                  "III Severe", "IV Extreme")) +
-#     coord_cartesian(xlim = c(df$lon[1]-20, df$lon[1]+20),
-#                     ylim = c(df$lat[1]-20, df$lat[1]+20)) +
-#     labs(x = NULL, y = NULL) +
-#     theme(legend.position = "bottom")
-#   return(map_out)
-# }
-
-# This function expects the output of the clim, event, cat pipe
-# df <- filter(sst_ALL_res, site == "NW_Atl")
-# table_summary <- function(site_1){
-#
-#   df <- filter(sst_ALL_res, site == site_1)
-#
-#   # Seasonal min/mean/max
-#   # Threshold min/mean/max
-#   clim_long <- df %>%
-#     select(clims) %>%
-#     unnest() %>%
-#     select(doy, seas, thresh) %>%
-#     unique() %>%
-#     select(seas, thresh) %>%
-#     gather(key = "metric", value = "val")
-#
-#   event_long <- df %>%
-#     select(events) %>%
-#     unnest() %>%
-#     filter(row_number() %% 2 == 0) %>%
-#     unnest() %>%
-#     select(duration, intensity_mean, intensity_max, intensity_cumulative) %>%
-#     gather(key = "metric", value = "val")
-#
-#   event_count <- df %>%
-#     select(cats) %>%
-#     unnest() %>%
-#     select(category) %>%
-#     group_by(category) %>%
-#     summarise(val = n()) %>%
-#     mutate(metric = "count") %>%
-#     spread(key = category, value = val)
-#   if(!"IV Extreme" %in% colnames(event_count)){
-#     event_count <- cbind(event_count, tibble('IV Extreme' = 0))
-#   }
-#   event_count <- event_count %>%
-#     select(metric, 'I Moderate', 'II Strong', 'III Severe', 'IV Extreme') %>%
-#     dplyr::rename(' ' = metric)
-#
-#   summary_res <- rbind(clim_long, event_long) %>%
-#     group_by(metric) %>%
-#     summarise_all(.funs = c("min", "mean", "max", "sd")) %>%
-#     mutate_if(is.numeric, round, 2) %>%
-#     arrange(metric)
-#
-#   tbl_1 <- gridExtra::tableGrob(summary_res, rows = NULL)
-#   tbl_2 <- gridExtra::tableGrob(event_count, rows = NULL)
-#
-#   tbl_all <- gridExtra::grid.arrange(tbl_1, tbl_2,
-#                                      nrow = 2, as.table = TRUE)
-#
-#   return(tbl_all)
-#   # res_list <- list(summary_res = summary_res,
-#                    # event_count = event_count)
-#   # return(res_list)
-# }
-
-# Wrapper for time series + clims + event rug
-# ts_clim_rug <- function(site_1){
-#   ts_data <- filter(sst_ALL, site == site_1)
-#   clim_data <- filter(sst_ALL_clim, site == site_1)
-#   event_data <- filter(sst_ALL_event, site == site_1)
-#   fig <- ggplot(data = ts_data, aes(x = t, y = temp)) +
-#     geom_line(colour = "grey20") +
-#     geom_line(data = clim_data, aes(y = seas),
-#               linetype = "dashed", colour = "steelblue3") +
-#     geom_line(data = clim_data, linetype = "dotted", colour = "tomato3",
-#               aes(x = t, y = thresh)) +
-#     geom_rug(data = event_data, sides = "b", colour = "red3", size = 2,
-#              aes(x = date_peak, y = min(ts_data$temp))) +
-#     labs(x = NULL, y = "Temperature (°C)")
-#   return(fig)
-# }
-
-# Wrapper for clim only line plot
-# clim_line <-function(site_1){
-#   clim_data <- filter(sst_ALL_clim_only, site == site_1)
-#   ggplot(data = clim_data, aes(x = doy)) +
-#     geom_line(aes(y = seas), colour = "steelblue3") +
-#     geom_line(aes(y = thresh), colour = "tomato3") +
-#     labs(x = NULL, y = "Temperature (°C)")
-# }
-
-# Fixed data
-# ggplot(effect_event_fix, aes(x = index_vals)) +
-#   # geom_ribbon(aes(ymin = min, ymax = max, fill = metric), alpha = 0.2) +
-#   geom_smooth(aes(y = val, colour = site), method = "lm", linetype = 0) +
-#   stat_smooth(aes(y = val, colour = site), geom = "line",
-#               method = "lm", alpha = 0.5, size = 1) +
-#   geom_line(aes(y = val, colour = site), alpha = 0.7, size = 1.2) +
-#   # geom_line(aes(y = median, colour = metric), linetype = "dashed") +
-#   facet_grid(metric~test, scales = "free", switch = "both") +
-#   labs(x = NULL, y = NULL, colour = "Site") +
-#   theme(legend.position = "bottom")
-
-# Missing data only + fix
