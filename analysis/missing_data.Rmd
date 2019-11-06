@@ -18,7 +18,7 @@ options(scipen=999)
 
 ## Overview
 
-The purpose of this vignette is to breifly show the process used to go about quantify the effects that missing data have on the detection of MHWs. Specifically, the relationship between the percentage of missing data and how the MHW metrics may differ from those detected against the same time series with  no missing data.
+The purpose of this vignette is to briefly show the process used to go about quantify the effects that missing data have on the detection of MHWs. Specifically, the relationship between the percentage of missing data and how the MHW metrics may differ from those detected against the same time series with  no missing data.
 
 The missing data will be 'created' by striking out existing data from the three pre-packaged time series in the __`heatwaveR`__ package, which themselves have no missing data. These data will first be detrended so that the random missing data removed will not be conflated with any trend in the data. 
 
@@ -29,7 +29,7 @@ library(heatwaveR, lib.loc = "~/R-packages/")
 library(lubridate)
 library(ncdf4)
 library(doParallel)
-source("../code/functions.R")
+source("code/functions.R")
 ```
 
 ```{r r-init, eval=FALSE}
@@ -41,7 +41,7 @@ library(ncdf4)
 library(doParallel)
 
 # The custom functions written for the analysis
-source("../code/functions.R")
+source("code/functions.R")
 ```
 
 ```{r de-trend-func, eval=FALSE}
@@ -54,7 +54,7 @@ detrend <- function(df){
 }
 ```
 
-The effects that missing data have on the results are investigated with the sam methodology as the time series length and long-term trend tests, with the difference that data are being randomly removed before the analysis is run.
+The effects that missing data have on the results are investigated with the same methodology as the time series length and long-term trend tests, with the difference that data are being randomly removed before the analysis is run.
 
 
 ## Random missing data
@@ -80,10 +80,10 @@ control_missing <- function(prop, df){
 
 ## Analysis
 
-The full analysis on the results, including the functions shown above, is run for all of the tests (time series length, missing data, and long-term trend) all at once to ensure consistency of methodology across tests. For this reason the exact step-by-step process for the missing data analysis is not laid out below. To investiagte the source code one may go to 'code/workflow.R' in the GitHub repository. A link to that site may be found in the top right of the navigation bar for this site (the GitHub icon).
+The full analysis on the results, including the functions shown above, is run for all of the tests (time series length, missing data, and long-term trend) all at once to ensure consistency of methodology across tests. For this reason the exact step-by-step process for the missing data analysis is not laid out below. To investigate the source code one may go to 'code/workflow.R' in the GitHub repository. A link to that site may be found in the top right of the navigation bar for this site (the GitHub icon).
 
 ```{r length-analysis-quiet, echo=FALSE}
-sst_ALL_results <- readRDS("../data/sst_ALL_results.Rda")
+sst_ALL_results <- readRDS("data/sst_ALL_results.Rda")
 ```
 
 

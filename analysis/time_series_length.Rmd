@@ -17,7 +17,7 @@ knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
 
 ## Overview
 
-It has been shown that the length (count of days) of a time series may be one of the most important factors in determining the usefulness of those data for any number of applications [@Schlegel2016]. For the detection of MHWs it is recommended that at least 30 years of data are used in order to accurately detect the events therein [@Hobday2016]. This is no longer an issue for most ocean surfaces because many high quality SST products, such as NOAA OISST, are now in exceedence of the 30-year minimum. However, besides issues relating to the coarseness of these older products, there are many other reasons why one would want to detect MHWs in products with shorter records. _In situ_ measurements along the coast are one good example of this, another being the use of the newer higher resolution SST products, a third being the use of reanalysis/model products for the detection of events in 3D. It is therefore necessary to quantify the effects that shorter time series lengths(< 30 years) have on the detection of MHWs.
+It has been shown that the length (count of days) of a time series may be one of the most important factors in determining the usefulness of those data for any number of applications [@Schlegel2016]. For the detection of MHWs it is recommended that at least 30 years of data are used in order to accurately detect the events therein [@Hobday2016]. This is no longer an issue for most ocean surfaces because many high quality SST products, such as NOAA OISST, are now in exceedance of the 30-year minimum. However, besides issues relating to the coarseness of these older products, there are many other reasons why one would want to detect MHWs in products with shorter records. _In situ_ measurements along the coast are one good example of this, another being the use of the newer higher resolution SST products, a third being the use of reanalysis/model products for the detection of events in 3D. It is therefore necessary to quantify the effects that shorter time series lengths(< 30 years) have on the detection of MHWs.
 
 ```{r r-init-quiet, echo=FALSE}
 .libPaths(c("~/R-packages", .libPaths()))
@@ -26,7 +26,7 @@ library(heatwaveR, lib.loc = "~/R-packages/")
 library(lubridate)
 library(ncdf4)
 library(doParallel)
-source("../code/functions.R")
+source("code/functions.R")
 ```
 
 ```{r r-init, eval=FALSE}
@@ -38,7 +38,7 @@ library(ncdf4)
 library(doParallel)
 
 # The custom functions written for the analysis
-source("../code/functions.R")
+source("code/functions.R")
 ```
 
 
@@ -62,7 +62,7 @@ detrend <- function(df){
 
 The effect this has on the climatologies and MHW metrics will be quantified through the following statistics:  
   
-- The effecct size of shortening will be compared against the control (30 year time series) values
+- The effect size of shortening will be compared against the control (30 year time series) values
 - Confidence (CIs) for each MHW metric at different time series lengths will be calculated  
   
 In addition to checking all of the statistics mentioned above, it is also necessary to record what the overall relationship is with the reduction of time series length and the resultant metrics. For example, are MHWs on average more intense in shorter time series or less? This will form part of the best practice advice later.
@@ -84,10 +84,10 @@ control_length <- function(year_begin, df){
 
 ## Analysis
 
-The full analysis on the results, including the functions shown above, is run for all of the tests (time series length, missing data, and long-term trend) all at once to ensure consistency of methodology across tests. For this reason the exact step-by-step process for the time series length analysis is not laid out below. To investiagte the source code one may go to 'code/workflow.R' in the GitHub repository. A link to that site may be found in the top right of the navigation bar for this site (the GitHub icon).
+The full analysis on the results, including the functions shown above, is run for all of the tests (time series length, missing data, and long-term trend) all at once to ensure consistency of methodology across tests. For this reason the exact step-by-step process for the time series length analysis is not laid out below. To investigate the source code one may go to 'code/workflow.R' in the GitHub repository. A link to that site may be found in the top right of the navigation bar for this site (the GitHub icon).
 
 ```{r length-analysis-quiet, echo=FALSE}
-sst_ALL_results <- readRDS("../data/sst_ALL_results.Rda")
+sst_ALL_results <- readRDS("data/sst_ALL_results.Rda")
 ```
 
 

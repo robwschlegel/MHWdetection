@@ -26,7 +26,7 @@ library(heatwaveR, lib.loc = "~/R-packages/")
 library(lubridate)
 library(ncdf4)
 library(doParallel)
-source("../code/functions.R")
+source("code/functions.R")
 ```
 
 ```{r r-init, eval=FALSE}
@@ -38,7 +38,7 @@ library(ncdf4)
 library(doParallel)
 
 # The custom functions written for the analysis
-source("../code/functions.R")
+source("code/functions.R")
 ```
 
 ```{r de-trend-func, eval=FALSE}
@@ -54,7 +54,7 @@ detrend <- function(df){
 
 ## Trending
 
-The following chunks contain the code used to systematically add increasing inear trends to the three reference time series.
+The following chunks contain the code used to systematically add increasing linear trends to the three reference time series.
 
 ```{r trending, eval=FALSE}
 control_trend <- function(rate, df){
@@ -72,10 +72,10 @@ control_trend <- function(rate, df){
 
 ## Analysis
 
-The full analysis on the results, including the functions shown above, is run for all of the tests (time series length, missing data, and long-term trend) all at once to ensure consistency of methodology across tests. For this reason the exact step-by-step process for the long-term trend analysis is not laid out below. To investiagte the source code one may go to 'code/workflow.R' in the GitHub repository. A link to that site may be found in the top right of the navigation bar for this site (the GitHub icon).
+The full analysis on the results, including the functions shown above, is run for all of the tests (time series length, missing data, and long-term trend) all at once to ensure consistency of methodology across tests. For this reason the exact step-by-step process for the long-term trend analysis is not laid out below. To investigate the source code one may go to 'code/workflow.R' in the GitHub repository. A link to that site may be found in the top right of the navigation bar for this site (the GitHub icon).
 
 ```{r length-analysis-quiet, echo=FALSE}
-sst_ALL_results <- readRDS("../data/sst_ALL_results.Rda")
+sst_ALL_results <- readRDS("data/sst_ALL_results.Rda")
 ```
 
 
