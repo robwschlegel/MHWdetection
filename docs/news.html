@@ -7,11 +7,12 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
-<title>news.utf8.md</title>
+<title>news.utf8</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -88,7 +89,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -249,48 +249,9 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -339,8 +300,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -380,7 +339,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHW detection</a>
+      <a class="navbar-brand" href="index.html">MHW Detection</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -394,23 +353,28 @@ div.tocify {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Python vs. R</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="r_vs_python.html">Default outputs</a>
+        </li>
+        <li>
+          <a href="r_vs_python_arguments.html">Default arguments</a>
+        </li>
+        <li>
+          <a href="r_vs_python_additional.html">Additional functions</a>
+        </li>
+      </ul>
     </li>
     <li>
-      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+      <a href="time_series_length.html">Time series length</a>
     </li>
     <li>
-      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+      <a href="missing_data.html">Missing data</a>
     </li>
     <li>
-      <a href="time_series_duration.html">Effects of short time series</a>
-    </li>
-    <li>
-      <a href="missing_data.html">Effects of missing data</a>
-    </li>
-    <li>
-      <a href="trend.html">Effects of long-term trends</a>
+      <a href="trend.html">Long-term trends</a>
     </li>
     <li>
       <a href="best_practices.html">Best practices</a>
@@ -454,664 +418,878 @@ div.section {
 </div>
 
 
-<p>
-<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
-<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
-</button>
-</p>
-<div id="workflowr-report" class="collapse">
-<ul class="nav nav-tabs">
-<li class="active">
-<a data-toggle="tab" href="#summary">Summary</a>
-</li>
+<p><strong>Last updated:</strong> 2019-11-06</p>
+<strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
+<ul>
 <li>
-<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
-</li>
-<li>
-<a data-toggle="tab" href="#versions">Past versions</a>
-</li>
-</ul>
-<div class="tab-content">
-<div id="summary" class="tab-pane fade in active">
-<p>
-<strong>Last updated:</strong> 2019-05-06
-</p>
-<p>
-<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
-</p>
-<p>
-<strong>Knit directory:</strong> <code>MHWdetection/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
-</p>
-<p>
-This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
-  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.3.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
-</p>
-<hr>
-</div>
-<div id="checks" class="tab-pane fade">
-<div id="workflowr-checks" class="panel-group">
-<div class="panel panel-default">
-<div class="panel-heading">
-<p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
-</p>
-</div>
-<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
-<div class="panel-body">
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
 <p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
-</div>
-</div>
-</div>
-<div class="panel panel-default">
-<div class="panel-heading">
-<p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomrobwschlegelMHWdetectiontreec411064217a6bdae0fe1eb19fe31d057da3a6be9targetblankc411064a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/c411064217a6bdae0fe1eb19fe31d057da3a6be9" target="_blank">c411064</a> </a>
-</p>
-</div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomrobwschlegelMHWdetectiontreec411064217a6bdae0fe1eb19fe31d057da3a6be9targetblankc411064a" class="panel-collapse collapse">
-<div class="panel-body">
-<p>
+</details>
+</li>
+<li>
+<details>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/17f85e9c3bd54f445f17baf2819eaf9a2242d522" target="_blank">17f85e9</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
-</p>
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    data/global/
-    Ignored:    data/global_KS_cat.Rdata
-    Ignored:    data/global_KS_clim.Rdata
-    Ignored:    data/global_KS_event.Rdata
-    Ignored:    data/global_dec_trend.Rdata
-    Ignored:    data/global_effect_cat.Rdata
-    Ignored:    data/global_effect_clim.Rdata
-    Ignored:    data/global_effect_event.Rdata
-    Ignored:    data/sst_ALL_clim_event_cat.Rdata
-    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
-    Ignored:    poster/portrait_files/
+    Ignored:    data/global_results.Rda
+    Ignored:    data/global_test_trend.Rda
+    Ignored:    data/global_var_trend.Rda
+    Ignored:    data/global_var_trend_old.Rda
+    Ignored:    data/random_bp_results_100.Rda
+    Ignored:    data/random_bp_results_1000.Rda
+    Ignored:    data/random_results_100.Rda
+    Ignored:    data/random_results_1000.Rda
+    Ignored:    data/sst_ALL_bp_results.Rda
+
+Untracked files:
+    Untracked:  analysis/WA_pixels.Rda
+    Untracked:  analysis/WA_pixels_res.Rda
+
+Unstaged changes:
+    Modified:   .DS_Store
+    Modified:   .Rprofile
+    Modified:   .gitignore
+    Modified:   CODE_OF_CONDUCT.md
+    Modified:   LICENSE
+    Modified:   LICENSE.md
+    Modified:   LaTeX/FMars.csl
+    Modified:   LaTeX/Frontiers_Template.docx
+    Modified:   LaTeX/MHWdetection.docx
+    Modified:   LaTeX/MHWdetection.tex
+    Modified:   LaTeX/PDF examples/frontiers.pdf
+    Modified:   LaTeX/PDF examples/frontiers_SupplementaryMaterial.pdf
+    Modified:   LaTeX/README
+    Modified:   LaTeX/Supplementary_Material.docx
+    Modified:   LaTeX/YM-logo.eps
+    Modified:   LaTeX/fig_1.jpg
+    Modified:   LaTeX/fig_1.pdf
+    Modified:   LaTeX/fig_1_flat.jpg
+    Modified:   LaTeX/fig_1_flat.pdf
+    Modified:   LaTeX/fig_2.jpg
+    Modified:   LaTeX/fig_2.pdf
+    Modified:   LaTeX/fig_3.jpg
+    Modified:   LaTeX/fig_3.pdf
+    Modified:   LaTeX/fig_4.jpg
+    Modified:   LaTeX/fig_4.pdf
+    Modified:   LaTeX/fig_5.jpg
+    Modified:   LaTeX/fig_5.pdf
+    Modified:   LaTeX/fig_6.jpg
+    Modified:   LaTeX/fig_6.pdf
+    Modified:   LaTeX/fig_S1.jpg
+    Modified:   LaTeX/fig_S1.pdf
+    Modified:   LaTeX/fig_S2.jpg
+    Modified:   LaTeX/fig_S2.pdf
+    Modified:   LaTeX/fig_S3.jpg
+    Modified:   LaTeX/fig_S3.pdf
+    Modified:   LaTeX/fig_S4.jpg
+    Modified:   LaTeX/fig_S4.pdf
+    Modified:   LaTeX/fig_S5.jpg
+    Modified:   LaTeX/fig_S5.pdf
+    Modified:   LaTeX/figures.zip
+    Modified:   LaTeX/frontiers.tex
+    Modified:   LaTeX/frontiersFPHY.cls
+    Modified:   LaTeX/frontiersHLTH.cls
+    Modified:   LaTeX/frontiersSCNS.cls
+    Modified:   LaTeX/frontiersSCNS.log
+    Modified:   LaTeX/frontiers_SupplementaryMaterial.tex
+    Modified:   LaTeX/frontiers_suppmat.cls
+    Modified:   LaTeX/frontiersinHLTH&FPHY.bst
+    Modified:   LaTeX/frontiersinSCNS_ENG_HUMS.bst
+    Modified:   LaTeX/logo1.eps
+    Modified:   LaTeX/logo1.jpg
+    Modified:   LaTeX/logo2.eps
+    Modified:   LaTeX/logos.eps
+    Modified:   LaTeX/logos.jpg
+    Modified:   LaTeX/stfloats.sty
+    Modified:   LaTeX/table_1.xlsx
+    Modified:   LaTeX/table_2.xlsx
+    Modified:   LaTeX/test.bib
+    Modified:   MHWdetection.Rproj
+    Modified:   TODO
+    Modified:   _references/1-s2.0-S0921818106002736-main.pdf
+    Modified:   _references/1-s2.0-S092181810600275X-main.pdf
+    Modified:   _references/1-s2.0-S0921818106002761-main.pdf
+    Modified:   _references/1-s2.0-S0921818106002852-main.pdf
+    Modified:   _references/1405.3904.pdf
+    Modified:   _references/1520-0450%282001%29040%3C0762%3Aotdoah%3E2.0.co%3B2.pdf
+    Modified:   _references/2013_Extremes_Workshop_Report.pdf
+    Modified:   _references/24868781.pdf
+    Modified:   _references/24870362.pdf
+    Modified:   _references/26192647.pdf
+    Modified:   _references/994.full.pdf
+    Modified:   _references/A_1019841717369.pdf
+    Modified:   _references/Banzon et al 2014.pdf
+    Modified:   _references/Brown_et_al-2008-Journal_of_Geophysical_Research%3A_Atmospheres_%281984-2012%29.pdf
+    Modified:   _references/Different_ways_to_compute_temperature_re.pdf
+    Modified:   _references/Gilleland et al 2013.pdf
+    Modified:   _references/Gilleland_2006.pdf
+    Modified:   _references/Kuglitsch_et_al-2010-Geophysical_Research_Letters.pdf
+    Modified:   _references/Modeling Waves of Extreme Temperature The Changing Tails of Four Cities.pdf
+    Modified:   _references/Normals-Guide-to-Climate-190116_en.pdf
+    Modified:   _references/Reynolds et al 2007.pdf
+    Modified:   _references/Risk_of_Extreme_Events_Under_Nonstationa.pdf
+    Modified:   _references/Russo_et_al-2014-Journal_of_Geophysical_Research%3A_Atmospheres.pdf
+    Modified:   _references/WCDMP_72_TD_1500_en__1.pdf
+    Modified:   _references/WMO 49 v1 2015.pdf
+    Modified:   _references/WMO No 1203.pdf
+    Modified:   _references/WMO-TD No 1377.pdf
+    Modified:   _references/WMO_100_en.pdf
+    Modified:   _references/bams-d-12-00066.1.pdf
+    Modified:   _references/c058p193.pdf
+    Modified:   _references/cc100.pdf
+    Modified:   _references/clivar14.pdf
+    Modified:   _references/coles1994.pdf
+    Modified:   _references/ecology.pdf
+    Modified:   _references/joc.1141.pdf
+    Modified:   _references/joc.1432.pdf
+    Modified:   _references/returnPeriod.pdf
+    Modified:   _references/s00382-014-2287-1.pdf
+    Modified:   _references/s00382-014-2345-8.pdf
+    Modified:   _references/s00382-015-2638-6.pdf
+    Modified:   _references/s10584-006-9116-4.pdf
+    Modified:   _references/s10584-007-9392-7.pdf
+    Modified:   _references/s10584-010-9944-0.pdf
+    Modified:   _references/s10584-012-0659-2.pdf
+    Modified:   _references/s10584-014-1254-5.pdf
+    Modified:   _references/s13253-013-0161-y.pdf
+    Modified:   _references/wcrpextr.pdf
+    Modified:   _workflowr.yml
+    Deleted:    analysis/about.Rmd
+    Modified:   analysis/bibliography.bib
+    Modified:   code/README.md
+    Modified:   data/.gitignore
+    Modified:   data/best_table_average.Rda
+    Modified:   data/best_table_focus.Rda
+    Modified:   data/python/clim_py.csv
+    Modified:   data/python/clim_py_joinAG_1.csv
+    Modified:   data/python/clim_py_joinAG_5.csv
+    Modified:   data/python/clim_py_joinAG_no.csv
+    Modified:   data/python/clim_py_minD_3.csv
+    Modified:   data/python/clim_py_minD_7.csv
+    Modified:   data/python/clim_py_pctile_80.csv
+    Modified:   data/python/clim_py_pctile_95.csv
+    Modified:   data/python/clim_py_pctile_99.csv
+    Modified:   data/python/clim_py_random.csv
+    Modified:   data/python/clim_py_spw_11.csv
+    Modified:   data/python/clim_py_spw_51.csv
+    Modified:   data/python/clim_py_spw_no.csv
+    Modified:   data/python/clim_py_whw_3.csv
+    Modified:   data/python/clim_py_whw_7.csv
+    Modified:   data/python/mhwBlock.csv
+    Modified:   data/python/mhws_py.csv
+    Modified:   data/python/mhws_py_joinAG_1.csv
+    Modified:   data/python/mhws_py_joinAG_5.csv
+    Modified:   data/python/mhws_py_joinAG_no.csv
+    Modified:   data/python/mhws_py_minD_3.csv
+    Modified:   data/python/mhws_py_minD_7.csv
+    Modified:   data/python/mhws_py_pctile_80.csv
+    Modified:   data/python/mhws_py_pctile_95.csv
+    Modified:   data/python/mhws_py_pctile_99.csv
+    Modified:   data/python/mhws_py_random.csv
+    Modified:   data/python/mhws_py_spw_11.csv
+    Modified:   data/python/mhws_py_spw_51.csv
+    Modified:   data/python/mhws_py_spw_no.csv
+    Modified:   data/python/mhws_py_whw_3.csv
+    Modified:   data/python/mhws_py_whw_7.csv
+    Modified:   data/python/sst_WA.csv
+    Modified:   data/python/sst_WA_miss_ice.csv
+    Modified:   data/python/sst_WA_miss_random.csv
+    Modified:   data/sst_ALL_results.Rda
+    Modified:   data/table_1.csv
+    Modified:   data/table_2.csv
+    Modified:   docs/portrait.pdf
+    Modified:   output/README.md
+    Modified:   output/effect_event.pdf
+    Modified:   output/fig_2_missing_only.pdf
+    Modified:   output/stitch_plot_WA.pdf
+    Modified:   output/stitch_sub_plot_WA.pdf
+    Modified:   poster/Figures/CSIRO_logo.jpeg
+    Modified:   poster/Figures/Dal_logo.jpg
+    Modified:   poster/Figures/all_logo_long.jpg
+    Modified:   poster/Figures/all_logos.jpg
+    Modified:   poster/Figures/logo_stitching.odp
+    Modified:   poster/Figures/ofi_logo.jpg
+    Modified:   poster/Figures/uwc-logo.jpg
+    Modified:   poster/MHWdetection.bib
+    Modified:   poster/MyBib.bib
+    Modified:   poster/landscape.Rmd
+    Modified:   poster/landscape.pdf
+    Modified:   poster/portrait.Rmd
+    Modified:   poster/portrait.pdf
 
 </code></pre>
-<p>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
-</p>
-</div>
-</div>
-</div>
-</div>
-<hr>
-</div>
-<div id="versions" class="tab-pane fade">
-
-<p>
-These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
-</p>
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
+</details>
+</li>
+</ul>
+<details>
+<summary> <small><strong>Expand here to see past versions:</strong></small> </summary>
+<ul>
+<table style="border-collapse:separate; border-spacing:5px;">
 <thead>
 <tr>
-<th>
+<th style="text-align:left;">
 File
 </th>
-<th>
+<th style="text-align:left;">
 Version
 </th>
-<th>
+<th style="text-align:left;">
 Author
 </th>
-<th>
+<th style="text-align:left;">
 Date
 </th>
-<th>
+<th style="text-align:left;">
 Message
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>
+<td style="text-align:left;">
 Rmd
 </td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/5b638ef007db894fc0b6c4c99412725dcd8181bf/analysis/news.Rmd" target="_blank">5b638ef</a>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/61bf228806c8ba5838360ee254eef1f682a125dc/analysis/news.Rmd" target="_blank">61bf228</a>
 </td>
-<td>
-Robert Schlegel
+<td style="text-align:left;">
+robwschlegel
 </td>
-<td>
-2019-05-06
+<td style="text-align:left;">
+2019-11-06
 </td>
-<td>
-Uploaded poster to GitHub page
+<td style="text-align:left;">
+Prepped trend vignette for site re-build
 </td>
 </tr>
 <tr>
-<td>
-html
-</td>
-<td>
-<a href="https://rawcdn.githack.com/robwschlegel/MHWdetection/74aff6b41bd11ec2a5f8dc1d87195aa625d59e71/docs/news.html" target="_blank">74aff6b</a>
-</td>
-<td>
-Robert Schlegel
-</td>
-<td>
-2019-05-03
-</td>
-<td>
-Build site.
-</td>
-</tr>
-<tr>
-<td>
+<td style="text-align:left;">
 Rmd
 </td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/502aacf15e093a5f49cfa6565ebf325d367ab6ec/analysis/news.Rmd" target="_blank">502aacf</a>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/819f11e95607ac3e3b175cbd862e8e0144c1b19c/analysis/news.Rmd" target="_blank">819f11e</a>
 </td>
-<td>
-Robert Schlegel
-</td>
-<td>
-2019-05-03
-</td>
-<td>
-Created JPG versions of figures for draft submission
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/f5fba8fb66360b262acd85ca7985f3d4da852912/analysis/news.Rmd" target="_blank">f5fba8f</a>
-</td>
-<td>
-Robert Schlegel
-</td>
-<td>
-2019-05-03
-</td>
-<td>
-Polished poster
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/d5ed0d0b68ecf52900d54a45441da9d68d1838e8/analysis/news.Rmd" target="_blank">d5ed0d0</a>
-</td>
-<td>
+<td style="text-align:left;">
 Robert William Schlegel
 </td>
-<td>
-2019-05-02
+<td style="text-align:left;">
+2019-11-04
 </td>
-<td>
-Working on poster
+<td style="text-align:left;">
+Updating the foundation of workflowr GitHub site
 </td>
 </tr>
 <tr>
-<td>
+<td style="text-align:left;">
 Rmd
 </td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/9285aaa6346841f3fe322eb4f225bdb84c159315/analysis/news.Rmd" target="_blank">9285aaa</a>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/158aa0b34e302fe246051985c5539889e8c22878/analysis/news.Rmd" target="_blank">158aa0b</a>
 </td>
-<td>
+<td style="text-align:left;">
 robwschlegel
 </td>
-<td>
-2019-04-30
+<td style="text-align:left;">
+2019-05-06
 </td>
-<td>
-Snag list
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/f79c3e910ddb9dd73f4ffbba5d7e1e4d0dbb3c1d/analysis/news.Rmd" target="_blank">f79c3e9</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-30
-</td>
-<td>
-Polished Conclusions
+<td style="text-align:left;">
+Updated project interface
 </td>
 </tr>
 <tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/c1fa0d71db6061c5d1d15a529acf23e631364ed6/analysis/news.Rmd" target="_blank">c1fa0d7</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-30
-</td>
-<td>
-Polished Discussion
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/ad94e1ddf044dd21f6e316131f3f3d6d22ca5618/analysis/news.Rmd" target="_blank">ad94e1d</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-30
-</td>
-<td>
-Polished results
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/4920c7a80a39ddfd017ea807b16c74224699d55a/analysis/news.Rmd" target="_blank">4920c7a</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-30
-</td>
-<td>
-Polished Methods
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/897141e96b794593f6ad29cd717a2ff57a9d2a3c/analysis/news.Rmd" target="_blank">897141e</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-29
-</td>
-<td>
-Created Figure 1
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/8e53a5ccdb8dc4b4d10a670ff111edba510d0477/analysis/news.Rmd" target="_blank">8e53a5c</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-29
-</td>
-<td>
-Further polishing of text
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/4dc55c80793d862915e2aba92cce33fd0552fe3c/analysis/news.Rmd" target="_blank">4dc55c8</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-28
-</td>
-<td>
-Final round of comments addressed in part
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/151f5d188fe9ef8466312fa4c03540f21ef89606/analysis/news.Rmd" target="_blank">151f5d1</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-26
-</td>
-<td>
-Creating remaining figures
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/bb135c34685a2a41b90436256999e87aae4b7e09/analysis/news.Rmd" target="_blank">bb135c3</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-25
-</td>
-<td>
-Working on length fix
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/50aa5e406ab72f7e7a186725aa3d0d3742583341/analysis/news.Rmd" target="_blank">50aa5e4</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-24
-</td>
-<td>
-Troubleshot the global analysis output
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/104d600fc96ea17f72c122ff5948cf06c92d8c98/analysis/news.Rmd" target="_blank">104d600</a>
-</td>
-<td>
-Robert Schlegel
-</td>
-<td>
-2019-04-18
-</td>
-<td>
-Unpacking and calculating slopes for global results
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/b80fa5cbe76478365a57816628bd8922191af951/analysis/news.Rmd" target="_blank">b80fa5c</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-17
-</td>
-<td>
-Expanded tests to 0.5C/dec trend and 99% missing data
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/d1891c057a4b7623d6709ed0090a0650e7a71028/analysis/news.Rmd" target="_blank">d1891c0</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-16
-</td>
-<td>
-Edited manuscript through to the discussion section
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/444758988e699e4ef8c3935488843ed13c38d4fa/analysis/news.Rmd" target="_blank">4447589</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-15
-</td>
-<td>
-Global analysis error trapping
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/33966d0c2d4f59bf26664fffe060a9352f474136/analysis/news.Rmd" target="_blank">33966d0</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-15
-</td>
-<td>
-Finished writing global analysis code and began running it
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/87caad79ee97f881479047e81b8b4063b02813ea/analysis/news.Rmd" target="_blank">87caad7</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-14
-</td>
-<td>
-Implemented and ran code for fixes to sub-optimal data
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/7ba5f650d6ff6f75501607c3e1c8f0c417b62bf7/analysis/news.Rmd" target="_blank">7ba5f65</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-04-11
-</td>
-<td>
-Working towards answering Question 2
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/584d848d9ffd7626191edfb7be61ec8b83b089d8/analysis/news.Rmd" target="_blank">584d848</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-03-25
-</td>
-<td>
-Basic figures for the re-sample workflow complete
-</td>
-</tr>
-<tr>
-<td>
+<td style="text-align:left;">
 html
 </td>
-<td>
-<a href="https://rawcdn.githack.com/robwschlegel/MHWdetection/8ef792c515e949319bbebaff398bdbb7c17493a6/docs/news.html" target="_blank">8ef792c</a>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/fb80070918ff084a6a2e77390891196514d7e445/docs/news.html" target="_blank">fb80070</a>
 </td>
-<td>
-robwschlegel
+<td style="text-align:left;">
+Robert Schlegel
 </td>
-<td>
-2019-03-20
+<td style="text-align:left;">
+2019-05-06
 </td>
-<td>
-Build site.
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/9f45ef73183a63375755405512bee53092922632/analysis/news.Rmd" target="_blank">9f45ef7</a>
-</td>
-<td>
-robwschlegel
-</td>
-<td>
-2019-03-20
-</td>
-<td>
+<td style="text-align:left;">
 Update
 </td>
 </tr>
 <tr>
-<td>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/5b638ef007db894fc0b6c4c99412725dcd8181bf/analysis/news.Rmd" target="_blank">5b638ef</a>
+</td>
+<td style="text-align:left;">
+Robert Schlegel
+</td>
+<td style="text-align:left;">
+2019-05-06
+</td>
+<td style="text-align:left;">
+Uploaded poster to GitHub page
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 html
 </td>
-<td>
-<a href="https://rawcdn.githack.com/robwschlegel/MHWdetection/81a2ed553454c1f5480a64cf863266d1050b74ec/docs/news.html" target="_blank">81a2ed5</a>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/74aff6b41bd11ec2a5f8dc1d87195aa625d59e71/docs/news.html" target="_blank">74aff6b</a>
 </td>
-<td>
-robwschlegel
+<td style="text-align:left;">
+Robert Schlegel
 </td>
-<td>
-2019-03-19
+<td style="text-align:left;">
+2019-05-03
 </td>
-<td>
+<td style="text-align:left;">
 Build site.
 </td>
 </tr>
 <tr>
-<td>
+<td style="text-align:left;">
 Rmd
 </td>
-<td>
-<a href="https://github.com/robwschlegel/MHWdetection/blob/62fe75fba2723228f65760b88e020ee9ea8748c8/analysis/news.Rmd" target="_blank">62fe75f</a>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/acee19f1e68babd78e0d167315960123a33ea709/analysis/news.Rmd" target="_blank">acee19f</a>
 </td>
-<td>
+<td style="text-align:left;">
+Robert Schlegel
+</td>
+<td style="text-align:left;">
+2019-05-03
+</td>
+<td style="text-align:left;">
+Some updates
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/502aacf15e093a5f49cfa6565ebf325d367ab6ec/analysis/news.Rmd" target="_blank">502aacf</a>
+</td>
+<td style="text-align:left;">
+Robert Schlegel
+</td>
+<td style="text-align:left;">
+2019-05-03
+</td>
+<td style="text-align:left;">
+Created JPG versions of figures for draft submission
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/f5fba8fb66360b262acd85ca7985f3d4da852912/analysis/news.Rmd" target="_blank">f5fba8f</a>
+</td>
+<td style="text-align:left;">
+Robert Schlegel
+</td>
+<td style="text-align:left;">
+2019-05-03
+</td>
+<td style="text-align:left;">
+Polished poster
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/d5ed0d0b68ecf52900d54a45441da9d68d1838e8/analysis/news.Rmd" target="_blank">d5ed0d0</a>
+</td>
+<td style="text-align:left;">
+Robert William Schlegel
+</td>
+<td style="text-align:left;">
+2019-05-02
+</td>
+<td style="text-align:left;">
+Working on poster
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/9285aaa6346841f3fe322eb4f225bdb84c159315/analysis/news.Rmd" target="_blank">9285aaa</a>
+</td>
+<td style="text-align:left;">
 robwschlegel
 </td>
-<td>
+<td style="text-align:left;">
+2019-04-30
+</td>
+<td style="text-align:left;">
+Snag list
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/f79c3e910ddb9dd73f4ffbba5d7e1e4d0dbb3c1d/analysis/news.Rmd" target="_blank">f79c3e9</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-30
+</td>
+<td style="text-align:left;">
+Polished Conclusions
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/c1fa0d71db6061c5d1d15a529acf23e631364ed6/analysis/news.Rmd" target="_blank">c1fa0d7</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-30
+</td>
+<td style="text-align:left;">
+Polished Discussion
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/ad94e1ddf044dd21f6e316131f3f3d6d22ca5618/analysis/news.Rmd" target="_blank">ad94e1d</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-30
+</td>
+<td style="text-align:left;">
+Polished results
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/4920c7a80a39ddfd017ea807b16c74224699d55a/analysis/news.Rmd" target="_blank">4920c7a</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-30
+</td>
+<td style="text-align:left;">
+Polished Methods
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/897141e96b794593f6ad29cd717a2ff57a9d2a3c/analysis/news.Rmd" target="_blank">897141e</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-29
+</td>
+<td style="text-align:left;">
+Created Figure 1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/8e53a5ccdb8dc4b4d10a670ff111edba510d0477/analysis/news.Rmd" target="_blank">8e53a5c</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-29
+</td>
+<td style="text-align:left;">
+Further polishing of text
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/4dc55c80793d862915e2aba92cce33fd0552fe3c/analysis/news.Rmd" target="_blank">4dc55c8</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-28
+</td>
+<td style="text-align:left;">
+Final round of comments addressed in part
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/151f5d188fe9ef8466312fa4c03540f21ef89606/analysis/news.Rmd" target="_blank">151f5d1</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-26
+</td>
+<td style="text-align:left;">
+Creating remaining figures
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/bb135c34685a2a41b90436256999e87aae4b7e09/analysis/news.Rmd" target="_blank">bb135c3</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-25
+</td>
+<td style="text-align:left;">
+Working on length fix
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/50aa5e406ab72f7e7a186725aa3d0d3742583341/analysis/news.Rmd" target="_blank">50aa5e4</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-24
+</td>
+<td style="text-align:left;">
+Troubleshot the global analysis output
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/104d600fc96ea17f72c122ff5948cf06c92d8c98/analysis/news.Rmd" target="_blank">104d600</a>
+</td>
+<td style="text-align:left;">
+Robert Schlegel
+</td>
+<td style="text-align:left;">
+2019-04-18
+</td>
+<td style="text-align:left;">
+Unpacking and calculating slopes for global results
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/b80fa5cbe76478365a57816628bd8922191af951/analysis/news.Rmd" target="_blank">b80fa5c</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-17
+</td>
+<td style="text-align:left;">
+Expanded tests to 0.5C/dec trend and 99% missing data
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/d1891c057a4b7623d6709ed0090a0650e7a71028/analysis/news.Rmd" target="_blank">d1891c0</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-16
+</td>
+<td style="text-align:left;">
+Edited manuscript through to the discussion section
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/444758988e699e4ef8c3935488843ed13c38d4fa/analysis/news.Rmd" target="_blank">4447589</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-15
+</td>
+<td style="text-align:left;">
+Global analysis error trapping
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/33966d0c2d4f59bf26664fffe060a9352f474136/analysis/news.Rmd" target="_blank">33966d0</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-15
+</td>
+<td style="text-align:left;">
+Finished writing global analysis code and began running it
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/87caad79ee97f881479047e81b8b4063b02813ea/analysis/news.Rmd" target="_blank">87caad7</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-14
+</td>
+<td style="text-align:left;">
+Implemented and ran code for fixes to sub-optimal data
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/7ba5f650d6ff6f75501607c3e1c8f0c417b62bf7/analysis/news.Rmd" target="_blank">7ba5f65</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-04-11
+</td>
+<td style="text-align:left;">
+Working towards answering Question 2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/584d848d9ffd7626191edfb7be61ec8b83b089d8/analysis/news.Rmd" target="_blank">584d848</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-25
+</td>
+<td style="text-align:left;">
+Basic figures for the re-sample workflow complete
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/8ef792c515e949319bbebaff398bdbb7c17493a6/docs/news.html" target="_blank">8ef792c</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-20
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/9f45ef73183a63375755405512bee53092922632/analysis/news.Rmd" target="_blank">9f45ef7</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-20
+</td>
+<td style="text-align:left;">
+Update
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/81a2ed553454c1f5480a64cf863266d1050b74ec/docs/news.html" target="_blank">81a2ed5</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
 2019-03-19
 </td>
-<td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/62fe75fba2723228f65760b88e020ee9ea8748c8/analysis/news.Rmd" target="_blank">62fe75f</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-03-19
+</td>
+<td style="text-align:left;">
 Publish the news file
 </td>
 </tr>
 <tr>
-<td>
+<td style="text-align:left;">
 html
 </td>
-<td>
-<a href="https://rawcdn.githack.com/robwschlegel/MHWdetection/36100c0f66df370adc3d94eab7aed243bbb17d68/docs/news.html" target="_blank">36100c0</a>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/36100c0f66df370adc3d94eab7aed243bbb17d68/docs/news.html" target="_blank">36100c0</a>
 </td>
-<td>
+<td style="text-align:left;">
 robwschlegel
 </td>
-<td>
+<td style="text-align:left;">
 2019-03-19
 </td>
-<td>
+<td style="text-align:left;">
 Build site.
 </td>
 </tr>
 <tr>
-<td>
+<td style="text-align:left;">
 Rmd
 </td>
-<td>
+<td style="text-align:left;">
 <a href="https://github.com/robwschlegel/MHWdetection/blob/0aac666455ea6d7983ffa28f317bae6ca3c9bc3d/analysis/news.Rmd" target="_blank">0aac666</a>
 </td>
-<td>
+<td style="text-align:left;">
 robwschlegel
 </td>
-<td>
+<td style="text-align:left;">
 2019-03-19
 </td>
-<td>
+<td style="text-align:left;">
 Publish the menu files
 </td>
 </tr>
 </tbody>
 </table>
-</div>
-<hr>
-</div>
-</div>
-</div>
+</ul>
+</details>
+<hr />
 <div id="section" class="section level1">
-<h1>2019-05-06</h1>
+<h1>2019-11-06</h1>
 <ul>
-<li>Uploaded poster to GitHub page</li>
+<li>The GitHub research website for this manuscript was updated to match the changes from the first round of revisions</li>
 </ul>
 </div>
 <div id="section-1" class="section level1">
+<h1>2019-11-04</h1>
+<ul>
+<li>Quite a lot has happened in the intersticing time</li>
+<li>The curious reader will need to refer to the git push logs for a more detailed account unfortunately</li>
+<li><p>The manuscript was re-submitted on November 1st # 2019-05-06</p></li>
+<li>Uploaded poster to GitHub page</li>
+<li><p>Updated project interface</p></li>
+</ul>
+</div>
+<div id="section-2" class="section level1">
 <h1>2019-05-03</h1>
 <ul>
 <li>Polished poster</li>
 <li>Fixed a couple of figures</li>
 <li>Created JPG versions of figures for draft submission</li>
-<li>Submitted to FMars MHW special issue</li>
+<li>Submitted to FMarS MHW special issue</li>
 <li>Updatted project website</li>
-</ul>
-</div>
-<div id="section-2" class="section level1">
-<h1>2019-05-02</h1>
-<ul>
-<li>Created a poster for the OceanPredict19 conference in Halifax</li>
 </ul>
 </div>
 <div id="section-3" class="section level1">
 <h1>2019-05-02</h1>
 <ul>
-<li>Added some info required in the submission process</li>
+<li>Created a poster for the OceanPredict19 conference in Halifax</li>
 </ul>
 </div>
 <div id="section-4" class="section level1">
+<h1>2019-05-02</h1>
+<ul>
+<li>Added some info required in the submission process</li>
+</ul>
+</div>
+<div id="section-5" class="section level1">
 <h1>2019-04-30</h1>
 <ul>
 <li>Re-created all figures as necessary</li>
@@ -1122,7 +1300,7 @@ Publish the menu files
 <li>Snag list</li>
 </ul>
 </div>
-<div id="section-5" class="section level1">
+<div id="section-6" class="section level1">
 <h1>2019-04-29</h1>
 <ul>
 <li>Further polishing of text</li>
@@ -1130,31 +1308,31 @@ Publish the menu files
 <li>Prepping for LaTeX typesetting</li>
 </ul>
 </div>
-<div id="section-6" class="section level1">
+<div id="section-7" class="section level1">
 <h1>2019-04-28</h1>
 <ul>
 <li>Final round of comments addressed in part</li>
 </ul>
 </div>
-<div id="section-7" class="section level1">
+<div id="section-8" class="section level1">
 <h1>2019-04-26</h1>
 <ul>
 <li>Creating remaining figures</li>
 </ul>
 </div>
-<div id="section-8" class="section level1">
+<div id="section-9" class="section level1">
 <h1>2019-04-25</h1>
 <ul>
 <li>Working on length fix</li>
 </ul>
 </div>
-<div id="section-9" class="section level1">
+<div id="section-10" class="section level1">
 <h1>2019-04-24</h1>
 <ul>
 <li>Troubleshot the global analysis output</li>
 </ul>
 </div>
-<div id="section-10" class="section level1">
+<div id="section-11" class="section level1">
 <h1>2019-04-18</h1>
 <ul>
 <li>Unpacking and calculating slopes for global results</li>
@@ -1162,26 +1340,26 @@ Publish the menu files
 <li>Fleshing out Discussion</li>
 </ul>
 </div>
-<div id="section-11" class="section level1">
+<div id="section-12" class="section level1">
 <h1>2019-04-17</h1>
 <ul>
 <li>Expanded tests to 0.5C/dec trend and 99% missing data</li>
 </ul>
 </div>
-<div id="section-12" class="section level1">
+<div id="section-13" class="section level1">
 <h1>2019-04-16</h1>
 <ul>
 <li>Edited manuscript through to the discussion section</li>
 <li>First pass at global analysis nearly finished</li>
 </ul>
 </div>
-<div id="section-13" class="section level1">
+<div id="section-14" class="section level1">
 <h1>2019-04-15</h1>
 <ul>
 <li>Global analysis error trapping</li>
 </ul>
 </div>
-<div id="section-14" class="section level1">
+<div id="section-15" class="section level1">
 <h1>2019-04-14</h1>
 <ul>
 <li>Implemented and ran code for fixes to sub-optimal data</li>
@@ -1189,95 +1367,95 @@ Publish the menu files
 <li>Began running global analysis code</li>
 </ul>
 </div>
-<div id="section-15" class="section level1">
+<div id="section-16" class="section level1">
 <h1>2019-04-12</h1>
 <ul>
 <li>Finished first pass on answer to Question 2</li>
 </ul>
 </div>
-<div id="section-16" class="section level1">
+<div id="section-17" class="section level1">
 <h1>2019-04-11</h1>
 <ul>
 <li>Working towards Question 2</li>
 </ul>
 </div>
-<div id="section-17" class="section level1">
+<div id="section-18" class="section level1">
 <h1>2019-03-20</h1>
 <ul>
 <li>Basic figures for the re-sample workflow complete</li>
 </ul>
 </div>
-<div id="section-18" class="section level1">
+<div id="section-19" class="section level1">
 <h1>2019-03-20</h1>
 <ul>
 <li>Working on the consolidated workflow script</li>
 </ul>
 </div>
-<div id="section-19" class="section level1">
+<div id="section-20" class="section level1">
 <h1>2019-03-19</h1>
 <ul>
 <li>Switching from <code>pkgdown</code> to <code>workflowr</code> for project management/visualisation</li>
 </ul>
 </div>
-<div id="section-20" class="section level1">
+<div id="section-21" class="section level1">
 <h1>2019-03-12</h1>
 <ul>
 <li>Incorporated first round of edits from AJH</li>
 <li>Began writing new decadal detection chunk</li>
 </ul>
 </div>
-<div id="section-21" class="section level1">
+<div id="section-22" class="section level1">
 <h1>2019-03-07</h1>
 <ul>
 <li>Incorporated first round of edits from AJS</li>
 </ul>
 </div>
-<div id="section-22" class="section level1">
+<div id="section-23" class="section level1">
 <h1>2019-03-06</h1>
 <ul>
 <li>Worked out basic event count results for all vignettes</li>
 <li>Final skeleton of paper</li>
 </ul>
 </div>
-<div id="section-23" class="section level1">
+<div id="section-24" class="section level1">
 <h1>2019-03-05</h1>
 <ul>
 <li>More missing data work</li>
 <li>Worked through basic decadal trend results</li>
 </ul>
 </div>
-<div id="section-24" class="section level1">
+<div id="section-25" class="section level1">
 <h1>2019-03-04</h1>
 <ul>
 <li>Working through the missing data analyses</li>
 </ul>
 </div>
-<div id="section-25" class="section level1">
+<div id="section-26" class="section level1">
 <h1>2019-02-26</h1>
 <ul>
 <li>Working through the duration analyses</li>
 </ul>
 </div>
-<div id="section-26" class="section level1">
+<div id="section-27" class="section level1">
 <h1>2019-02-25</h1>
 <ul>
 <li>More work on the skeleton</li>
 <li>Beginning to flesh out the sections</li>
 </ul>
 </div>
-<div id="section-27" class="section level1">
+<div id="section-28" class="section level1">
 <h1>2019-02-17</h1>
 <ul>
 <li>Working over the skeleton</li>
 </ul>
 </div>
-<div id="section-28" class="section level1">
+<div id="section-29" class="section level1">
 <h1>2019-02-15</h1>
 <ul>
 <li>Back to business</li>
 </ul>
 </div>
-<div id="section-29" class="section level1">
+<div id="section-30" class="section level1">
 <h1>2019-01-24</h1>
 <ul>
 <li>Looking over skeleton of main text</li>
@@ -1288,7 +1466,7 @@ Publish the menu files
 </ul></li>
 </ul>
 </div>
-<div id="section-30" class="section level1">
+<div id="section-31" class="section level1">
 <h1>2019-01-23</h1>
 <ul>
 <li>Performed a deep dive on the issues around missing data and the quantile thresholds
@@ -1297,7 +1475,7 @@ Publish the menu files
 </ul></li>
 </ul>
 </div>
-<div id="section-31" class="section level1">
+<div id="section-32" class="section level1">
 <h1>2019-01-17</h1>
 <ul>
 <li>Checked that R and Python base results still match up after heatwaveR v0.3.6 release
@@ -1306,13 +1484,13 @@ Publish the menu files
 </ul></li>
 </ul>
 </div>
-<div id="section-32" class="section level1">
+<div id="section-33" class="section level1">
 <h1>2018-10-30</h1>
 <ul>
 <li>More editing on the time series length vignette</li>
 </ul>
 </div>
-<div id="section-33" class="section level1">
+<div id="section-34" class="section level1">
 <h1>2018-10-25</h1>
 <ul>
 <li>Big changes coming through</li>
@@ -1323,13 +1501,13 @@ Publish the menu files
 </ul></li>
 </ul>
 </div>
-<div id="section-34" class="section level1">
+<div id="section-35" class="section level1">
 <h1>2018-10-24</h1>
 <ul>
 <li>Finished editing the “simply shorter” section of the time series length vignette</li>
 </ul>
 </div>
-<div id="section-35" class="section level1">
+<div id="section-36" class="section level1">
 <h1>2018-10-23</h1>
 <ul>
 <li>Beginning aggressive editing of text</li>
@@ -1340,20 +1518,20 @@ Publish the menu files
 <li>Removing all <code>var</code> results</li>
 </ul>
 </div>
-<div id="section-36" class="section level1">
+<div id="section-37" class="section level1">
 <h1>2018-10-14</h1>
 <ul>
 <li>Incorporated ECJO’s most recent round of comments into the main two vignettes.</li>
 </ul>
 </div>
-<div id="section-37" class="section level1">
+<div id="section-38" class="section level1">
 <h1>2018-09-14</h1>
 <ul>
 <li>Added comparison to <code>r_vs_python.Rmd</code> for how the two languages handle missing data to create climatologies and calculate events.</li>
 <li>Completed the <code>Ice coverage</code> section in <code>missing_data.Rmd</code></li>
 </ul>
 </div>
-<div id="section-38" class="section level1">
+<div id="section-39" class="section level1">
 <h1>2018-09-14</h1>
 <ul>
 <li>Finished up new proposed work on <code>time_series_duration.Rmd</code></li>
@@ -1361,33 +1539,33 @@ Publish the menu files
 <li>Recompiled vignettes</li>
 </ul>
 </div>
-<div id="section-39" class="section level1">
+<div id="section-40" class="section level1">
 <h1>2018-09-13</h1>
 <ul>
 <li>Finished up initially proposed work on <code>missing_data.Rmd</code></li>
 <li>Rebuilt site to reflect upversion to v0.0.3</li>
 </ul>
 </div>
-<div id="section-40" class="section level1">
+<div id="section-41" class="section level1">
 <h1>2018-09-11</h1>
 <ul>
 <li>Minor additions</li>
 </ul>
 </div>
-<div id="section-41" class="section level1">
+<div id="section-42" class="section level1">
 <h1>2018-09-10</h1>
 <ul>
 <li>Further editing to <code>time_series_duration.Rmd</code></li>
 </ul>
 </div>
-<div id="section-42" class="section level1">
+<div id="section-43" class="section level1">
 <h1>2018-09-06</h1>
 <ul>
 <li>Finished preliminary random missing data results</li>
 <li>Fixed CI issues with short time series vignette</li>
 </ul>
 </div>
-<div id="section-43" class="section level1">
+<div id="section-44" class="section level1">
 <h1>2018-09-05</h1>
 <ul>
 <li>Further editing to <code>time_series_duration.Rmd</code></li>
@@ -1395,81 +1573,81 @@ Publish the menu files
 <li>Rebuilt site to host changes</li>
 </ul>
 </div>
-<div id="section-44" class="section level1">
+<div id="section-45" class="section level1">
 <h1>2018-09-03</h1>
 <ul>
 <li>Added AJS and ECJO feedback into <code>MHWdetection.Rmd</code></li>
 <li>Added AJS and ECJO feedback into <code>time_series_duration.Rmd</code></li>
 </ul>
 </div>
-<div id="section-45" class="section level1">
+<div id="section-46" class="section level1">
 <h1>2018-06-21</h1>
 <ul>
 <li>More in-depths category comparisons made</li>
 </ul>
 </div>
-<div id="section-46" class="section level1">
+<div id="section-47" class="section level1">
 <h1>2018-06-16</h1>
 <ul>
 <li>Some pre-emptive thoughts about more category comparisons</li>
 </ul>
 </div>
-<div id="section-47" class="section level1">
+<div id="section-48" class="section level1">
 <h1>2018-06-13</h1>
 <ul>
 <li>Finished up basic comparisons of categories for different clim periods</li>
 </ul>
 </div>
-<div id="section-48" class="section level1">
+<div id="section-49" class="section level1">
 <h1>2018-06-12</h1>
 <ul>
 <li>Added significance tests for clims of different lengths for both single and re-sampled clims</li>
 </ul>
 </div>
-<div id="section-49" class="section level1">
+<div id="section-50" class="section level1">
 <h1>2018-06-07</h1>
 <ul>
 <li>More work on duration section</li>
 </ul>
 </div>
-<div id="section-50" class="section level1">
+<div id="section-51" class="section level1">
 <h1>2018-06-06</h1>
 <ul>
 <li>More work on duration section</li>
 </ul>
 </div>
-<div id="section-51" class="section level1">
+<div id="section-52" class="section level1">
 <h1>2018-06-05</h1>
 <ul>
 <li>Smoothed out issues preventing site from being built</li>
 <li>Tweaks to benchmarking of the languages</li>
 </ul>
 </div>
-<div id="section-52" class="section level1">
+<div id="section-53" class="section level1">
 <h1>2018-06-01</h1>
 <ul>
 <li>Second section of duration vignette nearly finished</li>
 </ul>
 </div>
-<div id="section-53" class="section level1">
+<div id="section-54" class="section level1">
 <h1>2018-05-31</h1>
 <ul>
 <li>Completed the first section of the duration vignette</li>
 </ul>
 </div>
-<div id="section-54" class="section level1">
+<div id="section-55" class="section level1">
 <h1>2018-05-30</h1>
 <ul>
 <li>Some musings added to the short duration vignette</li>
 </ul>
 </div>
-<div id="section-55" class="section level1">
+<div id="section-56" class="section level1">
 <h1>2018-05-29</h1>
 <ul>
 <li>Skeleton vignettes for the proposed research created</li>
 </ul>
 </div>
-<div id="section-56" class="section level1">
+<div id="section-57" class="section level1">
 <h1>2018-05-25</h1>
 <ul>
 <li>Regenerated vignettes to reflect corrections made in <code>heatwaveR</code> code</li>
@@ -1477,14 +1655,13 @@ Publish the menu files
 <li>Added LaTeX folder</li>
 </ul>
 </div>
-<div id="section-57" class="section level1">
+<div id="section-58" class="section level1">
 <h1>2018-05-24</h1>
 <ul>
 <li>Added a <code>NEWS.md</code> file to track changes to the package.</li>
 <li>Ported over the relevant vignettes that were cluttering up the <code>heatwaveR</code> site</li>
 </ul>
 </div>
-
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
 TeX fonts only; see
@@ -1497,6 +1674,14 @@ footer is added to webpages before the MathJax javascript. -->
     "HTML-CSS": { availableFonts: ["TeX"] }
   });
 </script>
+
+<hr>
+<p>
+  This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+  analysis was created with
+  <a href="https://github.com/jdblischak/workflowr">workflowr</a> 1.1.1
+</p>
+<hr>
 
 
 </div>
@@ -1515,6 +1700,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
