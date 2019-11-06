@@ -7,11 +7,12 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Robert Schlegel" />
 
-<meta name="date" content="2019-05-06" />
+<meta name="date" content="2019-11-06" />
 
 <title>Best practices</title>
 
@@ -27,9 +28,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
-<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
-<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -77,9 +77,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -93,7 +91,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -103,6 +100,9 @@ img {
 }
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
@@ -118,7 +118,6 @@ body {
   padding-top: 56px;
   margin-top: -56px;
 }
-
 .section h2 {
   padding-top: 56px;
   margin-top: -56px;
@@ -138,6 +137,43 @@ body {
 .section h6 {
   padding-top: 56px;
   margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
 }
 </style>
 
@@ -159,47 +195,65 @@ $(document).ready(function () {
 });
 </script>
 
-
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
 
 <!-- code folding -->
 
 
-
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -248,8 +302,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -258,6 +310,16 @@ div.tocify {
 
 
 </style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
@@ -279,7 +341,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHW detection</a>
+      <a class="navbar-brand" href="index.html">MHW Detection</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -293,23 +355,28 @@ div.tocify {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Python vs. R</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="r_vs_python.html">Default outputs</a>
+        </li>
+        <li>
+          <a href="r_vs_python_arguments.html">Default arguments</a>
+        </li>
+        <li>
+          <a href="r_vs_python_additional.html">Additional functions</a>
+        </li>
+      </ul>
     </li>
     <li>
-      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+      <a href="time_series_length.html">Time series length</a>
     </li>
     <li>
-      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+      <a href="missing_data.html">Missing data</a>
     </li>
     <li>
-      <a href="time_series_duration.html">Effects of short time series</a>
-    </li>
-    <li>
-      <a href="missing_data.html">Effects of missing data</a>
-    </li>
-    <li>
-      <a href="trend.html">Effects of long-term trends</a>
+      <a href="trend.html">Long-term trends</a>
     </li>
     <li>
       <a href="best_practices.html">Best practices</a>
@@ -350,18 +417,19 @@ div.section {
 
 
 <h1 class="title toc-ignore">Best practices</h1>
-<h4 class="author"><em>Robert Schlegel</em></h4>
-<h4 class="date"><em>2019-05-06</em></h4>
+<h4 class="author">Robert Schlegel</h4>
+<h4 class="date">2019-11-06</h4>
 
 </div>
 
 
-<p><strong>Last updated:</strong> 2019-05-06</p>
+<p><strong>Last updated:</strong> 2019-11-06</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
 <details>
-<p><summary> <strong style="color:red;">✖</strong> <strong>R Markdown file:</strong> uncommitted changes </summary> The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </details>
 </li>
 <li>
@@ -384,41 +452,206 @@ div.section {
 </li>
 <li>
 <details>
-<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/b1a7e3fcf3dacdd2ba4d7cd79a44fef13dd6191f" target="_blank">b1a7e3f</a> </summary></p>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/ff0bb9514a02d4861415352ca691f1309bc4a385" target="_blank">ff0bb95</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    data/global/
-    Ignored:    data/global_KS_cat.Rdata
-    Ignored:    data/global_KS_clim.Rdata
-    Ignored:    data/global_KS_event.Rdata
-    Ignored:    data/global_dec_trend.Rdata
-    Ignored:    data/global_effect_cat.Rdata
-    Ignored:    data/global_effect_clim.Rdata
-    Ignored:    data/global_effect_event.Rdata
-    Ignored:    data/global_effect_event_length_slope.Rdata
-    Ignored:    data/global_effect_event_slope.Rdata
-    Ignored:    data/sst_ALL_add_trend.Rdata
-    Ignored:    data/sst_ALL_aov_tukey.Rdata
-    Ignored:    data/sst_ALL_clim_event_cat.Rdata
-    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
-    Ignored:    data/sst_ALL_flat.Rdata
-    Ignored:    data/sst_ALL_knockout.Rdata
-    Ignored:    data/sst_ALL_length.Rdata
-    Ignored:    data/sst_ALL_length_width_10.Rdata
-    Ignored:    data/sst_ALL_length_width_20.Rdata
-    Ignored:    data/sst_ALL_length_width_30.Rdata
-    Ignored:    data/sst_ALL_length_width_40.Rdata
-    Ignored:    data/sst_ALL_length_width_50.Rdata
-    Ignored:    data/sst_ALL_missing.Rdata
-    Ignored:    data/sst_ALL_missing_fix.Rdata
-    Ignored:    data/sst_ALL_repl.Rdata
-    Ignored:    data/sst_ALL_trended.Rdata
+    Ignored:    data/global_results.Rda
+    Ignored:    data/global_test_trend.Rda
+    Ignored:    data/global_var_trend.Rda
+    Ignored:    data/global_var_trend_old.Rda
+    Ignored:    data/random_bp_results_100.Rda
+    Ignored:    data/random_bp_results_1000.Rda
+    Ignored:    data/random_results_100.Rda
+    Ignored:    data/random_results_1000.Rda
+    Ignored:    data/sst_ALL_bp_results.Rda
+
+Untracked files:
+    Untracked:  analysis/WA_pixels.Rda
+    Untracked:  analysis/WA_pixels_res.Rda
+    Untracked:  docs/figure/missing_data.Rmd/
+    Untracked:  docs/figure/time_series_length.Rmd/
+    Untracked:  docs/figure/trend.Rmd/
 
 Unstaged changes:
-    Modified:   analysis/best_practices.Rmd
+    Modified:   .DS_Store
+    Modified:   .Rprofile
+    Modified:   .gitignore
+    Modified:   CODE_OF_CONDUCT.md
+    Modified:   LICENSE
+    Modified:   LICENSE.md
+    Modified:   LaTeX/FMars.csl
+    Modified:   LaTeX/Frontiers_Template.docx
+    Modified:   LaTeX/MHWdetection.docx
+    Modified:   LaTeX/MHWdetection.tex
+    Modified:   LaTeX/PDF examples/frontiers.pdf
+    Modified:   LaTeX/PDF examples/frontiers_SupplementaryMaterial.pdf
+    Modified:   LaTeX/README
+    Modified:   LaTeX/Supplementary_Material.docx
+    Modified:   LaTeX/YM-logo.eps
+    Modified:   LaTeX/fig_1.jpg
+    Modified:   LaTeX/fig_1.pdf
+    Modified:   LaTeX/fig_1_flat.jpg
+    Modified:   LaTeX/fig_1_flat.pdf
+    Modified:   LaTeX/fig_2.jpg
+    Modified:   LaTeX/fig_2.pdf
+    Modified:   LaTeX/fig_3.jpg
+    Modified:   LaTeX/fig_3.pdf
+    Modified:   LaTeX/fig_4.jpg
+    Modified:   LaTeX/fig_4.pdf
+    Modified:   LaTeX/fig_5.jpg
+    Modified:   LaTeX/fig_5.pdf
+    Modified:   LaTeX/fig_6.jpg
+    Modified:   LaTeX/fig_6.pdf
+    Modified:   LaTeX/fig_S1.jpg
+    Modified:   LaTeX/fig_S1.pdf
+    Modified:   LaTeX/fig_S2.jpg
+    Modified:   LaTeX/fig_S2.pdf
+    Modified:   LaTeX/fig_S3.jpg
+    Modified:   LaTeX/fig_S3.pdf
+    Modified:   LaTeX/fig_S4.jpg
+    Modified:   LaTeX/fig_S4.pdf
+    Modified:   LaTeX/fig_S5.jpg
+    Modified:   LaTeX/fig_S5.pdf
+    Modified:   LaTeX/figures.zip
+    Modified:   LaTeX/frontiers.tex
+    Modified:   LaTeX/frontiersFPHY.cls
+    Modified:   LaTeX/frontiersHLTH.cls
+    Modified:   LaTeX/frontiersSCNS.cls
+    Modified:   LaTeX/frontiersSCNS.log
+    Modified:   LaTeX/frontiers_SupplementaryMaterial.tex
+    Modified:   LaTeX/frontiers_suppmat.cls
+    Modified:   LaTeX/frontiersinHLTH&FPHY.bst
+    Modified:   LaTeX/frontiersinSCNS_ENG_HUMS.bst
+    Modified:   LaTeX/logo1.eps
+    Modified:   LaTeX/logo1.jpg
+    Modified:   LaTeX/logo2.eps
+    Modified:   LaTeX/logos.eps
+    Modified:   LaTeX/logos.jpg
+    Modified:   LaTeX/stfloats.sty
+    Modified:   LaTeX/table_1.xlsx
+    Modified:   LaTeX/table_2.xlsx
+    Modified:   LaTeX/test.bib
+    Modified:   MHWdetection.Rproj
+    Modified:   TODO
+    Modified:   _references/1-s2.0-S0921818106002736-main.pdf
+    Modified:   _references/1-s2.0-S092181810600275X-main.pdf
+    Modified:   _references/1-s2.0-S0921818106002761-main.pdf
+    Modified:   _references/1-s2.0-S0921818106002852-main.pdf
+    Modified:   _references/1405.3904.pdf
+    Modified:   _references/1520-0450%282001%29040%3C0762%3Aotdoah%3E2.0.co%3B2.pdf
+    Modified:   _references/2013_Extremes_Workshop_Report.pdf
+    Modified:   _references/24868781.pdf
+    Modified:   _references/24870362.pdf
+    Modified:   _references/26192647.pdf
+    Modified:   _references/994.full.pdf
+    Modified:   _references/A_1019841717369.pdf
+    Modified:   _references/Banzon et al 2014.pdf
+    Modified:   _references/Brown_et_al-2008-Journal_of_Geophysical_Research%3A_Atmospheres_%281984-2012%29.pdf
+    Modified:   _references/Different_ways_to_compute_temperature_re.pdf
+    Modified:   _references/Gilleland et al 2013.pdf
+    Modified:   _references/Gilleland_2006.pdf
+    Modified:   _references/Kuglitsch_et_al-2010-Geophysical_Research_Letters.pdf
+    Modified:   _references/Modeling Waves of Extreme Temperature The Changing Tails of Four Cities.pdf
+    Modified:   _references/Normals-Guide-to-Climate-190116_en.pdf
+    Modified:   _references/Reynolds et al 2007.pdf
+    Modified:   _references/Risk_of_Extreme_Events_Under_Nonstationa.pdf
+    Modified:   _references/Russo_et_al-2014-Journal_of_Geophysical_Research%3A_Atmospheres.pdf
+    Modified:   _references/WCDMP_72_TD_1500_en__1.pdf
+    Modified:   _references/WMO 49 v1 2015.pdf
+    Modified:   _references/WMO No 1203.pdf
+    Modified:   _references/WMO-TD No 1377.pdf
+    Modified:   _references/WMO_100_en.pdf
+    Modified:   _references/bams-d-12-00066.1.pdf
+    Modified:   _references/c058p193.pdf
+    Modified:   _references/cc100.pdf
+    Modified:   _references/clivar14.pdf
+    Modified:   _references/coles1994.pdf
+    Modified:   _references/ecology.pdf
+    Modified:   _references/joc.1141.pdf
+    Modified:   _references/joc.1432.pdf
+    Modified:   _references/returnPeriod.pdf
+    Modified:   _references/s00382-014-2287-1.pdf
+    Modified:   _references/s00382-014-2345-8.pdf
+    Modified:   _references/s00382-015-2638-6.pdf
+    Modified:   _references/s10584-006-9116-4.pdf
+    Modified:   _references/s10584-007-9392-7.pdf
+    Modified:   _references/s10584-010-9944-0.pdf
+    Modified:   _references/s10584-012-0659-2.pdf
+    Modified:   _references/s10584-014-1254-5.pdf
+    Modified:   _references/s13253-013-0161-y.pdf
+    Modified:   _references/wcrpextr.pdf
+    Modified:   _workflowr.yml
+    Modified:   analysis/Climatologies_and_baselines.Rmd
+    Modified:   analysis/Short_climatologies.Rmd
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/bibliography.bib
+    Modified:   analysis/gridded_products.Rmd
+    Modified:   analysis/r_vs_python_arguments.Rmd
+    Modified:   analysis/variance.Rmd
+    Modified:   code/README.md
+    Modified:   data/.gitignore
+    Modified:   data/best_table_average.Rda
+    Modified:   data/best_table_focus.Rda
+    Modified:   data/python/clim_py.csv
+    Modified:   data/python/clim_py_joinAG_1.csv
+    Modified:   data/python/clim_py_joinAG_5.csv
+    Modified:   data/python/clim_py_joinAG_no.csv
+    Modified:   data/python/clim_py_minD_3.csv
+    Modified:   data/python/clim_py_minD_7.csv
+    Modified:   data/python/clim_py_pctile_80.csv
+    Modified:   data/python/clim_py_pctile_95.csv
+    Modified:   data/python/clim_py_pctile_99.csv
+    Modified:   data/python/clim_py_random.csv
+    Modified:   data/python/clim_py_spw_11.csv
+    Modified:   data/python/clim_py_spw_51.csv
+    Modified:   data/python/clim_py_spw_no.csv
+    Modified:   data/python/clim_py_whw_3.csv
+    Modified:   data/python/clim_py_whw_7.csv
+    Modified:   data/python/mhwBlock.csv
+    Modified:   data/python/mhws_py.csv
+    Modified:   data/python/mhws_py_joinAG_1.csv
+    Modified:   data/python/mhws_py_joinAG_5.csv
+    Modified:   data/python/mhws_py_joinAG_no.csv
+    Modified:   data/python/mhws_py_minD_3.csv
+    Modified:   data/python/mhws_py_minD_7.csv
+    Modified:   data/python/mhws_py_pctile_80.csv
+    Modified:   data/python/mhws_py_pctile_95.csv
+    Modified:   data/python/mhws_py_pctile_99.csv
+    Modified:   data/python/mhws_py_random.csv
+    Modified:   data/python/mhws_py_spw_11.csv
+    Modified:   data/python/mhws_py_spw_51.csv
+    Modified:   data/python/mhws_py_spw_no.csv
+    Modified:   data/python/mhws_py_whw_3.csv
+    Modified:   data/python/mhws_py_whw_7.csv
+    Modified:   data/python/sst_WA.csv
+    Modified:   data/python/sst_WA_miss_ice.csv
+    Modified:   data/python/sst_WA_miss_random.csv
+    Modified:   data/sst_ALL_results.Rda
+    Modified:   data/table_1.csv
+    Modified:   data/table_2.csv
+    Modified:   docs/portrait.pdf
+    Modified:   output/README.md
+    Modified:   output/effect_event.pdf
+    Modified:   output/fig_2_missing_only.pdf
+    Modified:   output/stitch_plot_WA.pdf
+    Modified:   output/stitch_sub_plot_WA.pdf
+    Modified:   poster/Figures/CSIRO_logo.jpeg
+    Modified:   poster/Figures/Dal_logo.jpg
+    Modified:   poster/Figures/all_logo_long.jpg
+    Modified:   poster/Figures/all_logos.jpg
+    Modified:   poster/Figures/logo_stitching.odp
+    Modified:   poster/Figures/ofi_logo.jpg
+    Modified:   poster/Figures/uwc-logo.jpg
+    Modified:   poster/MHWdetection.bib
+    Modified:   poster/MyBib.bib
+    Modified:   poster/landscape.Rmd
+    Modified:   poster/landscape.pdf
+    Modified:   poster/portrait.Rmd
+    Modified:   poster/portrait.pdf
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
@@ -449,6 +682,74 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/ff0bb9514a02d4861415352ca691f1309bc4a385/analysis/best_practices.Rmd" target="_blank">ff0bb95</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-11-06
+</td>
+<td style="text-align:left;">
+Publish the sub-optimal test vignettes
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/448fff34ac7d7622111fb544291e94fee201d21c/analysis/best_practices.Rmd" target="_blank">448fff3</a>
+</td>
+<td style="text-align:left;">
+Robert William Schlegel
+</td>
+<td style="text-align:left;">
+2019-11-04
+</td>
+<td style="text-align:left;">
+Beginning to tackle the main vignettes
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/158aa0b34e302fe246051985c5539889e8c22878/analysis/best_practices.Rmd" target="_blank">158aa0b</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-05-06
+</td>
+<td style="text-align:left;">
+Updated project interface
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/158aa0b34e302fe246051985c5539889e8c22878/docs/best_practices.html" target="_blank">158aa0b</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-05-06
+</td>
+<td style="text-align:left;">
+Updated project interface
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 html
@@ -524,29 +825,265 @@ Publish analysis files
 <hr />
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>In this vignette the results from the main three vignettes will be combined in order to visualise them simultaneously. Following this will be individual sections on how to address the challenges presented by length, missing data, and decadal trends respectively.</p>
-<!-- ## Reference time series -->
-<!-- ```{r ref-ts-overview} -->
-<!-- # A multi-panel summary figure with images and tables -->
-<!-- load("data/sst_ALL.Rdata") -->
-<!-- # sst_ALL_summary <- sst_ALL %>%  -->
-<!-- # Poential panels -->
-<!-- # 1) The base time series -->
-<!-- #   1.1) Rug pplot showing events -->
-<!-- #   1.2) Events filled in with flames -->
-<!-- #   1.3) Overlay thresholds -->
-<!-- #   1.4) Overlay category thresholds -->
-<!-- # 2) Mini map showing pixel location -->
-<!-- # 3) Stats table (showing relevant stats for/from best practices) -->
-<!-- # 4) The climatolgies/categories as there own doy x-axis panel -->
-<!-- # 5) Lolli plot showing events -->
-<!-- # ggplot(sst_ALL_summary) -->
-<!-- ``` -->
-<!-- ## Overview of results -->
-<!-- The following figures show the combined results from time series length, missing data, and decadal trends side by side for each of the three components of the results. This helps to create a more complete pictures of the importance of the different variables. -->
-<!-- ### Climatologies -->
-<!-- ### Event metrics -->
-<!-- ### Category counts -->
+<p>In this vignette are individual sections that show some of the closer looks performed on the results to ensure that they were behaving as expected.</p>
+<pre class="r"><code># The packages used in this analysis
+library(tidyverse)
+library(heatwaveR)
+library(lubridate)
+library(ncdf4)
+library(doParallel)
+
+# The custom functions written for the analysis
+source(&quot;code/functions.R&quot;)</code></pre>
+</div>
+<div id="why-are-the-buil-in-time-series-so-anomalous" class="section level2">
+<h2>Why are the buil-in time series so anomalous?</h2>
+<pre class="r"><code># We&#39;ll use the WA time series and the pixel just adjacent to it
+sst_WA_flat &lt;- detrend(sst_WA) %&gt;%
+  mutate(site = &quot;WA&quot;) %&gt;%
+  select(site, t, temp)
+
+# Find the correct longitude slice of data and load a several pixel transect into the eye of the MHW
+# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == 112.375)
+sst_flat &lt;- load_noice_OISST(OISST_files[450]) %&gt;%
+  filter(lat &gt; -29.5, lat &lt; -27.5) %&gt;%
+  unite(lon, lat, col = &quot;site&quot;, sep = &quot; / &quot;) %&gt;%
+  group_by(site) %&gt;%
+  group_modify(~detrend(.x)) %&gt;%
+  data.frame()
+
+# Bing it to the reference time series
+sst_ALL &lt;- rbind(sst_flat, sst_WA_flat)
+# unique(sst_ALL$site)</code></pre>
+<p>Plot all time series together:</p>
+<pre class="r"><code>sst_ALL %&gt;%
+  filter(t &gt;= &quot;2010-01-01&quot;, t &lt;= &quot;2011-12-31&quot;) %&gt;%
+  ggplot(aes(x = t, y = temp)) +
+  geom_line(aes(group = site, colour = site)) +
+  scale_colour_viridis_d() +
+  labs(y = &quot;Temp. anomaly (°C)&quot;, x = NULL, colour = &quot;Coords&quot;)</code></pre>
+<p><img src="figure/best_practices.Rmd/WA-pixels-plot-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>Run full analyses on the pixels visualised above:</p>
+<pre class="r"><code>result_ALL &lt;- plyr::ddply(sst_ALL, c(&quot;site&quot;), single_analysis, full_seq = T, .parallel = T)</code></pre>
+<p>Plot the results:</p>
+<pre class="r"><code>result_ALL %&gt;%
+  filter(test == &quot;trend&quot;, var == &quot;duration&quot;, id == &quot;sum_perc&quot;) %&gt;%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_line(aes(group = site, colour = site)) +
+  scale_colour_viridis_d() +
+  labs(x = &quot;Long-term trend (°C/decade)&quot;, y = &quot;Change from control (% sum of days)&quot;, colour = &quot;Coords&quot;)</code></pre>
+<p><img src="figure/best_practices.Rmd/res-dur-plot-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>In the figure above we may see that the closer we appraoch the centre of the WA MHW the less of an effect the increasing decadal trend is having on the overall number of MHWs detected. We may deduce that this is because the WA MHW was so intense that it is raising up the 90th percentile so high that even with added decadal warming it is not enough to increase the other MHWs. Now we want to look at how the count of overall events are affected:</p>
+<pre class="r"><code>result_ALL %&gt;%
+  filter(test == &quot;trend&quot;, var == &quot;count&quot;, id == &quot;n_perc&quot;) %&gt;%
+  ggplot(aes(x = index_vals, y = val)) +
+  geom_line(aes(group = site, colour = site)) +
+  scale_colour_viridis_d() +
+  labs(x = &quot;Long-term trend (°C/decade)&quot;, y = &quot;Change from control (% count of MHWs)&quot;, colour = &quot;Coords&quot;)</code></pre>
+<p><img src="figure/best_practices.Rmd/res-count-plot-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>And there you have it, the reference time series are just super wacky, the results are otherwise as expected.</p>
+</div>
+<div id="why-do-some-mhws-dissapear-from-wider-windows" class="section level2">
+<h2>Why do some MHWs dissapear from wider windows?</h2>
+<pre class="r"><code># -112.125 -28.875 # A pixel negatively affected by window widening
+# which(c(seq(0.125, 179.875, by = 0.25), seq(-179.875, -0.125, by = 0.25)) == -112.125)
+sst &lt;- load_noice_OISST(OISST_files[992]) %&gt;%
+  filter(lat == -28.875)
+
+# Detrend the selected ts
+sst_flat &lt;- detrend(sst)
+
+# Calculate MHWs from detrended ts
+sst_flat_MHW &lt;- detect_event(ts2clm(sst_flat, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2018-12-31&quot;)))
+
+# Pull out the largest event in the ts
+focus_event &lt;- sst_flat_MHW$event %&gt;%
+  filter(date_start &gt;= &quot;2009-01-01&quot;) %&gt;%
+  filter(intensity_cumulative == max(intensity_cumulative)) %&gt;%
+  select(event_no, date_start:date_end, duration, intensity_cumulative, intensity_max) %&gt;%
+  mutate(intensity_cumulative = round(intensity_cumulative, 2),
+         intensity_max = round(intensity_max, 2))
+
+# Quickly visualise the largest heatwave in the last 10 years of data
+heatwaveR::event_line(sst_flat_MHW, start_date = &quot;2009-01-01&quot;, metric = &quot;intensity_cumulative&quot;)
+
+# Normal window width
+window_5_MHW &lt;- detect_event(ts2clm(sst_flat, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2018-12-31&quot;)))
+heatwaveR::event_line(window_5_MHW, start_date = &quot;2009-01-01&quot;, metric = &quot;intensity_cumulative&quot;)
+
+# 10 day window
+  # Already here we see why the event falls away
+  # The focus MHW was just staying above the down slope of the seasonal dive into winter
+  # When the window half width is expanded the seasonal decline becomes less steep and the
+  # observed temperature is no longer above the 90th percentile
+window_10_MHW &lt;- detect_event(ts2clm(sst_flat, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2018-12-31&quot;), windowHalfWidth = 10))
+heatwaveR::event_line(window_10_MHW, start_date = &quot;2009-01-01&quot;, metric = &quot;intensity_cumulative&quot;)
+
+# 20 day window
+window_20_MHW &lt;- detect_event(ts2clm(sst_flat, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2018-12-31&quot;), windowHalfWidth = 20))
+heatwaveR::event_line(window_20_MHW, start_date = &quot;2009-01-01&quot;, metric = &quot;intensity_cumulative&quot;)
+
+# 30 day window
+window_30_MHW &lt;- detect_event(ts2clm(sst_flat, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2018-12-31&quot;), windowHalfWidth = 30))
+heatwaveR::event_line(window_30_MHW, start_date = &quot;2009-01-01&quot;, metric = &quot;intensity_cumulative&quot;)
+
+# Now let&#39;s have a peak at each step along the way, just for laughs
+ts2clm_window &lt;- function(window_choice, df = sst_flat){
+  res &lt;- ts2clm(df, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2018-12-31&quot;), windowHalfWidth = window_choice) %&gt;%
+    mutate(site_label = paste0(&quot;window_&quot;,window_choice))
+  return(res)
+}
+
+# Calculate clims
+sst_clim &lt;- plyr::ldply(seq(5, 30, by = 5), ts2clm_window, .parallel = T)
+
+# Climatologies doy
+sst_clim_only &lt;- sst_clim %&gt;%
+  select(-t, -temp) %&gt;%
+  unique()
+
+# Calculate events
+sst_event &lt;- sst_clim %&gt;%
+  group_by(site_label) %&gt;%
+  group_modify(~detect_event(.x)$event)
+
+# Find largest event in most recent ten years of data
+focus_event &lt;- sst_event %&gt;%
+  filter(date_start &gt;= &quot;2009-01-01&quot;) %&gt;%
+  group_by(site_label) %&gt;%
+  filter(intensity_cumulative == max(intensity_cumulative)) %&gt;%
+  ungroup()
+
+# Merge with results for better plotting
+sst_focus &lt;- left_join(sst_clim,
+                       focus_event[,c(&quot;site_label&quot;, &quot;date_start&quot;, &quot;date_peak&quot;, &quot;date_end&quot;)], by = &quot;site_label&quot;) %&gt;%
+  mutate(site_label = factor(site_label, levels = c(&quot;window_5&quot;, &quot;window_10&quot;, &quot;window_15&quot;,
+                                                    &quot;window_20&quot;, &quot;window_25&quot;, &quot;window_30&quot;)))
+
+trend_fig &lt;- fig_1_plot(sst_focus, spread = 150)
+trend_fig
+
+# Look at differences between the seas/thresh for each window
+sst_clim_only %&gt;%
+  select(-doy) %&gt;%
+  gather(key = &quot;var&quot;, value = &quot;val&quot;, seas, thresh) %&gt;%
+  group_by(site_label, var) %&gt;%
+  summarise_if(.predicate = is.numeric, .funs = c(&quot;min&quot;, &quot;median&quot;, &quot;mean&quot;, &quot;max&quot;)) %&gt;%
+  ungroup() %&gt;%
+  gather(key = &quot;stat&quot;, value = &quot;val&quot;, -site_label, - var) %&gt;%
+  mutate(site_label = factor(site_label, levels = c(&quot;window_5&quot;, &quot;window_10&quot;, &quot;window_15&quot;,
+                                                    &quot;window_20&quot;, &quot;window_25&quot;, &quot;window_30&quot;))) %&gt;%
+  arrange(site_label) %&gt;%
+  ggplot(aes(x = stat, y = val, colour = site_label)) +
+  geom_point() +
+  scale_colour_brewer() +
+  facet_wrap(~var)
+
+# Now let&#39;s look at all of the 1000 random results to see how this shakes out
+random_results &lt;- readRDS(&quot;../data/random_results_1000.Rda&quot;)
+unique(random_results$test)
+all_clims &lt;- random_results %&gt;%
+  filter(test %in% c(&quot;length&quot;, &quot;window_10&quot;, &quot;window_20&quot;, &quot;window_30&quot;),
+         index_vals == 30,
+         var %in% c(&quot;seas&quot;, &quot;thresh&quot;),
+         id %in% c(&quot;min&quot;, &quot;median&quot;, &quot;mean&quot;, &quot;max&quot;, &quot;sd&quot;)) %&gt;%
+  ggplot(aes(x = id, y = val, fill = test)) +
+  geom_boxplot() +
+  scale_fill_brewer(palette = &quot;YlOrRd&quot;) +
+  facet_wrap(~var)
+all_clims</code></pre>
+</div>
+<div id="linearity-of-fits" class="section level2">
+<h2>Linearity of fits</h2>
+<pre class="r"><code># Load the random 1000 data
+system.time(
+  random_results &lt;- readRDS(&quot;data/random_results_1000.Rda&quot;) %&gt;%
+    unite(&quot;site&quot;, c(lon, lat))
+) # 68 seconds, 15 seconds without the &quot;site&quot; column
+
+# The choice variables for focussing on
+var_choice &lt;- data.frame(var = c(&quot;count&quot;, &quot;duration&quot;, &quot;intensity_max&quot;, &quot;focus_count&quot;, &quot;focus_duration&quot;, &quot;focus_intensity_max&quot;),
+                         id = c(&quot;n_perc&quot;, &quot;sum_perc&quot;, &quot;mean_perc&quot;, &quot;mean_perc&quot;, &quot;sum_perc&quot;, &quot;mean_perc&quot;),
+                         stringsAsFactors = F)
+
+# Calculate the full range of quantiles
+random_quant &lt;- random_results %&gt;%
+  right_join(var_choice, by = c(&quot;var&quot;, &quot;id&quot;)) %&gt;%
+  mutate(test = as.character(test)) %&gt;%
+  filter(test %in% c(&quot;length&quot;, &quot;missing&quot;, &quot;interp&quot;, &quot;trend&quot;)) %&gt;%
+  group_by(test, index_vals, var, id) %&gt;%
+  summarise(q05 = quantile(val, 0.05),
+            q25 = quantile(val, 0.25),
+            q50 = quantile(val, 0.50),
+            q75 = quantile(val, 0.75),
+            q95 = quantile(val, 0.95),
+            iqr50 = q75-q25,
+            iqr90 = q95-q05) %&gt;%
+  ungroup()
+
+# Run the linear models at each possible step to deduce where any inflections points may be
+# This is determined by tracking the change in R2 values, with lower values being bad
+quant_missing &lt;- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = &quot;missing&quot;, start_val = 0)
+quant_missing_A &lt;- plyr::ldply(3:25, trend_test, .parallel = T, test_sub = &quot;missing&quot;, start_val = 0)
+quant_missing_B &lt;- plyr::ldply(3:24, trend_test, .parallel = T, test_sub = &quot;missing&quot;, start_val = 0.26)
+quant_interp &lt;- plyr::ldply(3:50, trend_test, .parallel = T, test_sub = &quot;interp&quot;, start_val = 0)
+quant_trend &lt;- plyr::ldply(3:30, trend_test, .parallel = T, test_sub = &quot;trend&quot;, start_val = 0)
+quant_length_A &lt;- plyr::ldply(3:20, trend_test, .parallel = T, test_sub = &quot;length&quot;)
+quant_length_B &lt;- plyr::ldply(3:7, trend_test, .parallel = T, test_sub = &quot;length&quot;, rev_trend = T)
+quant_ALL &lt;- rbind(quant_missing_A, quant_missing_B, quant_interp, quant_trend, quant_length_A, quant_length_B)
+
+## Test visuals to determine that the trends above are lekker
+# First create a line plot of the results
+quant_ALL %&gt;%
+  filter(test == &quot;missing&quot;) %&gt;%
+  ggplot(aes(x = end_val, y = r2)) +
+  geom_point(aes(colour = var)) +
+  geom_line(aes(colour = var)) +
+  facet_grid(stat~test, scales = &quot;free_x&quot;)
+
+# Filter out the trends that cover the correct ranges
+trend_filter &lt;- data.frame(test = c(&quot;length&quot;, &quot;length&quot;, &quot;missing&quot;, &quot;missing&quot;, &quot;interp&quot;, &quot;trend&quot;),
+                           start_val = c(30, 30, 0, 0.26, 0, 0),
+                           end_val = c(10, 37, 0.25, 0.5, 0.5, 0.3))
+quant_filter &lt;- quant_ALL %&gt;%
+  right_join(trend_filter, by = c(&quot;test&quot;, &quot;start_val&quot;, &quot;end_val&quot;)) %&gt;%
+  mutate(slope = ifelse(test == &quot;length&quot; &amp; end_val == 10, -slope, slope),
+         end_point = end_val*slope) %&gt;%
+  filter(stat != &quot;iqr50&quot;, stat != &quot;iqr90&quot;)
+
+# Then project them onto the real data
+ggplot(random_quant) +
+  # 90 CI crossbars
+  # Need different lines for tests due to the different x-axis interval sizes
+  geom_crossbar(data = filter(random_quant, test == &quot;length&quot;),
+                aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
+                fatten = 0, fill = &quot;grey70&quot;, colour = NA, width = 1) +
+  geom_crossbar(data = filter(random_quant, test != &quot;length&quot;),
+                aes(x = index_vals, y = 0, ymin = q05, ymax = q95),
+                fatten = 0, fill = &quot;grey70&quot;, colour = NA, width = 0.01) +
+  # IQR Crossbars
+  geom_crossbar(data = filter(random_quant, test == &quot;length&quot;),
+                aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+                fatten = 0, fill = &quot;grey50&quot;, width = 1) +
+  geom_crossbar(data = filter(random_quant, test != &quot;length&quot;),
+                aes(x = index_vals, y = 0, ymin = q25, ymax = q75),
+                fatten = 0, fill = &quot;grey50&quot;, width = 0.01) +
+  # Median segments
+  geom_crossbar(data = filter(random_quant, test == &quot;length&quot;),
+                aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+                fatten = 0, fill = NA, colour = &quot;black&quot;, width = 1) +
+  geom_crossbar(data = filter(random_quant, test != &quot;length&quot;),
+                aes(x = index_vals, y = 0, ymin = q50, ymax = q50),
+                fatten = 0, fill = NA, colour = &quot;black&quot;, width = 0.01) +
+  geom_hline(aes(yintercept = 0), colour = &quot;black&quot;, linetype = &quot;dashed&quot;) +
+  geom_segment(data = quant_filter, aes(x = start_val, y = intercept, xend = end_val, yend = end_point, colour = stat)) +
+  scale_colour_brewer(palette = &quot;Dark2&quot;) +
+  scale_x_continuous(expand = c(0, 0)) +
+  facet_grid(var ~ test, scales = &quot;free&quot;, switch = &quot;both&quot;) +
+  theme(legend.position = &quot;top&quot;)</code></pre>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
 <div id="refs">
 
 </div>
@@ -554,9 +1091,9 @@ Publish analysis files
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 3.6.0 (2019-04-26)
+<pre><code>R version 3.6.1 (2019-07-05)
 Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 16.04.5 LTS
+Running under: Ubuntu 16.04.6 LTS
 
 Matrix products: default
 BLAS:   /usr/lib/openblas-base/libblas.so.3
@@ -571,16 +1108,37 @@ locale:
 [11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] doParallel_1.0.15    iterators_1.0.10     foreach_1.4.4       
+ [4] ncdf4_1.17           lubridate_1.7.4      heatwaveR_0.4.1.9003
+ [7] forcats_0.4.0        stringr_1.4.0        dplyr_0.8.3         
+[10] purrr_0.3.3          readr_1.3.1          tidyr_1.0.0         
+[13] tibble_2.1.3         ggplot2_3.2.1.9000   tidyverse_1.2.1     
 
 loaded via a namespace (and not attached):
- [1] workflowr_1.1.1   Rcpp_0.12.18      digest_0.6.16    
- [4] rprojroot_1.3-2   R.methodsS3_1.7.1 backports_1.1.2  
- [7] git2r_0.23.0      magrittr_1.5      evaluate_0.11    
-[10] stringi_1.2.4     whisker_0.3-2     R.oo_1.22.0      
-[13] R.utils_2.7.0     rmarkdown_1.10    tools_3.6.0      
-[16] stringr_1.3.1     yaml_2.2.0        compiler_3.6.0   
-[19] htmltools_0.3.6   knitr_1.20       </code></pre>
+ [1] tidyselect_0.2.5  xfun_0.10         haven_2.1.1      
+ [4] lattice_0.20-35   colorspace_1.4-1  vctrs_0.2.0      
+ [7] generics_0.0.2    viridisLite_0.3.0 htmltools_0.4.0  
+[10] yaml_2.2.0        plotly_4.9.0      rlang_0.4.1      
+[13] R.oo_1.22.0       pillar_1.4.2      glue_1.3.1       
+[16] withr_2.1.2       R.utils_2.7.0     modelr_0.1.5     
+[19] readxl_1.3.1      lifecycle_0.1.0   munsell_0.5.0    
+[22] gtable_0.3.0      workflowr_1.1.1   cellranger_1.1.0 
+[25] rvest_0.3.4       R.methodsS3_1.7.1 htmlwidgets_1.5.1
+[28] codetools_0.2-15  evaluate_0.14     labeling_0.3     
+[31] knitr_1.25        broom_0.5.2       Rcpp_1.0.2       
+[34] backports_1.1.5   scales_1.0.0      jsonlite_1.6     
+[37] hms_0.5.1         digest_0.6.22     stringi_1.4.3    
+[40] grid_3.6.1        rprojroot_1.3-2   cli_1.1.0        
+[43] tools_3.6.1       maps_3.3.0        magrittr_1.5     
+[46] lazyeval_0.2.2    crayon_1.3.4      whisker_0.4      
+[49] pkgconfig_2.0.3   zeallot_0.1.0     data.table_1.12.6
+[52] xml2_1.2.2        assertthat_0.2.1  rmarkdown_1.16   
+[55] httr_1.4.1        rstudioapi_0.10   R6_2.4.0         
+[58] nlme_3.1-137      git2r_0.23.0      compiler_3.6.1   </code></pre>
 </div>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
@@ -620,6 +1178,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
