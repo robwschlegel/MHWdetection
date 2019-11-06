@@ -11,7 +11,7 @@ bibliography: bibliography.bib
 ```{r global_options, include = FALSE}
 knitr::opts_chunk$set(fig.width = 8, fig.align = 'center',
                       echo = TRUE, warning = FALSE, message = FALSE, 
-                      eval = FALSE, tidy = FALSE)
+                      eval = TRUE, tidy = FALSE)
 options(scipen=999)
 ```
 
@@ -111,6 +111,7 @@ sst_ALL_results %>%
   geom_line() +
   labs(x = "Missing data (%)", y = "Change from control (% count of MHWs)", colour = "Site")
 ```
+
 
 ## References
 
