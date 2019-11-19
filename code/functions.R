@@ -817,12 +817,12 @@ fig_box_plot <- function(df = full_results, tests, result_choice, supp_cap = FAL
                                      var == "intensity_max" & test == "interp" ~ "F"))
   } else if(tests == "miss_comp" & result_choice == "focus"){
     df_prep <- df_prep %>%
-      mutate(panel_label = case_when(var == "focus_count" & test == "missing" ~ "H",
-                                     var == "focus_duration" & test == "missing" ~ "I",
-                                     var == "focus_intensity_max" & test == "missing" ~ "J",
-                                     var == "focus_count" & test == "interp" ~ "K",
-                                     var == "focus_duration" & test == "interp" ~ "L",
-                                     var == "focus_intensity_max" & test == "interp" ~ "M"))
+      mutate(panel_label = case_when(var == "focus_count" & test == "missing" ~ "G",
+                                     var == "focus_duration" & test == "missing" ~ "H",
+                                     var == "focus_intensity_max" & test == "missing" ~ "I",
+                                     var == "focus_count" & test == "interp" ~ "J",
+                                     var == "focus_duration" & test == "interp" ~ "K",
+                                     var == "focus_intensity_max" & test == "interp" ~ "L"))
   } else if(tests == "windows"){
     df_prep <- df_prep %>%
       mutate(panel_label = case_when(var %in% c("count", "focus_count") & test == "length" ~ "A",
