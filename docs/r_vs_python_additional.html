@@ -7,11 +7,12 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Robert W Schlegel" />
 
-<meta name="date" content="2019-05-06" />
+<meta name="date" content="2019-11-06" />
 
 <title>Additional functionality for MHW outputs in R and Python</title>
 
@@ -27,9 +28,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
-<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
-<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -77,9 +77,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -93,7 +91,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -103,6 +100,9 @@ img {
 }
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
@@ -118,7 +118,6 @@ body {
   padding-top: 56px;
   margin-top: -56px;
 }
-
 .section h2 {
   padding-top: 56px;
   margin-top: -56px;
@@ -138,6 +137,43 @@ body {
 .section h6 {
   padding-top: 56px;
   margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
 }
 </style>
 
@@ -159,47 +195,65 @@ $(document).ready(function () {
 });
 </script>
 
-
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
 
 <!-- code folding -->
 
 
-
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -248,8 +302,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -258,6 +310,16 @@ div.tocify {
 
 
 </style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
@@ -279,7 +341,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHW detection</a>
+      <a class="navbar-brand" href="index.html">MHW Detection</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -293,23 +355,28 @@ div.tocify {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Python vs. R</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="r_vs_python.html">Default outputs</a>
+        </li>
+        <li>
+          <a href="r_vs_python_arguments.html">Default arguments</a>
+        </li>
+        <li>
+          <a href="r_vs_python_additional.html">Additional functions</a>
+        </li>
+      </ul>
     </li>
     <li>
-      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+      <a href="time_series_length.html">Time series length</a>
     </li>
     <li>
-      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+      <a href="missing_data.html">Missing data</a>
     </li>
     <li>
-      <a href="time_series_duration.html">Effects of short time series</a>
-    </li>
-    <li>
-      <a href="missing_data.html">Effects of missing data</a>
-    </li>
-    <li>
-      <a href="trend.html">Effects of long-term trends</a>
+      <a href="trend.html">Long-term trends</a>
     </li>
     <li>
       <a href="best_practices.html">Best practices</a>
@@ -350,13 +417,13 @@ div.section {
 
 
 <h1 class="title toc-ignore">Additional functionality for MHW outputs in R and Python</h1>
-<h4 class="author"><em>Robert W Schlegel</em></h4>
-<h4 class="date"><em>2019-05-06</em></h4>
+<h4 class="author">Robert W Schlegel</h4>
+<h4 class="date">2019-11-06</h4>
 
 </div>
 
 
-<p><strong>Last updated:</strong> 2019-05-06</p>
+<p><strong>Last updated:</strong> 2019-11-06</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
@@ -385,44 +452,208 @@ div.section {
 </li>
 <li>
 <details>
-<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/b1a7e3fcf3dacdd2ba4d7cd79a44fef13dd6191f" target="_blank">b1a7e3f</a> </summary></p>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/7da5f6a974bfbca09ba959daf0e9ca497c43a6ac" target="_blank">7da5f6a</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    data/global/
-    Ignored:    data/global_KS_cat.Rdata
-    Ignored:    data/global_KS_clim.Rdata
-    Ignored:    data/global_KS_event.Rdata
-    Ignored:    data/global_dec_trend.Rdata
-    Ignored:    data/global_effect_cat.Rdata
-    Ignored:    data/global_effect_clim.Rdata
-    Ignored:    data/global_effect_event.Rdata
-    Ignored:    data/global_effect_event_length_slope.Rdata
-    Ignored:    data/global_effect_event_slope.Rdata
-    Ignored:    data/sst_ALL_add_trend.Rdata
-    Ignored:    data/sst_ALL_aov_tukey.Rdata
-    Ignored:    data/sst_ALL_clim_event_cat.Rdata
-    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
-    Ignored:    data/sst_ALL_flat.Rdata
-    Ignored:    data/sst_ALL_knockout.Rdata
-    Ignored:    data/sst_ALL_length.Rdata
-    Ignored:    data/sst_ALL_length_width_10.Rdata
-    Ignored:    data/sst_ALL_length_width_20.Rdata
-    Ignored:    data/sst_ALL_length_width_30.Rdata
-    Ignored:    data/sst_ALL_length_width_40.Rdata
-    Ignored:    data/sst_ALL_length_width_50.Rdata
-    Ignored:    data/sst_ALL_missing.Rdata
-    Ignored:    data/sst_ALL_missing_fix.Rdata
-    Ignored:    data/sst_ALL_repl.Rdata
-    Ignored:    data/sst_ALL_trended.Rdata
+    Ignored:    data/global_results.Rda
+    Ignored:    data/global_test_trend.Rda
+    Ignored:    data/global_var_trend.Rda
+    Ignored:    data/global_var_trend_old.Rda
+    Ignored:    data/random_bp_results_100.Rda
+    Ignored:    data/random_bp_results_1000.Rda
+    Ignored:    data/random_results_100.Rda
+    Ignored:    data/random_results_1000.Rda
+    Ignored:    data/sst_ALL_bp_results.Rda
+
+Untracked files:
+    Untracked:  analysis/WA_pixels.Rda
+    Untracked:  analysis/WA_pixels_res.Rda
 
 Unstaged changes:
+    Modified:   .DS_Store
+    Modified:   .Rprofile
+    Modified:   .gitignore
+    Modified:   CODE_OF_CONDUCT.md
+    Modified:   LICENSE
+    Modified:   LICENSE.md
+    Modified:   LaTeX/FMars.csl
+    Modified:   LaTeX/Frontiers_Template.docx
+    Modified:   LaTeX/MHWdetection.docx
+    Modified:   LaTeX/MHWdetection.tex
+    Modified:   LaTeX/PDF examples/frontiers.pdf
+    Modified:   LaTeX/PDF examples/frontiers_SupplementaryMaterial.pdf
+    Modified:   LaTeX/README
+    Modified:   LaTeX/Supplementary_Material.docx
+    Modified:   LaTeX/YM-logo.eps
+    Modified:   LaTeX/fig_1.jpg
+    Modified:   LaTeX/fig_1.pdf
+    Modified:   LaTeX/fig_1_flat.jpg
+    Modified:   LaTeX/fig_1_flat.pdf
+    Modified:   LaTeX/fig_2.jpg
+    Modified:   LaTeX/fig_2.pdf
+    Modified:   LaTeX/fig_3.jpg
+    Modified:   LaTeX/fig_3.pdf
+    Modified:   LaTeX/fig_4.jpg
+    Modified:   LaTeX/fig_4.pdf
+    Modified:   LaTeX/fig_5.jpg
+    Modified:   LaTeX/fig_5.pdf
+    Modified:   LaTeX/fig_6.jpg
+    Modified:   LaTeX/fig_6.pdf
+    Modified:   LaTeX/fig_S1.jpg
+    Modified:   LaTeX/fig_S1.pdf
+    Modified:   LaTeX/fig_S2.jpg
+    Modified:   LaTeX/fig_S2.pdf
+    Modified:   LaTeX/fig_S3.jpg
+    Modified:   LaTeX/fig_S3.pdf
+    Modified:   LaTeX/fig_S4.jpg
+    Modified:   LaTeX/fig_S4.pdf
+    Modified:   LaTeX/fig_S5.jpg
+    Modified:   LaTeX/fig_S5.pdf
+    Modified:   LaTeX/figures.zip
+    Modified:   LaTeX/frontiers.tex
+    Modified:   LaTeX/frontiersFPHY.cls
+    Modified:   LaTeX/frontiersHLTH.cls
+    Modified:   LaTeX/frontiersSCNS.cls
+    Modified:   LaTeX/frontiersSCNS.log
+    Modified:   LaTeX/frontiers_SupplementaryMaterial.tex
+    Modified:   LaTeX/frontiers_suppmat.cls
+    Modified:   LaTeX/frontiersinHLTH&FPHY.bst
+    Modified:   LaTeX/frontiersinSCNS_ENG_HUMS.bst
+    Modified:   LaTeX/logo1.eps
+    Modified:   LaTeX/logo1.jpg
+    Modified:   LaTeX/logo2.eps
+    Modified:   LaTeX/logos.eps
+    Modified:   LaTeX/logos.jpg
+    Modified:   LaTeX/stfloats.sty
+    Modified:   LaTeX/table_1.xlsx
+    Modified:   LaTeX/table_2.xlsx
+    Modified:   LaTeX/test.bib
+    Modified:   MHWdetection.Rproj
+    Modified:   TODO
+    Modified:   _references/1-s2.0-S0921818106002736-main.pdf
+    Modified:   _references/1-s2.0-S092181810600275X-main.pdf
+    Modified:   _references/1-s2.0-S0921818106002761-main.pdf
+    Modified:   _references/1-s2.0-S0921818106002852-main.pdf
+    Modified:   _references/1405.3904.pdf
+    Modified:   _references/1520-0450%282001%29040%3C0762%3Aotdoah%3E2.0.co%3B2.pdf
+    Modified:   _references/2013_Extremes_Workshop_Report.pdf
+    Modified:   _references/24868781.pdf
+    Modified:   _references/24870362.pdf
+    Modified:   _references/26192647.pdf
+    Modified:   _references/994.full.pdf
+    Modified:   _references/A_1019841717369.pdf
+    Modified:   _references/Banzon et al 2014.pdf
+    Modified:   _references/Brown_et_al-2008-Journal_of_Geophysical_Research%3A_Atmospheres_%281984-2012%29.pdf
+    Modified:   _references/Different_ways_to_compute_temperature_re.pdf
+    Modified:   _references/Gilleland et al 2013.pdf
+    Modified:   _references/Gilleland_2006.pdf
+    Modified:   _references/Kuglitsch_et_al-2010-Geophysical_Research_Letters.pdf
+    Modified:   _references/Modeling Waves of Extreme Temperature The Changing Tails of Four Cities.pdf
+    Modified:   _references/Normals-Guide-to-Climate-190116_en.pdf
+    Modified:   _references/Reynolds et al 2007.pdf
+    Modified:   _references/Risk_of_Extreme_Events_Under_Nonstationa.pdf
+    Modified:   _references/Russo_et_al-2014-Journal_of_Geophysical_Research%3A_Atmospheres.pdf
+    Modified:   _references/WCDMP_72_TD_1500_en__1.pdf
+    Modified:   _references/WMO 49 v1 2015.pdf
+    Modified:   _references/WMO No 1203.pdf
+    Modified:   _references/WMO-TD No 1377.pdf
+    Modified:   _references/WMO_100_en.pdf
+    Modified:   _references/bams-d-12-00066.1.pdf
+    Modified:   _references/c058p193.pdf
+    Modified:   _references/cc100.pdf
+    Modified:   _references/clivar14.pdf
+    Modified:   _references/coles1994.pdf
+    Modified:   _references/ecology.pdf
+    Modified:   _references/joc.1141.pdf
+    Modified:   _references/joc.1432.pdf
+    Modified:   _references/returnPeriod.pdf
+    Modified:   _references/s00382-014-2287-1.pdf
+    Modified:   _references/s00382-014-2345-8.pdf
+    Modified:   _references/s00382-015-2638-6.pdf
+    Modified:   _references/s10584-006-9116-4.pdf
+    Modified:   _references/s10584-007-9392-7.pdf
+    Modified:   _references/s10584-010-9944-0.pdf
+    Modified:   _references/s10584-012-0659-2.pdf
+    Modified:   _references/s10584-014-1254-5.pdf
+    Modified:   _references/s13253-013-0161-y.pdf
+    Modified:   _references/wcrpextr.pdf
+    Modified:   _workflowr.yml
     Modified:   analysis/Climatologies_and_baselines.Rmd
+    Modified:   analysis/Short_climatologies.Rmd
+    Modified:   analysis/about.Rmd
     Modified:   analysis/best_practices.Rmd
-    Modified:   analysis/r_vs_python.Rmd
+    Modified:   analysis/bibliography.bib
+    Modified:   analysis/gridded_products.Rmd
+    Modified:   analysis/missing_data.Rmd
     Modified:   analysis/r_vs_python_arguments.Rmd
+    Modified:   analysis/time_series_length.Rmd
+    Modified:   analysis/trend.Rmd
+    Modified:   analysis/variance.Rmd
+    Modified:   code/README.md
+    Modified:   data/.gitignore
+    Modified:   data/best_table_average.Rda
+    Modified:   data/best_table_focus.Rda
+    Modified:   data/python/clim_py.csv
+    Modified:   data/python/clim_py_joinAG_1.csv
+    Modified:   data/python/clim_py_joinAG_5.csv
+    Modified:   data/python/clim_py_joinAG_no.csv
+    Modified:   data/python/clim_py_minD_3.csv
+    Modified:   data/python/clim_py_minD_7.csv
+    Modified:   data/python/clim_py_pctile_80.csv
+    Modified:   data/python/clim_py_pctile_95.csv
+    Modified:   data/python/clim_py_pctile_99.csv
+    Modified:   data/python/clim_py_random.csv
+    Modified:   data/python/clim_py_spw_11.csv
+    Modified:   data/python/clim_py_spw_51.csv
+    Modified:   data/python/clim_py_spw_no.csv
+    Modified:   data/python/clim_py_whw_3.csv
+    Modified:   data/python/clim_py_whw_7.csv
+    Modified:   data/python/mhwBlock.csv
+    Modified:   data/python/mhws_py.csv
+    Modified:   data/python/mhws_py_joinAG_1.csv
+    Modified:   data/python/mhws_py_joinAG_5.csv
+    Modified:   data/python/mhws_py_joinAG_no.csv
+    Modified:   data/python/mhws_py_minD_3.csv
+    Modified:   data/python/mhws_py_minD_7.csv
+    Modified:   data/python/mhws_py_pctile_80.csv
+    Modified:   data/python/mhws_py_pctile_95.csv
+    Modified:   data/python/mhws_py_pctile_99.csv
+    Modified:   data/python/mhws_py_random.csv
+    Modified:   data/python/mhws_py_spw_11.csv
+    Modified:   data/python/mhws_py_spw_51.csv
+    Modified:   data/python/mhws_py_spw_no.csv
+    Modified:   data/python/mhws_py_whw_3.csv
+    Modified:   data/python/mhws_py_whw_7.csv
+    Modified:   data/python/sst_WA.csv
+    Modified:   data/python/sst_WA_miss_ice.csv
+    Modified:   data/python/sst_WA_miss_random.csv
+    Modified:   data/sst_ALL_results.Rda
+    Modified:   data/table_1.csv
+    Modified:   data/table_2.csv
+    Modified:   docs/.nojekyll
+    Modified:   docs/portrait.pdf
+    Modified:   output/README.md
+    Modified:   output/effect_event.pdf
+    Modified:   output/fig_2_missing_only.pdf
+    Modified:   output/stitch_plot_WA.pdf
+    Modified:   output/stitch_sub_plot_WA.pdf
+    Modified:   poster/Figures/CSIRO_logo.jpeg
+    Modified:   poster/Figures/Dal_logo.jpg
+    Modified:   poster/Figures/all_logo_long.jpg
+    Modified:   poster/Figures/all_logos.jpg
+    Modified:   poster/Figures/logo_stitching.odp
+    Modified:   poster/Figures/ofi_logo.jpg
+    Modified:   poster/Figures/uwc-logo.jpg
+    Modified:   poster/MHWdetection.bib
+    Modified:   poster/MyBib.bib
+    Modified:   poster/landscape.Rmd
+    Modified:   poster/landscape.pdf
+    Modified:   poster/portrait.Rmd
+    Modified:   poster/portrait.pdf
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
@@ -453,6 +684,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/158aa0b34e302fe246051985c5539889e8c22878/docs/r_vs_python_additional.html" target="_blank">158aa0b</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-05-06
+</td>
+<td style="text-align:left;">
+Updated project interface
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 html
@@ -646,6 +894,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

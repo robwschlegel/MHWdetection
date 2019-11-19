@@ -172,13 +172,13 @@ ggsave("LaTeX/fig_6.jpg", fig_6, height = 8, width = 12)
 fig_S1 <- fig_box_plot(tests = "base", result_choice = "clims")
 
 # Create the caption and save
-fig_S1_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S1, 140), sep = "", collapse = "\n"),
+fig_S1_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S1, 160), sep = "", collapse = "\n"),
                               x = 0.01, just = "left", gp = grid::gpar(fontsize = 10))
 fig_S1_cap <- ggpubr::ggarrange(fig_S1, fig_S1_cap,
-                                heights = c(1, 0.15), nrow = 2)
-ggsave("LaTeX/fig_S1.pdf", fig_S1_cap, height = 6, width = 9)
-ggsave("LaTeX/fig_S1.png", fig_S1_cap, height = 6, width = 9)
-ggsave("LaTeX/fig_S1.jpg", fig_S1_cap, height = 6, width = 9)
+                                heights = c(1, 0.2), nrow = 2)
+ggsave("LaTeX/fig_S1.pdf", fig_S1_cap, height = 6.5, width = 10)
+ggsave("LaTeX/fig_S1.png", fig_S1_cap, height = 6.5, width = 10)
+ggsave("LaTeX/fig_S1.jpg", fig_S1_cap, height = 6.5, width = 10)
 
 
 # Supplementary 2 ---------------------------------------------------------
@@ -277,10 +277,10 @@ rm(sst_ALL_results, random_results); gc()
 fig_S5 <- fig_box_plot(tests = "windows", result_choice = "focus")
 
 # Create the caption and save
-fig_S5_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S5, 140), sep = "", collapse = "\n"),
+fig_S5_cap <-  grid::textGrob(paste0(strwrap(fig_cap_S5, 180), sep = "", collapse = "\n"),
                               x = 0.01, just = "left", gp = grid::gpar(fontsize = 10))
 fig_S5_cap <- ggpubr::ggarrange(fig_S5, fig_S5_cap,
-                                heights = c(1, 0.08), nrow = 2)
+                                heights = c(1, 0.1), nrow = 2)
 ggsave("LaTeX/fig_S5.pdf", fig_S5_cap, height = 9, width = 12)
 ggsave("LaTeX/fig_S5.png", fig_S5_cap, height = 9, width = 12)
 ggsave("LaTeX/fig_S5.jpg", fig_S5_cap, height = 9, width = 12)

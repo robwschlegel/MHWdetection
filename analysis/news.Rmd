@@ -1,10 +1,12 @@
+# 2019-11-06
+
+* The GitHub research website for this manuscript was updated to match the changes from the first round of revisions
+
 # 2019-11-04
 
 * Quite a lot has happened in the intersticing time
 * The curious reader will need to refer to the git push logs for a more detailed account unfortunately
 * The manuscript was re-submitted on November 1st
-* The GitHub research website for this manuscript was updated to match the changes from the first round of revisions
-
 # 2019-05-06
 
 * Uploaded poster to GitHub page

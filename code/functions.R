@@ -59,20 +59,29 @@ map_base <- ggplot2::fortify(maps::map(fill = TRUE, col = "grey80", plot = FALSE
 # Supplementary figure captions -------------------------------------------
 
 fig_cap_S1 <- as.character("Figure S1: The effect of the sub-optimal tests on the seasonal mean and threshold climatologies.
-                           The top row shows the percent change in the standard deviation (SD) of the seasonal climatology for each step in the respective sub-optimal tests.
-                           The percent change of the seasonal climatology is shown instead of the change in the mean because that value is 0 (or very close), so measuring a percent of change is not effective.
-                           The bottom row shows the percent change in the mean threshold climatology. The other elements are the same as Figure 2.")
+                           The top row (A, C, E) shows the percent change in the standard deviation (SD) of the seasonal climatology for each step in the respective sub-optimal tests.
+                           The percent change in the SD of the seasonal climatology is shown instead of the change in the mean because that value is 0 (or very close), so measuring a percent of change is not effective.
+                           The bottom row (B, D, F) shows the percent change in the mean threshold climatology.
+                           Each column of panels the effects of time series length (left), missing data (centre), and long-term trends (right).")
 
-fig_cap_S2 <- as.character("Figure S2: The effect of different 30 year climatology base periods on MHW results. The left column shows the effect on the average MHWs and the right column shows focal MHWs. The elements of this figure are the same as Figure 2.")
+fig_cap_S2 <- as.character("Figure S2: The effect of different 30 year climatology base periods on MHW results.
+                           The left column (A, B, C) shows the effect on the average MHWs and the right column (D, E, F) shows the effect on focal MHWs.
+                           Each row shows the effect of the sub-optimal tests on count, duration, and maximum intensity of the detected MHWs respectively.")
 
-fig_cap_S3 <- as.character("Figure S3: The global rates of change in MHW results due to increasing missing data
-                           from 0 -- 50%. The elements of this figure are the same as Figure 4.")
+fig_cap_S3 <- as.character("Figure S3: The global rates of change in MHW results due to increasing missing data from 0 - 50%.
+                           The left column (A, B, C) shows the effect on average MHWs, while the right column (D, E, F) shows the effect on the focal MHWs.
+                           Each row shows the effect on the count, duration, and maximum intensity of the detected MHWs respectively.")
 
-fig_cap_S4 <- as.character("Figure S4: The global rates of change due to increasing long-term trends from 0.00 -- 0.30°C/dec.
-                           The elements of this figure are the same as Figure 4.")
+fig_cap_S4 <- as.character("Figure S4: The global rates of change due to increasing long-term trends from 0.00 - 0.30°C/dec.
+                           The left column (A, B, C) shows the effect on average MHWs, while the right column (D, E, F) shows the effect on the focal MHWs.
+                           Each row shows the effect on the count, duration, and maximum intensity of the detected MHWs respectively.")
 
-fig_cap_S5 <- as.character("Figure S5: The effect of increasing window half-widths on the focal MHWs.
-                           This elements in this figure are the same as Figure 5.")
+fig_cap_S5 <- as.character("Figure S5: The effect of increasing the window half-widths (used for calculating climatologies) on the focal MHWs.
+                           The left column (A, B, C) is reproduced from the same column in Figure 3, but with a reduced range in the y-axis.
+                           This column shows the results when MHWs are detected using the default 5 day window half-width.
+                           The centre-left column (D, E, F) shows the effect of a 10 day window half-width on MHW detection.
+                           The centre-right (G, H, I) and right (J, K, L) columns show the effects of 20 and 30 day window half-widths.
+                           Each row shows the effects of the given window half-widths on the count, duration, and maximum intensity of the detected MHWs respectively.")
 
 
 # Load OISST --------------------------------------------------------------

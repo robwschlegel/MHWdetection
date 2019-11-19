@@ -7,13 +7,14 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Robert W Schlegel" />
 
-<meta name="date" content="2019-05-06" />
+<meta name="date" content="2019-11-06" />
 
-<title>Assessing the effects of missing data</title>
+<title>The effects of missing data</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -27,9 +28,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
-<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
-<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -77,9 +77,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -93,7 +91,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -103,6 +100,9 @@ img {
 }
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
@@ -118,7 +118,6 @@ body {
   padding-top: 56px;
   margin-top: -56px;
 }
-
 .section h2 {
   padding-top: 56px;
   margin-top: -56px;
@@ -138,6 +137,43 @@ body {
 .section h6 {
   padding-top: 56px;
   margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
 }
 </style>
 
@@ -159,47 +195,65 @@ $(document).ready(function () {
 });
 </script>
 
-
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
 
 <!-- code folding -->
 
 
-
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -248,8 +302,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -258,6 +310,16 @@ div.tocify {
 
 
 </style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
@@ -279,7 +341,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">MHW detection</a>
+      <a class="navbar-brand" href="index.html">MHW Detection</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -293,23 +355,28 @@ div.tocify {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="r_vs_python.html">Python vs. R - default outputs</a>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Python vs. R</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="r_vs_python.html">Default outputs</a>
+        </li>
+        <li>
+          <a href="r_vs_python_arguments.html">Default arguments</a>
+        </li>
+        <li>
+          <a href="r_vs_python_additional.html">Additional functions</a>
+        </li>
+      </ul>
     </li>
     <li>
-      <a href="r_vs_python_arguments.html">Python vs. R - default arguments</a>
+      <a href="time_series_length.html">Time series length</a>
     </li>
     <li>
-      <a href="r_vs_python_additional.html">Python vs. R - additional functions</a>
+      <a href="missing_data.html">Missing data</a>
     </li>
     <li>
-      <a href="time_series_length.html">Effects of short time series</a>
-    </li>
-    <li>
-      <a href="missing_data.html">Effects of missing data</a>
-    </li>
-    <li>
-      <a href="trend.html">Effects of long-term trends</a>
+      <a href="trend.html">Long-term trends</a>
     </li>
     <li>
       <a href="best_practices.html">Best practices</a>
@@ -349,19 +416,20 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">Assessing the effects of missing data</h1>
-<h4 class="author"><em>Robert W Schlegel</em></h4>
-<h4 class="date"><em>2019-05-06</em></h4>
+<h1 class="title toc-ignore">The effects of missing data</h1>
+<h4 class="author">Robert W Schlegel</h4>
+<h4 class="date">2019-11-06</h4>
 
 </div>
 
 
-<p><strong>Last updated:</strong> 2019-05-06</p>
+<p><strong>Last updated:</strong> 2019-11-06</p>
 <strong>workflowr checks:</strong> <small>(Click a bullet for more information)</small>
 <ul>
 <li>
 <details>
-<p><summary> <strong style="color:red;">✖</strong> <strong>R Markdown file:</strong> uncommitted changes </summary> The R Markdown file has unstaged changes. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>R Markdown file:</strong> up-to-date </summary></p>
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
 </details>
 </li>
 <li>
@@ -384,50 +452,204 @@ div.section {
 </li>
 <li>
 <details>
-<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/b1a7e3fcf3dacdd2ba4d7cd79a44fef13dd6191f" target="_blank">b1a7e3f</a> </summary></p>
+<p><summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/robwschlegel/MHWdetection/tree/ff0bb9514a02d4861415352ca691f1309bc4a385" target="_blank">ff0bb95</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    data/global/
-    Ignored:    data/global_KS_cat.Rdata
-    Ignored:    data/global_KS_clim.Rdata
-    Ignored:    data/global_KS_event.Rdata
-    Ignored:    data/global_dec_trend.Rdata
-    Ignored:    data/global_effect_cat.Rdata
-    Ignored:    data/global_effect_clim.Rdata
-    Ignored:    data/global_effect_event.Rdata
-    Ignored:    data/global_effect_event_length_slope.Rdata
-    Ignored:    data/global_effect_event_slope.Rdata
-    Ignored:    data/sst_ALL_add_trend.Rdata
-    Ignored:    data/sst_ALL_aov_tukey.Rdata
-    Ignored:    data/sst_ALL_clim_event_cat.Rdata
-    Ignored:    data/sst_ALL_clim_event_cat_fix.Rdata
-    Ignored:    data/sst_ALL_flat.Rdata
-    Ignored:    data/sst_ALL_knockout.Rdata
-    Ignored:    data/sst_ALL_length.Rdata
-    Ignored:    data/sst_ALL_length_width_10.Rdata
-    Ignored:    data/sst_ALL_length_width_20.Rdata
-    Ignored:    data/sst_ALL_length_width_30.Rdata
-    Ignored:    data/sst_ALL_length_width_40.Rdata
-    Ignored:    data/sst_ALL_length_width_50.Rdata
-    Ignored:    data/sst_ALL_missing.Rdata
-    Ignored:    data/sst_ALL_missing_fix.Rdata
-    Ignored:    data/sst_ALL_repl.Rdata
-    Ignored:    data/sst_ALL_trended.Rdata
+    Ignored:    data/global_results.Rda
+    Ignored:    data/global_test_trend.Rda
+    Ignored:    data/global_var_trend.Rda
+    Ignored:    data/global_var_trend_old.Rda
+    Ignored:    data/random_bp_results_100.Rda
+    Ignored:    data/random_bp_results_1000.Rda
+    Ignored:    data/random_results_100.Rda
+    Ignored:    data/random_results_1000.Rda
+    Ignored:    data/sst_ALL_bp_results.Rda
 
 Untracked files:
-    Untracked:  analysis/time_series_length.Rmd
+    Untracked:  analysis/WA_pixels.Rda
+    Untracked:  analysis/WA_pixels_res.Rda
+    Untracked:  docs/figure/time_series_length.Rmd/
 
 Unstaged changes:
+    Modified:   .DS_Store
+    Modified:   .Rprofile
+    Modified:   .gitignore
+    Modified:   CODE_OF_CONDUCT.md
+    Modified:   LICENSE
+    Modified:   LICENSE.md
+    Modified:   LaTeX/FMars.csl
+    Modified:   LaTeX/Frontiers_Template.docx
+    Modified:   LaTeX/MHWdetection.docx
+    Modified:   LaTeX/MHWdetection.tex
+    Modified:   LaTeX/PDF examples/frontiers.pdf
+    Modified:   LaTeX/PDF examples/frontiers_SupplementaryMaterial.pdf
+    Modified:   LaTeX/README
+    Modified:   LaTeX/Supplementary_Material.docx
+    Modified:   LaTeX/YM-logo.eps
+    Modified:   LaTeX/fig_1.jpg
+    Modified:   LaTeX/fig_1.pdf
+    Modified:   LaTeX/fig_1_flat.jpg
+    Modified:   LaTeX/fig_1_flat.pdf
+    Modified:   LaTeX/fig_2.jpg
+    Modified:   LaTeX/fig_2.pdf
+    Modified:   LaTeX/fig_3.jpg
+    Modified:   LaTeX/fig_3.pdf
+    Modified:   LaTeX/fig_4.jpg
+    Modified:   LaTeX/fig_4.pdf
+    Modified:   LaTeX/fig_5.jpg
+    Modified:   LaTeX/fig_5.pdf
+    Modified:   LaTeX/fig_6.jpg
+    Modified:   LaTeX/fig_6.pdf
+    Modified:   LaTeX/fig_S1.jpg
+    Modified:   LaTeX/fig_S1.pdf
+    Modified:   LaTeX/fig_S2.jpg
+    Modified:   LaTeX/fig_S2.pdf
+    Modified:   LaTeX/fig_S3.jpg
+    Modified:   LaTeX/fig_S3.pdf
+    Modified:   LaTeX/fig_S4.jpg
+    Modified:   LaTeX/fig_S4.pdf
+    Modified:   LaTeX/fig_S5.jpg
+    Modified:   LaTeX/fig_S5.pdf
+    Modified:   LaTeX/figures.zip
+    Modified:   LaTeX/frontiers.tex
+    Modified:   LaTeX/frontiersFPHY.cls
+    Modified:   LaTeX/frontiersHLTH.cls
+    Modified:   LaTeX/frontiersSCNS.cls
+    Modified:   LaTeX/frontiersSCNS.log
+    Modified:   LaTeX/frontiers_SupplementaryMaterial.tex
+    Modified:   LaTeX/frontiers_suppmat.cls
+    Modified:   LaTeX/frontiersinHLTH&FPHY.bst
+    Modified:   LaTeX/frontiersinSCNS_ENG_HUMS.bst
+    Modified:   LaTeX/logo1.eps
+    Modified:   LaTeX/logo1.jpg
+    Modified:   LaTeX/logo2.eps
+    Modified:   LaTeX/logos.eps
+    Modified:   LaTeX/logos.jpg
+    Modified:   LaTeX/stfloats.sty
+    Modified:   LaTeX/table_1.xlsx
+    Modified:   LaTeX/table_2.xlsx
+    Modified:   LaTeX/test.bib
+    Modified:   MHWdetection.Rproj
+    Modified:   TODO
+    Modified:   _references/1-s2.0-S0921818106002736-main.pdf
+    Modified:   _references/1-s2.0-S092181810600275X-main.pdf
+    Modified:   _references/1-s2.0-S0921818106002761-main.pdf
+    Modified:   _references/1-s2.0-S0921818106002852-main.pdf
+    Modified:   _references/1405.3904.pdf
+    Modified:   _references/1520-0450%282001%29040%3C0762%3Aotdoah%3E2.0.co%3B2.pdf
+    Modified:   _references/2013_Extremes_Workshop_Report.pdf
+    Modified:   _references/24868781.pdf
+    Modified:   _references/24870362.pdf
+    Modified:   _references/26192647.pdf
+    Modified:   _references/994.full.pdf
+    Modified:   _references/A_1019841717369.pdf
+    Modified:   _references/Banzon et al 2014.pdf
+    Modified:   _references/Brown_et_al-2008-Journal_of_Geophysical_Research%3A_Atmospheres_%281984-2012%29.pdf
+    Modified:   _references/Different_ways_to_compute_temperature_re.pdf
+    Modified:   _references/Gilleland et al 2013.pdf
+    Modified:   _references/Gilleland_2006.pdf
+    Modified:   _references/Kuglitsch_et_al-2010-Geophysical_Research_Letters.pdf
+    Modified:   _references/Modeling Waves of Extreme Temperature The Changing Tails of Four Cities.pdf
+    Modified:   _references/Normals-Guide-to-Climate-190116_en.pdf
+    Modified:   _references/Reynolds et al 2007.pdf
+    Modified:   _references/Risk_of_Extreme_Events_Under_Nonstationa.pdf
+    Modified:   _references/Russo_et_al-2014-Journal_of_Geophysical_Research%3A_Atmospheres.pdf
+    Modified:   _references/WCDMP_72_TD_1500_en__1.pdf
+    Modified:   _references/WMO 49 v1 2015.pdf
+    Modified:   _references/WMO No 1203.pdf
+    Modified:   _references/WMO-TD No 1377.pdf
+    Modified:   _references/WMO_100_en.pdf
+    Modified:   _references/bams-d-12-00066.1.pdf
+    Modified:   _references/c058p193.pdf
+    Modified:   _references/cc100.pdf
+    Modified:   _references/clivar14.pdf
+    Modified:   _references/coles1994.pdf
+    Modified:   _references/ecology.pdf
+    Modified:   _references/joc.1141.pdf
+    Modified:   _references/joc.1432.pdf
+    Modified:   _references/returnPeriod.pdf
+    Modified:   _references/s00382-014-2287-1.pdf
+    Modified:   _references/s00382-014-2345-8.pdf
+    Modified:   _references/s00382-015-2638-6.pdf
+    Modified:   _references/s10584-006-9116-4.pdf
+    Modified:   _references/s10584-007-9392-7.pdf
+    Modified:   _references/s10584-010-9944-0.pdf
+    Modified:   _references/s10584-012-0659-2.pdf
+    Modified:   _references/s10584-014-1254-5.pdf
+    Modified:   _references/s13253-013-0161-y.pdf
+    Modified:   _references/wcrpextr.pdf
+    Modified:   _workflowr.yml
     Modified:   analysis/Climatologies_and_baselines.Rmd
-    Modified:   analysis/_site.yml
-    Modified:   analysis/best_practices.Rmd
-    Modified:   analysis/missing_data.Rmd
-    Modified:   analysis/r_vs_python.Rmd
+    Modified:   analysis/Short_climatologies.Rmd
+    Modified:   analysis/about.Rmd
+    Modified:   analysis/bibliography.bib
+    Modified:   analysis/gridded_products.Rmd
     Modified:   analysis/r_vs_python_arguments.Rmd
-    Deleted:    analysis/time_series_duration.Rmd
+    Modified:   analysis/variance.Rmd
+    Modified:   code/README.md
+    Modified:   data/.gitignore
+    Modified:   data/best_table_average.Rda
+    Modified:   data/best_table_focus.Rda
+    Modified:   data/python/clim_py.csv
+    Modified:   data/python/clim_py_joinAG_1.csv
+    Modified:   data/python/clim_py_joinAG_5.csv
+    Modified:   data/python/clim_py_joinAG_no.csv
+    Modified:   data/python/clim_py_minD_3.csv
+    Modified:   data/python/clim_py_minD_7.csv
+    Modified:   data/python/clim_py_pctile_80.csv
+    Modified:   data/python/clim_py_pctile_95.csv
+    Modified:   data/python/clim_py_pctile_99.csv
+    Modified:   data/python/clim_py_random.csv
+    Modified:   data/python/clim_py_spw_11.csv
+    Modified:   data/python/clim_py_spw_51.csv
+    Modified:   data/python/clim_py_spw_no.csv
+    Modified:   data/python/clim_py_whw_3.csv
+    Modified:   data/python/clim_py_whw_7.csv
+    Modified:   data/python/mhwBlock.csv
+    Modified:   data/python/mhws_py.csv
+    Modified:   data/python/mhws_py_joinAG_1.csv
+    Modified:   data/python/mhws_py_joinAG_5.csv
+    Modified:   data/python/mhws_py_joinAG_no.csv
+    Modified:   data/python/mhws_py_minD_3.csv
+    Modified:   data/python/mhws_py_minD_7.csv
+    Modified:   data/python/mhws_py_pctile_80.csv
+    Modified:   data/python/mhws_py_pctile_95.csv
+    Modified:   data/python/mhws_py_pctile_99.csv
+    Modified:   data/python/mhws_py_random.csv
+    Modified:   data/python/mhws_py_spw_11.csv
+    Modified:   data/python/mhws_py_spw_51.csv
+    Modified:   data/python/mhws_py_spw_no.csv
+    Modified:   data/python/mhws_py_whw_3.csv
+    Modified:   data/python/mhws_py_whw_7.csv
+    Modified:   data/python/sst_WA.csv
+    Modified:   data/python/sst_WA_miss_ice.csv
+    Modified:   data/python/sst_WA_miss_random.csv
+    Modified:   data/sst_ALL_results.Rda
+    Modified:   data/table_1.csv
+    Modified:   data/table_2.csv
+    Modified:   docs/portrait.pdf
+    Modified:   output/README.md
+    Modified:   output/effect_event.pdf
+    Modified:   output/fig_2_missing_only.pdf
+    Modified:   output/stitch_plot_WA.pdf
+    Modified:   output/stitch_sub_plot_WA.pdf
+    Modified:   poster/Figures/CSIRO_logo.jpeg
+    Modified:   poster/Figures/Dal_logo.jpg
+    Modified:   poster/Figures/all_logo_long.jpg
+    Modified:   poster/Figures/all_logos.jpg
+    Modified:   poster/Figures/logo_stitching.odp
+    Modified:   poster/Figures/ofi_logo.jpg
+    Modified:   poster/Figures/uwc-logo.jpg
+    Modified:   poster/MHWdetection.bib
+    Modified:   poster/MyBib.bib
+    Modified:   poster/landscape.Rmd
+    Modified:   poster/landscape.pdf
+    Modified:   poster/portrait.Rmd
+    Modified:   poster/portrait.pdf
 
 </code></pre>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
@@ -458,6 +680,91 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/ff0bb9514a02d4861415352ca691f1309bc4a385/analysis/missing_data.Rmd" target="_blank">ff0bb95</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-11-06
+</td>
+<td style="text-align:left;">
+Publish the sub-optimal test vignettes
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/61bf228806c8ba5838360ee254eef1f682a125dc/analysis/missing_data.Rmd" target="_blank">61bf228</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-11-06
+</td>
+<td style="text-align:left;">
+Prepped trend vignette for site re-build
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/efa959e9ae0600e34595c464f01b8a2c775059d5/analysis/missing_data.Rmd" target="_blank">efa959e</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-11-06
+</td>
+<td style="text-align:left;">
+Prepped missing data vignette for website re-build
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/robwschlegel/MHWdetection/blob/158aa0b34e302fe246051985c5539889e8c22878/analysis/missing_data.Rmd" target="_blank">158aa0b</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-05-06
+</td>
+<td style="text-align:left;">
+Updated project interface
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/robwschlegel/MHWdetection/158aa0b34e302fe246051985c5539889e8c22878/docs/missing_data.html" target="_blank">158aa0b</a>
+</td>
+<td style="text-align:left;">
+robwschlegel
+</td>
+<td style="text-align:left;">
+2019-05-06
+</td>
+<td style="text-align:left;">
+Updated project interface
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 html
@@ -533,1064 +840,123 @@ Publish analysis files
 <hr />
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>The purpose of this vignette is to quantify the effects that missing data have on the detection of events. Specifically, the relationship between the percentage of missing data, as well as the consecutive number of missing days, on how much the seasonal climatology, the 90th percentile threshold, and the MHW metrics may differ from those detected against the same time series with the same amount of missing data as well as no missing data.</p>
-<p>The missing data will be ‘created’ by striking out existing data from the three pre-packaged time series in the <strong><code>heatwaveR</code></strong> package, which themselves have no missing data. These data will first be detrended so that the random missing data removed will not be conflated with any trend in the data. The data will be removed in two primary ways:</p>
-<ul>
-<li>the first method will be to simply use a random selection algorithm to indiscriminately remove an increasing proportion of the data;</li>
-<li>the second method will be to systematically remove data from specific days/times of the year to simulate missing data that users may encounter in a real-world scenario
-<ul>
-<li>one method will be to remove only weekend days from the data</li>
-<li>another method is to remove only winter data to simulate ice-cover</li>
-<li>the last is to have only one day of data per week</li>
-</ul></li>
-</ul>
-<p>It is hypothesised that the more consecutive missing days of data there are, the more pronounced the effect will be on the results. It is also hypothesised that consecutive missing days will have a more pronounced effect/be a better indicator of time series strength than the simple proportion of missing data. A third hypothesis is that there will be a relatively clear threshold for the proportion of consecutive missing days that will prevent accurate MHW detection.</p>
-<pre class="r"><code>library(tidyverse)
-library(broom)
-library(heatwaveR, lib.loc = &quot;~/R-packages/&quot;)
-# cat(paste0(&quot;heatwaveR version = &quot;,packageDescription(&quot;heatwaveR&quot;)$Version))
-library(lubridate) # This is intentionally activated after data.table
-library(fasttime)
-library(ggpubr)
-library(boot)
-library(FNN)
-library(mgcv)
-# library(padr)
-library(ggridges)</code></pre>
+<p>The purpose of this vignette is to briefly show the process used to go about quantify the effects that missing data have on the detection of MHWs. Specifically, the relationship between the percentage of missing data and how the MHW metrics may differ from those detected against the same time series with no missing data.</p>
+<p>The missing data will be ‘created’ by striking out existing data from the three pre-packaged time series in the <strong><code>heatwaveR</code></strong> package, which themselves have no missing data. These data will first be detrended so that the random missing data removed will not be conflated with any trend in the data.</p>
+<pre class="r"><code># The packages used in this analysis
+library(tidyverse)
+library(heatwaveR)
+library(lubridate)
+library(ncdf4)
+library(doParallel)
+
+# The custom functions written for the analysis
+source(&quot;code/functions.R&quot;)</code></pre>
+<pre class="r"><code># The function used to de-trend the time series:
+detrend &lt;- function(df){
+  resids &lt;- broom::augment(lm(temp ~ t, df))
+  res &lt;- df %&gt;%
+    mutate(temp = round((temp - resids$.fitted),2))
+  return(res)
+}</code></pre>
+<p>The effects that missing data have on the results are investigated with the same methodology as the time series length and long-term trend tests, with the difference that data are being randomly removed before the analysis is run.</p>
 </div>
 <div id="random-missing-data" class="section level2">
 <h2>Random missing data</h2>
-<p>First up we begin with the random removal of increasing proportions of the data. We are going to use the full 37 year time series for these missing data experiments. We will randomly remove, 0 – 50% of the data from each of the three times series in 1% steps. This is being repeated 100 times to allow for more reproducible results. It is assumed that the results will begin to break down well before the 50% mark. Should they not then we will extend the missing proportion.</p>
-<pre class="r"><code># First load the de-trended data created in the duration vignette
-load(&quot;data/sst_ALL_flat.Rdata&quot;)
-
-# Function for knocking out data but maintaing the time series consistency
-random_knockout &lt;- function(prop){
-  # NB: Don&#39;t allow samppling of first and last value to ensure
+<p>First up we begin with the random removal of increasing proportions of the data. We are going to use the full 37 year time series for these missing data experiments. We will randomly remove 0 – 50% of the data from each of the three times series in 1% steps. This is not being repeated here so the results will look very jagged. The necessary replication of this study is performed by repeating it on 1000 randomly selected pixels, which may be seen in ‘code/workflow.R’ in the GitHub repository.</p>
+<pre class="r"><code>control_missing &lt;- function(prop, df){
+  # NB: Don&#39;t allow sampling of first and last value to ensure
   # all time series are the same length
-  ts_length &lt;- nrow(filter(sst_ALL_flat, site == &quot;WA&quot;))
+  ts_length &lt;- nrow(df)
   miss_index &lt;- sample(seq(2, ts_length-1, 1), ts_length*prop, replace = F)
-  # df$x1[sample(nrow(df),250)] &lt;- NA
-  res &lt;- sst_ALL_flat %&gt;% 
-    group_by(site, rep) %&gt;%
+  res &lt;- df %&gt;%
     mutate(row_index = 1:n(),
-           temp = replace(temp, which(row_index %in% miss_index), NA)) %&gt;% 
-    mutate(miss = as.character(prop)) %&gt;% 
-    select(-row_index)
-  return(res)
-}
-
-# Randomly knockout 0 - 50% of each of the 100 re-samples
-doMC::registerDoMC(cores = 26)
-sst_ALL_miss &lt;- plyr::ldply(seq(0.00, 0.50, 0.01), random_knockout, .parallel = T)
-save(sst_ALL_miss, file = &quot;data/sst_ALL_miss.Rdata&quot;)</code></pre>
-</div>
-<div id="consecutive-missing-days" class="section level2">
-<h2>Consecutive missing days</h2>
-<pre class="r"><code># This file is not uploaded to GitHub as it is too large
-# One must first run the above code locally to generate and save the file
-load(&quot;data/sst_ALL_miss.Rdata&quot;)
-
-# Quantify consecutive missing days
-con_miss &lt;- function(df){
-  ex1 &lt;- rle(is.na(df$temp))
-  ind1 &lt;- rep(seq_along(ex1$lengths), ex1$lengths)
-  s1 &lt;- split(1:nrow(df), ind1)
-  res &lt;- do.call(rbind,
-                 lapply(s1[ex1$values == TRUE], function(x)
-                   data.frame(index_start = min(x), index_end = max(x))
-                   )) %&gt;% 
-    mutate(duration = index_end - index_start + 1) %&gt;% 
-    group_by(duration) %&gt;% 
-    summarise(count = n())
-  return(res)
-}
-
-# Calculate the consecutive missing days
-doMC::registerDoMC(cores = 50)
-sst_ALL_con &lt;- plyr::ddply(filter(sst_ALL_miss, miss != 0), 
-                           c(&quot;site&quot;, &quot;miss&quot;, &quot;rep&quot;), con_miss, .parallel = T)
-save(sst_ALL_con, file = &quot;data/sst_ALL_con.Rdata&quot;)</code></pre>
-<pre class="r"><code># Load consecutive miss count data
-load(&quot;data/sst_ALL_con.Rdata&quot;)
-
-# Prep the con results for plotting
-sst_ALL_con_plot &lt;- sst_ALL_con %&gt;% 
-  select(-rep) %&gt;%
-  group_by(miss, duration) %&gt;% 
-  summarise(count = round(mean(count))) %&gt;% 
-  ungroup()
-
-# sst_ALL_con_plot_sub &lt;- sst_ALL_con_plot %&gt;% 
-#   filter(prop %in% c(1, 10, 20, 30, 40, 50))
-
-# Bar plot
-# ggplot(sst_ALL_con_plot_sub, aes(x = duration, y = count, fill = as.factor(prop))) +
-#   geom_bar(stat = &quot;identity&quot;, position = &quot;dodge&quot;) +
-#   facet_grid(~site) +
-#   scale_fill_viridis_d() +
-#   scale_x_continuous(breaks = seq(1, 18, 1)) +
-#   labs(x = &quot;Consecutive missing days&quot;, y = &quot;Count (average)&quot;)
-
-# Line plot
-ggplot(sst_ALL_con_plot, aes(x = as.numeric(miss), y = duration, colour = count)) +
-  geom_line(aes(group = miss)) +
-  geom_point(aes(group = miss)) +
-  scale_colour_viridis_c(trans = &quot;log10&quot;, breaks = c(1, 10, 100, 1000, 2000)) +
-  scale_y_continuous(breaks = seq(1, 19, 2)) +
-  # scale_x_continuous(limits = c(1, 50)) +
-  labs(y = &quot;Consecutive missing days&quot;, x = &quot;Missing data (%)&quot;)
-
-# Ridgeline plot
-# ggplot(sst_ALL_con_plot_sub, aes(x = duration, y = as.factor(prop), fill = ..x..)) +
-#   # geom_density_ridges() +
-#   # geom_ridgeline(aes(height = count/1000)) +
-#   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
-#   # geom_density_ridges_gradient(aes(fill = count)) +
-#   # theme_ridges() +
-#   scale_y_discrete(expand = c(0.01, 0)) +
-#   scale_x_continuous(expand = c(0, 0), limits = c(1, 20)) +
-#   labs(x = &quot;Consecutive missing days&quot;, y = &quot;Missing data (%)&quot;)
-
-
-# ggplot(lincoln_weather, aes(x = `Mean Temperature [F]`, y = `Month`, fill = ..x..)) +
-#   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
-#   scale_fill_viridis(name = &quot;Temp. [F]&quot;, option = &quot;C&quot;) +
-#   labs(title = &#39;Temperatures in Lincoln NE in 2016&#39;)
-
-rm(sst_ALL_con_plot)</code></pre>
-<p>We see in the figure above that the number of consective missing days increases as the overall proportion of missing days increases. The default in the MHW algorithm is meant to be that one does not by default interpolate over any missing data, but it does accomodate a gap of 2 days or fewer, so one can hypothesise that consecutive missing days of 2 or fewer likely pose little risk to detecting significantly different events. We see that at missing proportions of 9% or lower we exceed this threshold very seldom, while also never having more than 4 consecutive missing days. Linear interpolation is the default method proposed for dealing with missing data, but we will address that in a following section.</p>
-</div>
-<div id="climatology-statistics" class="section level2">
-<h2>Climatology statistics</h2>
-<pre class="r"><code># This file is not uploaded to GitHub as it is too large
-# One must first run the above code locally to generate and save the file
-load(&quot;data/sst_ALL_miss.Rdata&quot;)
-
-# Calculate climatologies, events, and categories on shrinking time series
-clim_event_cat_calc &lt;- function(df){
-  res &lt;- df %&gt;% 
-    nest() %&gt;% 
-    mutate(clims = map(data, ts2clm, 
-                       climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2011-12-31&quot;)),
-           events = map(clims, detect_event),
-           cats = map(events, category)) %&gt;% 
-    select(-data, -clims)
-  return(res)
-}
-
-# Calculate all of the MHW related results
-doMC::registerDoMC(cores = 50)
-sst_ALL_miss_clim_event_cat &lt;- plyr::ddply(sst_ALL_miss, c(&quot;miss&quot;, &quot;rep&quot;, &quot;site&quot;), 
-                                           clim_event_cat_calc, .parallel = T)
-save(sst_ALL_miss_clim_event_cat, file = &quot;data/sst_ALL_miss_clim_event_cat.Rdata&quot;)</code></pre>
-<pre class="r"><code># This file is not uploaded to GitHub as it is too large
-# One must first run the above code locally to generate and save the file
-load(&quot;data/sst_ALL_miss_clim_event_cat.Rdata&quot;)
-
-# Wrapper function to speed up the extraction of clims
-miss_clim_only &lt;- function(df){
-  res &lt;- df %&gt;% 
-    select(-cats) %&gt;% 
-    unnest(events) %&gt;% 
-    filter(row_number() %% 2 == 1) %&gt;% 
-    unnest(events) %&gt;% 
-    select(miss:doy, seas:thresh) %&gt;% 
-    unique() %&gt;% 
-    arrange(doy)
-}
-
-# Pull out only seas and thresh for ease of plotting
-doMC::registerDoMC(cores = 50)
-sst_ALL_miss_clim_only &lt;- plyr::ddply(sst_ALL_miss_clim_event_cat, c(&quot;miss&quot;, &quot;rep&quot;, &quot;site&quot;), 
-                                      miss_clim_only, .parallel = T)
-save(sst_ALL_miss_clim_only, file = &quot;data/sst_ALL_miss_clim_only.Rdata&quot;)</code></pre>
-<pre class="r"><code># This file is not uploaded to GitHub as it is too large
-# One must first run the above code locally to generate and save the file
-load(&quot;data/sst_ALL_miss_clim_only.Rdata&quot;)
-
-# visualise
-ggplot(arrange(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), -as.numeric(miss)), 
-       aes(y = seas, x = doy, colour = as.numeric(miss)*100)) +
-  geom_line(alpha = 0.3, aes(group = interaction(rep, miss))) +
-  scale_colour_viridis_c() +
-  facet_wrap(~site, ncol = 1, scales = &quot;free_y&quot;) +
-  labs(x = &quot;Calendar day of year&quot;, y = &quot;Temp. (°C)&quot;, colour = &quot;Missing (%)&quot;)</code></pre>
-<p>As we may see in the figure above, there is no perceptible difference in the seasonal signal created from time series with varying amounts of missing data for the Mediterranean (<code>Med</code>) and North West Atlantic (<code>NW_Atl</code>) times series. The signal does appear to vary both above and below the real signal after approaching the ~40% missing data mark for the Western Australia (<code>WA</code>) time series.</p>
-<pre class="r"><code>ggplot(filter(sst_ALL_miss_clim_only, rep %in% as.character(1:10)), 
-       aes(y = thresh, x = doy, colour = as.numeric(miss)*100)) +
-  geom_line(alpha = 0.3, aes(group = interaction(rep, miss))) +
-  scale_colour_viridis_c() +
-  facet_wrap(~site, ncol = 1, scales = &quot;free_y&quot;) +
-  labs(x = &quot;Calendar day of year&quot;, y = &quot;Temp. (°C)&quot;, colour = &quot;Missing (%)&quot;)</code></pre>
-<p>We see above that the 90th percentile threshold appears to decrease linearly the larger the percentage of missing data becomes. This is most pronounced for the Western Australia (<code>WA</code>) time series. This will likely have a significant impact on the size of the MHWs detected.</p>
-<div id="anova-p-values" class="section level3">
-<h3>ANOVA <em>p</em>-values</h3>
-<p>Before we calculate the MHW metrics, let’s look at the output of an ANOVA comparing the seasonal and threshold values against one another across the different proportions of missing data for each time series.</p>
-<pre class="r"><code># Run an ANOVA on each metric of the event results from 
-# the same amount of missing data and get the p-value
-aov_p &lt;- function(df){
-  aov_models &lt;- df[ , -grep(&quot;miss&quot;, names(df))] %&gt;%
-    map(~ aov(.x ~ df$miss)) %&gt;% 
-    map_dfr(~ broom::tidy(.), .id = &#39;metric&#39;) %&gt;%
-    mutate(p.value = round(p.value, 4)) %&gt;%
-    filter(term != &quot;Residuals&quot;) %&gt;%
-    select(metric, p.value)
-  return(aov_models)
-  }
-
-# Run an ANOVA on each metric and then a Tukey test
-aov_tukey &lt;- function(df){
-  aov_tukey &lt;- df[ , -grep(&quot;miss&quot;, names(df))] %&gt;%
-    map(~ TukeyHSD(aov(.x ~ df$miss))) %&gt;% 
-    map_dfr(~ broom::tidy(.), .id = &#39;metric&#39;) %&gt;%
-    mutate(p.value = round(adj.p.value, 4)) %&gt;%
-    # filter(term != &quot;Residuals&quot;) %&gt;%
-    select(metric, comparison, adj.p.value) %&gt;% 
-    # filter(adj.p.value &lt;= 0.05) %&gt;% 
-    arrange(metric, adj.p.value)
-  return(aov_tukey)
-}
-
-# Quick wrapper for getting results for ANOVA and Tukey on clims
-# df &lt;- sst_ALL_miss_clim_only %&gt;%
-#   filter(site == &quot;WA&quot;) %&gt;%
-#   select(-site)
-clim_aov_tukey &lt;- function(df){
-  res &lt;- df %&gt;% 
-    # filter(miss != &quot;0.00&quot;) %&gt;% 
-    select(miss, seas, thresh) %&gt;% 
-    mutate(miss = as.factor(miss)) %&gt;% 
-    nest() %&gt;% 
-    mutate(aov = map(data, aov_p),
-           tukey = map(data, aov_tukey)) %&gt;% 
-    select(-data)
+           temp = replace(temp, which(row_index %in% miss_index), NA),
+           test = &quot;missing&quot;,
+           index_vals = prop) %&gt;%
+    dplyr::select(test, index_vals, t, temp)
   return(res)
 }</code></pre>
-<pre class="r"><code># This file is not uploaded to GitHub as it is too large
-# One must first run the above code locally to generate and save the file
-load(&quot;data/sst_ALL_miss_clim_only.Rdata&quot;)
-doMC::registerDoMC(cores = 50)
-sst_ALL_miss_clim_aov_tukey &lt;- plyr::ddply(sst_ALL_miss_clim_only, c(&quot;site&quot;, &quot;rep&quot;), 
-                                           clim_aov_tukey, .parallel = T)
-save(sst_ALL_miss_clim_aov_tukey, file = &quot;data/sst_ALL_miss_clim_aov_tukey.Rdata&quot;)
-# rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</code></pre>
-<pre class="r"><code>load(&quot;data/sst_ALL_miss_clim_aov_tukey.Rdata&quot;)
-
-sst_ALL_miss_clim_aov &lt;- sst_ALL_miss_clim_aov_tukey %&gt;% 
-  select(-tukey) %&gt;% 
-  unnest()
-
-ggplot(sst_ALL_miss_clim_aov, aes(x = site, y = metric)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_text(aes(label = round(p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1)</code></pre>
-<p>The difference for the 90th percentile thresholds from missing data significant, but the seasonal signals do not differ. At first the extreme contrast here seems odd, but if you think about it this is what we should expect, on average. Randomly removing data from a fixed sample we are just as likely to remove data above and below the mean, so the sample mean will not change. However, as we remove data we will reduce the size of the tails (on average) i.e. they will contract towards the median of the distribution. This will lead to an under-estimate of the 90th percentile, and an over-estimate of the 10th percentile. This means that as more data are missing in a time series, the more the threshold for what is considered a MHW will be lowered. Ideally we could come up with a recommended correction to the threshold given a proportion of missing data.</p>
 </div>
-<div id="post-hoc-tukey-test" class="section level3">
-<h3>Post-hoc Tukey test</h3>
-<p>To get a more precise pictures of where these differences are occurring we will need to look at the post-hoc Tukey test results.</p>
-<pre class="r"><code>sst_ALL_miss_clim_tukey &lt;- sst_ALL_miss_clim_aov_tukey %&gt;% 
-  select(-aov) %&gt;% 
-  unnest() %&gt;% 
-  mutate(comparison = gsub(&quot;0.00&quot;, &quot;1.00&quot;, comparison))
-
-clim_tukey_sig &lt;- sst_ALL_miss_clim_tukey %&gt;% 
-  filter(adj.p.value &lt;= 0.05) %&gt;% 
-  separate(comparison, into = c(&quot;miss_small&quot;, &quot;miss_large&quot;), sep = &quot;-&quot;) %&gt;% 
-  mutate(miss_small = round((1-as.numeric(miss_small))*100),
-         miss_large = round((1-as.numeric(miss_large))*100)) %&gt;% 
-  mutate(miss_dif = round(miss_large - miss_small, 2))
-
-# Need to correct for the tukey putting the 0% missing data on the wrong side
-clim_tukey_sig_fix &lt;- clim_tukey_sig %&gt;% 
-  filter(miss_dif &lt; 0) %&gt;% 
-  mutate(miss_dif = abs(miss_dif))
-colnames(clim_tukey_sig_fix)[3:4] &lt;- c(&quot;miss_large&quot;, &quot;miss_small&quot;)
-
-# Apend the corrected data
-clim_tukey_sig &lt;- clim_tukey_sig %&gt;% 
-  filter(miss_dif &gt; 0) %&gt;% 
-  rbind(clim_tukey_sig_fix)
-
-# Create a summary for better plotting
-clim_tukey_summary &lt;- clim_tukey_sig %&gt;% 
-  group_by(site, metric, miss_small) %&gt;% 
-  summarise(range_bottom = min(miss_large),
-            range_top = max(miss_large))
-  # group_by(site, metric, miss_small) 
-  # mutate(miss_dif = round(miss_large - miss_small, 2)) %&gt;% 
-  # group_by(site, metric, miss_large, miss_small, miss_dif) %&gt;% 
-  # summarise(count = n()) %&gt;% 
-  # ungroup() %&gt;%
-  # arrange(-miss_large, -miss_dif) %&gt;% 
-  # mutate(miss_index = factor(paste0(miss_large,&quot;-&quot;,miss_dif)),
-         # miss_index = factor(miss_index, levels = unique(miss_index)))
-
-ggplot(clim_tukey_summary, aes(x = miss_small)) +
-  # geom_point() +
-  # geom_errorbarh(aes(xmin = year_long, xmax = year_short)) +
-  # geom_tile() +
-  geom_segment(aes(xend = miss_small,
-                   y = range_bottom, yend = range_top)) +
-  facet_wrap(~site, ncol = 1) +
-  # scale_x_reverse() +
-  # scale_y_continuous(limits = c(1, 50)) +
-  # scale_y_reverse() +
-  labs(x = &quot;Missing data (%)&quot;,
-       y = &quot;Missing data (%)&quot;)</code></pre>
-<p>The above figure shows the results of all possible pairwise comparisons from the ANOVA looking at the difference in threshold climatologies for different percentages of missing data. Curiously the time series missing no data do not seem to be significantly different from any of the missing data time series. I’m not convinced by this and will need to re-examine the results (a third time). Otherwise this figure shows us that the thresholds diverge from each other very quickly.</p>
-<p>Ultimately I don’t think this is very useful.</p>
+<div id="analysis" class="section level2">
+<h2>Analysis</h2>
+<p>The full analysis on the results, including the functions shown above, is run for all of the tests (time series length, missing data, and long-term trend) all at once to ensure consistency of methodology across tests. For this reason the exact step-by-step process for the missing data analysis is not laid out below. To investigate the source code one may go to ‘code/workflow.R’ in the GitHub repository. A link to that site may be found in the top right of the navigation bar for this site (the GitHub icon).</p>
+<pre class="r"><code>sst_ALL &lt;- rbind(mutate(sst_WA, site = &quot;WA&quot;),
+                 mutate(sst_NW_Atl, site = &quot;NW_Atl&quot;),
+                 mutate(sst_Med, site = &quot;Med&quot;))
+system.time(
+  sst_ALL_results &lt;- plyr::ddply(sst_ALL, c(&quot;site&quot;), single_analysis, .parallel = T,
+                                 full_seq = T, clim_metric = F, count_miss = T, windows = T)
+) # 65 seconds</code></pre>
 </div>
-<div id="confidence-intervals" class="section level3">
-<h3>Confidence intervals</h3>
-<pre class="r"><code># Calculate the 97.5th, 50th, and 2.5th quantiles to get the CI of each metric
-# df &lt;- sst_ALL_miss_clim_only %&gt;% 
-  # filter(site == &quot;WA&quot;) %&gt;% 
-  # select(-doy, -rep, -site)
-metric_CI &lt;- function(df){
-  res &lt;- df %&gt;% 
-    group_by(miss) %&gt;% 
-    gather(key = metric, value = val, -miss) %&gt;% 
-    group_by(miss, metric) %&gt;% 
-    summarise(quant_50 = quantile(val, probs = 0.5),
-              quant_2.5 = quantile(val, probs = 0.025),
-              quant_97.5 = quantile(val, probs = 0.975))
-  return(res)
-  }
-
-# The quantile based 95% confidence intervals
-sst_ALL_miss_clim_CI &lt;- sst_ALL_miss_clim_only %&gt;% 
-  select(-doy, -rep) %&gt;% 
-  mutate(miss = miss) %&gt;% 
-  group_by(site) %&gt;% 
-  nest() %&gt;% 
-  mutate(res = map(data, metric_CI)) %&gt;% 
-  select(-data) %&gt;% 
-  unnest()
-
-ggplot(filter(sst_ALL_miss_clim_CI, metric != &quot;seas&quot;), 
-       aes(x = as.factor(miss))) +
-  geom_errorbar(position = position_dodge(0.9), width = 0.5,
-                aes(ymin = quant_2.5, ymax = quant_97.5)) +
-  geom_point(aes(y = quant_50)) +
-  facet_wrap(~site, scales = &quot;free_y&quot;, ncol = 1) +
-  labs(x = &quot;Missing data (%)&quot;, y = &quot;Temp. (°C)&quot;)</code></pre>
-<p>Whereas <em>p</em>-values do have a use, I find confidence intervals to allow for a better judgement of the relationship between categories of data. The seasonal signal is not included in the above figure as any changes caused by missing data are nearly imperceptible. With the 90th percentile threshold (thresh) however, the more data are missing the lower the 90th percentile threshold tends to become. This appears to be because the seasonal signal is a smooth composite of the available data whereas the 90th percentile threshold is affected by large amounts of missing data because that prevents the accurate creation of the 90th percentile thresholds due to the many large (outlier-like, but real) values that are not included in the calculation, which by necessity requires large values to be calculated accurately.</p>
-<p>Overall this analysis/figure is not very helpful.</p>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>A more thorough explanation of the results may be found in the manuscript. Below we show what the simple results calculated above for the effect of missing data on the count of the focal MHW look like.</p>
+<pre class="r"><code>sst_ALL_results %&gt;% 
+  filter(test == &quot;missing&quot;,
+         var == &quot;focus_count&quot;,
+         id == &quot;mean_perc&quot;) %&gt;% 
+  ggplot(aes(x = index_vals*100, y = val, colour = site)) +
+  geom_line() +
+  labs(x = &quot;Missing data (%)&quot;, y = &quot;Change from control (% count of MHWs)&quot;, colour = &quot;Site&quot;)</code></pre>
+<p><img src="figure/missing_data.Rmd/length-res-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
-<div id="kolmogorov-smirnov" class="section level3">
-<h3>Kolmogorov-Smirnov</h3>
-<pre class="r"><code># Extract the true climatologies
-sst_ALL_miss_clim_only_0 &lt;- sst_ALL_miss_clim_only %&gt;% 
-  filter(miss == 0, rep == &quot;1&quot;)
-
-# KS function
-# Takes one rep of missing data and compares it against the complete signal
-clim_KS_p &lt;- function(df){
-  df_comp &lt;- sst_ALL_miss_clim_only_0 %&gt;% 
-    filter(site == df$site[1])
-  res &lt;- data.frame(site = df$site[1],
-                    seas = round(ks.test(df$seas, df_comp$seas)$p.value, 4),
-                    thresh = round(ks.test(df$thresh, df_comp$thresh)$p.value, 4))
-  return(res)
-}
-
-# The KS results
-suppressWarnings( # Suppress perfect match warnings
-sst_ALL_miss_clim_KS_p &lt;- sst_ALL_miss_clim_only %&gt;% 
-  filter(miss != 0) %&gt;% 
-  mutate(miss = as.factor(miss)) %&gt;%
-  mutate(site2 = site) %&gt;% 
-  group_by(site2, miss, rep) %&gt;% 
-  nest() %&gt;% 
-  mutate(res = map(data, clim_KS_p)) %&gt;% 
-  select(-data) %&gt;% 
-  unnest() %&gt;% 
-  select(site, miss, rep, seas, thresh) %&gt;%
-  gather(key = metric, value = p.value, -site, - miss, -rep)
-)
-save(sst_ALL_miss_clim_KS_p, file = &quot;data/sst_ALL_miss_clim_KS_p.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;data/sst_ALL_miss_clim_KS_p.Rdata&quot;)
-
-# Filter non-significant results
-KS_sig &lt;- sst_ALL_miss_clim_KS_p %&gt;% 
-  filter(p.value &lt;= 0.05) %&gt;% 
-  group_by(site, miss, metric) %&gt;% 
-  summarise(count = n()) %&gt;%
-  ungroup() %&gt;% 
-  mutate(miss = as.numeric(as.character(miss))) %&gt;% 
-  # There are three &quot;seas&quot; results from &quot;WA&quot; that are significant
-  # But that isnt enough to bother visualising here
-  filter(metric == &quot;thresh&quot;) %&gt;%
-  select(site, metric, miss, count)
-
-# Manually pad in NA for missing percentages with no significant differences
-KS_sig &lt;- rbind(KS_sig, data.frame(site = &quot;Med&quot;, metric = &quot;thresh&quot;, 
-                                   miss = seq(0, 0.26, 0.01), count = NA))
-KS_sig &lt;- rbind(KS_sig, data.frame(site = &quot;NW_Atl&quot;, metric = &quot;thresh&quot;, 
-                                   miss = seq(0, 0.21, 0.01), count = NA))
-KS_sig &lt;- rbind(KS_sig, data.frame(site = &quot;WA&quot;, metric = &quot;thresh&quot;, 
-                                   miss = seq(0, 0.08, 0.01), count = NA))
-
-ggplot(KS_sig, aes(x = miss*100, y = site)) +
-  geom_line(aes(colour = count, group = site), size = 3) +
-  facet_wrap(~metric, ncol = 1) +
-  scale_colour_viridis_c() +
-  # scale_x_reverse(breaks = seq(5, 35, 5)) +
-  labs(x = &quot;Missing data (%)&quot;, y = NULL,
-       colour = &quot;Sig. dif.\nout of 100&quot;)</code></pre>
-<p>As we se in the line graph above, it is the Western Australia (<code>WA</code>) time series that most quickly deviate from the real signal when missing data are introduced. I think this is due to a combination of two things. The first is that the smaller the seasonal signal is, the more sensitive the data are when trying to create an accurate climatology. The second reason is that the more variance there is in a time series, apart from the seasonal signal, the more sensitive the data are to accurate climatology creation. The <code>WA</code> time series hits both of these problems and so this comes through clearly in the results.</p>
-</div>
-<div id="correlations" class="section level3">
-<h3>Correlations</h3>
-<pre class="r"><code># Create wide joiined data frame
-suppressWarnings(
-sst_ALL_miss_joined &lt;- sst_ALL_miss_clim_KS_p %&gt;% 
-  left_join(sst_ALL_con, by = c(&quot;site&quot;, &quot;miss&quot;, &quot;rep&quot;)) %&gt;% 
-  spread(key = duration, value = count)
-)
-
-# Run correlations
-suppressWarnings( # Supress warnings from small sample sizes
-sst_ALL_miss_cor &lt;- sst_ALL_miss_joined %&gt;% 
-  group_by(site, metric) %&gt;% 
-  do(data.frame(t(cor(.[,6:ncol(sst_ALL_miss_joined)], 
-                      .[,5], use = &quot;pairwise.complete.obs&quot;)))) %&gt;% 
-  gather(key = duration, value = r, -metric, -site) %&gt;%
-  mutate(duration = as.numeric(gsub(&quot;X&quot;, &quot;&quot;, duration)))
-)
-
-ggplot(sst_ALL_miss_cor, aes(x = duration, y = r)) +
-  geom_point() +
-  # scale_fill_viridis_d() +
-  geom_hline(aes(yintercept = 0.0)) +
-  scale_x_continuous(limits = c(1, 14), breaks = seq(1, 13, 3)) +
-  facet_grid(site~metric) +
-  labs(x = &quot;Consecutive missing days&quot;, 
-       y = &quot;Correlation (r) between significance\nand count of consecutive days missing&quot;)</code></pre>
-<p>This plot shows the count of consecutive days of missing data is a very good indicator of whether or not the 90th percentile threshold will be significantly different from the control time series. This works best for counts of consecutive days below 5, and works a bit more poorly for the <code>WA</code> time series.</p>
-<p>It must now be seen what the relationship is between count of consecutive missing days at each day step and the corresponding <em>p</em>-values.</p>
-</div>
-</div>
-<div id="mhw-metrics" class="section level2">
-<h2>MHW metrics</h2>
-<p>Now that we know that missing data from a time series does produce significantly different 90th percentile thresholds, we want to see what the downstream effects are on the MHW metrics.</p>
-<div id="anova" class="section level3">
-<h3>ANOVA</h3>
-<pre class="r"><code># Quick wrapper for getting results for ANOVA and Tukey on event metrics
-# df &lt;- sst_ALL_miss_clim_event_cat %&gt;%
-#   filter(site == &quot;WA&quot;) %&gt;%
-#   select(-site)
-event_aov_tukey &lt;- function(df){
-  res &lt;- df %&gt;% 
-    select(-cats) %&gt;% 
-    unnest(events) %&gt;% 
-    filter(row_number() %% 2 == 0) %&gt;% 
-    unnest(events) %&gt;% 
-    # select(miss) %&gt;% 
-    # filter(miss != &quot;0.00&quot;) %&gt;% 
-    select(miss, duration, intensity_mean, intensity_max, intensity_cumulative) %&gt;% 
-    mutate(miss = as.factor(miss)) %&gt;% 
-    nest() %&gt;% 
-    mutate(aov = map(data, aov_p),
-           tukey = map(data, aov_tukey)) %&gt;% 
-    select(-data)
-  return(res)
-}
-
-# This file is not uploaded to GitHub as it is too large
-# One must first run the above code locally to generate and save the file
-load(&quot;data/sst_ALL_miss_clim_event_cat.Rdata&quot;)
-doMC::registerDoMC(cores = 50)
-sst_ALL_miss_event_aov_tukey &lt;- plyr::ddply(sst_ALL_miss_clim_event_cat, c(&quot;site&quot;, &quot;rep&quot;), 
-                                            event_aov_tukey, .parallel = T)
-save(sst_ALL_miss_event_aov_tukey, file = &quot;data/sst_ALL_miss_event_aov_tukey.Rdata&quot;)
-# rm(sst_ALL_smooth, sst_ALL_smooth_aov_tukey)</code></pre>
-<pre class="r"><code>load(&quot;data/sst_ALL_miss_event_aov_tukey.Rdata&quot;)
-
-# ANOVA p
-sst_ALL_miss_event_aov_p &lt;- sst_ALL_miss_event_aov_tukey %&gt;% 
-  select(-tukey) %&gt;% 
-  unnest()
-
-event_aov_plot &lt;- sst_ALL_miss_event_aov_p %&gt;% 
-  group_by(site, metric) %&gt;% 
-  filter(p.value &lt;= 0.05) %&gt;% 
-  summarise(count = n())
-
-# visualise
-ggplot(event_aov_plot, aes(x = site, y = metric)) +
-  geom_tile(aes(fill = count)) +
-  geom_text(aes(label = count)) +
-  scale_fill_viridis_c() +
-  theme(axis.text.y = element_text(angle = 90, hjust = 0.5))</code></pre>
-<p>As we may see in the figure above, the duration (and likely therefore cummulative intensity) of events always differed significantly when missing data were introduced into a time series. For the <code>NW_Atl</code> time series all of the metrics were always significantly different, with mean and max intensities occassionally being different for <code>Med</code>, and never for <code>WA</code>. To see where these differences materialise we will visualise the post-hoc Tukey test results.</p>
-</div>
-<div id="post-hoc-tukey-test-1" class="section level3">
-<h3>Post-hoc Tukey test</h3>
-<pre class="r"><code>sst_ALL_miss_event_tukey &lt;- sst_ALL_miss_event_aov_tukey %&gt;% 
-  select(-aov) %&gt;% 
-  unnest()
-
-# Create a summary for better plotting
-event_tukey_summary &lt;- sst_ALL_miss_event_tukey %&gt;% 
-  separate(comparison, into = c(&quot;comp_left&quot;, &quot;comp_right&quot;), sep = &quot;-&quot;) %&gt;% 
-  mutate(comp_left = as.numeric(comp_left),
-         comp_right = as.numeric(comp_right)) %&gt;% 
-  filter(comp_left == 0 | comp_right == 0) %&gt;%
-  mutate(comp_dif = abs(round(comp_right - comp_left, 2))) %&gt;% 
-  filter(adj.p.value &lt;= 0.05) %&gt;% 
-  group_by(site, metric, comp_dif) %&gt;% 
-  summarise(count = n())
-
-ggplot(event_tukey_summary, aes(x = comp_dif*100, y = site)) +
-  geom_line(aes(colour = count)) +
-  geom_point(aes(colour = count), size = 0.5) +
-  facet_wrap(~metric, ncol = 1) +
-  scale_colour_viridis_c() +
-  # scale_x_reverse(breaks = seq(5, 35, 5)) +
-  labs(x = &quot;Missing data (%)&quot;, y = NULL,
-       colour = &quot;Sig. dif.\nout of 100&quot;)</code></pre>
-<p>The figure above shows that significant differences in the duration (and therefore cummulative intensity) of events begins occurring as soon as 9% of data are missing in the <code>NW_Atl</code> time series, 15% in <code>Med</code>, and 18% in <code>WA</code>. Only the <code>NW_Atl</code> showed any real signs of significant differences for max and mean intensities and these don’t begin until 31%.</p>
-</div>
-<div id="confidence-intervals-1" class="section level3">
-<h3>Confidence intervals</h3>
-<pre class="r"><code># Run an ANOVA on each metric of the combined event results and get CI
-# event_aov_CI &lt;- function(df){
-#   # Run ANOVAs
-#   aov_models &lt;- df[ , -grep(&quot;miss&quot;, names(df))] %&gt;%
-#     map(~ aov(.x ~ df$miss)) %&gt;% 
-#     map_dfr(~ confint_tidy(.), .id = &#39;metric&#39;) %&gt;% 
-#     # mutate(miss = as.factor(rep(c(&quot;0&quot;, &quot;0.1&quot;, &quot;0.25&quot;, &quot;0.5&quot;), nrow(.)/4))) %&gt;% 
-#     select(metric, miss, everything())
-#   # Calculate population means
-#   df_mean &lt;- df %&gt;% 
-#     group_by(miss) %&gt;%
-#     summarise_all(.funs = mean) %&gt;%
-#     gather(key = metric, value = conf.mid, -miss)
-#   # Correct CI for first category
-#   res &lt;- aov_models %&gt;%
-#     left_join(df_mean, by = c(&quot;metric&quot;, &quot;miss&quot;)) %&gt;%
-#     mutate(conf.low = if_else(miss == 0, conf.low - conf.mid, conf.low),
-#            conf.high = if_else(miss == 0, conf.high - conf.mid, conf.high)) %&gt;%
-#     select(-conf.mid)
-#   return(res)
-#   }</code></pre>
-<pre class="r"><code>load(&quot;data/sst_ALL_miss_clim_event_cat.Rdata&quot;)
-
-# The ANOVA confidence intervals
-sst_ALL_miss_event_CI &lt;- sst_ALL_miss_clim_event_cat %&gt;%
-  select(-cats) %&gt;% 
-  unnest(events) %&gt;% 
-  filter(row_number() %% 2 == 0) %&gt;% 
-  unnest(events) %&gt;% 
-  select(site, miss, duration, intensity_mean, intensity_max, intensity_cumulative) %&gt;%
-  mutate(miss = as.factor(miss)) %&gt;%
-  nest(-site) %&gt;%
-  mutate(res = map(data, metric_CI)) %&gt;%
-  select(-data) %&gt;%
-  unnest()
-
-save(sst_ALL_miss_event_CI, file = &quot;data/sst_ALL_miss_event_CI.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;data/sst_ALL_miss_event_CI.Rdata&quot;)
-
-ggplot(sst_ALL_miss_event_CI, aes(x = as.factor(miss))) +
-  geom_errorbar(position = position_dodge(0.9), width = 0.5,
-                aes(ymin = quant_2.5, ymax = quant_97.5)) +
-  geom_point(aes(y = quant_50)) +
-  facet_grid(metric~site, scales = &quot;free_y&quot;) +
-  labs(x = &quot;Missing data (%)&quot;, y = NULL)</code></pre>
-<p>There is generally a slight decrease in the max and mean intensity of events as one increases the amounts of missing data, but the range of these values also tends to increase. This is important to note as it means that one may not say with certainty that the more data are missing from a time series, the less intense the MHWs detected will be. We see however that the median duration and cum. intensity are rather similar for all missing data steps.</p>
-<p>As the proportion of missing data are increased, the climatological means stay the same (so anomalies are unchanged) but the thresholds are reduced. Therefore, events will start and end at smaller temperature anomalies thus bringing down the mean intensity but raising the duration. We do not howeversee this increase in duration due to the fact that all of these missing days start dividing up the events into multiple shorter events. More on this in the categories section.</p>
-</div>
-<div id="correlations-1" class="section level3">
-<h3>Correlations</h3>
-<pre class="r"><code># Create wide joiined data frame
-sst_ALL_miss_event_joined &lt;- sst_ALL_miss_event_tukey %&gt;%
-  separate(comparison, into = c(&quot;comp_left&quot;, &quot;comp_right&quot;), sep = &quot;-&quot;) %&gt;% 
-  mutate(comp_left = as.numeric(comp_left),
-         comp_right = as.numeric(comp_right)) %&gt;% 
-  filter(comp_left == 0 | comp_right == 0) %&gt;%
-  mutate(miss = as.character(abs(round(comp_right - comp_left, 2)))) %&gt;% 
-  select(site, miss, rep, metric, adj.p.value) %&gt;% 
-  left_join(sst_ALL_con, by = c(&quot;site&quot;, &quot;miss&quot;, &quot;rep&quot;)) 
-
-sst_ALL_miss_event_joined_wide &lt;- sst_ALL_miss_event_joined %&gt;% 
-  spread(key = duration, value = count)
-
-# Run correlations
-suppressWarnings( # Supress warnings from small sample sizes
-sst_ALL_miss_event_cor &lt;- sst_ALL_miss_event_joined_wide %&gt;% 
-  group_by(site, metric) %&gt;% 
-  do(data.frame(t(cor(.[,6:ncol(sst_ALL_miss_event_joined_wide)], 
-                      .[,5], use = &quot;pairwise.complete.obs&quot;)))) %&gt;% 
-  gather(key = duration, value = r, -metric, -site) %&gt;%
-  mutate(duration = as.numeric(gsub(&quot;X&quot;, &quot;&quot;, duration)))
-)
-
-ggplot(sst_ALL_miss_event_cor, aes(x = duration, y = r)) +
-  geom_point() +
-  # scale_fill_viridis_d() +
-  geom_hline(aes(yintercept = 0.0)) +
-  scale_x_continuous(limits = c(1, 14), breaks = seq(1, 13, 3)) +
-  facet_grid(site~metric) +
-  labs(x = &quot;Consecutive missing days&quot;, 
-       y = &quot;Correlation (r) between significance\nand count of consecutive days missing&quot;)</code></pre>
-<p>The correlations shown above as dot plots tell us that the count of consecutive missing days from 1 – 3 are a very good indicator of whether or not the duration (and int. cum.) will be significantly different from a time series with no missing data. For intensity max and mean it looks like the count of consecutive missing days from 4 – 6 is the best indicator, with no real pattern emerging for the <code>WA</code> time series.</p>
-<pre class="r"><code>ggplot(filter(sst_ALL_miss_event_joined, duration &lt;= 8), 
-       aes(x = count, y = adj.p.value, colour = as.factor(duration))) +
-  geom_point(alpha = 0.1) +
-  geom_smooth(method = &quot;lm&quot;, se = F) +
-  scale_y_continuous(expand = c(0, 0)) +
-  facet_grid(metric~site) +
-  labs(y = &quot;p-value&quot;, colour = &quot;Consecutive\nmissing days&quot;)</code></pre>
-<p>The figure above shows that the relationships between the count of consecutive missing days and the <em>p</em>-value comparing that time series against the control is srongest for duration (and int. cum.) at lower consecutive missing day, but that the strength of this relationship is due to the tails at the top and bottom of the distribution of results and so this isn’t necessarily as good of a predictor as it may have initially looked. This is more a case of large sample sizes producing sexy results. That being said, coount of consecutive missing days at 2 and 3 may be useful later on in the best practices.</p>
-</div>
-</div>
-<div id="categories" class="section level2">
-<h2>Categories</h2>
-<div id="chi-squared" class="section level3">
-<h3><em>chi</em>-squared</h3>
-<p>In order to detemine if the count of MHW categories differs based on the percent of missing data, we will be performing a series of <em>chi</em>-squared tests for each site and rep. We will combine category 3 and 4 events together as this will make the resuls more robust and we are interested specifically in how these two categories differ more so than the other smaller two categories.</p>
-<pre class="r"><code># Load and extract category data
-load(&quot;data/sst_ALL_miss_clim_event_cat.Rdata&quot;)
-suppressWarnings( # Suppress warning about category levels not all being present
-sst_ALL_miss_cat &lt;- sst_ALL_miss_clim_event_cat %&gt;%
-  select(-events) %&gt;%
-  unnest()
-)
-
-# Prep the data for better chi-squared use
-sst_ALL_miss_cat_prep &lt;- sst_ALL_miss_cat %&gt;% 
-  select(miss, rep, site, category) %&gt;% 
-  mutate(category = ifelse(category == &quot;III Severe&quot;, &quot;III &amp; IV&quot;, category),
-         category = ifelse(category == &quot;IV Extreme&quot;, &quot;III &amp; IV&quot;, category))
-
-# Extract the true climatologies
-sst_ALL_miss_cat_only_0 &lt;- sst_ALL_miss_cat_prep %&gt;% 
-  filter(miss == 0, rep == &quot;1&quot;) %&gt;% 
-  select(site, miss, category)
-
-# chi-squared pairwise function
-# Takes one rep of missing data and compares it against the complete data
-# df &lt;- sst_ALL_miss_cat_prep %&gt;%
-  # filter(site == &quot;WA&quot;, rep == &quot;20&quot;, miss == 0.1)
-# df &lt;- unnest(slice(sst_ALL_miss_cat_chi,1)) %&gt;% 
-  # select(-site2, -rep, -miss2)
-chi_pair &lt;- function(df){
-  # Prep data
-  df_comp &lt;- sst_ALL_miss_cat_only_0 %&gt;% 
-    filter(site == df$site[1])
-  df_joint &lt;- rbind(df, df_comp)
-  # Run tests
-  res &lt;- chisq.test(table(df_joint$miss, df_joint$category), correct = FALSE)
-  res_broom &lt;- broom::augment(res) %&gt;% 
-    mutate(p.value = broom::tidy(res)$p.value)
-  return(res_broom)
-}
-
-# The pairwise chai-squared results
-suppressWarnings( # Suppress poor match warnings
-sst_ALL_miss_cat_chi &lt;- sst_ALL_miss_cat_prep %&gt;% 
-  filter(miss != 0) %&gt;% 
-  # mutate(miss = as.factor(miss)) %&gt;%
-  mutate(site2 = site,
-         miss2 = miss) %&gt;% 
-  group_by(site2, miss2, rep) %&gt;% 
-  nest() %&gt;% 
-  mutate(chi = map(data, chi_pair)) %&gt;% 
-  select(-data) %&gt;% 
-  unnest() %&gt;%
-  dplyr::rename(site = site2, miss = miss2,
-                miss_comp = Var1, category = Var2)
-)
-save(sst_ALL_miss_cat_chi, file = &quot;data/sst_ALL_miss_cat_chi.Rdata&quot;)</code></pre>
-<pre class="r"><code>load(&quot;data/sst_ALL_miss_cat_chi.Rdata&quot;)
-
-sst_ALL_miss_cat_chi_sig &lt;- sst_ALL_miss_cat_chi %&gt;% 
-  filter(p.value &lt;= 0.05) %&gt;% 
-  select(site, miss, p.value) %&gt;% 
-  group_by(site, miss) %&gt;% 
-  unique() %&gt;% 
-  summarise(count = n())
-
-knitr::kable(sst_ALL_miss_cat_chi_sig, caption = &quot;Table showing the count out of 100 for significant differences (_p_-value) for the count of different categories of events for each site based on the amount of missing data present.&quot;)</code></pre>
-<pre class="r"><code>load(&quot;data/sst_ALL_miss_cat_chi.Rdata&quot;)
-
-# Prep data for plotting
-chi_sig &lt;- sst_ALL_miss_cat_chi %&gt;% 
-  filter(p.value &lt;= 0.05) %&gt;% 
-  select(site, miss, p.value) %&gt;% 
-  group_by(site, miss) %&gt;% 
-  unique() %&gt;% 
-  summarise(count = n())
-
-ggplot(chi_sig, aes(x = as.numeric(miss)*100, y = site)) +
-  geom_line(aes(colour = count, group = site)) +
-  # facet_wrap(~metric, ncol = 1) +
-  scale_colour_viridis_c() +
-  scale_x_continuous() +
-  labs(x = &quot;Missing data (%)&quot;, y = NULL,
-       colour = &quot;Sig. dif.\nout of 100&quot;) +
-  theme(axis.text.x = element_text(angle = 20))</code></pre>
-<p>The line plot above shows at what point the category counts begin to differ significantly from time series with no missing data. The difference in count appears to be realted to the variance in the time series, with the <code>WA</code> becoming different the quickest, and the <code>Med</code> the slowest.</p>
-</div>
-<div id="post-hoc-chi-squared" class="section level3">
-<h3>Post-hoc <em>chi</em>-squared</h3>
-<p>It is also necessary to see which of the categories specifically are differing significantly. Unfortunately there is no proper post-hoc <em>chi</em>-squared test. Instead it is possible to look at the standardised residuals for each category within the pairwise comparisons being made.</p>
-<p>I still need to do this…</p>
-</div>
-<div id="correlations-2" class="section level3">
-<h3>Correlations</h3>
-<p>It would also be useful to look at the correlations between consecutive missing days of data and significantly different counts of categories.</p>
-</div>
-</div>
-<div id="non-random-missing-data" class="section level2">
-<h2>Non-random missing data</h2>
-<p>There are two realistic instances of consistent missing data in SST time series. The first is for polar data when satellites cannot collect data because the sea surface is covered in ice. Whereas this would obviously preclude any MHWs from occurring, the question here is how do long stretches of missing data affect the creation of the climatologies, and therefore the detection of MHWs. The other sort of consecutive missing data is for those <em>in situ</em> time series that are collected by hand by (likely) a government employee that does not work on weekends. In the following two sub-sections we will knock-out data intentionally to simulate these two issues. Lastly, because we have seen above that consecutive missing days of data are problematic, in addition to looking at the effects of missing weekends (2 consecutive days), we will also look at the effect of 3 and 4 consecutive missing days. I assume that four constant consecutive missing days will render the time series void, but three may be able to squeak by.</p>
-<div id="ice-coverage" class="section level3">
-<h3>Ice coverage</h3>
-<p>To simulate ice cover we will remove the three winter months from each time series. Because two of the three time series are from the northern hemisphere, the times removed will not be the same for all time series.</p>
-<pre class="r"><code>load(&quot;data/sst_ALL_detrend.Rdata&quot;)
-# Knock-out ice coverage
-sst_WA_ice &lt;- sst_ALL_detrend %&gt;% 
-  filter(site == &quot;WA&quot;) %&gt;% 
-  mutate(month = month(t, label = T),
-         temp = ifelse(month %in% c(&quot;Jul&quot;, &quot;Aug&quot;, &quot;Sep&quot;), NA, temp)) %&gt;% 
-  select(-month)
-sst_Med_ice &lt;- sst_ALL_detrend %&gt;%
-  filter(site == &quot;Med&quot;) %&gt;% 
-  mutate(month = month(t, label = T),
-         temp = ifelse(month %in% c(&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;), NA, temp)) %&gt;% 
-  select(-month)
-sst_NW_Atl_ice &lt;- sst_ALL_detrend %&gt;%
-  filter(site == &quot;NW_Atl&quot;) %&gt;% 
-  mutate(month = month(t, label = T),
-         temp = ifelse(month %in% c(&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;), NA, temp)) %&gt;% 
-  select(-month)
-sst_ALL_ice &lt;- rbind(sst_WA_ice, sst_NW_Atl_ice, sst_Med_ice)
-rm(sst_WA_ice, sst_NW_Atl_ice, sst_Med_ice)
-
-# visualise
-ggplot(sst_ALL_ice, aes(x = t, y = temp)) +
-  geom_line(data = sst_ALL_detrend, alpha = 0.2) +
-  geom_line(aes(colour = site)) +
-  facet_wrap(~site, scales = &quot;free_y&quot;, ncol = 1) +
-  labs(x = &quot;&quot;, y = &quot;temp. (C)&quot;)</code></pre>
-<p>In the figure above we see that removing the winter months for the Mediterranean and Northwest Atlantic time series produces relatively even missing gaps near the bottom of each seasonal cycle. The Western Australia time series appears to have a much less regular seasonal signal and so the missing data periods vary somewhat more.</p>
-<pre class="r"><code># Calculate the thresholds for all of the created time series
-sst_ALL_ice_clim &lt;- sst_ALL_ice %&gt;% 
-  group_by(site) %&gt;%
-  nest() %&gt;% 
-  mutate(clim = map(data, ts2clm, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2014-12-31&quot;))) %&gt;% 
-  select(-data) %&gt;% 
-  unnest()
-
-# Pull out the clims only
-sst_ALL_ice_clim_only &lt;- sst_ALL_ice_clim %&gt;% 
-  select(-t, -temp) %&gt;% 
-  unique() %&gt;% 
-  arrange(site, doy)</code></pre>
-<div id="climatology-statistics-1" class="section level4">
-<h4>Climatology statistics</h4>
-<p>Before we begin comparing the climatology statistics for ‘ice coverage’ vs. complete time series, let’s see what the seasonal climatologies look like alongside each other.</p>
-<pre class="r"><code>sst_ALL_miss_clim_only_0 &lt;- sst_ALL_miss_clim_only %&gt;% 
-  filter(miss == 0, rep == &quot;1&quot;)
-
-ggplot(sst_ALL_ice_clim_only, aes(x = doy, y = seas)) +
-  geom_line(data = sst_ALL_miss_clim_only_0, alpha = 0.2) +
-  geom_line(aes(colour = site)) +
-  facet_wrap(~site, scales = &quot;free_y&quot;, ncol = 1) +
-  labs(x = &quot;&quot;, y = &quot;temp. (C)&quot;)</code></pre>
-<p>We may see in the figure above that the calculated seasonal climatologies from the ‘ice coverage’ time series appear to be nearly identical to those from complete time series. The <code>WA</code> does however look to be slightly different.</p>
-<div id="t-test-p-values" class="section level5">
-<h5>t-test <em>p</em>-values</h5>
-<p>For the following tests we are only going to compare data between the complete and ice coverage time series for days in which data exist. Doing otherwise would unfairly bias the results.</p>
-<pre class="r"><code># df &lt;- slice(sst_ALL_ice_clim_ttest_p, 1) %&gt;% 
-#   unnest()
-clim_ttest_p_ice &lt;- function(df){
-  df_na &lt;- df %&gt;% 
-    na.omit()
-  df_comp &lt;- sst_ALL_miss_clim_only_0 %&gt;% 
-    filter(site == df$site[1],
-           doy %in% df_na$doy)
-  res &lt;- data.frame(site = df$site[1],
-                    seas = t.test(df$seas, df_comp$seas)$p.value,
-                    thresh = t.test(df$thresh, df_comp$thresh)$p.value)
-  return(res)
-}
-
-# The t-test results
-sst_ALL_ice_clim_ttest_p &lt;- sst_ALL_ice_clim_only %&gt;% 
-  mutate(site_i = site) %&gt;% 
-  group_by(site_i) %&gt;% 
-  nest() %&gt;% 
-  mutate(res = map(data, clim_ttest_p_ice)) %&gt;% 
-  select(-data) %&gt;% 
-  unnest() %&gt;% 
-  select(site, seas:thresh) %&gt;% 
-  gather(key = stat, value = p.value, -site)
-
-# visualise
-ggplot(sst_ALL_ice_clim_ttest_p, aes(x = site, y = stat)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_text(aes(label = round(p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1)</code></pre>
-<p>From the heatmap above we see that there is no difference in the climatologies calculated when there is ice coverage.</p>
-</div>
-<div id="kolmogorov-smirnov-1" class="section level5">
-<h5>Kolmogorov-Smirnov</h5>
-<pre class="r"><code>clim_KS_p_ice &lt;- function(df){
-  df_na &lt;- df %&gt;% 
-    na.omit()
-  df_comp &lt;- sst_ALL_miss_clim_only_0 %&gt;% 
-    filter(site == df$site[1],
-           doy %in% df_na$doy)
-  res &lt;- data.frame(site = df$site[1],
-                    seas = ks.test(df$seas, df_comp$seas)$p.value,
-                    thresh = ks.test(df$thresh, df_comp$thresh)$p.value)
-  return(res)
-}
-
-# The KS results
-sst_ALL_ice_clim_KS_p &lt;- sst_ALL_ice_clim_only %&gt;% 
-  mutate(site_i = site) %&gt;% 
-  group_by(site_i) %&gt;% 
-  nest() %&gt;% 
-  mutate(res = map(data, clim_KS_p_ice)) %&gt;% 
-  select(-data) %&gt;% 
-  unnest() %&gt;% 
-  select(site, seas:thresh) %&gt;% 
-  gather(key = stat, value = p.value, -site)
-
-# visualise
-ggplot(sst_ALL_ice_clim_KS_p, aes(x = site, y = stat)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_text(aes(label = round(p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1)</code></pre>
-<p>Here we see that the overall shape of the climatologies for the <code>WA</code> time series do differ significantly when ice coverage is present. It should be pointed out that ann earlier version of this analysis used time series with the original decadal trends left in (rather than using the de-trended time series here) and no significant differences were found.</p>
-</div>
-</div>
-<div id="mhw-metrics-1" class="section level4">
-<h4>MHW metrics</h4>
-<p>I’m a little bit surprised at the results from the statistical climatology comparisons, but it makes sense if one thinks about it. Because the algorithm is not attempting to interpolate or otherwise fill any gaps, it does not actually change the data used for the climatology calculations. The result being that for the doy’s when climatologies are calculated, the results are the same as though there were no ice coverage at all.</p>
-<p>The impact this may have on the MHWs (for the periods of the year where data are present) is something I am very much interested in seeing. I’m really not sure what the effect may be…</p>
-</div>
-<div id="t-test" class="section level4">
-<h4>t-test</h4>
-<pre class="r"><code># # Calculate events
-# suppressWarnings(
-# sst_ALL_ice_event &lt;- sst_ALL_ice_clim %&gt;% 
-#   group_by(site) %&gt;% 
-#   nest() %&gt;% 
-#   mutate(res = map(data, detect_event)) %&gt;% 
-#   select(-data) %&gt;% 
-#   unnest()
-# ) # Must supress warnings caused by big gaps or the machine crashes
-# 
-# # Function for calculating t-tests on specific event metrics
-# event_ttest_p_ice &lt;- function(df){
-#     df_comp &lt;- sst_ALL_miss_event %&gt;% 
-#       filter(site == df$site[1], miss == &quot;0&quot;, rep == &quot;1&quot;) %&gt;% 
-#       mutate(month = month(date_peak, label = T))
-#     if (df_comp$site[1] == &quot;WA&quot;){
-#       df_comp &lt;- df_comp %&gt;% 
-#         filter(!(month %in% c(&quot;Jul&quot;, &quot;Aug&quot;, &quot;Sep&quot;)))
-#     } else {
-#       df_comp &lt;- df_comp %&gt;% 
-#         filter(!(month %in% c(&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;)))
-#     }
-#     res &lt;- data.frame(site = df$site[1],
-#                       duration = t.test(df$duration, df_comp$duration)$p.value,
-#                       intensity_mean = t.test(df$intensity_mean, df_comp$intensity_mean)$p.value,
-#                       intensity_max = t.test(df$intensity_max, df_comp$intensity_max)$p.value,
-#                       intensity_cumulative = t.test(df$intensity_cumulative, 
-#                                                     df_comp$intensity_cumulative)$p.value)
-#   return(res)
-# }
-# 
-# # The t-test results
-# sst_ALL_ice_event_ttest_p &lt;- sst_ALL_ice_event %&gt;%
-#   mutate(site_i = site) %&gt;% 
-#   nest(-site_i) %&gt;%
-#   mutate(res = map(data, event_ttest_p_ice)) %&gt;% 
-#   select(-data) %&gt;% 
-#   unnest() %&gt;% 
-#   select(site:intensity_cumulative) %&gt;% 
-#   gather(key = stat, value = p.value, -site)
-# 
-# # visualise
-# ggplot(sst_ALL_ice_event_ttest_p, aes(x = site, y = stat)) +
-#   geom_tile(aes(fill = p.value)) +
-#   geom_text(aes(label = round(p.value, 2))) +
-#   scale_fill_gradient2(midpoint = 0.1, limits = c(0, 1)) +
-#   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))</code></pre>
-<p>The heatmap above shows how similar (<em>p</em>-values from t-tests) the MHW metrics are for events detected in complete vs. ice coverage time series. In order to allow the comparison to be more accurate, I removed MHWs from the complete time series whose peak intensity dates occurred during the ice coverage months. Were one to leave these events in, the <em>p</em>-values do decrease, with the max and mean intensities for events in the Mediterranean becoming significantly different from one another.</p>
-<p>I don’t think it is correct to compare the full events though, which is why I’ve rather chosen to remove events that occurred during ice coverage before comparing the results.</p>
-<p>I think these results show rather conclusively that long blocks of continuous missing data in a time series (e.g. ice coverage) do not have an appreciable effect on the results of the climatologies or the resultant events detected. Of course, ice coverage will never be such a clean break. Rather, the random day or two of available data will encroach around the edges of the missing data, causing the MHW algorithm to need to interpolate across these smaller windows. That is an issue we will tackle in the section on missing <em>n</em> consecutive days, should we choose to go that in depth.</p>
-</div>
-</div>
-<div id="missing-weekends" class="section level3">
-<h3>Missing weekends</h3>
-<pre class="r"><code>sst_ALL_2_day &lt;- sst_ALL_detrend %&gt;% 
-  mutate(weekday = weekdays(t),
-         temp = ifelse(weekday %in% c(&quot;Saturday&quot;, &quot;Sunday&quot;), NA, temp)) %&gt;% 
-  select(-weekday)
-
-# visualise
-ggplot(sst_ALL_2_day, aes(x = t, y = temp)) +
-  geom_line(data = sst_ALL_detrend, alpha = 0.2) +
-  geom_line(aes(colour = site)) +
-  facet_wrap(~site, scales = &quot;free_y&quot;, ncol = 1) +
-  labs(x = &quot;&quot;, y = &quot;temp. (C)&quot;)</code></pre>
-<pre class="r"><code># Calculate the thresholds for all of the created time series
-sst_ALL_2_day_clim &lt;- sst_ALL_2_day %&gt;% 
-  group_by(site) %&gt;% 
-  nest() %&gt;% 
-  mutate(clim = map(data, ts2clm, climatologyPeriod = c(&quot;1982-01-01&quot;, &quot;2014-12-31&quot;))) %&gt;% 
-  select(-data) %&gt;% 
-  unnest()
-
-# Pull out the clims only
-sst_ALL_2_day_clim_only &lt;- sst_ALL_2_day_clim %&gt;% 
-  select(-t, -temp) %&gt;% 
-  unique() %&gt;% 
-  arrange(site, doy)</code></pre>
-<div id="climatology-statistics-2" class="section level4">
-<h4>Climatology statistics</h4>
-<p>I’ll not visualise the calculated climatologies here against the control as I don’t expect them to appear much different. Rather I’ll jump straight into the statistical comparisons.</p>
-<div id="t-test-p-values-1" class="section level5">
-<h5>t-test <em>p</em>-values</h5>
-<p>Because we are only comparing the distribution of two sample sets of data (no missing data vs. missing weekends), we will rather use a t-test to make the comparisons.</p>
-<pre class="r"><code>clim_ttest_p &lt;- function(df){
-  df_comp &lt;- sst_ALL_miss_clim_only_0 %&gt;% 
-    filter(site == df$site[1])
-  res &lt;- data.frame(site = df$site[1],
-                    seas = t.test(df$seas, df_comp$seas)$p.value,
-                    thresh = t.test(df$thresh, df_comp$thresh)$p.value)
-  return(res)
-}
-
-# The t-test results
-sst_ALL_2_day_clim_ttest_p &lt;- sst_ALL_2_day_clim_only %&gt;% 
-  mutate(site_i = site) %&gt;% 
-  group_by(site_i) %&gt;% 
-  nest() %&gt;% 
-  mutate(res = map(data, clim_ttest_p)) %&gt;% 
-  select(-data) %&gt;% 
-  unnest() %&gt;% 
-  select(site, seas:thresh) %&gt;% 
-  gather(key = stat, value = p.value, -site)
-
-# visualise
-ggplot(sst_ALL_2_day_clim_ttest_p, aes(x = site, y = stat)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_text(aes(label = round(p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1)</code></pre>
-<p>The seasonal signals and 90th percentile thresholds do not differ appreciably.</p>
-<p>As I’ve run a t-test here and not an ANOVA, I am not going to manually generate CI’s. Also, there are only two time series being compared here so CI’s aren’t as meaningful.</p>
-</div>
-<div id="kolmogorov-smirnov-2" class="section level5">
-<h5>Kolmogorov-Smirnov</h5>
-<pre class="r"><code>clim_KS_p &lt;- function(df){
-  df_comp &lt;- sst_ALL_miss_clim_only_0 %&gt;% 
-    filter(site == df$site[1])
-  res &lt;- data.frame(site = df$site[1],
-                    seas = round(ks.test(df$seas, df_comp$seas)$p.value, 4),
-                    thresh = round(ks.test(df$thresh, df_comp$thresh)$p.value, 4))
-  return(res)
-}
-# The KS results
-sst_ALL_2_day_clim_KS_p &lt;- sst_ALL_2_day_clim_only %&gt;% 
-  mutate(site_i = site) %&gt;% 
-  group_by(site_i) %&gt;% 
-  nest() %&gt;% 
-  mutate(res = map(data, clim_KS_p)) %&gt;% 
-  select(-data) %&gt;% 
-  unnest() %&gt;% 
-  select(site, seas:thresh) %&gt;% 
-  gather(key = stat, value = p.value, -site)
-
-# visualise
-ggplot(sst_ALL_2_day_clim_KS_p, aes(x = site, y = stat)) +
-  geom_tile(aes(fill = p.value)) +
-  geom_text(aes(label = round(p.value, 2))) +
-  scale_fill_gradient2(midpoint = 0.1)</code></pre>
-<p>Jip, differences.</p>
-</div>
-</div>
-<div id="mhw-metrics-2" class="section level4">
-<h4>MHW metrics</h4>
-<div id="t-test-1" class="section level5">
-<h5>t-test</h5>
-<pre class="r"><code># # Calculate events
-# sst_ALL_2_day_event &lt;- sst_ALL_2_day_clim %&gt;% 
-#   group_by(site) %&gt;% 
-#   nest() %&gt;% 
-#   mutate(res = map(data, detect_event)) %&gt;% 
-#   select(-data) %&gt;% 
-#   unnest()
-# 
-# # Function for calculating t-tests on specific event metrics
-# event_ttest_p &lt;- function(df){
-#     df_comp &lt;- sst_ALL_event %&gt;% 
-#       filter(site == df$site[1], miss == &quot;0&quot;, rep == &quot;1&quot;)
-#     res &lt;- data.frame(site = df$site[1],
-#                       duration = t.test(df$duration, df_comp$duration)$p.value,
-#                       intensity_mean = t.test(df$intensity_mean, df_comp$intensity_mean)$p.value,
-#                       intensity_max = t.test(df$intensity_max, df_comp$intensity_max)$p.value,
-#                       intensity_cumulative = t.test(df$intensity_cumulative, 
-#                                                     df_comp$intensity_cumulative)$p.value)
-#   return(res)
-# }
-# 
-# # The t-test results
-# sst_ALL_2_day_event_ttest_p &lt;- sst_ALL_2_day_event %&gt;%
-#   mutate(site_i = site) %&gt;% 
-#   nest(-site_i) %&gt;%
-#   mutate(res = map(data, event_ttest_p)) %&gt;% 
-#   select(-data) %&gt;% 
-#   unnest() %&gt;% 
-#   select(site:intensity_cumulative) %&gt;% 
-#   gather(key = stat, value = p.value, -site)
-# 
-# # visualise
-# ggplot(sst_ALL_2_day_event_ttest_p, aes(x = site, y = stat)) +
-#   geom_tile(aes(fill = p.value)) +
-#   geom_text(aes(label = round(p.value, 2))) +
-#   scale_fill_gradient2(midpoint = 0.1, limits = c(0, 1)) +
-#   theme(axis.text.y = element_text(angle = 90, hjust = 0.5))</code></pre>
-<p>The figure above shows the results of t-tests for each metric between the complete time series and when the weekend temperature data have been removed. There is no appreciable impact on the detected duration/intensities.</p>
-</div>
-</div>
-</div>
-</div>
-<div id="best-practices" class="section level2">
-<h2>Best practices</h2>
-<p>(RWS: I envision this last section distilling everything learned above into a nice bullet list. These bulleted items for each different vignette would then all be added up in one central <a href="https://robwschlegel.github.io/MHWdetection/articles/best_practices.html">best practices</a> vignette that would be ported over into the final write-up in the discussion/best-practices section of the paper. Ideally these best-practices could also be incorporated into the R/python distributions of the MHW detection code to allow users to make use of the findings from the paper in their own work.)</p>
-<div id="options-for-addressing-many-missing-random-data" class="section level3">
-<h3>Options for addressing many missing random data</h3>
-<ul>
-<li>Ideally we could come up with a recommended correction to the threshold given a proportion of missing data. i.e. The threshold is reduced when more data are missing. So what is this ratio and how do we work it in.</li>
-</ul>
-</div>
-<div id="options-for-addressing-many-missing-non-random-data" class="section level3">
-<h3>Options for addressing many missing non-random data</h3>
-<ul>
-<li>Interpolating
-<ul>
-<li>Basically a section should be worked out here that covers how much one can interpolate before things go sideways.</li>
-</ul></li>
-</ul>
+<div id="references" class="section level2">
+<h2>References</h2>
 <div id="refs">
 
-</div>
 </div>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.6.1 (2019-07-05)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 16.04.6 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/openblas-base/libblas.so.3
+LAPACK: /usr/lib/libopenblasp-r0.2.18.so
+
+locale:
+ [1] LC_CTYPE=en_CA.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_CA.UTF-8        LC_COLLATE=en_CA.UTF-8    
+ [5] LC_MONETARY=en_CA.UTF-8    LC_MESSAGES=en_CA.UTF-8   
+ [7] LC_PAPER=en_CA.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_CA.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] doParallel_1.0.15    iterators_1.0.10     foreach_1.4.4       
+ [4] ncdf4_1.17           lubridate_1.7.4      heatwaveR_0.4.1.9003
+ [7] forcats_0.4.0        stringr_1.4.0        dplyr_0.8.3         
+[10] purrr_0.3.3          readr_1.3.1          tidyr_1.0.0         
+[13] tibble_2.1.3         ggplot2_3.2.1.9000   tidyverse_1.2.1     
+
+loaded via a namespace (and not attached):
+ [1] tidyselect_0.2.5  xfun_0.10         haven_2.1.1      
+ [4] lattice_0.20-35   colorspace_1.4-1  vctrs_0.2.0      
+ [7] generics_0.0.2    viridisLite_0.3.0 htmltools_0.4.0  
+[10] yaml_2.2.0        plotly_4.9.0      rlang_0.4.1      
+[13] R.oo_1.22.0       pillar_1.4.2      glue_1.3.1       
+[16] withr_2.1.2       R.utils_2.7.0     modelr_0.1.5     
+[19] readxl_1.3.1      lifecycle_0.1.0   munsell_0.5.0    
+[22] gtable_0.3.0      workflowr_1.1.1   cellranger_1.1.0 
+[25] rvest_0.3.4       R.methodsS3_1.7.1 htmlwidgets_1.5.1
+[28] codetools_0.2-15  evaluate_0.14     labeling_0.3     
+[31] knitr_1.25        broom_0.5.2       Rcpp_1.0.2       
+[34] backports_1.1.5   scales_1.0.0      jsonlite_1.6     
+[37] hms_0.5.1         digest_0.6.22     stringi_1.4.3    
+[40] grid_3.6.1        rprojroot_1.3-2   cli_1.1.0        
+[43] tools_3.6.1       maps_3.3.0        magrittr_1.5     
+[46] lazyeval_0.2.2    crayon_1.3.4      whisker_0.4      
+[49] pkgconfig_2.0.3   zeallot_0.1.0     data.table_1.12.6
+[52] xml2_1.2.2        assertthat_0.2.1  rmarkdown_1.16   
+[55] httr_1.4.1        rstudioapi_0.10   R6_2.4.0         
+[58] nlme_3.1-137      git2r_0.23.0      compiler_3.6.1   </code></pre>
 </div>
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
@@ -1630,6 +996,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
